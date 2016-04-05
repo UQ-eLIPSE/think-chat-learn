@@ -1,0 +1,42 @@
+[
+  {
+    "number": 0,
+    "serveyQuestion":"Rate the time given for Individual Answer",
+    "surveyChoices": ["Too Short", "-", "Just Right", "-", "Too Long"]
+  },
+  {
+    "number": 1,
+    "serveyQuestion":"Rate the time given for Discussion",
+    "surveyChoices": ["Too Short", "-", "Just Right", "-", "Too Long"]
+  },
+  {
+    "number": 2,
+    "serveyQuestion":"Rate the <em>quality</em> of discussion comments for making your final choice",
+    "surveyChoices": ["Not at All Helpful", "-", "Neutral", "-", "Very Helpful"]
+  },
+  {
+    "number": 3,
+    "serveyQuestion":"Rate the <em>helpfulness</em> of discussion comments for making your final choice",
+    "surveyChoices": ["Not at All Helpful", "-", "Neutral", "-", "Very Helpful"]
+  },
+  {
+    "number": 4,
+    "serveyQuestion":"Select your age",
+    "surveyChoices": ["21 and Under", "22 to 34", "35 to 44", "45 to 54", "55 to 64", "65 and Over"]
+  },
+  {
+    "number": 5,
+    "serveyQuestion":"Select your gender",
+    "surveyChoices": ["Male", "Female", "Other"]
+  },
+  {
+    "number": 6,
+    "serveyQuestion":"Select your highest level of education you've completed",
+    "surveyChoices": ["Less than<br />High School", "High School<br />/ GED", "Some College", "2-Year<br />College", "4-Year<br />College", "Master<br />or Higher"]
+  },
+  {
+    "number": 7,
+    "serveyQuestion":"(Optional) How might be the discussion improved?",
+    "surveyChoices": []
+  }
+]

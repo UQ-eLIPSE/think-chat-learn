@@ -1,0 +1,77 @@
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+a:link, a:visited, a:active, a:hover {
+  color: black;
+  text-decoration: none;
+}
+
+label {
+  margin-right: 10px;
+  margin-left: 20px;
+}
+
+input {
+  /*margin-right: 20px;*/
+}
+
+#content {
+  height: 100%;
+  width: 100%;
+  /*position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;*/
+}
+
+  #control_bar, #summary_area {
+    margin: 10px;
+    border: 1px solid #d3d3d3;
+  }
+
+    #start_button {
+      display: inline-block;
+      /*margin-right: 30px;*/
+    }
+
+    #server_text {
+      display: inline-block;
+      width: 400px;
+    }
+
+    #interval_text {
+      display: inline-block;
+      text-align: right;
+      width: 30px;
+    }
+
+    #db_check_y {
+      margin-right: 5px;
+    }
+
+    #db_check_n {
+      margin-right: 5px;
+    }
+
+    #timer_area, #min_rt_area, #max_rt_area, #avg_rt_area {
+      display: inline-block;
+      width: 100px;
+      text-align: center;
+      color: #3a3a3a;
+      background-color: #d3d3d3;
+    }
+
+  #log_area {
+    height: 80%;
+    /*font-size: 10px;*/
+    font-family: "Courier New", Courier, monospace;
+    margin: 10px;
+    border: 1px solid #d3d3d3;
+    overflow: scroll;
+  }

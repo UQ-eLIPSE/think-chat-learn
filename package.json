@@ -1,0 +1,17 @@
+{
+  "name": "moocchat",
+  "version": "0.1.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "author": "eLIPSE",
+  "license": "MIT",
+  "dependencies": {
+    "express": "4.13.4",
+    "mongojs": "2.3.0",
+    "php-express": "0.0.3",
+    "socket.io": "1.4.5"
+  }
+}
