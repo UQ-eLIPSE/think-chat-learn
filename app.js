@@ -33,8 +33,12 @@ var websockets = require('./controllers/websockets');
 
 app.use(express.static('public'));
 
+/**
+ * The root of the website
+ */
 app.get('/', function (req, res) {
-
+  // Redirect the user to the index.php page
+  res.redirect('index.php');
 });
 
 app.listen(3000, function () {
