@@ -51,7 +51,7 @@ var SINGLE_SIGN_ON = false; //False to show login screen
   var ALREADY_DONE_PAGE = "#already-done-page";
   var INVALID_LOGIN = "#login-invalid";
   // END PAGE CONSTANTS
-  
+
   //  START EXPERIMENTAL CASE CONSTANTS
   var DISCUSSION_LOW = "moocchat-discussion-low";
   var DISCUSSION_HIGH = "moocchat-discussion-high";
@@ -134,7 +134,7 @@ function isAssignedTo(condName) { return ($.inArray(condName, conditionNames)>=0
 
 function replaceBlankWithInputBox(text, isEditable, idNum, isLong) {
   var res = text;
-  
+
   while(res.indexOf(BLANK)>=0) {
     if(!isEditable) res = res.replace(BLANK, FAKE_INPUT_BOX);
     else {
@@ -221,13 +221,13 @@ function setConsentComplete(value) {
     goToPage(IDLE_PAGE);
   } else if (window.accept_value==CONSENT_REJECTED) {
     // location.replace('questions.html') //  TODO: where they are placed when rejected
-	
+
 	quizWaitlistReq({username:username});
-	
+
 	goToPage(IDLE_PAGE);
-    
+
 	console.log("CONSENT_REJECTED");
-	
+
   }
 }
 
@@ -237,7 +237,7 @@ $("#moocchat-start-button").click(function(e) {
 $("#moocchat-yes-participation,#moocchat-no-participation").click(function(e) {
   goToPage(LOGIN_PAGE);
   //goToPage(CONSENT_PAGE);
-  
+
 });
 
 
@@ -321,7 +321,7 @@ function loginExistingUser() {
 
 function loginFailed(data) {
   //alert("Login failure: " + data + " - Restarting task. Please try again. Username should be 5 characters.");
-  
+
   goToPage(INVALID_LOGIN);
 }
 
@@ -334,11 +334,11 @@ function startTask(data) {
     console.log('ERROR: couldn\'t get quiz data');
     return;
   }
-	
+
   quizWaitlistReq({username:username});
   stage = PROBING_QUESTION_STAGE;
   goToPage(IDLE_PAGE);
-  
+
   //goToPage(CONSENT_PAGE);
 }
 
@@ -432,8 +432,8 @@ function startExplanation() {
 function goToPage(pageID) {
 	var timeSpent = stopWatch();
 	//console.log(timeSpent);
-	ga('send','event',pageID,timeSpent);	
-	
+	ga('send','event',pageID,timeSpent);
+
   $('.moocchat-page').addClass('hidden'); //  HIDE ALL THE CONDITIONAL ELEMENTS
   currentPage = pageID;
   $(currentPage).removeClass('hidden'); //  SHOW THE CURRENT CONDITIONAL ELEMENTS
@@ -489,7 +489,7 @@ function receiveUserList(data) {  //  data: [ {username, screenName}, ...]
 function receiveProbAnswers(data) { //  data : [{username, screenName, answer}, ...]
    probAnswers = data;
    console.log(probAnswers);
-   
+
    stage = DISCUSS_PROBING_STAGE;
    goToPage(MAIN_TASK_PAGE);
 }
@@ -540,7 +540,7 @@ function requestToQuitUpdated(data) { //  data {screenName, wantToQuit, numMembe
   }
 
   if(numMembers<=data.quitReq) {
-    
+
     //  QUIT DISCUSSION AND PROCEED TO PROBING QUESTION STAGE
     if(typeof data.wantToQuit !== 'undefined') chatObj = $(".moocchat-chat-area .moocchat-chat");
 
@@ -586,29 +586,29 @@ function setMainTimer(stage) {
  */
 
   //  DEFAULT quiz["stageDurations"] : [-1, 300, 240, 90, 240, 290]
-					 // , , , , , ,Discussion Time, 	
+					 // , , , , , ,Discussion Time,
   //
   //	[PSW] Update 'probing revise stage' to 4minutes
   //
   //var quizDuration = [-1,  300,  240,  90,  240,  90,  900,  90];
   var quizDuration = [-1,  300,  360,  90,  240,  90,  900,  240];
-  
+
 	console.log("stage:"+ stage);
   //  RESET THE MAIN TIMER
   clearInterval(mainTimer);
   $(".main-task-timer").removeClass("btn-primary");
-  
+
   //  DECIDE HOW LONG THE STAGE LASTS
     var stageDuration = quizDuration[stage];
  // un-comment line below, if you wish to get time settings from database, you can set timer for individual questions in DB
-  //var stageDuration = quiz["stageDurations"][stage]; 
+  //var stageDuration = quiz["stageDurations"][stage];
 	console.log("duration:" + stageDuration);
   mainTimer = setInterval(function() {
     var minutes = Math.floor(stageDuration/60);
     var seconds = stageDuration % 60;
 
     var timeRemaining = (minutes<10 ? "0"+minutes : minutes) + " : " + (seconds<10 ? "0"+seconds : seconds);
-    
+
     if(stageDuration>=0 && currentPage==MAIN_TASK_PAGE)  //  DOING THE TASK
       $("#main-task-timer-time").html(timeRemaining);
     else if(stageDuration>=0 && currentPage==IDLE_PAGE)  //  WATING FOR OTHERS
@@ -622,7 +622,7 @@ function setMainTimer(stage) {
 
       switch(stage) {
         case READ_STAGE:
-          
+
           if(currentPage==MAIN_TASK_PAGE) {
             enableNextButton(true);
 			socket.emit('user_flow', {username: username, timestamp:new Date().toISOString(), page:'Main Task Page', event:'Time Ran Out - Read Stage' });
@@ -638,19 +638,19 @@ function setMainTimer(stage) {
 
         case DISCUSS_ASSUMPTION_STAGE:
         case DISCUSS_PROBING_STAGE:
-          
-          if(wantToQuit) { 
+
+          if(wantToQuit) {
 			socket.emit('user_flow', {username: username, timestamp:new Date().toISOString(), page:'Main Task Page', event:'Time Ran Out - Request to Cancel Chat' });
 			$(".moocchat-next-button").click();
-			
+
 		  }
 
           break;
 
         case PROBING_QUESTION_STAGE:
         case PROBING_REVISE_STAGE:
-		
-          socket.emit('user_flow', {username: username, timestamp:new Date().toISOString(), page:'Question Stage/Revise Stage', event:'Time Ran Out' });  
+
+          socket.emit('user_flow', {username: username, timestamp:new Date().toISOString(), page:'Question Stage/Revise Stage', event:'Time Ran Out' });
           enableNextButton(true);
           $(".moocchat-next-button").click();
 
@@ -684,7 +684,7 @@ function setMainTimer(stage) {
 }
 
 function renderStage(cNames, sName) {
-  
+
   //  MAKE THE NECESSARY (FOR THE CONDITION AND STAGE) ELEMENTS VISIBLE
   for(var i=0;i<cNames.length;i++) {
     var conditionAndStage = "." + cNames[i] + "." + sName;
@@ -758,7 +758,7 @@ function renderStage(cNames, sName) {
       // setMainTimer(stage);
       // enableNextButton(true);
       // $(".moocchat-next-button").click();
-      
+
       break;
 
     case DISCUSS_ASSUMPTION_STAGE:
@@ -869,12 +869,12 @@ function renderStage(cNames, sName) {
       // }
 
       break;
-    
+
     case PROBING_QUESTION_STAGE:
-      
+
       //  IN COMMON
       setMainTimer(stage);
-      
+
       $(".moocchat-left-panel-direction").html("For the essay below, select among the five choices of A, B, C, D, or E.");
       $(".moocchat-right-panel-direction").html("Submit your answer and justification before the timer runs out.");
 
@@ -914,11 +914,11 @@ function renderStage(cNames, sName) {
           }
           else {  //  INITIAL CHOICE OR CHANGE CHOICE
             var index = probingQuestionChoicesClicked.indexOf(-1);
-            
+
             if(index<0) { // NO VACANCY
               var past = probingQuestionChoicesClicked[0];
               probingQuestionChoicesClicked[0] = clickedNum;
-              
+
               $(".moocchat-choice-" + past).removeClass("selected");
               $(".moocchat-choice-" + past).children(".moocchat-choice-box").html(String.fromCharCode(CHAR_CODE_A + past));
 
@@ -935,7 +935,7 @@ function renderStage(cNames, sName) {
               $('.moocchat-justification-blank').val("");
               //socket.emit('user_flow', {username: username, timestamp:new Date().toISOString(), page:'Main Task Page', event:'First Answer Selected: ' +  clickedNum});
 			  if (stage != DISCUSS_PROBING_STAGE) { enableNextButton(false); }
-			  
+
             }
 
             //  UPDATE RIGHT PANEL ACCORDING TO THE CHOICES
@@ -1084,7 +1084,7 @@ function renderStage(cNames, sName) {
 
     case PROBING_REVISE_STAGE:
       // TODO FIXME: Duplicates lots of code with other case PROBING_QUESTION_STAGE
-      
+
       //  IN COMMON
       setMainTimer(stage);
       if(numMembers>1) {  //  GROUPED
@@ -1117,7 +1117,7 @@ function renderStage(cNames, sName) {
       $(".moocchat-next-button").removeClass("btn-danger");
       $(".moocchat-next-button").removeClass("btn-success");
       $(".moocchat-next-button").addClass("btn-info");
-	  $(".main-task-timer").css('visibility','hidden'); 
+	  $(".main-task-timer").css('visibility','hidden');
       enableNextButton(true);
 
       //  SHOW EXPLANATION
@@ -1150,7 +1150,7 @@ function renderStage(cNames, sName) {
       //  SHOW CHOICES
       $(".moocchat-choice-area").html("<div class='list-group moocchat-evaluation-choice'></div>");
       $(".moocchat-justification-area").html("");
-      
+
       //  ADD CLICK EVENT LISTENER
       for(var i=0;i<choices.length;i++) {
         var c = getMOOCchatTypeChoice(choices[i], i, CHOICE_LABEL);
@@ -1174,7 +1174,7 @@ function renderStage(cNames, sName) {
             if(index<0) { // NO VACANCY
               var past = evaluationChoicesClicked[0];
               evaluationChoicesClicked[0] = clickedNum;
-              
+
               $(".moocchat-choice-" + past).removeClass("selected");
               $(".moocchat-choice-" + past).children(".moocchat-choice-box").html(String.fromCharCode(CHAR_CODE_A + past));
 
@@ -1190,8 +1190,8 @@ function renderStage(cNames, sName) {
               // $('.moocchat-justification-blank').val("");
               // enableNextButton(false);
             }
-			
-			
+
+
             //  UPDATE RIGHT PANEL ACCORDING TO THE CHOICES
             var answerable = "<div class='moocchat-justification moocchat-justification-" + clickedNum + " selected h3'>" + "Justify your answer." + "<br /><br />";
             answerable += "<textarea class='form-control' rows='3' id='moocchat-justification-blank' placeholder='Why did you choose " + String.fromCharCode(CHAR_CODE_A + clickedNum) + "?'></textarea>";
@@ -1243,7 +1243,7 @@ function renderStage(cNames, sName) {
 
       //         var past = evaluationChoicesClicked[0];
       //         evaluationChoicesClicked[0] = clickedNum;
-              
+
       //         $(".moocchat-choice-" + past).removeClass("selected");
       //         $(".moocchat-choice-" + past).children(".moocchat-choice-box").html(String.fromCharCode(CHAR_CODE_A + past));
 
@@ -1389,7 +1389,7 @@ function renderStage(cNames, sName) {
     //   $(".moocchat-next-button").removeClass("btn-info");
     //   $(".moocchat-next-button").addClass("btn-success");
     //   enableNextButton(false);
-      
+
     //   $(".moocchat-post-reading-direction").html("");
 
     //   break;
@@ -1416,9 +1416,9 @@ function renderStage(cNames, sName) {
 
       break;
 
-    
+
     default:
-    
+
       console.log("UNDEFINED STAGE DETECTED");
 
       break;
@@ -1447,11 +1447,11 @@ $(".moocchat-finish-button").click(function() {
 	},
 	 messages: {
 		 general : 'Please provide your feedback'
-		 
+
 	 }
-	  
+
 	});
-  
+
 
 
   var general = $("#general").val();
@@ -1464,35 +1464,35 @@ $(".moocchat-finish-button").click(function() {
   var in_discussion_group = $('input[name=in_discussion_group]:checked').val();
 
   if(general=="") {
-	$("#general").focus();  
+	$("#general").focus();
 	$(".general_error").addClass('has-error');
     //alert("Please answer the required questions.");
-  } 
-  
+  }
+
   else if(typeof discussion ==="undefined") {
-	 $('input[name=discussion]').focus();  
+	 $('input[name=discussion]').focus();
 	$(".discussion_error").addClass('has-error');
   }
-  
-  else if(typeof level_of_understanding ==="undefined") {
-	 $('input[name=level_of_understanding]').focus();  
-	$(".level_of_understanding_error").addClass('has-error');
-  } 
-  
-  else if(typeof in_discussion ==="undefined") {
-	 $('input[name=in_discussion]').focus();  
-	$(".in_discussion_error").addClass('has-error');
-  } 
-  
-  else if(typeof in_discussion_group ==="undefined") {
-	 $('input[name=in_discussion_group]').focus();  
-	$(".in_discussion_group_error").addClass('has-error');
-  } 
 
-  
+  else if(typeof level_of_understanding ==="undefined") {
+	 $('input[name=level_of_understanding]').focus();
+	$(".level_of_understanding_error").addClass('has-error');
+  }
+
+  else if(typeof in_discussion ==="undefined") {
+	 $('input[name=in_discussion]').focus();
+	$(".in_discussion_error").addClass('has-error');
+  }
+
+  else if(typeof in_discussion_group ==="undefined") {
+	 $('input[name=in_discussion_group]').focus();
+	$(".in_discussion_group_error").addClass('has-error');
+  }
+
+
   else {
-	 $("general_error,.discussion_error,.level_of_understanding_error,.in_discussion_error,.in_discussion_group_error").removeClass('has-error'); 
-	  
+	 $("general_error,.discussion_error,.level_of_understanding_error,.in_discussion_error,.in_discussion_group_error").removeClass('has-error');
+
     //  SUBMIT
     socket.emit("submitSurvey", {username:username, general:general, discussion:discussion, level_of_understanding:level_of_understanding, in_discussion:in_discussion, in_discussion_group:in_discussion_group, english:english, past:past, pastComment:pastComment, timestamp:new Date().toISOString()});
 
@@ -1542,16 +1542,16 @@ $(".moocchat-next-button").click(function() {
       //  IN COMMON
       socket.emit("discussionQuitReq", {screenName:screenName, quizRoomID:quizRoomID, wantToQuit:wantToQuit, timestamp:new Date().toISOString()});
       wantToQuit = !wantToQuit;
-      if(wantToQuit) { 
+      if(wantToQuit) {
 		socket.emit('user_flow', {username: username, timestamp:new Date().toISOString(), page:'Main Task Page', event:'In Chat Room' });
-		$(".moocchat-next-button").html("Request to End Chat"); 
-		
-	 }  
-      else { 
+		$(".moocchat-next-button").html("Request to End Chat");
+
+	 }
+      else {
 		$(".moocchat-next-button").html("Cancel the Request");
 		socket.emit('user_flow', {username: username, timestamp:new Date().toISOString(), page:'Main Task Page', event:'Clicked Request to End Chat' });
 	  }
-    
+
       break;
 
     case PROBING_QUESTION_STAGE:
@@ -1577,7 +1577,7 @@ $(".moocchat-next-button").click(function() {
       if (!j || typeof(j) != "string") { j = ""; }
       socket.emit("probingQuestionFinalAnswerSubmission", {username:username, screenName:screenName, quizRoomID:quizRoomID, questionNumber:questionNumber, answer:probingQuestionChoicesClicked[0], justification:j, timestamp:new Date().toISOString()});
 	  socket.emit('user_flow', {username: username, timestamp:new Date().toISOString(), page:'Main Task Page', event:'Submitted Final Answer and Justification', data: probingQuestionChoicesClicked[0] });
-      stage = PROBING_EXPLANATION_STAGE; 
+      stage = PROBING_EXPLANATION_STAGE;
 	  console.log("1468:"+stage);
       updatePage(currentPage);
       // goToPage(IDLE_PAGE);
@@ -1600,7 +1600,7 @@ $(".moocchat-next-button").click(function() {
       socket.emit('submitEvaluation', {username:username, questionNumber:questionNumber, answer:evaluationChoicesClicked[0], justification:$("#moocchat-justification-blank").val(),timestamp:new Date().toISOString()});
 	  socket.emit('user_flow', {username: username, timestamp:new Date().toISOString(), page:'Main Task Page', event:'EVALUATION_STAGE' });
       stage = EVAL_EXPLANATION_STAGE;
-       
+
 	  updatePage(currentPage);
 
       break;
@@ -1623,7 +1623,7 @@ function updatePage(pageID) {
       console.log(LOGIN_PAGE);
       $.removeCookie(COOKIE_USERNAME, {path:"/"});  //  TO BE REMOVED
 	  if (getUserName) {
-	  //UQ Single Sign On 
+	  //UQ Single Sign On
 		$.cookie(COOKIE_USERNAME, getUserName, {path: "/"});
 	  }
 	  //----//
@@ -1645,7 +1645,7 @@ function updatePage(pageID) {
           isCookieSet = true;
           $("#username").blur();
 		  socket.emit('login_req', {username: username, password: "ischool", turkHitId: turkHitId, browserInformation: navigator.userAgent});
-		  
+
         });
 
         $(LOGIN_PAGE + " #username").keydown(function(e) {
@@ -1657,7 +1657,7 @@ function updatePage(pageID) {
           isCookieSet = true;
           username = $.cookie(COOKIE_USERNAME);
 		  socket.emit('user_flow', {username: username, timestamp:new Date().toISOString(), page:'Logged In - Wait Page', event: ""  });
-		  
+
           if(isCookieSet) $(LOGIN_PAGE + " #login-button").click();
         }
 
@@ -1670,7 +1670,7 @@ function updatePage(pageID) {
       console.log(CONSENT_PAGE);
 
       socket.emit('getConsent', {username:username});
-      
+
       $(CONSENT_PAGE + ' #consent-accept').click(function(e) {
         window.accept_value = CONSENT_ACCEPTED;
         socket.emit('setConsent', {username:username, value:window.accept_value, timestamp:new Date().toISOString()});
@@ -1680,7 +1680,7 @@ function updatePage(pageID) {
         window.accept_value = CONSENT_REJECTED;
         socket.emit('setConsent', {username:username, value:window.accept_value, timestamp:new Date().toISOString()});
       });
-	
+
       break;
 
     case WAIT_PAGE:
@@ -1720,7 +1720,7 @@ function updatePage(pageID) {
         case DISCUSS_ASSUMPTION_STAGE:
 
           $(IDLE_PAGE + " #idle-message").html(WAITING_FOR_MAIN_TASK_PAGE);
-          
+
           break;
 
         case DISCUSS_PROBING_STAGE:
@@ -1733,14 +1733,14 @@ function updatePage(pageID) {
 
           //  WAITING_FOR_EXPLANATION
           $(IDLE_PAGE + " #idle-message").html(WAITING_FOR_EXPLANATION);
-          
+
           break;
       }
 
       break;
 
     case POST_SURVEY_PAGE:
-		
+
 	  pauseGroupTimer(); //It pauses the timer, otherwise completed page (last page) will go back to Survey Page and wont be able to proceed. Added 23/07/2015
 	  socket.emit('user_flow', {username: getUserName, timestamp:new Date().toISOString(), page:'Survey Page', event:''  });
       console.log(POST_SURVEY_PAGE);
@@ -1749,13 +1749,13 @@ function updatePage(pageID) {
     case SUBMIT_HIT_PAGE:
       console.log(SUBMIT_HIT_PAGE);
       break;
-	
+
 	//Added 23/07/2015
 	case INVALID_LOGIN:
 		socket.emit('user_flow', {username: getUserName, timestamp:new Date().toISOString(), page:'Invalid Login Page', event:''  });
 		console.log(INVALID_LOGIN);
      break;
-	 
+
 	case COMPLETED_PAGE:
 		socket.emit('user_flow', {username: getUserName, timestamp:new Date().toISOString(), page:'Completed', event:''  });
 		console.log(COMPLETED_PAGE);
@@ -1773,7 +1773,7 @@ function memberDisconnected(disconnectedMemberUsername) {
   //  TODO: SEND A REPORT TO THE SERVER
 
   if(currentPage==MAIN_TASK_PAGE) {
-    
+
     switch(stage) {
 
       case READ_STAGE:
@@ -1812,14 +1812,14 @@ function memberDisconnected(disconnectedMemberUsername) {
       case EVALUATION_STAGE:
 
         //  DO NOTHING
-        
+
         break;
 
       default:
         console.log("UNDEFINED STAGE DETECTED");
 
         break;
-    } 
+    }
   }
   else if(currentPage==IDLE_PAGE) {
     switch(stage) {
@@ -1939,13 +1939,13 @@ function pause() {
 //   // var outputFilename = 'load_test_results_' + (new Date()).getTime() + '.json';
 
 //   clearInterval(lClient.timer);
-  
+
 //   results.failed = results.numRequest - results.numResponse;
 //   results.reqPerSec = results.numRequest / results.elapsed;
 //   results.timePerReq = results.elapsed / results.numRequest;
 //   results.sendRate = results.byteSent / results.elapsed;
 //   results.sendRate = results.byteReceived / results.elapsed;
-  
+
 //   diffs.sort(function(a,b){return a-b;});
 //   var last = diffs.length - 1;
 //   results.percentile10 = diffs[Math.floor(last * 0.1)];
@@ -1974,7 +1974,7 @@ function pause() {
 //   //     console.log("The results has been saved to " + outputFilename);
 //   //     process.exit(0);
 //   //   }
-//   // }); 
+//   // });
 // }
 
 // function loadTestClient() {
@@ -2002,7 +2002,7 @@ function pause() {
 //       results.numRequest++;
 //       results.byteSent += sizeof(toSend);
 //     }
-//   }, loadtestOptions.requestIntMs);  
+//   }, loadtestOptions.requestIntMs);
 // };
 
 // function startLoadTest(timeMs) {
@@ -2076,7 +2076,7 @@ function pageReload() {
 	ga('send','event','Page Reload');
 }
 $(document).ready(function() {
-	
+
   //  STARTING POINT
 	startClock();
   //  CONNECT TO NODE SERVER
@@ -2117,7 +2117,7 @@ $(document).ready(function() {
   // socket.on('stopTimer', stopTimer);
   // socket.on('resumeTimer', resumeTimer);
   // socket.on('timerToThree', timerToThree);
-  // socket.on('finalChoiceUpdated', quizWaitlistReq);  
+  // socket.on('finalChoiceUpdated', quizWaitlistReq);
   // socket.on('completed', finish);
   // socket.on('surveySaved', finish);
   // socket.on('missingClient', missingClient);
@@ -2129,7 +2129,7 @@ $(document).ready(function() {
   //   window.scrollTo($(currentPage).position().top);
   // });
 
-  
+
   document.getElementById('assignmentId').value = turkAssignmentId;
   document.getElementById('hitId').value = turkHitId;
   document.getElementById('workerId').value = turkWorkerId;
@@ -2149,15 +2149,15 @@ $(document).ready(function() {
     //  START FROM INSTRUCTION PAGE
     goToPage(WAIT_PAGE);
   }
-  
 
-  
+
+
 });
 
 $(window).bind('beforeunload', function(){
 	var url = window.location.href;
 	var hash = url.substring(url.indexOf("#")+1);
-	
+
 
 		if (hash !== 'wait-page' && hash !== 'completed-page' && hash !== 'login-invalid') {
 			socket.emit('user_flow', {username: username, timestamp:new Date().toISOString(), page:hash, event:'Trying to refresh or quit' });

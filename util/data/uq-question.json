@@ -1,0 +1,800 @@
+[
+  {
+    "questionGroup": 0,
+    "questionNumber": 1,
+    "probingQuestionOldNumber": 1,
+    "reading": "This is a real life question from a job interview.<p/>At present a company is experiencing an issue with ants exposing copper telecommunications lines. This results in failure of the lines connection. The cable used has a mass of 0.7kg/m and the line is planned to stretch to 100km between remote townships. The current price of copper is $7000/tonne and the value of plant equipment for this project is $2,000,000.",
+    "probingQuestion": "Using you knowledge of design and materials, what solution from those below would you think was applied to prevent this ant damage from occurring?",
+    "probingQuestionChoices": [
+      "The application of a very thin steel foil layer to the cable to prevent the ants from eating into it. This would be done by Electrophoretic deposition",
+      "The application of a thin, flexible ceramic layer to the cable to prevent the ants from eating into it. This would be done by Electrophoretic deposition",
+      "The application of a thicker polymer sheath to the cable to prevent the ants from eating into it. This would be done via fibre extrusion",
+      "No change to the material, it was decided that the best solution was to simply increase the frequency with which the cables were replaced."
+    ],
+    "probingQuestionAnswer": 1,
+    "explanation": "<p>The correct answer is <span id=\"moocchat-choice-1-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-1\">B</span>. A thin layer of ceramic material was applied to the cable. This resulted in a strong layer that could not be cut into by the ants, while requiring little change to the operation of the wire production.</p><p>Option <span id=\"moocchat-choice-0-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-0\">A</span> leaves open the problem with corrosion and also possible shorting, as well such a thin foil can actually be cur through by ants. A similar problem is posed by <span id=\"moocchat-choice-2-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-2\">C</span>, while a thick polymer layer would slow down the process it would still eventually happen.</p><p>Option <span id=\"moocchat-choice-3-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-3\">D</span> is just too costly, as localised faults like this are very hard to pinpoint. This would require digging up a large portion of the line and replacing it. Making this option very costly and not desirable.</p>",
+    "evaluationOldNumber": 100,
+    "evaluationReading": "",
+    "evaluationQuestion": "",
+    "evaluationChoices": [
+      ""
+    ],
+    "evaluationAnswer": 0,
+    "evalExplanation": "<p></p>",
+    "stageDurations": [
+      -1,
+      300,
+      240,
+      90,
+      240,
+      90,
+      300,
+      90
+    ],
+    "maxChoiceForStudentGenerateQuestion": 1,
+    "crCategory": "weakenArgument"
+  },
+  {
+    "questionGroup": 0,
+    "questionNumber": 2,
+    "probingQuestionOldNumber": 2,
+    "reading": "In the design of any component we need to determine what are the most critical material properties.  One case of this is the development of hypersonic scramjet engines. These are designed to operate at speeds of up to 10,000 km/h which cause significant heating from surface friction, resulting in temperatures in excess of 2500°C. At these speeds, material surfaces are also under significant structural stress due to the forces of air resistance and turbulence.",
+    "probingQuestion": "Considering these design conditions, which of the following materials would most likely be able to perform in these conditions?",
+    "probingQuestionChoices": [
+      "Ductile Special Metal Alloys Tiles",
+      "High Density/High Temperature Polymer Tiles",
+      "Composite Ceramic/Metallic Particle Tiles",
+      "Glass or Ceramic Tiles"
+    ],
+    "probingQuestionAnswer": 2,
+    "explanation": "<p><span id=\"moocchat-choice-2-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-2\">C</span> is the correct answer. The best way to achieve this high performance combination of material properties is with a metal/ceramic composite. This solution although expensive, is the most suitable for the application. For both <span id=\"moocchat-choice-0-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-0\">A</span> and <span id=\"moocchat-choice-1-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-1\">B</span> the systems will be unable to withstand those temperatures and distort. Also high temperature air/oxygen is highly corrosive and will damage the materials. <span id=\"moocchat-choice-3-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-3\">D</span> is in many ways the next best option, however the lack of ductility and brittleness of this system reduce its value as a solution. In this case it makes the surface susceptible to cracks, and will fail quickly after any minor damage. This would then result in a catastrophic failure of the entire unit soon after.</p>",
+    "evaluationOldNumber": 100,
+    "evaluationReading": "",
+    "evaluationQuestion": "",
+    "evaluationChoices": [
+      ""
+    ],
+    "evaluationAnswer": 0,
+    "evalExplanation": "<p></p>",
+    "stageDurations": [
+      -1,
+      300,
+      240,
+      90,
+      240,
+      90,
+      300,
+      90
+    ],
+    "maxChoiceForStudentGenerateQuestion": 1,
+    "crCategory": "weakenArgument"
+  },
+  {
+    "questionGroup": 0,
+    "questionNumber": 3,
+    "probingQuestionOldNumber": 3,
+    "reading": "<p>You have been given the task of designing a beam within a building which will flex under wind load. The beam currently proposed is shown below and is made of standard 300 grade steel.</p><p><img src=\"/MoocChatUQ/mcq_client/img/week2_session1_diagram.png\" width=400 height=168/></p>",
+    "probingQuestion": "To achieve a higher elastic modulus in the beam, which of the following properties would you change?",
+    "probingQuestionChoices": [
+      "The length of the beam, as a shorter beam will bend less so have a higher modulus",
+      "The shape of the beam, changing the shape while retaining the same dimensions will increase the modulus of the beam",
+      "Increasing the cross sectional area of the beam will increase the modulus",
+      "Pre-stressing of the beam will cause the beam to undergo work hardening and increase the modulus",
+      "Give up on this beam as you will need a different material entirely to change the modulus"
+    ],
+    "probingQuestionAnswer": 4,
+    "explanation": "<p>The correct answer is <span id=\"moocchat-choice-4-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-4\">E</span>. These properties are derived from the bonds present within the material. So in this case the only option will be to go to a different material. Changing to a different steel alloy (since the majority of the bonding is between Fe atoms) would not significantly change the modulus.  Only if we add large amounts of alloying (i.e. change to a stainless steel, rather than a steel) will the modulus change significantly.</p>",
+    "evaluationOldNumber": 100,
+    "evaluationReading": "",
+    "evaluationQuestion": "",
+    "evaluationChoices": [
+      ""
+    ],
+    "evaluationAnswer": 0,
+    "evalExplanation": "<p></p>",
+    "stageDurations": [
+      -1,
+      480,
+      300,
+      90,
+      300,
+      90,
+      480,
+      90
+    ],
+    "maxChoiceForStudentGenerateQuestion": 1,
+    "crCategory": "weakenArgument"
+  },
+  {
+    "questionGroup": 0,
+    "questionNumber": 4,
+    "probingQuestionOldNumber": 4,
+    "reading": "<p>You are involved in the design of a bridge. One of the requirements of the design is a 10m long beam that will elongate a maximum of 8mm under a stress of 40 kilotonnes per m<sup>2</sup>. The beam will also be expected to support a peak load of 200kN. You have been asked to design and select a material for the application. There is no limit to the type of material you can select and you have the following list of material profiles available to choose from:</p><ol><li>A material with a high modulus and a low yield point</li><li>A material with a low modulus and a high yield point</li><li>A material with a low modulus and a low yield point</li><li>A material with a high modulus and a high yield point</li></ul>",
+    "probingQuestion": "From the given list, which of the following options would potentially be suitable for this application?",
+    "probingQuestionChoices": [
+      "Option 4 is the only suitable solution",
+      "Option 2 and 3 would be suitable for this application",
+      "Option 1 and 4 would be suitable for this application",
+      "Option 2 is the only solution that would work",
+      "Option 2 and 4 would be suitable for this application",
+      "All options are suitable it would only depend on dimensions."
+    ],
+    "probingQuestionAnswer": 2,
+    "explanation": "<p>The correct answer is c). Although the yield point is not clearly stated, given the total length and elongation at a specified unit load allows you to calculate the required modulus of the material (~500GPa) which is a high modulus. As it is given as a load, it would be possible to handle a larger load by either selecting a material with a high yield point material or by increasing the cross sectional area of the beam.</p>",
+    "evaluationOldNumber": 100,
+    "evaluationReading": "",
+    "evaluationQuestion": "",
+    "evaluationChoices": [
+      ""
+    ],
+    "evaluationAnswer": 0,
+    "evalExplanation": "<p></p>",
+    "stageDurations": [
+      -1,
+      480,
+      300,
+      90,
+      300,
+      90,
+      480,
+      90
+    ],
+    "maxChoiceForStudentGenerateQuestion": 1,
+    "crCategory": "weakenArgument"
+  },
+  {
+    "questionGroup": 0,
+    "questionNumber": 5,
+    "probingQuestionOldNumber": 5,
+    "reading": "<p>Dislocations and their behaviour are key to the mechanical properties of materials. How they behave is also critical to selecting the right material for the right application.</p>",
+    "probingQuestion": "Considering your knowledge of dislocation behaviour, which of the following is most correct?",
+    "probingQuestionChoices": [
+      "Dislocations spontaneously move through a material by breaking one crystal plane at a time until they reach the surface",
+      "Dislocations move within a crystal lattice by breaking bonds until they are stopped by another dislocation",
+      "Dislocation move through a material under load until they reach a grain boundary or other defect",
+      "Dislocations are difficult to move, requiring more energy to break the crystal planes than other defects",
+      "Dislocation move through a crystal to the surface of the material to minimise internal stresses"
+    ],
+    "probingQuestionAnswer": 2,
+    "explanation": "<p>The most correct answer is <span id=\"moocchat-choice-2-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-2\">C</span>. This describes the behaviour of a dislocation, as they can only travel through close packed planes within a single crystal.</p><p>Answer <span id=\"moocchat-choice-0-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-0\">A</span> is incorrect as dislocations will only move when a load is applied, and they will be stopped at grain boundaries. <span id=\"moocchat-choice-1-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-1\">B</span> is incorrect as the dislocation can join up with another dislocation and continue to propagate through the structure, or two dislocations can offset each other, so this is less correct than <span id=\"moocchat-choice-2-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-2\">C</span>. Answer <span id=\"moocchat-choice-3-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-3\">D</span> is wrong as dislocation reduce the energy required to break the plane of bonds not increase it. Answer <span id=\"moocchat-choice-4-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-4\">E</span> again the dislocation is stopped at the grain boundaries, and do not travel to the surface of a material, unless that is where the grain boundary is.</p>",
+    "evaluationOldNumber": 100,
+    "evaluationReading": "",
+    "evaluationQuestion": "",
+    "evaluationChoices": [
+      ""
+    ],
+    "evaluationAnswer": 0,
+    "evalExplanation": "<p></p>",
+    "stageDurations": [
+      -1,
+      480,
+      300,
+      90,
+      300,
+      90,
+      480,
+      90
+    ],
+    "maxChoiceForStudentGenerateQuestion": 1,
+    "crCategory": "weakenArgument"
+  },
+  {
+    "questionGroup": 0,
+    "questionNumber": 6,
+    "probingQuestionOldNumber": 6,
+    "reading": "<p>For a new design you are required to select a material that will be used in a special safety spring system. To meet the design requirements, the spring will need to have a high modulus of resilience. However, as it is also designed as a safety feature, it is necessary to ensure that the system, should it fail, fails safely. To ensure that this is the case the system cannot undergo brittle fracture.</p><p>Given that you want to ensure that you select the right material, you commission tests of the available materials (selected from ones that will survive in the operating conditions) and get the following set of results:</p><p><img src=\"/MoocChatUQ/mcq_client/img/week3_session1_diagram.png\" width=400 height=233/></p>",
+    "probingQuestion": "From this selection, what do you propose as the most suitable material for the application:",
+    "probingQuestionChoices": [
+      "Sample A",
+      "Sample B",
+      "Sample C",
+      "Sample D",
+      "Sample B and C",
+      "Sample A and D"
+    ],
+    "probingQuestionAnswer": 0,
+    "explanation": "<p>The most suitable material would be Sample A. This material, whilst not having the highest modulus of resilience is very close to those obtained by C and D. In terms of overall toughness sample A is by far the toughest. This high toughness suggests that the material will not undergo brittle fracture. Sample D is unsuitable because of the rapid drop in stress after it has undergone yield. Sample B while not unsuitable is just not the best option available, and Sample C is far too brittle for this application.</p>",
+    "evaluationOldNumber": 100,
+    "evaluationReading": "",
+    "evaluationQuestion": "",
+    "evaluationChoices": [
+      ""
+    ],
+    "evaluationAnswer": 0,
+    "evalExplanation": "<p></p>",
+    "stageDurations": [
+      -1,
+      480,
+      300,
+      90,
+      300,
+      90,
+      480,
+      90
+    ],
+    "maxChoiceForStudentGenerateQuestion": 1,
+    "crCategory": "weakenArgument"
+  },
+  {
+    "questionGroup": 0,
+    "questionNumber": 7,
+    "probingQuestionOldNumber": 7,
+    "reading": "<p>A rotating steel shaft has failed, resulting in it snapping into 2 pieces, with one of the failure surfaces shown in the diagram. The shaft had been operating in a 250°C environment due to the installation of a new furnace nearby, but had previously only experienced temperatures of 100°C. The shaft had been in constant operation for the past 6 years.</p><p><img src=\"/MoocChatUQ/mcq_client/img/week4_session1_diagram.png\" width=400 height=405/></p>",
+    "probingQuestion": "Given your knowledge of material failure, which of these is the most likely failure scenario?",
+    "probingQuestionChoices": [
+      "The failure shown is likely due to creep, induced by the elevated temperatures",
+      "The failure shown is likely due to excess load on the shaft, most likely caused by the thermal expansion of the shaft at the higher temperature",
+      "The failure is due to an impact of some sort, resulting in the fracture of the shaft",
+      "The failure is due to fatigue in the shaft, and has built up over its life",
+      "The failure is due to tension in the shaft"
+    ],
+    "probingQuestionAnswer": 3,
+    "explanation": "<p>The correct answer is D. The operating temperature is far too low for the steel to undergo creep, as the minimum for creep is generally ~0.4 x melt temperature. The failure surface does not show any sign of ductile deformation, which excludes all the other answers, as they would all show some visible signs of deformation.</p>",
+    "evaluationOldNumber": 100,
+    "evaluationReading": "",
+    "evaluationQuestion": "",
+    "evaluationChoices": [
+      ""
+    ],
+    "evaluationAnswer": 0,
+    "evalExplanation": "<p></p>",
+    "stageDurations": [
+      -1,
+      480,
+      300,
+      90,
+      300,
+      90,
+      480,
+      90
+    ],
+    "maxChoiceForStudentGenerateQuestion": 1,
+    "crCategory": "weakenArgument"
+  },
+  {
+    "questionGroup": 0,
+    "questionNumber": 8,
+    "probingQuestionOldNumber": 8,
+    "reading": "<p>A rotating steel shaft has failed, resulting in a brittle fracture, snapping the shaft into 2 pieces. The shaft had been operating in a 250°C environment due to the installation of a new furnace nearby, but had previously only experienced temperatures of 100°C. The unit had been in constant operation for the past 6 years.  In an interview with some of the operators they pointed out that the shaft had bent out of shape a few times before, but that it was a simple job to just bend it back.</p>",
+    "probingQuestion": "Given your knowledge of material failure, which of these is the most likely failure scenario?",
+    "probingQuestionChoices": [
+      "The failure is likely the result of the grain size being reduced by the new elevated operating temperature.",
+      "The failure is likely the result of excess load on the machine, most likely caused by thermal expansion of the shaft at the new temperature.",
+      "The failure is due to the shaft bending, but as it strain hardened it underwent brittle fracture.",
+      "The failure is due to fatigue in the shaft, and has built up over its life.",
+      "The failure is due to compression fracture on the shaft."
+    ],
+    "probingQuestionAnswer": 2,
+    "explanation": "<p>The correct answer is C. As stated the shaft had been bent several times and had also been bent back into shape. This suggests that the metal will have been cold worked, and while this may increase the yield point of the material, its ductility will have been reduced. When the shaft continues to rotate it fails in a brittle fashion due to the resulting strain hardening of the shaft.</p>",
+    "evaluationOldNumber": 100,
+    "evaluationReading": "",
+    "evaluationQuestion": "",
+    "evaluationChoices": [
+      ""
+    ],
+    "evaluationAnswer": 0,
+    "evalExplanation": "<p></p>",
+    "stageDurations": [
+      -1,
+      480,
+      300,
+      90,
+      300,
+      90,
+      480,
+      90
+    ],
+    "maxChoiceForStudentGenerateQuestion": 1,
+    "crCategory": "weakenArgument"
+  },
+  {
+    "questionGroup": 0,
+    "questionNumber": 9,
+    "probingQuestionOldNumber": 9,
+    "reading": "<p>Two polymer samples were tested on a tensile testing machine. The first sample is transparent and extends significantly before failing. Sample 2 is opaque and brittle but requires significantly more load to break than Sample 1. Both samples are melted for testing and found to consist of the same repeat unit.</p>",
+    "probingQuestion": "From your knowledge of polymer properties, which of the following statements is the most correct?",
+    "probingQuestionChoices": [
+      "Sample 1 has significantly more branching chains than sample 2. Sample 2 has a higher molecular weight than 1. The polymer is a thermoplastic.",
+      "Sample 2 is a crystalline repeating copolymer with a high molecular weight. Sample 1 is the highly linear version of this polymer. The polymer is a thermoplastic.",
+      "Sample 1 has a higher molecular weight than Sample 2, and a greater degree of crystallinity. The polymer is a Thermoplastic",
+      "Sample 1 is very amorphous in nature, whereas Sample 2 is highly crystalline. The polymer is a thermoset",
+      "Sample 2 is most likely a cross-linked version of Sample 1, hence its brittle nature.",
+      "None of the above."
+    ],
+    "probingQuestionAnswer": 0,
+    "explanation": "<p>The correct answer is A. The higher degree of branching in the polymer will make it highly amorphous, resulting in it being more transparent. This level of branching also makes a very connected network structure, which will allow the polymer to be stretched significantly before failure. Sample 2 is a linear polymer with a high degree of crystallinity which is shown by its opaque nature and brittle structure. It however has a very high strength due to its high molecular weight. As both samples are melted for testing, the material must be a thermoplastic.</p>",
+    "evaluationOldNumber": 100,
+    "evaluationReading": "",
+    "evaluationQuestion": "",
+    "evaluationChoices": [
+      ""
+    ],
+    "evaluationAnswer": 0,
+    "evalExplanation": "<p></p>",
+    "stageDurations": [
+      -1,
+      480,
+      300,
+      90,
+      300,
+      90,
+      480,
+      90
+    ],
+    "maxChoiceForStudentGenerateQuestion": 1,
+    "crCategory": "weakenArgument"
+  },
+  {
+    "questionGroup": 0,
+    "questionNumber": 10,
+    "probingQuestionOldNumber": 10,
+    "reading": "<p>You are given a flexible piece of polymer for accelerated aging. Initial dimensions of the sample are should below.</p></p><p><img src=\"/MoocChatUQ/mcq_client/img/week5_session2_diagram.png\" width=400 height=125/></p><p>The initial sample has an elastic modulus of 10MPa, and when tested the sample fails at 340% strain, the stress is recorded as 25MPa.</p><p>The sample is then left to age in a weather-ometer, which just accelerates aging, for 1 month. The sample is contained within a sealed dish.</p><p>After one month you check on the sample. Inside the top of the dish is a brownish condensate, and the sample has shrunk by 5% in all dimensions. Upon testing the sample you get an elastic modulus of 200MPa, and the sample fails at 40% strain and 15MPa.</p><p>You also test the brown liquid and find that it is not of the same composition as the polymer.</p>",
+    "probingQuestion": "What has happened to this sample?",
+    "probingQuestionChoices": [
+      "The material has begun to degrade, this has released some monomer and reduced the properties",
+      "The material has undergone a reaction that has caused it to cross-link",
+      "A pigment has migrated out of the material during the weathering",
+      "A plasticiser has migrated out of the material during weathering",
+      "A free radical reaction within the polymer has caused chain scission reducing molecular weight",
+      "Moisture has gotten into the polymer and caused swelling and weakened the polymer"
+    ],
+    "probingQuestionAnswer": 3,
+    "explanation": "<p>The correct answer is D. The polymer has lost its plasticiser. The situation described here is very similar to the behaviour of PVC, especially when it is used within car interiors. The brown liquid is condensed plasticiser which has vaporised out and condensed on the glass. After the plasticiser is removed the polymer will be significantly stiffer, but as the plasticiser was also an integral part of the polymer's structure, once it is gone many of the properties will also degrade.</p>",
+    "evaluationOldNumber": 100,
+    "evaluationReading": "",
+    "evaluationQuestion": "",
+    "evaluationChoices": [
+      ""
+    ],
+    "evaluationAnswer": 0,
+    "evalExplanation": "<p></p>",
+    "stageDurations": [
+      -1,
+      480,
+      300,
+      90,
+      300,
+      90,
+      480,
+      90
+    ],
+    "maxChoiceForStudentGenerateQuestion": 1,
+    "crCategory": "weakenArgument"
+  },
+  {
+    "questionGroup": 0,
+    "questionNumber": 1,
+    "probingQuestionOldNumber": 1,
+    "reading": "This is a real life question from a job interview.<p/>At present a company is experiencing an issue with ants exposing copper telecommunications lines. This results in failure of the lines connection. The cable used has a mass of 0.7kg/m and the line is planned to stretch to 100km between remote townships. The current price of copper is $7000/tonne and the value of plant equipment for this project is $2,000,000.",
+    "probingQuestion": "Using you knowledge of design and materials, what solution from those below would you think was applied to prevent this ant damage from occurring?",
+    "probingQuestionChoices": [
+      "The application of a very thin steel foil layer to the cable to prevent the ants from eating into it. This would be done by Electrophoretic deposition",
+      "The application of a thin, flexible ceramic layer to the cable to prevent the ants from eating into it. This would be done by Electrophoretic deposition",
+      "The application of a thicker polymer sheath to the cable to prevent the ants from eating into it. This would be done via fibre extrusion",
+      "No change to the material, it was decided that the best solution was to simply increase the frequency with which the cables were replaced."
+    ],
+    "probingQuestionAnswer": 1,
+    "explanation": "<p>The correct answer is <span id=\"moocchat-choice-1-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-1\">B</span>. A thin layer of ceramic material was applied to the cable. This resulted in a strong layer that could not be cut into by the ants, while requiring little change to the operation of the wire production.</p><p>Option <span id=\"moocchat-choice-0-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-0\">A</span> leaves open the problem with corrosion and also possible shorting, as well such a thin foil can actually be cur through by ants. A similar problem is posed by <span id=\"moocchat-choice-2-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-2\">C</span>, while a thick polymer layer would slow down the process it would still eventually happen.</p><p>Option <span id=\"moocchat-choice-3-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-3\">D</span> is just too costly, as localised faults like this are very hard to pinpoint. This would require digging up a large portion of the line and replacing it. Making this option very costly and not desirable.</p>",
+    "evaluationOldNumber": 100,
+    "evaluationReading": "",
+    "evaluationQuestion": "",
+    "evaluationChoices": [
+      ""
+    ],
+    "evaluationAnswer": 0,
+    "evalExplanation": "<p></p>",
+    "stageDurations": [
+      -1,
+      300,
+      240,
+      90,
+      240,
+      90,
+      300,
+      90
+    ],
+    "maxChoiceForStudentGenerateQuestion": 1,
+    "crCategory": "weakenArgument"
+  },
+  {
+    "questionGroup": 0,
+    "questionNumber": 2,
+    "probingQuestionOldNumber": 2,
+    "reading": "In the design of any component we need to determine what are the most critical material properties.  One case of this is the development of hypersonic scramjet engines. These are designed to operate at speeds of up to 10,000 km/h which cause significant heating from surface friction, resulting in temperatures in excess of 2500°C. At these speeds, material surfaces are also under significant structural stress due to the forces of air resistance and turbulence.",
+    "probingQuestion": "Considering these design conditions, which of the following materials would most likely be able to perform in these conditions?",
+    "probingQuestionChoices": [
+      "Ductile Special Metal Alloys Tiles",
+      "High Density/High Temperature Polymer Tiles",
+      "Composite Ceramic/Metallic Particle Tiles",
+      "Glass or Ceramic Tiles"
+    ],
+    "probingQuestionAnswer": 2,
+    "explanation": "<p><span id=\"moocchat-choice-2-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-2\">C</span> is the correct answer. The best way to achieve this high performance combination of material properties is with a metal/ceramic composite. This solution although expensive, is the most suitable for the application. For both <span id=\"moocchat-choice-0-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-0\">A</span> and <span id=\"moocchat-choice-1-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-1\">B</span> the systems will be unable to withstand those temperatures and distort. Also high temperature air/oxygen is highly corrosive and will damage the materials. <span id=\"moocchat-choice-3-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-3\">D</span> is in many ways the next best option, however the lack of ductility and brittleness of this system reduce its value as a solution. In this case it makes the surface susceptible to cracks, and will fail quickly after any minor damage. This would then result in a catastrophic failure of the entire unit soon after.</p>",
+    "evaluationOldNumber": 100,
+    "evaluationReading": "",
+    "evaluationQuestion": "",
+    "evaluationChoices": [
+      ""
+    ],
+    "evaluationAnswer": 0,
+    "evalExplanation": "<p></p>",
+    "stageDurations": [
+      -1,
+      300,
+      240,
+      90,
+      240,
+      90,
+      300,
+      90
+    ],
+    "maxChoiceForStudentGenerateQuestion": 1,
+    "crCategory": "weakenArgument"
+  },
+  {
+    "questionGroup": 0,
+    "questionNumber": 3,
+    "probingQuestionOldNumber": 3,
+    "reading": "<p>You have been given the task of designing a beam within a building which will flex under wind load. The beam currently proposed is shown below and is made of standard 300 grade steel.</p><p><img src=\"/MoocChatUQ/mcq_client/img/week2_session1_diagram.png\" width=400 height=168/></p>",
+    "probingQuestion": "To achieve a higher elastic modulus in the beam, which of the following properties would you change?",
+    "probingQuestionChoices": [
+      "The length of the beam, as a shorter beam will bend less so have a higher modulus",
+      "The shape of the beam, changing the shape while retaining the same dimensions will increase the modulus of the beam",
+      "Increasing the cross sectional area of the beam will increase the modulus",
+      "Pre-stressing of the beam will cause the beam to undergo work hardening and increase the modulus",
+      "Give up on this beam as you will need a different material entirely to change the modulus"
+    ],
+    "probingQuestionAnswer": 4,
+    "explanation": "<p>The correct answer is <span id=\"moocchat-choice-4-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-4\">E</span>. These properties are derived from the bonds present within the material. So in this case the only option will be to go to a different material. Changing to a different steel alloy (since the majority of the bonding is between Fe atoms) would not significantly change the modulus.  Only if we add large amounts of alloying (i.e. change to a stainless steel, rather than a steel) will the modulus change significantly.</p>",
+    "evaluationOldNumber": 100,
+    "evaluationReading": "",
+    "evaluationQuestion": "",
+    "evaluationChoices": [
+      ""
+    ],
+    "evaluationAnswer": 0,
+    "evalExplanation": "<p></p>",
+    "stageDurations": [
+      -1,
+      480,
+      300,
+      90,
+      300,
+      90,
+      480,
+      90
+    ],
+    "maxChoiceForStudentGenerateQuestion": 1,
+    "crCategory": "weakenArgument"
+  },
+  {
+    "questionGroup": 0,
+    "questionNumber": 4,
+    "probingQuestionOldNumber": 4,
+    "reading": "<p>You are involved in the design of a bridge. One of the requirements of the design is a 10m long beam that will elongate a maximum of 8mm under a stress of 40 kilotonnes per m<sup>2</sup>. The beam will also be expected to support a peak load of 200kN. You have been asked to design and select a material for the application. There is no limit to the type of material you can select and you have the following list of material profiles available to choose from:</p><ol><li>A material with a high modulus and a low yield point</li><li>A material with a low modulus and a high yield point</li><li>A material with a low modulus and a low yield point</li><li>A material with a high modulus and a high yield point</li></ul>",
+    "probingQuestion": "From the given list, which of the following options would potentially be suitable for this application?",
+    "probingQuestionChoices": [
+      "Option 4 is the only suitable solution",
+      "Option 2 and 3 would be suitable for this application",
+      "Option 1 and 4 would be suitable for this application",
+      "Option 2 is the only solution that would work",
+      "Option 2 and 4 would be suitable for this application",
+      "All options are suitable it would only depend on dimensions."
+    ],
+    "probingQuestionAnswer": 2,
+    "explanation": "<p>The correct answer is c). Although the yield point is not clearly stated, given the total length and elongation at a specified unit load allows you to calculate the required modulus of the material (~500GPa) which is a high modulus. As it is given as a load, it would be possible to handle a larger load by either selecting a material with a high yield point material or by increasing the cross sectional area of the beam.</p>",
+    "evaluationOldNumber": 100,
+    "evaluationReading": "",
+    "evaluationQuestion": "",
+    "evaluationChoices": [
+      ""
+    ],
+    "evaluationAnswer": 0,
+    "evalExplanation": "<p></p>",
+    "stageDurations": [
+      -1,
+      480,
+      300,
+      90,
+      300,
+      90,
+      480,
+      90
+    ],
+    "maxChoiceForStudentGenerateQuestion": 1,
+    "crCategory": "weakenArgument"
+  },
+  {
+    "questionGroup": 0,
+    "questionNumber": 5,
+    "probingQuestionOldNumber": 5,
+    "reading": "<p>Dislocations and their behaviour are key to the mechanical properties of materials. How they behave is also critical to selecting the right material for the right application.</p>",
+    "probingQuestion": "Considering your knowledge of dislocation behaviour, which of the following is most correct?",
+    "probingQuestionChoices": [
+      "Dislocations spontaneously move through a material by breaking one crystal plane at a time until they reach the surface",
+      "Dislocations move within a crystal lattice by breaking bonds until they are stopped by another dislocation",
+      "Dislocation move through a material under load until they reach a grain boundary or other defect",
+      "Dislocations are difficult to move, requiring more energy to break the crystal planes than other defects",
+      "Dislocation move through a crystal to the surface of the material to minimise internal stresses"
+    ],
+    "probingQuestionAnswer": 2,
+    "explanation": "<p>The most correct answer is <span id=\"moocchat-choice-2-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-2\">C</span>. This describes the behaviour of a dislocation, as they can only travel through close packed planes within a single crystal.</p><p>Answer <span id=\"moocchat-choice-0-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-0\">A</span> is incorrect as dislocations will only move when a load is applied, and they will be stopped at grain boundaries. <span id=\"moocchat-choice-1-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-1\">B</span> is incorrect as the dislocation can join up with another dislocation and continue to propagate through the structure, or two dislocations can offset each other, so this is less correct than <span id=\"moocchat-choice-2-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-2\">C</span>. Answer <span id=\"moocchat-choice-3-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-3\">D</span> is wrong as dislocation reduce the energy required to break the plane of bonds not increase it. Answer <span id=\"moocchat-choice-4-box\" class=\"moocchat-choice-box-inline moocchat-choice-box-4\">E</span> again the dislocation is stopped at the grain boundaries, and do not travel to the surface of a material, unless that is where the grain boundary is.</p>",
+    "evaluationOldNumber": 100,
+    "evaluationReading": "",
+    "evaluationQuestion": "",
+    "evaluationChoices": [
+      ""
+    ],
+    "evaluationAnswer": 0,
+    "evalExplanation": "<p></p>",
+    "stageDurations": [
+      -1,
+      480,
+      300,
+      90,
+      300,
+      90,
+      480,
+      90
+    ],
+    "maxChoiceForStudentGenerateQuestion": 1,
+    "crCategory": "weakenArgument"
+  },
+  {
+    "questionGroup": 0,
+    "questionNumber": 6,
+    "probingQuestionOldNumber": 6,
+    "reading": "<p>For a new design you are required to select a material that will be used in a special safety spring system. To meet the design requirements, the spring will need to have a high modulus of resilience. However, as it is also designed as a safety feature, it is necessary to ensure that the system, should it fail, fails safely. To ensure that this is the case the system cannot undergo brittle fracture.</p><p>Given that you want to ensure that you select the right material, you commission tests of the available materials (selected from ones that will survive in the operating conditions) and get the following set of results:</p><p><img src=\"/MoocChatUQ/mcq_client/img/week3_session1_diagram.png\" width=400 height=233/></p>",
+    "probingQuestion": "From this selection, what do you propose as the most suitable material for the application:",
+    "probingQuestionChoices": [
+      "Sample A",
+      "Sample B",
+      "Sample C",
+      "Sample D",
+      "Sample B and C",
+      "Sample A and D"
+    ],
+    "probingQuestionAnswer": 0,
+    "explanation": "<p>The most suitable material would be Sample A. This material, whilst not having the highest modulus of resilience is very close to those obtained by C and D. In terms of overall toughness sample A is by far the toughest. This high toughness suggests that the material will not undergo brittle fracture. Sample D is unsuitable because of the rapid drop in stress after it has undergone yield. Sample B while not unsuitable is just not the best option available, and Sample C is far too brittle for this application.</p>",
+    "evaluationOldNumber": 100,
+    "evaluationReading": "",
+    "evaluationQuestion": "",
+    "evaluationChoices": [
+      ""
+    ],
+    "evaluationAnswer": 0,
+    "evalExplanation": "<p></p>",
+    "stageDurations": [
+      -1,
+      480,
+      300,
+      90,
+      300,
+      90,
+      480,
+      90
+    ],
+    "maxChoiceForStudentGenerateQuestion": 1,
+    "crCategory": "weakenArgument"
+  },
+  {
+    "questionGroup": 0,
+    "questionNumber": 7,
+    "probingQuestionOldNumber": 7,
+    "reading": "<p>A rotating steel shaft has failed, resulting in it snapping into 2 pieces, with one of the failure surfaces shown in the diagram. The shaft had been operating in a 250°C environment due to the installation of a new furnace nearby, but had previously only experienced temperatures of 100°C. The shaft had been in constant operation for the past 6 years.</p><p><img src=\"/MoocChatUQ/mcq_client/img/week4_session1_diagram.png\" width=400 height=405/></p>",
+    "probingQuestion": "Given your knowledge of material failure, which of these is the most likely failure scenario?",
+    "probingQuestionChoices": [
+      "The failure shown is likely due to creep, induced by the elevated temperatures",
+      "The failure shown is likely due to excess load on the shaft, most likely caused by the thermal expansion of the shaft at the higher temperature",
+      "The failure is due to an impact of some sort, resulting in the fracture of the shaft",
+      "The failure is due to fatigue in the shaft, and has built up over its life",
+      "The failure is due to tension in the shaft"
+    ],
+    "probingQuestionAnswer": 3,
+    "explanation": "<p>The correct answer is D. The operating temperature is far too low for the steel to undergo creep, as the minimum for creep is generally ~0.4 x melt temperature. The failure surface does not show any sign of ductile deformation, which excludes all the other answers, as they would all show some visible signs of deformation.</p>",
+    "evaluationOldNumber": 100,
+    "evaluationReading": "",
+    "evaluationQuestion": "",
+    "evaluationChoices": [
+      ""
+    ],
+    "evaluationAnswer": 0,
+    "evalExplanation": "<p></p>",
+    "stageDurations": [
+      -1,
+      480,
+      300,
+      90,
+      300,
+      90,
+      480,
+      90
+    ],
+    "maxChoiceForStudentGenerateQuestion": 1,
+    "crCategory": "weakenArgument"
+  },
+  {
+    "questionGroup": 0,
+    "questionNumber": 8,
+    "probingQuestionOldNumber": 8,
+    "reading": "<p>A rotating steel shaft has failed, resulting in a brittle fracture, snapping the shaft into 2 pieces. The shaft had been operating in a 250°C environment due to the installation of a new furnace nearby, but had previously only experienced temperatures of 100°C. The unit had been in constant operation for the past 6 years.  In an interview with some of the operators they pointed out that the shaft had bent out of shape a few times before, but that it was a simple job to just bend it back.</p>",
+    "probingQuestion": "Given your knowledge of material failure, which of these is the most likely failure scenario?",
+    "probingQuestionChoices": [
+      "The failure is likely the result of the grain size being reduced by the new elevated operating temperature.",
+      "The failure is likely the result of excess load on the machine, most likely caused by thermal expansion of the shaft at the new temperature.",
+      "The failure is due to the shaft bending, but as it strain hardened it underwent brittle fracture.",
+      "The failure is due to fatigue in the shaft, and has built up over its life.",
+      "The failure is due to compression fracture on the shaft."
+    ],
+    "probingQuestionAnswer": 2,
+    "explanation": "<p>The correct answer is C. As stated the shaft had been bent several times and had also been bent back into shape. This suggests that the metal will have been cold worked, and while this may increase the yield point of the material, its ductility will have been reduced. When the shaft continues to rotate it fails in a brittle fashion due to the resulting strain hardening of the shaft.</p>",
+    "evaluationOldNumber": 100,
+    "evaluationReading": "",
+    "evaluationQuestion": "",
+    "evaluationChoices": [
+      ""
+    ],
+    "evaluationAnswer": 0,
+    "evalExplanation": "<p></p>",
+    "stageDurations": [
+      -1,
+      480,
+      300,
+      90,
+      300,
+      90,
+      480,
+      90
+    ],
+    "maxChoiceForStudentGenerateQuestion": 1,
+    "crCategory": "weakenArgument"
+  },
+  {
+    "questionGroup": 0,
+    "questionNumber": 9,
+    "probingQuestionOldNumber": 9,
+    "reading": "<p>Two polymer samples were tested on a tensile testing machine. The first sample is transparent and extends significantly before failing. Sample 2 is opaque and brittle but requires significantly more load to break than Sample 1. Both samples are melted for testing and found to consist of the same repeat unit.</p>",
+    "probingQuestion": "From your knowledge of polymer properties, which of the following statements is the most correct?",
+    "probingQuestionChoices": [
+      "Sample 1 has significantly more branching chains than sample 2. Sample 2 has a higher molecular weight than 1. The polymer is a thermoplastic.",
+      "Sample 2 is a crystalline repeating copolymer with a high molecular weight. Sample 1 is the highly linear version of this polymer. The polymer is a thermoplastic.",
+      "Sample 1 has a higher molecular weight than Sample 2, and a greater degree of crystallinity. The polymer is a Thermoplastic",
+      "Sample 1 is very amorphous in nature, whereas Sample 2 is highly crystalline. The polymer is a thermoset",
+      "Sample 2 is most likely a cross-linked version of Sample 1, hence its brittle nature.",
+      "None of the above."
+    ],
+    "probingQuestionAnswer": 0,
+    "explanation": "<p>The correct answer is A. The higher degree of branching in the polymer will make it highly amorphous, resulting in it being more transparent. This level of branching also makes a very connected network structure, which will allow the polymer to be stretched significantly before failure. Sample 2 is a linear polymer with a high degree of crystallinity which is shown by its opaque nature and brittle structure. It however has a very high strength due to its high molecular weight. As both samples are melted for testing, the material must be a thermoplastic.</p>",
+    "evaluationOldNumber": 100,
+    "evaluationReading": "",
+    "evaluationQuestion": "",
+    "evaluationChoices": [
+      ""
+    ],
+    "evaluationAnswer": 0,
+    "evalExplanation": "<p></p>",
+    "stageDurations": [
+      -1,
+      480,
+      300,
+      90,
+      300,
+      90,
+      480,
+      90
+    ],
+    "maxChoiceForStudentGenerateQuestion": 1,
+    "crCategory": "weakenArgument"
+  },
+  {
+    "questionGroup": 0,
+    "questionNumber": 10,
+    "probingQuestionOldNumber": 10,
+    "reading": "<p>You are given a flexible piece of polymer for accelerated aging. Initial dimensions of the sample are should below.</p></p><p><img src=\"/MoocChatUQ/mcq_client/img/week5_session2_diagram.png\" width=400 height=125/></p><p>The initial sample has an elastic modulus of 10MPa, and when tested the sample fails at 340% strain, the stress is recorded as 25MPa.</p><p>The sample is then left to age in a weather-ometer, which just accelerates aging, for 1 month. The sample is contained within a sealed dish.</p><p>After one month you check on the sample. Inside the top of the dish is a brownish condensate, and the sample has shrunk by 5% in all dimensions. Upon testing the sample you get an elastic modulus of 200MPa, and the sample fails at 40% strain and 15MPa.</p><p>You also test the brown liquid and find that it is not of the same composition as the polymer.</p>",
+    "probingQuestion": "What has happened to this sample?",
+    "probingQuestionChoices": [
+      "The material has begun to degrade, this has released some monomer and reduced the properties",
+      "The material has undergone a reaction that has caused it to cross-link",
+      "A pigment has migrated out of the material during the weathering",
+      "A plasticiser has migrated out of the material during weathering",
+      "A free radical reaction within the polymer has caused chain scission reducing molecular weight",
+      "Moisture has gotten into the polymer and caused swelling and weakened the polymer"
+    ],
+    "probingQuestionAnswer": 3,
+    "explanation": "<p>The correct answer is D. The polymer has lost its plasticiser. The situation described here is very similar to the behaviour of PVC, especially when it is used within car interiors. The brown liquid is condensed plasticiser which has vaporised out and condensed on the glass. After the plasticiser is removed the polymer will be significantly stiffer, but as the plasticiser was also an integral part of the polymer's structure, once it is gone many of the properties will also degrade.</p>",
+    "evaluationOldNumber": 100,
+    "evaluationReading": "",
+    "evaluationQuestion": "",
+    "evaluationChoices": [
+      ""
+    ],
+    "evaluationAnswer": 0,
+    "evalExplanation": "<p></p>",
+    "stageDurations": [
+      -1,
+      480,
+      300,
+      90,
+      300,
+      90,
+      480,
+      90
+    ],
+    "maxChoiceForStudentGenerateQuestion": 1,
+    "crCategory": "weakenArgument"
+  },
+  {
+    "questionGroup": 0,
+    "questionNumber": 11,
+    "probingQuestionOldNumber": 11,
+    "reading": "<p>Polymer clotheslines all eventually develop sag in their lines.</p>",
+    "probingQuestion": "For a clothesline that has a constant extension and is mostly used on weekends, what might be the main cause of this transition? Considering the same situation, would this process occur faster or slower in a hot climate compared to a cold one?",
+    "probingQuestionChoices": [
+      "The clothesline undergoes creep. This would occur slower in the hot climate",
+      "The clothesline will yield and then draw. This would occur slower in the hot climate",
+      "The clothesline will undergo stress relaxation. This would occur slower in the hot climate",
+      "The clothesline undergoes creep. This would occur faster in the hot climate",
+      "The clothesline will yield and then draw. This would occur faster in the hot climate",
+      "The clothesline will undergo stress relaxation. This would occur faster in the hot climate"
+    ],
+    "probingQuestionAnswer": 5,
+    "explanation": "<p>The correct answer is F. While creep is a measure of increase in strain with time under a constant stress, stress relaxation is the reduction of stress with time under a constant strain. Comparing the relative times for when a clothesline is loaded with clothes to when it is in an unloaded state, a washing line will generally be without load, yet held at constant extension (strain). The duration of time that the line is actually under load at normal temperatures is unlikely to induce significant creep. Considering the time-temperature equivalence, this will occur faster at higher temperatures, as this is also equivalent to a longer time period.</p>",
+    "evaluationOldNumber": 100,
+    "evaluationReading": "",
+    "evaluationQuestion": "",
+    "evaluationChoices": [
+      ""
+    ],
+    "evaluationAnswer": 0,
+    "evalExplanation": "<p></p>",
+    "stageDurations": [
+      -1,
+      480,
+      300,
+      90,
+      300,
+      90,
+      480,
+      90
+    ],
+    "maxChoiceForStudentGenerateQuestion": 1,
+    "crCategory": "weakenArgument"
+  },
+  {
+    "questionGroup": 0,
+    "questionNumber": 12,
+    "probingQuestionOldNumber": 12,
+    "reading": "<p>You are designing an oil rig that will be located just outside of the Arctic Circle with minimum temperatures of up to -40 C. A junction in the piping system has a valve that will require a flexible O-ring to seal it. The rig is operated intermittently and while in operation the seal can run at a maximum operating temperature of 170°C.</p>",
+    "probingQuestion": "Given the stated conditions, which of the following material profiles would you select for the seal?",
+    "probingQuestionChoices": [
+      "A high-impact cross-linked polymer material with a Tg of 170°C",
+      "A semi-crystalline thermoplastic material with a Tg of 160°C",
+      "A cross-linked copolymer material with a Tg of -30°C",
+      "A cross-linked polymer material with a Tg of -70°C",
+      "A thermoplastic material with a Tg of -90°C",
+      "An amorphous homopolymer material with a Tg of 40°C"
+    ],
+    "probingQuestionAnswer": 3,
+    "explanation": "<p>The correct answer is D. In a situation like this we need to ensure that the material can operate correctly under all the conditions it is exposed to. In this case it means being exposed to temperatures as low as -40°C when the rig is not in operation, and as high as 170°C while running. Under all of these conditions the system must remain strong and flexible. For the minimum operating temperature, that requires the glass transition temperature (Tg) to be below -40°C. If this were not the case the O-ring would likely become brittle and fracture under stress. This is part of what occurred with the Challenger Space Shuttle disaster in 1986.  This condition excludes A, B, C and F.</p><p>The material must also remain stable at high temperatures. In this case E would likely creep and soften as it is a thermoplastic which can (like PVC for example) remelt at temperatures near the maximum operating temperature of the oil rig. Material D being a cross-linked polymer or thermoset, is chemically bound together and while it can be burnt, it cannot be melted. Because their chains are bound together, cross-linked polymers are also far more resistant to creep.</p>",
+    "evaluationOldNumber": 100,
+    "evaluationReading": "",
+    "evaluationQuestion": "",
+    "evaluationChoices": [
+      ""
+    ],
+    "evaluationAnswer": 0,
+    "evalExplanation": "<p></p>",
+    "stageDurations": [
+      -1,
+      480,
+      300,
+      90,
+      300,
+      90,
+      480,
+      90
+    ],
+    "maxChoiceForStudentGenerateQuestion": 1,
+    "crCategory": "weakenArgument"
+  }
+]

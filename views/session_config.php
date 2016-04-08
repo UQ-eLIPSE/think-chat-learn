@@ -3,10 +3,10 @@ date_default_timezone_set('Australia/Brisbane');
 //echo date('Y-m-d  H:i:s');
 require_once "uq/auth.php";
 
-$thursday_time = array('20','22');
+$thursday_time = array('10','22');
 $sunday_time = array('12','14');
 
-$sessions = array( 1=>array('2015-07-30', $thursday_time),
+$sessions = array( 1=>array('2016-04-08', $thursday_time),
 				   2=>array('2015-08-02', $sunday_time),
 				   3=>array('2015-08-06', $thursday_time),
 				   4=>array('2015-08-09', $sunday_time),

@@ -1,10 +1,9 @@
-function Client(id,
-                name,
-                fir_c, fir_time,
-                fin_c, fin_time,
-                sg_q, sg_qt,
-                qna, qnaT,
-                qi) {
+// TODO: Replace these with the global configuration
+var CLIENT_STATE_IDLE = 100;
+var NUM_CLIENTS_PER_QUIZ_ROOM = 3;
+
+function Client(id, name, fir_c, fir_time,
+                fin_c, fin_time, sg_q, sg_qt, qna, qnaT, qi) {
   this.socketID = id;
   this.username = name;
   this.firstChoices = fir_c;

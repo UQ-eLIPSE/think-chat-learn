@@ -8,6 +8,8 @@ var objectLength = util.objectLength;
 var randomInteger = util.randomInteger;
 var contains = util.contains;
 
+var casePointer = 0;
+
 var app = global.app;
 var conf = global.conf;
 
@@ -46,6 +48,10 @@ var activeDiscussionRooms = new Object();
 
 var quizWaitlists = new Array();
 var discussionWaitlists = new Array();
+
+
+
+//
 
 // TODO: Get rid of all these comments
 var PORT_NUMBER = conf.portNum;
@@ -150,6 +156,46 @@ if (conf.ssl) {
 
 var io = require('socket.io')(server, { serveClient: false });
 
+//TODO: This should be in its own module (question module?)
+
+var quizSet;
+
+console.log("Active question group: " + ACTIVE_QUESTION_GROUP);
+
+db[collections[QUESTION_COLLECTION]].find({questionGroup:ACTIVE_QUESTION_GROUP},
+                                          function(err, dbResults) {
+  //  SELECT * FROM QUESTION_TABLE WHERE questionGroup==ACTIVE_QUESTION_GROUP;
+  //  db["collection_name"].find(...
+
+  //  initializes the right number (for this question set) of empty waitlists
+  //  for users
+  quizSet = new Array();
+  for(var i=0;i<dbResults.length;i++) {
+    quizSet[i] = null;
+  }
+  for(var i=0;i<dbResults.length;i++) {
+    quizSet[dbResults[i].questionNumber] = dbResults[i];
+  }
+
+  //  accessing a user in a waitlist
+  // quizWaitlists[conditionAssigned]
+  // discussionWaitlists[conditionAssigned]
+  NUM_QUESTIONS_PER_SESSION = dbResults.length;
+  for(var i=0;i<quizSet.length;i++) { quizWaitlists[i] = new Array(); }
+  for(var i=0;i<quizSet.length;i++) { discussionWaitlists[i] = new Array(); }
+  //  initializes the right number (for questions) of empty
+  //  waitlists for users
+  console.log("#MOOCchat server has started\n" +
+              "\tport: %d\n" +
+              "\tgroup size: %d\n" +
+              "\ttotal number of questions in DB: %d\n" +
+              "\tactive question group: %d\n",
+              PORT_NUMBER,
+              NUM_CLIENTS_PER_QUIZ_ROOM,
+              NUM_QUESTIONS_PER_SESSION,
+              ACTIVE_QUESTION_GROUP);
+});
+
 
 io.sockets.on('connection', function(socket) {
   //  socket is for ONE client
@@ -242,6 +288,8 @@ io.sockets.on('connection', function(socket) {
       //  START DB SEARCH FOR LOGIN
       userFound = false;
       db[collections[USERNAMES_COLLECTION]].find().forEach(function(err, dbResults) {
+        //console.log(dbResults);
+        console.log("Username collection: " + collections[USERNAMES_COLLECTION]);
         /* Failed DB Search */
         if(err || dbResults == null || typeof dbResults === 'undefined' || dbResults.length == 0) {
           if (!userFound) {
@@ -392,6 +440,7 @@ io.sockets.on('connection', function(socket) {
                     else {
                       //  INSERT THE QUIZ ENTRY FOR THIS USER INTO
                       //  USER_QUIZ_COLLECTION
+
                       var questionNumber = getQuestionNumber(data.turkHitId);
 
                       var userQuizEntry = {username:username,
@@ -453,11 +502,14 @@ io.sockets.on('connection', function(socket) {
                                               qnaSetTimestamps,
                                               quizIndex);
                       activeClients[username] = client;
+
                       client.questionNumber = questionNumber;
                       console.log("#login() - active clients: %d",
                                   objectLength(activeClients));
 
                       //  SEND LOGIN SUCCESS SIGNAL WITH QUIZ DATA
+                      console.log("QUIZ----");
+                      console.log(quizSet);
                       socket.emit('loginSuccess',
                                 {username:activeClients[username].username, quiz:quizSet[questionNumber]});
                     } // end db[question_collection].find() else block
@@ -481,6 +533,7 @@ io.sockets.on('connection', function(socket) {
     if (!checkArgs('quizWaitlistReq', data, ['username'])) return;
     var username = data.username;
     var client = getClient(username);
+    console.log(client);
     if (!client) return;
     var questionNumber = client.questionNumber;
     var quizCounter = client.quizCounter;
@@ -512,6 +565,9 @@ io.sockets.on('connection', function(socket) {
     if(username.indexOf('condition')==0 && username.charAt(username.length-1)!='2')
       conditionAssigned = client.conditionAssigned = parseInt(username.charAt(username.length-1));
 
+    console.log(">>>>>>");
+    console.log(questionNumber);
+    console.log(quizWaitlists);
     if(quizWaitlists[questionNumber].indexOf(client)<0) {
       // PUT THE CLIENT IN THE WAITLIST
       quizWaitlists[questionNumber].push(client);
@@ -1763,7 +1819,7 @@ function user_flow(data) {
 var username;
 var search_criteria = {username:data.username};
   db[collections[USER_FLOW_COLLECTION]].find({'username':data.username},function(err, dbResults) {
-  console.log(dbResults);
+  //console.log(dbResults);
   if(err || typeof dbResults === 'undefined' || dbResults.length==0) {
      console.log("#UserFlow Table ERROR doesnt exist - " +
             "username: %s", username);
