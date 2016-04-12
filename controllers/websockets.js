@@ -12,28 +12,29 @@ var casePointer = 0;
 
 var app = global.app;
 var conf = global.conf;
+var db_wrapper = require('./database.js');
 
 var hitToQuestionMap = new Object();
 var lastQuestionNumberListIndex = -1;
 
 function getQuestionNumber(turkHitId) {
-  var index = FIXED_QUESTION_NUMBER;
+  var index = conf.fixedQuestionNumber;
 
   if(index>=0) {
     //  RETURN ONE FIXED QUESTION
-    index = FIXED_QUESTION_NUMBER;
+    index = conf.fixedQuestionNumber;
   }
   else {
     if (!(turkHitId in hitToQuestionMap)) {
       //  NEW HIT - RETURN NEXT QUESTION
       do {
         lastQuestionNumberListIndex += 1;
-        if (lastQuestionNumberListIndex >= QUESTION_NUMBER_LIST.length) {
+        if (lastQuestionNumberListIndex >= conf.fixedQuestionNumber.length) {
           lastQuestionNumberListIndex = 0;
         }
       }
-      while(contains(QUESTION_NUMBERS_TO_SKIP, QUESTION_NUMBER_LIST[lastQuestionNumberListIndex]));
-      hitToQuestionMap[turkHitId] = QUESTION_NUMBER_LIST[lastQuestionNumberListIndex];
+      while(contains(conf.questionNumberToSkip, conf.fixedQuestionNumber[lastQuestionNumberListIndex]));
+      hitToQuestionMap[turkHitId] = conf.fixedQuestionNumber[lastQuestionNumberListIndex];
     }
     return hitToQuestionMap[turkHitId];
   }
@@ -54,25 +55,16 @@ var discussionWaitlists = new Array();
 //
 
 // TODO: Get rid of all these comments
-var PORT_NUMBER = conf.portNum;
-var NUM_CLIENTS_PER_QUIZ_ROOM = conf.groupSize;
+//
 // it's decided when the server loads quiz data from database
 var NUM_QUESTIONS_PER_SESSION;
-var ACTIVE_QUESTION_GROUP = conf.activeQuestionGroup;
 //  collection (in mongoDB) = table (in sql DB)
 var COLLECTION_PREFIX = conf.collectionPrefix;
-var NUM_TASK = conf.numTask;  //  if negative value, do all the task / quiz
-var ALLOW_REPEAT = conf.allowRepeat;  // allow same user to do task more than once
-var CONDITION_SET = conf.expConditions;
-var CASES_TO_SKIP = conf.casesToSkip;
-var NUM_INDEP_VARS = objectLength(CONDITION_SET);
 var NUM_CASES = 1;
-for(var indepVar in CONDITION_SET) {
-  NUM_CASES *= CONDITION_SET[indepVar].length;
+for(var indepVar in conf.expConditions) {
+  NUM_CASES *= conf.expConditions[indepVar].length;
 }
-var FIXED_QUESTION_NUMBER = conf.fixedQuestionNumber;
-var QUESTION_NUMBER_LIST = conf.questionNumberList;
-var QUESTION_NUMBERS_TO_SKIP = conf.questionNumberToSkip;
+
 //  END LOADING SERVER CONFIGURATION
 
 var USER_LOGIN_COLLECTION = 0;
@@ -142,29 +134,22 @@ var CONSENT_REJECTED = 2;
 var HASH_SECRET_KEY = 'jEQtYK8t';
 
 
-var server;
-if (conf.ssl) {
-  var options = {
-    key: fs.readFileSync(conf.key),
-    cert: fs.readFileSync(conf.cert)
-  };
-  server = https.createServer(options, app).listen(conf.portNum);
-} else {
-  server = require('http').createServer(app).listen(conf.portNum);
-  console.log('Socket.io server listening on port ' + conf.portNum);
-}
+var server = global.server;
+var io = global.io;
 
-var io = require('socket.io')(server, { serveClient: false });
 
 //TODO: This should be in its own module (question module?)
 
 var quizSet;
 
-console.log("Active question group: " + ACTIVE_QUESTION_GROUP);
+console.log("Active question group: " + conf.activeQuestionGroup);
 
-db[collections[QUESTION_COLLECTION]].find({questionGroup:ACTIVE_QUESTION_GROUP},
+// Old connection
+//db[collections[QUESTION_COLLECTION]].find({questionGroup:conf.activeQuestionGroup},
+
+db_wrapper.question.read({questionGroup: conf.activeQuestionGroup},
                                           function(err, dbResults) {
-  //  SELECT * FROM QUESTION_TABLE WHERE questionGroup==ACTIVE_QUESTION_GROUP;
+  //  SELECT * FROM QUESTION_TABLE WHERE questionGroup==conf.activeQuestionGroup;
   //  db["collection_name"].find(...
 
   //  initializes the right number (for this question set) of empty waitlists
@@ -190,10 +175,10 @@ db[collections[QUESTION_COLLECTION]].find({questionGroup:ACTIVE_QUESTION_GROUP},
               "\tgroup size: %d\n" +
               "\ttotal number of questions in DB: %d\n" +
               "\tactive question group: %d\n",
-              PORT_NUMBER,
-              NUM_CLIENTS_PER_QUIZ_ROOM,
+              conf.portNum,
+              conf.groupSize,
               NUM_QUESTIONS_PER_SESSION,
-              ACTIVE_QUESTION_GROUP);
+              conf.activeQuestionGroup);
 });
 
 
@@ -348,32 +333,32 @@ io.sockets.on('connection', function(socket) {
                                "test7", "test8", "test9"];
 
 			  // moocchat-30
-	var search_criteria = {username:username, questionGroup:ACTIVE_QUESTION_GROUP};
+	var search_criteria = {username:username, questionGroup:conf.activeQuestionGroup};
 
 	db[collections[USER_QUIZ_COLLECTION]].find(search_criteria, function(err, dbResults) {
 		console.log(new Date().toISOString(), username, search_criteria, dbResults);
 
 		/*
               db[collections[USER_QUIZ_COLLECTION]].find({username:username,
-                                                          questionGroup:ACTIVE_QUESTION_GROUP},
+                                                          questionGroup:conf.activeQuestionGroup},
                                                          function(err, dbResults) {
 		*/
                 // Disable existing user check during edX run - we want them
                 // to be able to do it multiple times if they wish
                 // TODO: Handle database errors and already-exists separately
                 if((err || typeof dbResults === 'undefined' ||
-                    (!ALLOW_REPEAT && dbResults.length > 0)) &&
+                    (!conf.allowRepeat && dbResults.length > 0)) &&
                    !contains(testUsernames, username)) {
                   console.log("#login() new user %s already exists: %d",
                               username, dbResults.length);
                   socket.emit('loginExistingUser', {username:username});
                 } else {  // username found in USER_LOGIN_COLLECTION, and
-                          // username+questionGroup found in ACTIVE_QUESTION_GROUP
+                          // username+questionGroup found in conf.activeQuestionGroup
                   console.log("#login() new user: %s", username);
 
                   var userLoginEntry = {username:username,
                                         password:password,
-                                        questionGroup:ACTIVE_QUESTION_GROUP,
+                                        questionGroup:conf.activeQuestionGroup,
 										browserInformation: browserInformation
 										};
 
@@ -427,7 +412,7 @@ io.sockets.on('connection', function(socket) {
                   //  QUESTION NUMBER 1 IN DATABASE!
                   var quizIndex = 0;
 
-                  db[collections[QUESTION_COLLECTION]].find({questionGroup:ACTIVE_QUESTION_GROUP},
+                  db[collections[QUESTION_COLLECTION]].find({questionGroup:conf.activeQuestionGroup},
                                                             function(err, dbResults) {
                     if(err ||
                        typeof dbResults === 'undefined' ||
@@ -444,7 +429,7 @@ io.sockets.on('connection', function(socket) {
                       var questionNumber = getQuestionNumber(data.turkHitId);
 
                       var userQuizEntry = {username:username,
-                                           questionGroup:ACTIVE_QUESTION_GROUP,
+                                           questionGroup:conf.activeQuestionGroup,
                                            questionNumber:questionNumber,
                                            probingQuestionAnswer:-1,
                                            probingQuestionAnswerTime:"",
@@ -508,8 +493,8 @@ io.sockets.on('connection', function(socket) {
                                   objectLength(activeClients));
 
                       //  SEND LOGIN SUCCESS SIGNAL WITH QUIZ DATA
-                      console.log("QUIZ----");
-                      console.log(quizSet);
+                      //console.log("QUIZ----");
+                      //console.log(quizSet);
                       socket.emit('loginSuccess',
                                 {username:activeClients[username].username, quiz:quizSet[questionNumber]});
                     } // end db[question_collection].find() else block
@@ -565,9 +550,9 @@ io.sockets.on('connection', function(socket) {
     if(username.indexOf('condition')==0 && username.charAt(username.length-1)!='2')
       conditionAssigned = client.conditionAssigned = parseInt(username.charAt(username.length-1));
 
-    console.log(">>>>>>");
-    console.log(questionNumber);
-    console.log(quizWaitlists);
+    // console.log(">>>>>>");
+    // console.log(questionNumber);
+    // console.log(quizWaitlists);
     if(quizWaitlists[questionNumber].indexOf(client)<0) {
       // PUT THE CLIENT IN THE WAITLIST
       quizWaitlists[questionNumber].push(client);
@@ -626,7 +611,7 @@ function createQuizGroup(username, questionNumber, conditionAssigned, groupSize,
 
   //  SAVE QUIZ ROOM IN DATABASE
   var quizRoomDBEntry = {quizRoomID:quizRoomID,
-                         questionGroup:ACTIVE_QUESTION_GROUP,
+                         questionGroup:conf.activeQuestionGroup,
                          questionNumber:questionNumber,
                          members:[],
                          conditionAssigned:conditionAssigned
@@ -654,7 +639,7 @@ function createQuizGroup(username, questionNumber, conditionAssigned, groupSize,
   do {
     casePointer = (casePointer + 1) % NUM_CASES;
   }
-  while(contains(CASES_TO_SKIP, casePointer));
+  while(contains(conf.casesToSkip, casePointer));
 
   // var groupSize = quizWaitlists[questionNumber].length;
   for(var i=0;i<groupSize;i++) {
@@ -673,14 +658,14 @@ function createQuizGroup(username, questionNumber, conditionAssigned, groupSize,
 /*
 db[collections[USER_QUIZ_COLLECTION]].update({socketID:client.socketID,
                                                   username:client.username,
-                                                  questionGroup:ACTIVE_QUESTION_GROUP},
+                                                  questionGroup:conf.activeQuestionGroup},
                                                  {$set: {quizRoomID:quizRoomID}},
                                                 function(err, dbResults) {
 */
 // moocchat-30
 var update_criteria = {socketID:client.socketID,
                                                   username:client.username,
-                                                  questionGroup:ACTIVE_QUESTION_GROUP};
+                                                  questionGroup:conf.activeQuestionGroup};
 var update_data = {$set: {quizRoomID:quizRoomID}};
 db[collections[USER_QUIZ_COLLECTION]].update(update_criteria, update_data, function(err, dbResults) {
 
@@ -697,7 +682,7 @@ db[collections[USER_QUIZ_COLLECTION]].update(update_criteria, update_data, funct
       else {
         console.log("#createQuizGroup() - " +
                     "question number updated in database");
-    console.log(new Date().toISOString(), username, update_criteria, update_data);
+    //console.log(new Date().toISOString(), username, update_criteria, update_data);
       }
     });
     io.sockets.connected[client.socketID].emit('groupedForQuiz',
@@ -705,7 +690,7 @@ db[collections[USER_QUIZ_COLLECTION]].update(update_criteria, update_data, funct
                                              quizRoomID:quizRoomID,
                                              questionNumber:questionNumber,
                                              conditionAssigned:conditionAssigned,
-                                             conditionSet:CONDITION_SET,
+                                             conditionSet:conf.expConditions,
                                              numMembers:quizWaitlists[questionNumber].length});
   }
 }
@@ -767,7 +752,7 @@ function joinQuizRoom(data) {
 
     //  UPDATE QUIZ ROOM MEMBERS IN DATABASE
     db[collections[QUIZ_ROOM_COLLECTION]].update({quizRoomID:quizRoomID,
-                                                  questionGroup:ACTIVE_QUESTION_GROUP,
+                                                  questionGroup:conf.activeQuestionGroup,
                                                   questionNumber:questionNumber},
                                                  {$push: {members:username}},
                                                  function(err, dbResults) {
@@ -855,18 +840,18 @@ function saveStudentGeneratedQuestions(data, testHooks) {
      // moocchat-30
 var update_criteria = {socketID:client.socketID,
                                                   username:client.username,
-                                                  questionGroup:ACTIVE_QUESTION_GROUP};
+                                                  questionGroup:conf.activeQuestionGroup};
 var update_data = {$set: {studentGeneratedQuestions:client.studentGeneratedQuestions,
                                                          studentGeneratedQuestionTimestamps:client.studentGeneratedQuestionTimestamps}};
 db[collections[USER_QUIZ_COLLECTION]].update(update_criteria, update_data, function(err, dbResults) {
-  console.log(new Date().toISOString(), username, update_criteria, update_data);
+  //console.log(new Date().toISOString(), username, update_criteria, update_data);
 
 
 
   /*
     db[collections[USER_QUIZ_COLLECTION]].update({socketID:client.socketID,
                                                   username:username,
-                                                  questionGroup:ACTIVE_QUESTION_GROUP},
+                                                  questionGroup:conf.activeQuestionGroup},
                                                  {$set: {studentGeneratedQuestions:client.studentGeneratedQuestions,
                                                          studentGeneratedQuestionTimestamps:client.studentGeneratedQuestionTimestamps}},
                                                  function(err, dbResults) {
@@ -923,16 +908,16 @@ function savePromptResp(data) { //  {username, promptResp}
         // moocchat-30
 var update_criteria = {socketID:client.socketID,
                                                   username:client.username,
-                                                  questionGroup:ACTIVE_QUESTION_GROUP};
+                                                  questionGroup:conf.activeQuestionGroup};
 var update_data = {$set: {promptResps:client.promptResps,
                                                          promptRespsTime:client.promptRespsTime}};
 db[collections[USER_QUIZ_COLLECTION]].update(update_criteria, update_data, function(err, dbResults) {
-  console.log(new Date().toISOString(), username, update_criteria, update_data);
+  //console.log(new Date().toISOString(), username, update_criteria, update_data);
 
   /*
     db[collections[USER_QUIZ_COLLECTION]].update({socketID:client.socketID,
                                                   username:username,
-                                                  questionGroup:ACTIVE_QUESTION_GROUP},
+                                                  questionGroup:conf.activeQuestionGroup},
                                                  {$set: {promptResps:client.promptResps,
                                                          promptRespsTime:client.promptRespsTime}},
                                                  function(err, dbResults) {
@@ -947,7 +932,7 @@ db[collections[USER_QUIZ_COLLECTION]].update(update_criteria, update_data, funct
       }
       else {
         console.log("#savePromptResp() - prompt resp saved in database");
-    console.log(new Date().toISOString(), username, dbResults);
+    //console.log(new Date().toISOString(), username, dbResults);
       }
     });
 
@@ -977,17 +962,17 @@ function saveQNASet(data, testHooks) { //  {username, quizRoomID, qnaSet}
           // moocchat-30
 var update_criteria = {socketID:client.socketID,
                                                   username:client.username,
-                                                  questionGroup:ACTIVE_QUESTION_GROUP};
+                                                  questionGroup:conf.activeQuestionGroup};
 var update_data = {$set: {qnaSet:client.qnaSet,
                                                          qnaSetTimestamps:client.qnaSetTimestamps}};
 db[collections[USER_QUIZ_COLLECTION]].update(update_criteria, update_data, function(err, dbResults) {
-  console.log(new Date().toISOString(), username, update_criteria, update_data);
+  //console.log(new Date().toISOString(), username, update_criteria, update_data);
 
 
   /*
     db[collections[USER_QUIZ_COLLECTION]].update({socketID:client.socketID,
                                                   username:username,
-                                                  questionGroup:ACTIVE_QUESTION_GROUP},
+                                                  questionGroup:conf.activeQuestionGroup},
                                                  {$set: {qnaSet:client.qnaSet,
                                                          qnaSetTimestamps:client.qnaSetTimestamps}},
                                                  function(err, dbResults) {
@@ -1084,7 +1069,7 @@ function createDiscussionGroup(username,
 
   // SAVE DISCUSSION ROOM IN DATABASE
   var discussionRoomDBEntry = {discussionRoomID: discussionRoomID,
-                               questionGroup: ACTIVE_QUESTION_GROUP,
+                               questionGroup: conf.activeQuestionGroup,
                                quizIndex: quizIndex,
                                questionNumber: questionNumber,
                                conditionAssigned: conditionAssigned,
@@ -1186,7 +1171,7 @@ function broadcastDiscussionQuit(data) {
   if(quizRoom.quitReq==quizRoom.members.length) {
     //  UPDATE CHAT LOG OF THE QUIZ ROOM IN DATABASE WHEN DISCUSSION FINISHES
     db[collections[QUIZ_ROOM_COLLECTION]].update({quizRoomID:quizRoomID,
-                                                  questionGroup:ACTIVE_QUESTION_GROUP,
+                                                  questionGroup:conf.activeQuestionGroup,
                                                   questionNumber:quizRoom.questionNumber},
                                                   {$set: {chatLog:quizRoom.chatLog}},
                                                  function(err, dbResults) {
@@ -1246,7 +1231,7 @@ function saveProbingQuestionAnswerHelper(data, finalAnswer, testHooks) { //  dat
           // moocchat-30
 var update_criteria = {socketID:client.socketID,
                                                   username:client.username,
-                                                  questionGroup:ACTIVE_QUESTION_GROUP};
+                                                  questionGroup:conf.activeQuestionGroup};
 var update_data = {$set: {probingQuestionFinalAnswer:client.probingQuestionAnswer,
                                                            probingQuestionFinalAnswerTime:client.probingQuestionAnswerTime,
                                                            probFinalJustification:probJustification}};
@@ -1256,7 +1241,7 @@ db[collections[USER_QUIZ_COLLECTION]].update(update_criteria, update_data, funct
   /*
       db[collections[USER_QUIZ_COLLECTION]].update({socketID:client.socketID,
                                                     username:username,
-                                                    questionGroup:ACTIVE_QUESTION_GROUP,
+                                                    questionGroup:conf.activeQuestionGroup,
                                                     questionNumber:questionNumber},
                                                    {$set: {probingQuestionFinalAnswer:client.probingQuestionAnswer,
                                                            probingQuestionFinalAnswerTime:client.probingQuestionAnswerTime,
@@ -1284,7 +1269,7 @@ db[collections[USER_QUIZ_COLLECTION]].update(update_criteria, update_data, funct
         // moocchat-30
 var update_criteria = {socketID:client.socketID,
                                                   username:client.username,
-                                                  questionGroup:ACTIVE_QUESTION_GROUP};
+                                                  questionGroup:conf.activeQuestionGroup};
 var update_data = {$set: {probingQuestionAnswer:client.probingQuestionAnswer,
                                                            probingQuestionAnswerTime:client.probingQuestionAnswerTime,
                                                            probJustification:probJustification}};
@@ -1295,7 +1280,7 @@ db[collections[USER_QUIZ_COLLECTION]].update(update_criteria, update_data, funct
    /*
       db[collections[USER_QUIZ_COLLECTION]].update({socketID:client.socketID,
                                                     username:username,
-                                                    questionGroup:ACTIVE_QUESTION_GROUP,
+                                                    questionGroup:conf.activeQuestionGroup,
                                                     questionNumber:questionNumber},
                                                    {$set: {probingQuestionAnswer:client.probingQuestionAnswer,
                                                            probingQuestionAnswerTime:client.probingQuestionAnswerTime,
@@ -1359,7 +1344,7 @@ function saveEvaluation(data) { //  data : {username, questionNumber, answer, ju
     // moocchat-30
 var update_criteria = {socketID:client.socketID,
                                                   username:client.username,
-                                                  questionGroup:ACTIVE_QUESTION_GROUP};
+                                                  questionGroup:conf.activeQuestionGroup};
 var update_data = {$set: {evaluationAnswer:client.evaluationAnswer,
                                                          evaluationAnswerTime:client.evaluationAnswerTime,
                                                          evalJustification:evalJustification}};
@@ -1368,7 +1353,7 @@ db[collections[USER_QUIZ_COLLECTION]].update(update_criteria, update_data, funct
  /*
     db[collections[USER_QUIZ_COLLECTION]].update({socketID:client.socketID,
                                                   username:username,
-                                                  questionGroup:ACTIVE_QUESTION_GROUP,
+                                                  questionGroup:conf.activeQuestionGroup,
                                                   questionNumber:questionNumber},
                                                  {$set: {evaluationAnswer:client.evaluationAnswer,
                                                          evaluationAnswerTime:client.evaluationAnswerTime,
@@ -1555,15 +1540,15 @@ function updateQNAset(data, testHooks) { //  data: {username, qnaSet}
   // moocchat-30
 var update_criteria = {socketID:client.socketID,
                                                   username:client.username,
-                                                  questionGroup:ACTIVE_QUESTION_GROUP};
+                                                  questionGroup:conf.activeQuestionGroup};
 var update_data = {$set: {qnaSet:client.qnaSet}};
-db[collections[USER_QUIZ_COLLECTION]].update(update_criteria, update_data, function(err, dbResults) {
-
-  console.log(new Date().toISOString(), username, update_criteria, update_data);
+//db[collections[USER_QUIZ_COLLECTION]].update(update_criteria, update_data, function(err, dbResults) {
+db_wrapper.userquiz.update(update_criteria, update_data, function(err, dbResults) {
+  //console.log(new Date().toISOString(), username, update_criteria, update_data);
   /**
     db[collections[USER_QUIZ_COLLECTION]].update({socketID:client.socketID,
                                                   username:username,
-                                                  questionGroup:ACTIVE_QUESTION_GROUP},
+                                                  questionGroup:conf.activeQuestionGroup},
                                                  {$set: {qnaSet:client.qnaSet}},
                                                  function(err, dbResults) {
  */
@@ -1579,7 +1564,7 @@ db[collections[USER_QUIZ_COLLECTION]].update(update_criteria, update_data, funct
       else {
         console.log("#updateQNASet() - " +
                     "student-generated Q&A saved in database");
-    console.log(new Date().toISOString(), username, dbResults);
+    //console.log(new Date().toISOString(), username, dbResults);
   }
 
     });
@@ -1604,16 +1589,16 @@ function saveDiscussionRating(data, testHooks) { //  data: {username, discussion
     // moocchat-30
 var update_criteria = {socketID:client.socketID,
                                                   username:client.username,
-                                                  questionGroup:ACTIVE_QUESTION_GROUP};
+                                                  questionGroup:conf.activeQuestionGroup};
 var update_data = {$set: {discussionRating:discussionRating}};
-db[collections[USER_QUIZ_COLLECTION]].update(update_criteria, update_data, function(err, dbResults) {
-
-  console.log(new Date().toISOString(), username, update_criteria, update_data);
+//db[collections[USER_QUIZ_COLLECTION]].update(update_criteria, update_data, function(err, dbResults) {
+db_wrapper.userquiz.update(update_criteria, update_data, function(err, dbResults) {
+  //console.log(new Date().toISOString(), username, update_criteria, update_data);
 
   /*
     db[collections[USER_QUIZ_COLLECTION]].update({socketID:client.socketID,
                                                   username:username,
-                                                  questionGroup:ACTIVE_QUESTION_GROUP},
+                                                  questionGroup:conf.activeQuestionGroup},
                                                  {$set: {discussionRating:discussionRating}},
                                                  function(err, dbResults) {
 
@@ -1632,7 +1617,7 @@ db[collections[USER_QUIZ_COLLECTION]].update(update_criteria, update_data, funct
         console.log('#saveDiscussionRating() - ' +
                     'discussion rating saved in database');
 
-    console.log(new Date().toISOString(), username, dbResults);
+    //console.log(new Date().toISOString(), username, dbResults);
 
   }
     });
@@ -1705,7 +1690,8 @@ function readyForPostDiscussion(data) { //  data {quizRoomID}
 }
 
 function loadTest(data) {  //  SPECIAL EVENT HANDLER FOR LOAD TEST
-  db[collections[QUESTION_COLLECTION]].find({questionGroup:ACTIVE_QUESTION_GROUP},
+  //db[collections[QUESTION_COLLECTION]].find({questionGroup:conf.activeQuestionGroup},
+    db_wrapper.question.read({questionGroup:conf.activeQuestionGroup},
                                         function(err, dbResults) {
     var qNum = randomInteger(0, dbResults.length);
     var resp = dbResults[qNum];
@@ -1818,7 +1804,8 @@ function disconnect() {
 function user_flow(data) {
 var username;
 var search_criteria = {username:data.username};
-  db[collections[USER_FLOW_COLLECTION]].find({'username':data.username},function(err, dbResults) {
+  //db[collections[USER_FLOW_COLLECTION]].find({'username':data.username},function(err, dbResults) {
+  db_wrapper.userflow.read({'username':data.username},function(err, dbResults) {
   //console.log(dbResults);
   if(err || typeof dbResults === 'undefined' || dbResults.length==0) {
      console.log("#UserFlow Table ERROR doesnt exist - " +
@@ -1827,11 +1814,13 @@ var search_criteria = {username:data.username};
   }
    if (!err && dbResults == 0) {
 
-      db[collections[USER_FLOW_COLLECTION]].insert( {username:data.username, events:[{timestamp:data.timestamp, page:data.page, event:data.event, data:data.data}] } );
+      //db[collections[USER_FLOW_COLLECTION]].insert( {username:data.username, events:[{timestamp:data.timestamp, page:data.page, event:data.event, data:data.data}] } );
+      db_wrapper.userflow.insert({username:data.username, events:[{timestamp:data.timestamp, page:data.page, event:data.event, data:data.data}] });
       }
 
   else {
-    db[collections[USER_FLOW_COLLECTION]].update(
+    //db[collections[USER_FLOW_COLLECTION]].update(
+    db_wrapper.userflow.update(
                             { username: data.username },
                             {
                               $addToSet: {

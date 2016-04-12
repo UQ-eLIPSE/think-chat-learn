@@ -23,6 +23,22 @@ if (process.argv.length >= 2 + 1) {
 
 global.conf = conf;
 
+if (conf.ssl) {
+  var options = {
+    key: fs.readFileSync(conf.key),
+    cert: fs.readFileSync(conf.cert)
+  };
+  server = https.createServer(options, app).listen(conf.portNum);
+} else {
+  server = require('http').createServer(app).listen(conf.portNum);
+  console.log('Socket.io server listening on port ' + conf.portNum);
+}
+
+var io = require('socket.io')(server, { serveClient: false });
+
+global.io = io;
+global.server = server;
+
 // Load the database module
 var database = require('./controllers/database');
 global.db = database.db;

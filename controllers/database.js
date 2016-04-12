@@ -44,11 +44,16 @@ var question = {
     });
   },
 
-  read: function(query) {
-
+  read: function(query, callback) {
+    db[tables.QUESTION].find(query, function(err, res) {
+      if (err) {
+        console.log("Failed to save data: " + err);
+      }
+      callback(err, res);
+    });
   },
 
-  update: function() {
+  update: function(query, data, callback) {
 
   },
 
@@ -62,9 +67,9 @@ var question = {
   }
 };
 
-var user = {
+var userquiz = {
   create: function(data, callback){
-    db[tables.USERNAMES].insert(data, function(err, res) {
+    db[tables.USERQUIZ].insert(data, function(err, res) {
       if (err) {
         console.log("Failed to save data: " + err);
       }
@@ -76,12 +81,60 @@ var user = {
 
   },
 
-  update: function() {
+  update: function(query, data, callback) {
+    db[tables.USERQUIZ].update(query, data, function(err, res) {
+      if (err) {
+        console.log("Failed to save data: " + err);
+      }
+      if (callback) {
+        callback(err, res);
+      }
 
+    });
   },
 
   delete: function(query, callback) {
-    db[tables.USERNAMES].remove(query, function(err, res) {
+    db[tables.USERQUIZ].remove(query, function(err, res) {
+      if (err) {
+        console.log("Failed to delete data: " + err);
+      }
+      callback();
+    });
+  }
+};
+
+var userflow = {
+  create: function(data, callback){
+    db[tables.USERFLOW].insert(data, function(err, res) {
+      if (err) {
+        console.log("Failed to save data: " + err);
+      }
+      callback();
+    });
+  },
+
+  read: function(query, callback) {
+    db[tables.USERFLOW].find(query, function(err, res) {
+      if (err) {
+        console.log("Failed to save data: " + err);
+      }
+      callback(err, res);
+    });
+  },
+
+  update: function(query, data, callback) {
+    db[tables.USERFLOW].update(query, data, function(err, res) {
+      if (err) {
+        console.log("Failed to update data: " + err);
+      }
+      if (callback) {
+        callback(err, res);
+      }
+    });
+  },
+
+  delete: function(query, callback) {
+    db[tables.USERFLOW].remove(query, function(err, res) {
       if (err) {
         console.log("Failed to delete data: " + err);
       }
@@ -94,6 +147,7 @@ module.exports = {
   collections: collections,
   db: db,
   question: question,
-  user: user,
+  userflow: userflow,
+  userquiz: userquiz,
   tables: tables
 };
