@@ -2,10 +2,7 @@
  * Handles all writing and reading to the database
  * @author eLIPSE
  */
-
 var conf = require('../config/conf.json');
-
-
 
 var collection_suffixes = [
   "userLogin",
@@ -38,11 +35,12 @@ var db = mongojs(conf.database, collections);
 
 // TODO: In the future extract this to a separate file
 var question = {
-  create: function(data){
+  create: function(data, callback){
     db[tables.QUESTION].insert(data, function(err, res) {
       if (err) {
         console.log("Failed to save data: " + err);
       }
+      callback();
     });
   },
 
@@ -54,11 +52,40 @@ var question = {
 
   },
 
-  delete: function(query) {
+  delete: function(query, callback) {
     db[tables.QUESTION].remove(query, function(err, res) {
       if (err) {
         console.log("Failed to delete data: " + err);
       }
+      callback();
+    });
+  }
+};
+
+var user = {
+  create: function(data, callback){
+    db[tables.USERNAMES].insert(data, function(err, res) {
+      if (err) {
+        console.log("Failed to save data: " + err);
+      }
+      callback();
+    });
+  },
+
+  read: function(query) {
+
+  },
+
+  update: function() {
+
+  },
+
+  delete: function(query, callback) {
+    db[tables.USERNAMES].remove(query, function(err, res) {
+      if (err) {
+        console.log("Failed to delete data: " + err);
+      }
+      callback();
     });
   }
 };
@@ -67,5 +94,6 @@ module.exports = {
   collections: collections,
   db: db,
   question: question,
+  user: user,
   tables: tables
 };
