@@ -1,0 +1,13 @@
+{
+  "USERLOGIN": "uq_userLogin",
+  "USERQUIZ": "uq_userQuiz",
+  "QUIZROOM": "uq_quizRoom",
+  "DISCUSSIONROOM": "uq_discussionRoom",
+  "SURVEY": "uq_survey",
+  "BONUSRECIPIENT": "uq_bonusRecipient",
+  "QUESTION": "uq_question",
+  "USERCONSENT": "uq_userConsent",
+  "POSTSURVEY": "uq_postSurvey",
+  "USERNAMES": "uq_usernames",
+  "USERFLOW": "uq_userFlow"
+}

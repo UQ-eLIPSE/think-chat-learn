@@ -272,9 +272,9 @@ io.sockets.on('connection', function(socket) {
 
       //  START DB SEARCH FOR LOGIN
       userFound = false;
-      db[collections[USERNAMES_COLLECTION]].find().forEach(function(err, dbResults) {
+      db[collections[USERNAMES_COLLECTION]].find().forEach(function(err, dbResults) { 
         //console.log(dbResults);
-        console.log("Username collection: " + collections[USERNAMES_COLLECTION]);
+        //console.log("Username collection: " + collections[USERNAMES_COLLECTION]);
         /* Failed DB Search */
         if(err || dbResults == null || typeof dbResults === 'undefined' || dbResults.length == 0) {
           if (!userFound) {

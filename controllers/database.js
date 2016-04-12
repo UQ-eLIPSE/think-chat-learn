@@ -4,6 +4,9 @@
  */
 var conf = require('../config/conf.json');
 
+// The new way to get table names
+var tables = require('../config/db_tables.json');
+
 var collection_suffixes = [
   "userLogin",
   "userQuiz",
@@ -21,127 +24,23 @@ var collection_suffixes = [
 // The old way of doing it (kept in for existing code)
 var collections = [];
 
-// The new way to do it
-var tables = {};
-
 for (var suffix in collection_suffixes) {
   collections.push(conf.collectionPrefix + collection_suffixes[suffix]);
-  tables[collection_suffixes[suffix].toUpperCase()] = conf.collectionPrefix + collection_suffixes[suffix];
 }
 
 // Set to an object
 var mongojs = require("mongojs");
 var db = mongojs(conf.database, collections);
 
-// TODO: In the future extract this to a separate file
-var question = {
-  create: function(data, callback){
-    db[tables.QUESTION].insert(data, function(err, res) {
-      if (err) {
-        console.log("Failed to save data: " + err);
-      }
-      callback();
-    });
-  },
-
-  read: function(query, callback) {
-    db[tables.QUESTION].find(query, function(err, res) {
-      if (err) {
-        console.log("Failed to save data: " + err);
-      }
-      callback(err, res);
-    });
-  },
-
-  update: function(query, data, callback) {
-
-  },
-
-  delete: function(query, callback) {
-    db[tables.QUESTION].remove(query, function(err, res) {
-      if (err) {
-        console.log("Failed to delete data: " + err);
-      }
-      callback();
-    });
-  }
-};
-
-var userquiz = {
-  create: function(data, callback){
-    db[tables.USERQUIZ].insert(data, function(err, res) {
-      if (err) {
-        console.log("Failed to save data: " + err);
-      }
-      callback();
-    });
-  },
-
-  read: function(query) {
-
-  },
-
-  update: function(query, data, callback) {
-    db[tables.USERQUIZ].update(query, data, function(err, res) {
-      if (err) {
-        console.log("Failed to save data: " + err);
-      }
-      if (callback) {
-        callback(err, res);
-      }
-
-    });
-  },
-
-  delete: function(query, callback) {
-    db[tables.USERQUIZ].remove(query, function(err, res) {
-      if (err) {
-        console.log("Failed to delete data: " + err);
-      }
-      callback();
-    });
-  }
-};
-
-var userflow = {
-  create: function(data, callback){
-    db[tables.USERFLOW].insert(data, function(err, res) {
-      if (err) {
-        console.log("Failed to save data: " + err);
-      }
-      callback();
-    });
-  },
-
-  read: function(query, callback) {
-    db[tables.USERFLOW].find(query, function(err, res) {
-      if (err) {
-        console.log("Failed to save data: " + err);
-      }
-      callback(err, res);
-    });
-  },
-
-  update: function(query, data, callback) {
-    db[tables.USERFLOW].update(query, data, function(err, res) {
-      if (err) {
-        console.log("Failed to update data: " + err);
-      }
-      if (callback) {
-        callback(err, res);
-      }
-    });
-  },
-
-  delete: function(query, callback) {
-    db[tables.USERFLOW].remove(query, function(err, res) {
-      if (err) {
-        console.log("Failed to delete data: " + err);
-      }
-      callback();
-    });
-  }
-};
+// Import the database models
+var question = require('../models/database/question');
+question.init(db);
+var userquiz = require('../models/database/userquiz');
+userquiz.init(db);
+var userflow = require('../models/database/userflow');
+userflow.init(db);
+var user = require('../models/database/user');
+user.init(db);
 
 module.exports = {
   collections: collections,
@@ -149,5 +48,6 @@ module.exports = {
   question: question,
   userflow: userflow,
   userquiz: userquiz,
+  user: user,
   tables: tables
 };
