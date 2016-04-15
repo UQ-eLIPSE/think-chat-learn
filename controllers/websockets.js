@@ -293,10 +293,7 @@ io.sockets.on('connection', function(socket) {
       db_wrapper.userlogin.read({username:dbResults.username, password:data.password},
                                                     function(err, dbResults2) {
           /* Failed DB Search */
-          console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-          console.log(err);
-          console.log(dbResults);
-          console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+
 
           if(err || typeof dbResults2 === 'undefined') {
             console.log("#login() ERROR (login error) - username: %s",
