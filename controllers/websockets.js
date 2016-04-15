@@ -275,6 +275,7 @@ io.sockets.on('connection', function(socket) {
       //db[collections[USERNAMES_COLLECTION]].find().forEach(function(err, dbResults) {
       db_wrapper.user.read({username: data.username}, function(err, dbResults) {
         //console.log("Username collection: " + collections[USERNAMES_COLLECTION]);
+        dbResults = dbResults[0];
         /* Failed DB Search */
         if(err || dbResults == null || typeof dbResults === 'undefined' || dbResults.length == 0) {
           if (!userFound) {
