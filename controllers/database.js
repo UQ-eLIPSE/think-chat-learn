@@ -32,6 +32,7 @@ for (var suffix in collection_suffixes) {
 var mongojs = require("mongojs");
 var db = mongojs(conf.database, collections);
 
+
 // Import the database models
 var question = require('../models/database/question');
 question.init(db);
@@ -41,13 +42,19 @@ var userflow = require('../models/database/userflow');
 userflow.init(db);
 var user = require('../models/database/user');
 user.init(db);
+var userlogin = require('../models/database/userlogin');
+userlogin.init(db);
 
 module.exports = {
   collections: collections,
   db: db,
+
+  // ORM objects
   question: question,
   userflow: userflow,
   userquiz: userquiz,
+  userlogin: userlogin,
   user: user,
+
   tables: tables
 };
