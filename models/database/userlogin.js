@@ -21,7 +21,7 @@ var userlogin = {
       if (err) {
         console.log("Failed to save data: " + err);
       }
-      callback();
+      callback(err, res);
     });
   },
 
@@ -50,7 +50,7 @@ var userlogin = {
       if (err) {
         console.log("Failed to delete data: " + err);
       }
-      callback();
+      callback(err, res);
     });
   }
 };

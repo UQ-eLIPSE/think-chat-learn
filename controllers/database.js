@@ -36,14 +36,21 @@ var db = mongojs(conf.database, collections);
 // Import the database models
 var question = require('../models/database/question');
 question.init(db);
+
 var userquiz = require('../models/database/userquiz');
 userquiz.init(db);
+
 var userflow = require('../models/database/userflow');
 userflow.init(db);
+
 var user = require('../models/database/user');
 user.init(db);
+
 var userlogin = require('../models/database/userlogin');
 userlogin.init(db);
+
+var quizroom = require('../models/database/quizroom');
+quizroom.init(db);
 
 module.exports = {
   collections: collections,
@@ -55,6 +62,7 @@ module.exports = {
   userquiz: userquiz,
   userlogin: userlogin,
   user: user,
+  quizroom: quizroom,
 
   tables: tables
 };

@@ -21,12 +21,17 @@ var userquiz = {
       if (err) {
         console.log("Failed to save data: " + err);
       }
-      callback();
+      callback(err, res);
     });
   },
 
-  read: function(query) {
-
+  read: function(query, callback) {
+    db[tables.USERQUIZ].find(query, function(err, res) {
+      if (err) {
+        console.log("Failed to save data: " + err);
+      }
+      callback(err, res);
+    });
   },
 
   update: function(query, data, callback) {
@@ -46,7 +51,7 @@ var userquiz = {
       if (err) {
         console.log("Failed to delete data: " + err);
       }
-      callback();
+      callback(err, res);
     });
   }
 };

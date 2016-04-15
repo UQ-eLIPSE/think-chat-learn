@@ -272,8 +272,8 @@ io.sockets.on('connection', function(socket) {
 
       //  START DB SEARCH FOR LOGIN
       userFound = false;
-      db[collections[USERNAMES_COLLECTION]].find().forEach(function(err, dbResults) { 
-        //console.log(dbResults);
+      //db[collections[USERNAMES_COLLECTION]].find().forEach(function(err, dbResults) {
+      db_wrapper.user.read({username: data.username}, function(err, dbResults) {
         //console.log("Username collection: " + collections[USERNAMES_COLLECTION]);
         /* Failed DB Search */
         if(err || dbResults == null || typeof dbResults === 'undefined' || dbResults.length == 0) {
@@ -289,9 +289,15 @@ io.sockets.on('connection', function(socket) {
       if (!userFound && usernameMatches(dbResults.username, data.username)) {
       userFound = true;
       console.log("#login(): found user '" + dbResults.username + "' matching login '" + data.username + "'" );
-      db[collections[USER_LOGIN_COLLECTION]].find({username:dbResults.username, password:data.password},
+
+      db_wrapper.userlogin.read({username:dbResults.username, password:data.password},
                                                     function(err, dbResults2) {
           /* Failed DB Search */
+          console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+          console.log(err);
+          console.log(dbResults);
+          console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+
           if(err || typeof dbResults2 === 'undefined') {
             console.log("#login() ERROR (login error) - username: %s",
                         data.username);
@@ -335,7 +341,7 @@ io.sockets.on('connection', function(socket) {
 			  // moocchat-30
 	var search_criteria = {username:username, questionGroup:conf.activeQuestionGroup};
 
-	db[collections[USER_QUIZ_COLLECTION]].find(search_criteria, function(err, dbResults) {
+	db_wrapper.userquiz.read(search_criteria, function(err, dbResults) {
 		console.log(new Date().toISOString(), username, search_criteria, dbResults);
 
 		/*
@@ -362,7 +368,7 @@ io.sockets.on('connection', function(socket) {
 										browserInformation: browserInformation
 										};
 
-                  db[collections[USER_LOGIN_COLLECTION]].insert(userLoginEntry,
+                  db_wrapper.userlogin.create(userLoginEntry,
                                                                 function(err, dbResults) {
                     if (typeof testHook !== 'undefined'
                       && testHook.location == 'afterLoginInsert') {
@@ -412,7 +418,7 @@ io.sockets.on('connection', function(socket) {
                   //  QUESTION NUMBER 1 IN DATABASE!
                   var quizIndex = 0;
 
-                  db[collections[QUESTION_COLLECTION]].find({questionGroup:conf.activeQuestionGroup},
+                  db_wrapper.question.read({questionGroup:conf.activeQuestionGroup},
                                                             function(err, dbResults) {
                     if(err ||
                        typeof dbResults === 'undefined' ||
@@ -452,9 +458,8 @@ io.sockets.on('connection', function(socket) {
 			// [moocchat-30]
 			//console.log("%s,%s, %s", new Date().toISOString(), username, userQuizEntry);
 
-                      db[collections[USER_QUIZ_COLLECTION]].insert(userQuizEntry,
+                      db_wrapper.userquiz.create(userQuizEntry,
                                                                    function(err, dbResults) {
-
 						if (typeof testHook !== 'undefined'
                           && testHook.location == "afterUserQuizCollectionInsert") {
                           testHook.callback();
@@ -616,7 +621,7 @@ function createQuizGroup(username, questionNumber, conditionAssigned, groupSize,
                          members:[],
                          conditionAssigned:conditionAssigned
                        };
-  db[collections[QUIZ_ROOM_COLLECTION]].insert(quizRoomDBEntry,
+  db_wrapper.quizroom.create(quizRoomDBEntry,
                                                function(err, dbResults) {
     if (typeof testHook !== 'undefined'
       && testHook.location == 'afterInsert') {
@@ -667,7 +672,7 @@ var update_criteria = {socketID:client.socketID,
                                                   username:client.username,
                                                   questionGroup:conf.activeQuestionGroup};
 var update_data = {$set: {quizRoomID:quizRoomID}};
-db[collections[USER_QUIZ_COLLECTION]].update(update_criteria, update_data, function(err, dbResults) {
+db_wrapper.userquiz.update(update_criteria, update_data, function(err, dbResults) {
 
   if (typeof testHook !== 'undefined'
         && testHook.location == 'afterUpdate') {
@@ -751,11 +756,12 @@ function joinQuizRoom(data) {
     client.clientState = CLIENT_STATE_QUIZROOM;
 
     //  UPDATE QUIZ ROOM MEMBERS IN DATABASE
-    db[collections[QUIZ_ROOM_COLLECTION]].update({quizRoomID:quizRoomID,
+    db_wrapper.quizroom.update({quizRoomID:quizRoomID,
                                                   questionGroup:conf.activeQuestionGroup,
                                                   questionNumber:questionNumber},
                                                  {$push: {members:username}},
                                                  function(err, dbResults) {
+
       if(err || typeof dbResults === 'undefined') {
         console.log("#joinQuizRoom() ERROR - username: %s", username);
         if(err) console.log(err);
@@ -843,10 +849,8 @@ var update_criteria = {socketID:client.socketID,
                                                   questionGroup:conf.activeQuestionGroup};
 var update_data = {$set: {studentGeneratedQuestions:client.studentGeneratedQuestions,
                                                          studentGeneratedQuestionTimestamps:client.studentGeneratedQuestionTimestamps}};
-db[collections[USER_QUIZ_COLLECTION]].update(update_criteria, update_data, function(err, dbResults) {
+db_wrapper.userquiz.update(update_criteria, update_data, function(err, dbResults) {
   //console.log(new Date().toISOString(), username, update_criteria, update_data);
-
-
 
   /*
     db[collections[USER_QUIZ_COLLECTION]].update({socketID:client.socketID,
@@ -1235,8 +1239,9 @@ var update_criteria = {socketID:client.socketID,
 var update_data = {$set: {probingQuestionFinalAnswer:client.probingQuestionAnswer,
                                                            probingQuestionFinalAnswerTime:client.probingQuestionAnswerTime,
                                                            probFinalJustification:probJustification}};
-db[collections[USER_QUIZ_COLLECTION]].update(update_criteria, update_data, function(err, dbResults) {
+db_wrapper.userquiz.update(update_criteria, update_data, function(err, dbResults) {
   console.log(new Date().toISOString(), username, update_criteria, update_data);
+
 
   /*
       db[collections[USER_QUIZ_COLLECTION]].update({socketID:client.socketID,
@@ -1273,7 +1278,8 @@ var update_criteria = {socketID:client.socketID,
 var update_data = {$set: {probingQuestionAnswer:client.probingQuestionAnswer,
                                                            probingQuestionAnswerTime:client.probingQuestionAnswerTime,
                                                            probJustification:probJustification}};
-db[collections[USER_QUIZ_COLLECTION]].update(update_criteria, update_data, function(err, dbResults) {
+db_wrapper.userquiz.update(update_criteria, update_data, function(err, dbResults) {
+
   console.log(new Date().toISOString(), username, update_criteria, update_data);
 
 
@@ -1348,7 +1354,7 @@ var update_criteria = {socketID:client.socketID,
 var update_data = {$set: {evaluationAnswer:client.evaluationAnswer,
                                                          evaluationAnswerTime:client.evaluationAnswerTime,
                                                          evalJustification:evalJustification}};
-db[collections[USER_QUIZ_COLLECTION]].update(update_criteria, update_data, function(err, dbResults) {
+db_wrapper.userquiz.update(update_criteria, update_data, function(err, dbResults) {
   console.log(new Date().toISOString(), username, update_criteria, update_data);
  /*
     db[collections[USER_QUIZ_COLLECTION]].update({socketID:client.socketID,

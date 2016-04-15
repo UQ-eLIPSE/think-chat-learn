@@ -1,5 +1,5 @@
 /**
- * The database wrapper for the user table
+ * The database wrapper for the userquiz table
  * @author elIPSE
  */
 
@@ -7,7 +7,7 @@ var tables = require('../../config/db_tables.json');
 
 var db = {};
 
-var user = {
+var quizroom = {
 
   /**
    * Initialise the database object
@@ -17,7 +17,7 @@ var user = {
   },
 
   create: function(data, callback){
-    db[tables.USERNAMES].insert(data, function(err, res) {
+    db[tables.QUIZROOM].insert(data, function(err, res) {
       if (err) {
         console.log("Failed to save data: " + err);
       }
@@ -26,7 +26,7 @@ var user = {
   },
 
   read: function(query, callback) {
-    db[tables.USERNAMES].find(query, function(err, res) {
+    db[tables.QUIZROOM].find(query, function(err, res) {
       if (err) {
         console.log("Failed to save data: " + err);
       }
@@ -34,31 +34,20 @@ var user = {
     });
   },
 
-  readEach: function(query, callback) {
-    db[tables.USERNAMES].find(query, function(err, res) {
+  update: function(query, data, callback) {
+    db[tables.QUIZROOM].update(query, data, function(err, res) {
       if (err) {
         console.log("Failed to save data: " + err);
-      }
-
-      for (var i = 0; i < res.length; i++) {
-        callback(err, res[i]);
-      }
-    });
-  },
-
-  update: function(query, data, callback) {
-    db[tables.USERNAMES].update(query, data, function(err, res) {
-      if (err) {
-        console.log("Failed to update data: " + err);
       }
       if (callback) {
         callback(err, res);
       }
+
     });
   },
 
   delete: function(query, callback) {
-    db[tables.USERNAMES].remove(query, function(err, res) {
+    db[tables.QUIZROOM].remove(query, function(err, res) {
       if (err) {
         console.log("Failed to delete data: " + err);
       }
@@ -67,4 +56,4 @@ var user = {
   }
 };
 
-module.exports = user;
+module.exports = quizroom;
