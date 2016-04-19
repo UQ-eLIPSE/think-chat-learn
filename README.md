@@ -9,6 +9,9 @@
 5. Seed the database by running `npm run seed` (only needs to be done once)
 6. Run `npm start`
 
+## Running tests
+To run the database tests, run `npm run db_test`, if the tests don't run make sure to run `npm install` to pull down the test runner dependencies.
+
 ## Important notes
 * PHP must be on your system path
 * Mongodb must be running before starting `npm start`
