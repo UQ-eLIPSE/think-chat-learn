@@ -8,7 +8,7 @@ var fs = require('fs');
 
 // Add more dependencies here to download
 var dependencies = [
-  'http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.css',
+  'http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css',
   'http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js',
   'http://code.jquery.com/jquery-2.2.3.min.js',
   'http://cdn.socket.io/socket.io-1.4.5.js'
@@ -35,6 +35,7 @@ function saveFile(url) {
     console.log("Saving '" + filename + "' to public/css/" + filename);
   }
 
+  // Download the file
   var request = http.get(url, function(response) {
     response.pipe(file);
   });
