@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node app.js",
     "seed": "node util/db_seed.js",
-    "db_test": "node ./node_modules/mocha/bin/mocha test/database.js"
+    "db_test": "node ./node_modules/mocha/bin/mocha test/database.js",
+    "dependencies": "node ./util/get_dependencies.js"
   },
   "author": "eLIPSE",
   "license": "MIT",

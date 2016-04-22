@@ -656,9 +656,9 @@ Next session is on Thursday, 06/08/2015 from 20:00 to 22:00.
 	  //ga('set', '&uid', {{'<?php echo $_SERVER["HTTP_X_UQ_USER"]; ?>'}}); // Set the user ID using signed-in user_id.
 	</script>
 	    <!-- Core JavaScript -->
-    <script src="./js/socket.io.js"></script>
-    <script src="./js/jquery-1.10.2.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="./js/socket.io-1.4.5.js"></script>
+    <script src="./js/jquery-2.2.3.min.js"></script>
+    <script src="./js/bootstrap.min.js"></script>
     <script src="./js/jquery.cookie.js"></script>
 	 <script src="./js/jquery.validate.min.js"></script>
     <!-- MOOCchat Custom JavaScript -->
