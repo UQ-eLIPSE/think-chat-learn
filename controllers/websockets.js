@@ -67,27 +67,10 @@ for(var indepVar in conf.expConditions) {
 
 //  END LOADING SERVER CONFIGURATION
 
-var USER_LOGIN_COLLECTION = 0;
-var USER_QUIZ_COLLECTION = 1;
-var QUIZ_ROOM_COLLECTION = 2;
-var DISCUSSION_ROOM_COLLECTION = 3;
-var SURVEY_COLLECTION = 4;
-var BONUS_RECIPIENT_COLLECTION = 5;
-var QUESTION_COLLECTION = 6;
-var USER_CONSENT_COLLECTION = 7;
-var POST_SURVEY_COLLECTION = 8;
-var USERNAMES_COLLECTION = 9;
-var USER_FLOW_COLLECTION = 10;
-
 //  START CONSTANTS
 var QUIZ_PREFIX = "quiz_";
 var DISCUSSION_PREFIX = "discussion_";
 var SCREEN_NAME_PREFIX = "Student ";
-var SYSTEM_MESSAGE_SOURCE = "MoocChatSystem";
-
-var FIRST_CHOICE_STAGE = 0;
-var DISCUSSION_STAGE = 1;
-var FINAL_CHOICE_STAGE = 2;
 
 var CHAR_CODE_A = 65;
 var ADMIN_USERNAME = "admin";
@@ -99,37 +82,22 @@ var CONTROL_MESSAGES = ["#theoryofrelativity",
 var POST_SURVEY = require('../config/post_survey.json');
 
 //  START CLIENT STATE CONSTANTS
-var CLIENT_STATE_IDLE = 100;
-var CLIENT_STATE_QUIZ_WAITLIST = 101;
-var CLIENT_STATE_QUIZROOM = 102;
-//  END CLIENT STATE CONSTANTS
 
-//  START CLIENT STAGE CONSTANTS
-var CLIENT_STAGE_READ = 0;
-var CLIENT_STAGE_DISCUSSION = 1;
-var CLIENT_STAGE_PROBING_QUESTION = 2;
-var CLIENT_STAGE_EXPLANATION = 3;
-var CLIENT_STAGE_EVALUATION = 4;
-//  END CLIENT STAGE CONSTANTS
+var CLIENT = {
+  IDLE: 100,
+  QUIZ_WAITLIST: 101,
+  QUIZROOM: 102
+};
 
-// TODO: don't replicate constants between client and server!
-
-//  START SYSTEM MESSAGE CONSTANTS
-var SYSTEM_WELCOME_MESSAGE = 1000;
-var SYSTEM_FLAG_MESSAGE = 2000;
-var SYSTEM_KEEP_TALKING_MESSAGE = 3000;
-var SYSTEM_BONUS_CONDITION_MESSAGE = 4000;
-var SYSTEM_REASONING_MESSAGE = 5000;
-var SYSTEM_DISCONNECTED_MESSAGE = 6000;
-var SYSTEM_ALONE_MESSAGE = 7000;
-var SYSTEM_QUIT_REQ_MESSAGE = 8000;
-var SYSTEM_QUIT_CANCEL_MESSAGE = 9000;
-var SYSTEM_QUIT_MESSAGE = 10000;
-//  END SYSTEM MESSAGE CONSTANTS
+var STAGE = {
+  READ: 0,
+  DISCUSSION: 1,
+  PROBING_QUESTION: 2,
+  EXPLANATION: 3,
+  EVALUATION: 4
+};
 
 var CONSENT_NO_SELECTION = 0;
-var CONSENT_ACCEPTED = 1;
-var CONSENT_REJECTED = 2;
 
 var HASH_SECRET_KEY = 'jEQtYK8t';
 
@@ -559,7 +527,7 @@ io.sockets.on('connection', function(socket) {
     if(quizWaitlists[questionNumber].indexOf(client)<0) {
       // PUT THE CLIENT IN THE WAITLIST
       quizWaitlists[questionNumber].push(client);
-      client.clientState = CLIENT_STATE_QUIZ_WAITLIST;
+      client.clientState = CLIENT.QUIZ_WAITLIST;
       console.log("#quizWaitlist() new user added - username: %s, " +
                   "questionNumber: %d, " +
                   "waiting for quiz: %d",
@@ -721,7 +689,7 @@ function updateQuizWaitlist(data) {
       }
     }
 
-    client.clientState = CLIENT_STATE_IDLE;
+    client.clientState = CLIENT.IDLE;
 
     socket.emit('quizWaitlistUpdated', data);
   }
@@ -751,7 +719,7 @@ function joinQuizRoom(data) {
     var quizRoom = activeQuizRooms[quizRoomID];
 
     quizRoom.addMember(client);
-    client.clientState = CLIENT_STATE_QUIZROOM;
+    client.clientState = CLIENT.QUIZROOM;
 
     //  UPDATE QUIZ ROOM MEMBERS IN DATABASE
     db_wrapper.quizroom.update({quizRoomID:quizRoomID,
@@ -1641,23 +1609,23 @@ function sendForceProceed(data) {  //  data: {username, quizRoomID, stage}
 
   switch(stage) {
 
-    case CLIENT_STAGE_READ:
+    case STAGE.READ:
 
       break;
 
-    // case CLIENT_STAGE_DISCUSSION:
+    // case STAGE.DISCUSSION:
     //   if(quizRoom.promptResps.length>=quizRoom.members.length) {
     //     io.sockets.in(quizRoomID).emit('promptResps', quizRoom.promptResps);
     //   }
     //   break;
 
-    // case CLIENT_STAGE_PROBING_QUESTION:
+    // case STAGE.PROBING_QUESTION:
     //   if(quizRoom.probAns.length>=quizRoom.members.length) {
     //     io.sockets.in(quizRoomID).emit('probAnswers', quizRoom.probAns);
     //   }
     //   break;
 
-    // case CLIENT_STAGE_EXPLANATION:
+    // case STAGE.EXPLANATION:
     //   if(quizRoom.readyNum>=quizRoom.members.length) {
     //     io.sockets.in(quizRoomID).emit('postDiscussionStart');
     //     // quizRoom.readyNum = 0;
@@ -1668,7 +1636,7 @@ function sendForceProceed(data) {  //  data: {username, quizRoomID, stage}
 
     //   break;
 
-    // case CLIENT_STAGE_EVALUATION:
+    // case STAGE.EVALUATION:
     //   break;
   }
 }
@@ -1744,11 +1712,11 @@ function disconnect() {
     state = client.clientState;
 
     switch(state) {
-      case CLIENT_STATE_IDLE:
+      case CLIENT.IDLE:
         //  DO NOTHING
         break;
 
-      case CLIENT_STATE_QUIZ_WAITLIST:
+      case CLIENT.QUIZ_WAITLIST:
         //  REMOVE THE CLIENT FROM THE WAITLIST
         var questionNumber = client.questionNumber;
         var conditionAssigned = client.conditionAssigned;
@@ -1761,7 +1729,7 @@ function disconnect() {
 
         break;
 
-      case CLIENT_STATE_QUIZROOM:
+      case CLIENT.QUIZROOM:
         //  REMOVE THE CLIENT FROM THE QUIZ ROOM AND NOTIFY THE GROUP
         var quizRoomID = client.quizRoomID;
         var quizRoom = activeQuizRooms[quizRoomID];
