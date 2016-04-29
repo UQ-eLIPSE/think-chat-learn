@@ -1140,7 +1140,7 @@ function broadcastDiscussionQuit(data) {
 
   if(quizRoom.quitReq==quizRoom.members.length) {
     //  UPDATE CHAT LOG OF THE QUIZ ROOM IN DATABASE WHEN DISCUSSION FINISHES
-    db[collections[QUIZ_ROOM_COLLECTION]].update({quizRoomID:quizRoomID,
+    db_wrapper.quizroom.update({quizRoomID:quizRoomID,
                                                   questionGroup:conf.activeQuestionGroup,
                                                   questionNumber:quizRoom.questionNumber},
                                                   {$set: {chatLog:quizRoom.chatLog}},
