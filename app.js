@@ -1,5 +1,7 @@
 var express = require('express');
 var app = express();
+var sso = require('./controllers/single_sign_on');
+var url = require('url');
 
 var phpExpress = require('php-express')({
   binPath: 'php'
@@ -49,11 +51,24 @@ var websockets = require('./controllers/websockets');
 
 app.use(express.static('public'));
 
+app.get('/login', function(req, res) {
+  //TODO: Replace the redirect URI with an actual one
+  var uri = url.format({
+    protocol: req.protocol,
+    host: req.get('host'),
+    pathname: req.originalUrl
+  });
+
+  res.redirect(sso.redirects.login(uri));
+});
+
 /**
  * The root of the website
  */
 app.get('/', function (req, res) {
   // Redirect the user to the index.php page
+  console.log(req.headers);
+
   res.redirect('index.php');
 });
 
