@@ -1,5 +1,5 @@
 {
-  "portNum":8889,
+  "portNum":8080,
   "groupSize":3,
   "activeQuestionGroup":0,
   "database":"localhost/moocchatDB",
