@@ -1787,7 +1787,9 @@ var search_criteria = {username:data.username};
    if (!err && dbResults == 0) {
 
       //db[collections[USER_FLOW_COLLECTION]].insert( {username:data.username, events:[{timestamp:data.timestamp, page:data.page, event:data.event, data:data.data}] } );
-      db_wrapper.userflow.insert({username:data.username, events:[{timestamp:data.timestamp, page:data.page, event:data.event, data:data.data}] });
+      db_wrapper.userflow.create({username:data.username, events:[{timestamp:data.timestamp, page:data.page, event:data.event, data:data.data}] }, function(err, res) {
+       
+      });
       }
 
   else {
