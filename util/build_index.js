@@ -1,19 +1,31 @@
+/**
+ * build_index.js
+ * Collects all of the components within the components folder and joins them together to
+ * create the index.php file
+ */
+
 var concat = require('concat-files');
 var fs = require('fs');
+
+var CONFIG = {
+    outputFile: "views/index.php",
+    inputFolder: "src",
+    inputComponentsFolder: "src/view_components"
+};
 
 /**
  * Gets a list of the view components files
  */
 function getComponents(cb) {
-  fs.readdir('view_components', function(err, files) {
+  fs.readdir(CONFIG.inputComponentsFolder, function(err, files) {
     if (err) {
       console.log("ERROR");
     }
 
     var filePaths = [];
     for (var i = 0; i < files.length; i++) {
-      filePaths.push('view_components/' + files[i]);
-      console.log("Adding view_components/" + files[i]);
+      filePaths.push(CONFIG.inputComponentsFolder + files[i]);
+      console.log("Adding " + CONFIG.inputComponentsFolder + "/" + files[i]);
     }
 
     cb(filePaths);
@@ -21,11 +33,11 @@ function getComponents(cb) {
 }
 
 getComponents(function(files) {
-  var allFiles = ['views/index_template_head.php'];
+  var allFiles = [CONFIG.inputFolder + '/index_template_head.php'];
   allFiles = allFiles.concat(files);
-  allFiles.push('views/index_template_tail.php');
+  allFiles.push(CONFIG.inputFolder + '/index_template_tail.php');
 
-  concat(allFiles, 'views/index.php', function() {
+  concat(allFiles, CONFIG.outputFile, function() {
     console.log("Finished building index.php");
   });
 });
