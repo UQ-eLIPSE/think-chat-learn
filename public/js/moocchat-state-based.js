@@ -102,6 +102,14 @@ $(function() {
         page$(".moocchat-conditional").addClass("hidden"); //  HIDE ALL THE CONDITIONAL ELEMENTS
         // $(".moocchat-control-panel").removeClass("hidden"); //  SHOW THE CONTROL PANEL
 
+        // Hardcoded conditions as on server
+        conditionAssigned = 0;  // For our MOOCchat, we only have 1 condition that is set in the server
+        conditionSet = {
+            "discussion": [
+                "moocchat-discussion-high"
+            ]
+        };
+        
         // TODO: These two need to be reworked to remove the reliance on stage 
         resetStage(conditionAssigned, stage);
         renderStage(conditionNames, stageName);
@@ -174,7 +182,7 @@ $(function() {
                         return;
                     }
 
-                    StateFlow.goTo(_STATE.AWAIT_GROUP_FORMATION);
+                    StateFlow.goTo(_STATE.QUIZ);
                 }
 
                 // Initialisation
@@ -252,7 +260,7 @@ $(function() {
         {   // _STATE.AWAIT_GROUP_FORMATION
             state: _STATE.AWAIT_GROUP_FORMATION,
             page: _PAGE.IDLE_PAGE,
-            onEnter: function() {
+            onEnter: function(incomingStateData) {
                 // Socket callbacks
 
                 /**
@@ -337,7 +345,8 @@ $(function() {
                         }
                     }
 
-                    StateFlow.goTo(_STATE.QUIZ);
+                    // Pass the incoming data along as part of the delayed answer submission
+                    StateFlow.goTo(_STATE.AWAIT_QUIZ_DISCUSSION_ROOM, incomingStateData);
                 }
 
                 function setupSockets() {
@@ -354,6 +363,9 @@ $(function() {
                 }
 
                 function initPage() {
+                    // Stop the main quiz timer (the one for questions, NOT the waiting one)
+                    clearInterval(mainTimer);
+                    
                     socket.emit('user_flow', { username: getUserName(), timestamp: new Date().toISOString(), page: 'Idle Page', event: "" });
                     console.log(IDLE_PAGE);
 
@@ -381,12 +393,22 @@ $(function() {
                             var j = page$("#moocchat-justification-blank").val();
 
                             if (!j || typeof (j) != "string") { j = ""; }
-
-                            socket.emit("probingQuestionAnswerSubmission", { username: username, screenName: screenName, quizRoomID: quizRoomID, questionNumber: questionNumber, answer: probingQuestionChoicesClicked[0], justification: j, timestamp: new Date().toISOString() });
-                            socket.emit('user_flow', { username: username, timestamp: new Date().toISOString(), page: 'Main Task Page', event: 'Submitted First Answer and Justification', data: probingQuestionChoicesClicked[0] });
+                            
+                            // Below is commented out to delay sending the submission until AFTER the quiz
+                            // group has been formed (see the data below set for the state transition)
+                            // socket.emit("probingQuestionAnswerSubmission", { username: username, screenName: screenName, quizRoomID: quizRoomID, questionNumber: questionNumber, answer: probingQuestionChoicesClicked[0], justification: j, timestamp: new Date().toISOString() });
+                            // socket.emit('user_flow', { username: username, timestamp: new Date().toISOString(), page: 'Main Task Page', event: 'Submitted First Answer and Justification', data: probingQuestionChoicesClicked[0] });
+                            
                             // stage = DISCUSS_PROBING_STAGE;
                             // updatePage(currentPage);
-                            StateFlow.goTo(_STATE.AWAIT_QUIZ_DISCUSSION_ROOM);
+                            
+                            // Pass the data along as part of the answer submission delay
+                            StateFlow.goTo(_STATE.AWAIT_GROUP_FORMATION, {
+                                submission: {
+                                    answer: probingQuestionChoicesClicked[0],
+                                    justification: j
+                                }
+                            });
                         });
                 }
 
@@ -401,7 +423,7 @@ $(function() {
         {   // _STATE.AWAIT_QUIZ_DISCUSSION_ROOM
             state: _STATE.AWAIT_QUIZ_DISCUSSION_ROOM,
             page: _PAGE.IDLE_PAGE,
-            onEnter: function() {
+            onEnter: function(incomingStateData) {
                 // Socket callbacks
 
                 /**
@@ -420,6 +442,10 @@ $(function() {
                 }
 
                 function initPage() {
+                    // Send delayed answer submission now
+                    socket.emit("probingQuestionAnswerSubmission", { username: username, screenName: screenName, quizRoomID: quizRoomID, questionNumber: questionNumber, answer: incomingStateData.submission.answer, justification: incomingStateData.submission.justification, timestamp: new Date().toISOString() });
+                    socket.emit('user_flow', { username: username, timestamp: new Date().toISOString(), page: 'Main Task Page', event: 'Submitted First Answer and Justification', data: incomingStateData.submission.answer });
+                            
                     socket.emit('user_flow', { username: getUserName(), timestamp: new Date().toISOString(), page: 'Idle Page', event: "" });
                     console.log(IDLE_PAGE);
 
@@ -542,7 +568,7 @@ $(function() {
                             socket.emit("probingQuestionFinalAnswerSubmission", { username: username, screenName: screenName, quizRoomID: quizRoomID, questionNumber: questionNumber, answer: probingQuestionChoicesClicked[0], justification: j, timestamp: new Date().toISOString() });
                             socket.emit('user_flow', { username: username, timestamp: new Date().toISOString(), page: 'Main Task Page', event: 'Submitted Final Answer and Justification', data: probingQuestionChoicesClicked[0] });
 
-                            StateFlow.goTo(_STATE.QUIZ_EXPLANATION);
+                            StateFlow.goTo(_STATE.SURVEY);
                         });
                 }
                 
