@@ -661,6 +661,8 @@ Next session is on Thursday, 06/08/2015 from 20:00 to 22:00.
   <!-- MOOCchat Custom JavaScript -->
   <script src="./js/settings.js"></script>
   <script src="./js/moocchat-utilities.js"></script>
+  <script src="./js/moocchat.constants.js"></script>
+  <script src="./js/moocchat.stages.js"></script>
   <script src="./js/moocchat.js"></script>
 </html>
 <!-- Modal -->
