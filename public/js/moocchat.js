@@ -695,12 +695,12 @@ function renderStage(cNames, sName) {
     case DISCUSS_ASSUMPTION_STAGE:
         wantToQuit = true;
         if(numMembers>1) {  //  GROUPED
-          $(".moocchat-left-panel-direction").html("Other students' responses are shown below. Discuss these assumptions in order to prepare for a question shown on the next screen.");
-          $(".moocchat-right-panel-direction").html("You may request to end the chat to proceed before the timer runs out.");
+          $(".moocchat-left-panel-direction").html(DISCUSS_ASSUMPTION_INSTRUCTION_HEADING_GROUP);
+          $(".moocchat-right-panel-direction").html(DISCUSSION_CHATBOX_HEADING);
         }
         else {  //  SINGLETON
-          $(".moocchat-left-panel-direction").html("On the right is a chatroom with only yourself in it. Use it to reflect on the assumptions and the meaning of the essay to prepare for a question on the next screen.");
-          $(".moocchat-right-panel-direction").html("You may request to end the chat to proceed before the timer runs out.");
+          $(".moocchat-left-panel-direction").html(DISCUSS_ASSUMPTION_INSTRUCTION_HEADING_SINGLE);
+          $(".moocchat-right-panel-direction").html(DISCUSSION_CHATBOX_HEADING);
         }
 
         //  IN COMMON
@@ -735,7 +735,7 @@ function renderStage(cNames, sName) {
         $(".moocchat-prompt-share-area").append(shared);
 
         //  CHANGE NEXT BUTTON INTO REQUEST TO QUIT BUTTON
-        $(".moocchat-next-button").html("Request to End Chat");
+        $(".moocchat-next-button").html(END_CHAT_BUTTON_TEXT);
         enableNextButton(true);
         $(".moocchat-next-button").removeClass("btn-info");
         $(".moocchat-next-button").addClass("btn-danger");
@@ -806,10 +806,10 @@ function renderStage(cNames, sName) {
       //  IN COMMON
       setMainTimer(stage);
 
-      $(".moocchat-left-panel-direction").html("For the essay below, select among the five choices of A, B, C, D, or E.");
-      $(".moocchat-right-panel-direction").html("Submit your answer and justification before the timer runs out.");
+      $(".moocchat-left-panel-direction").html(PROBING_QUESTION_INSTRUCTION_HEADING);
+      $(".moocchat-right-panel-direction").html(PROBING_QUESTION_JUSTIFICATION_HEADING);
 
-      $(".moocchat-next-button").html("Submit");
+      $(".moocchat-next-button").html(SUBMIT_BUTTON_TEXT);
       $(".moocchat-next-button").removeClass("btn-danger");
       $(".moocchat-next-button").addClass("btn-info");
       enableNextButton(false);
@@ -903,12 +903,12 @@ function renderStage(cNames, sName) {
         // TODO FIXME: This case has a bunch of code duplication!
         wantToQuit = true;
         if(numMembers>1) {  //  GROUPED
-          $(".moocchat-left-panel-direction").html("Other students' responses to the question are shown below. Discuss these responses. You will be able to revise your response on the next screen.");
-          $(".moocchat-right-panel-direction").html("You may request to end the chat to proceed before the timer runs out.");
+          $(".moocchat-left-panel-direction").html(DISCUSS_INSTRUCTION_HEADING_GROUP);
+          $(".moocchat-right-panel-direction").html(DISCUSSION_CHATBOX_HEADING);
         }
         else {  //  SINGLETON
-          $(".moocchat-left-panel-direction").html("On the right is a chatroom with only yourself in it. Use it to reflect on your response. You will be able to revise your response on the next screen.");
-          $(".moocchat-right-panel-direction").html("You may request to end the chat to proceed before the timer runs out.");
+          $(".moocchat-left-panel-direction").html(DISCUSS_INSTRUCTION_HEADING_SINGLE);
+          $(".moocchat-right-panel-direction").html(DISCUSSION_CHATBOX_HEADING);
         }
 
         //  IN COMMON
@@ -946,7 +946,7 @@ function renderStage(cNames, sName) {
         $(".moocchat-prompt-share-area").append(shared);
 
         //  CHANGE NEXT BUTTON INTO REQUEST TO QUIT BUTTON
-        $(".moocchat-next-button").html("Request to End Chat");
+        $(".moocchat-next-button").html(END_CHAT_BUTTON_TEXT);
         enableNextButton(true);
         $(".moocchat-next-button").removeClass("btn-info");
         $(".moocchat-next-button").addClass("btn-danger");
@@ -1019,13 +1019,13 @@ function renderStage(cNames, sName) {
       //  IN COMMON
       setMainTimer(stage);
       if(numMembers>1) {  //  GROUPED
-          $(".moocchat-left-panel-direction").html("Based on your discussion with other students, select your final response.");
+          $(".moocchat-left-panel-direction").html(PROBING_REVISE_INSTRUCTION_HEADING_GROUP);
       } else {
-        $(".moocchat-left-panel-direction").html("Based on your reflection on the previous page, select your final response.");
+        $(".moocchat-left-panel-direction").html(PROBING_REVISE_INSTRUCTION_HEADING_SINGLE);
       }
-      $(".moocchat-right-panel-direction").html("Submit your final answer and optionally revise your justification before the timer runs out.");
+      $(".moocchat-right-panel-direction").html(PROBING_REVISE_JUSTIFICATION_HEADING);
 
-      $(".moocchat-next-button").html("Submit");
+      $(".moocchat-next-button").html(SUBMIT_BUTTON_TEXT);
       $(".moocchat-next-button").removeClass("btn-danger");
       $(".moocchat-next-button").addClass("btn-info");
       if($("#moocchat-justification-blank").val().length>0)
@@ -1040,8 +1040,8 @@ function renderStage(cNames, sName) {
       //  IN COMMON
       setMainTimer(stage);
 
-      $(".moocchat-left-panel-direction").html("Check the correct answer and review the explanation of the question.");
-      $(".moocchat-right-panel-direction").html("The correct answer and the explanation are shown below.");
+      $(".moocchat-left-panel-direction").html(EXPLANATION_INSTRUCTION_HEADING);
+      $(".moocchat-right-panel-direction").html(EXPLANATION_CORRECT_ANSWER_HEADING);
 
       //  STYLING NEXT BUTTON
       $(".moocchat-next-button").html("Next");
@@ -1330,8 +1330,8 @@ function renderStage(cNames, sName) {
       //  IN COMMON
       setMainTimer(stage);
 
-      $(".moocchat-left-panel-direction").html("Check the correct answer and review the explanation of the question.");
-      $(".moocchat-right-panel-direction").html("The correct answer and the explanation are shown below.");
+      $(".moocchat-left-panel-direction").html(EXPLANATION_INSTRUCTION_HEADING);
+      $(".moocchat-right-panel-direction").html(EXPLANATION_CORRECT_ANSWER_HEADING);
 
       //  STYLING NEXT BUTTON
       $(".moocchat-next-button").html("Next");

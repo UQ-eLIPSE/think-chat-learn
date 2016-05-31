@@ -64,4 +64,27 @@ var WAITING_FOR_MAIN_TASK_PAGE = "Your group task will start when other students
 var WAITING_FOR_EXPLANATION = "Please wait until other students submit their responses.";
 var WAITING_FOR_DISCUSSION = "You will join discussion when other students are ready.";
 var WAITING_FOR_OTHERS = "Please wait until other students are ready.";
+
+// String constants
+var PROBING_QUESTION_INSTRUCTION_HEADING = "For the essay below, select among the five choices of A, B, C, D, or E.";
+var PROBING_QUESTION_JUSTIFICATION_HEADING = "Submit your answer and justification before the timer runs out.";
+
+var DISCUSS_ASSUMPTION_INSTRUCTION_HEADING_GROUP = "Other students' responses are shown below. Discuss these assumptions in order to prepare for a question shown on the next screen.";
+var DISCUSS_ASSUMPTION_INSTRUCTION_HEADING_SINGLE = "On the right is a chatroom with only yourself in it. Use it to reflect on the assumptions and the meaning of the essay to prepare for a question on the next screen.";
+
+var DISCUSS_INSTRUCTION_HEADING_GROUP = "Other students' responses to the question are shown below. Discuss these responses. You will be able to revise your response on the next screen.";
+var DISCUSS_INSTRUCTION_HEADING_SINGLE = "On the right is a chatroom with only yourself in it. Use it to reflect on your response. You will be able to revise your response on the next screen.";
+var DISCUSSION_CHATBOX_HEADING = "You may request to end the chat to proceed before the timer runs out.";
+
+var PROBING_REVISE_INSTRUCTION_HEADING_GROUP = "Based on your discussion with other students, select your final response.";
+var PROBING_REVISE_INSTRUCTION_HEADING_SINGLE = "Based on your reflection on the previous page, select your final response.";
+var PROBING_REVISE_JUSTIFICATION_HEADING = "Submit your final answer and optionally revise your justification before the timer runs out.";
+
+var EXPLANATION_INSTRUCTION_HEADING = "Check the correct answer and review the explanation of the question.";
+var EXPLANATION_CORRECT_ANSWER_HEADING = "The correct answer and the explanation are shown below.";
+
+var SUBMIT_BUTTON_TEXT = "Submit";
+var END_CHAT_BUTTON_TEXT = "Request to End Chat";
+var CANCEL_END_CHAT_BUTTON_TEXT = "Cancel the Request";
+
 //  END CONSTANTS
