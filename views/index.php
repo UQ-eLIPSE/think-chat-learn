@@ -579,12 +579,11 @@ include('session_config.php');
                     <h2>Task Instructions</h2><br />
                     <ol>
           <li>Log in using your student ID.</li>
-          <li>Once you have logged in you may have to wait up to 4 minutes for a group to be formed. The system will create your group as soon as 3 users are available.</li>
           <li>Respond to a multiple-choice question covering the course material and provide a justification for your answer (within 6 minutes).</li>
-          <li>Discuss the question answers from you and other students. Try to learn from or help others so as to ensure that you all have a good understanding of the underlying concepts, rather than just focusing on what the right answer might be. This will ensure that you maximise the benefits to yourself and to your group from participating in the chat.</li>
+          <li>Discuss the question answers from you and other students. You may have to wait up to 4 minutes for a group to be formed. The system will create your group as soon as 3 users are available.<br>
+                Try to learn from or help others so as to ensure that you all have a good understanding of the underlying concepts, rather than just focusing on what the right answer might be. This will ensure that you maximise the benefits to yourself and to your group from participating in the chat.</li>
           <li>The answer selected and the justification will be displayed next to the chat window. In case there are no students available to do the task together with, reflect upon your own answer (up to 15 minutes).</li>
           <li>Revise your response to the question based on the discussion (within 1.5 minutes).</li>
-          <li>Check the correct answer and read the explanation to better understand the material (5 minutes).</li>
           <li>Fill out a brief questionnaire about the chat room experience.</li>
         </ol>
 
