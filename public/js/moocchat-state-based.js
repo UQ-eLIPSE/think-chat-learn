@@ -690,15 +690,21 @@ $(function() {
                 socket.emit('user_flow', { username: getUserName, timestamp: new Date().toISOString(), page: 'Completed', event: '' });
                 console.log(COMPLETED_PAGE);
 
-                // This is required for backwards compatibility with existing code
-                // Hopefully we can remove the need to rely on `stage` and `currentPage`...
-                stage = null;
-                currentPage = COMPLETED_PAGE;
+                setStageAndPage(null, COMPLETED_PAGE);
             }
         }
     ]);
 
     // Start
-    StateFlow.goTo(_STATE.INTRODUCTION);
+    
+    //  We need to check whether we have a session or not when we start
+    //  (if there isn't a session, then don't do anything.)
+    //
+    //  Currently, checking for the presence of "wait-page" is sufficient
+    var isSessionActive = ($("#wait-page").length > 0);
+    
+    if (isSessionActive) {
+        StateFlow.goTo(_STATE.INTRODUCTION);
+    }
 
 });
