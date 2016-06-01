@@ -1,3 +1,5 @@
+/// <reference path="./moocchat-utilities.js" />
+
 /**
  * MOOCchat: Constants
  * 
@@ -31,6 +33,9 @@ var CONSENT_REJECTED = 2;
 //  START TIME OUT CONSTANTS
 var ONE_SECOND = 1000;
 var SECONDS_PER_MINUTE = 60;
+
+// Pulls URL parameter value to set the waiting time when forming groups
+// moocchat-utilities.js -> gup()
 var GROUP_TIME_OUT_SECONDS = gup("GROUP_TIME_OUT_SECONDS");
 if (!GROUP_TIME_OUT_SECONDS) GROUP_TIME_OUT_SECONDS = .25 * SECONDS_PER_MINUTE;
 //  END TIME OUT CONSTANTS
