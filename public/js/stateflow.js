@@ -1,8 +1,6 @@
 /**
  * StateFlow
  * 
- * james.li1@uq.edu.au
- * 
  * Very basic state management for page blocks in MOOCchat. 
  */
 

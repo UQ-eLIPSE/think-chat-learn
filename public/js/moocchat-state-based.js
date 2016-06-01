@@ -6,11 +6,10 @@
 /**
  * MOOCchat: state-based code
  * 
- * james.li1@uq.edu.au
- * 
  * This holds the new state-based MOOCchat page flow.
  * This is not self-contained: the old code is still required, though
- * parts of it are now turned off.
+ * parts of it are now turned off. This includes global variables which
+ * are defined in ./moocchat.js.
  * 
  * Intended to replace page + stage combination which was used previously
  * to streamline the workflow and make it easier to work with.
@@ -93,8 +92,6 @@ $(function() {
     /**
      * Performs updating of the main task page - brought out
      * from the old code (under updatePage() -> MAIN_TASK_PAGE)
-     * 
-     * Note that the function uses global variables.
      */
     function renderMainTaskPage() {
         console.log(MAIN_TASK_PAGE + ": stage " + stage);
@@ -170,7 +167,6 @@ $(function() {
                  * 
                  * Stores basic information about the user and quiz
                  * once login is okay.
-                 * Then starts waiting for group to be formed.
                  */
                 function loginSuccess(data) {
                     username = data.username;
