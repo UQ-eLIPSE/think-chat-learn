@@ -65,7 +65,7 @@ var QUESTION_TEMPLATE_LABEL = "moocchat-question-template";
 var PROMPT_LABEL = "moocchat-prompt";
 
 //  START WAIT MESSAGE IN IDLE PAGE
-var WAITING_FOR_MAIN_TASK_PAGE = "Your group task will start when other students are ready.<br />If there are no others available, you'll get an individual task.<br />If time runs out and you don't see quiz question, please <a onclick='pageReload()'>refresh</a> the page and start again.";
+var WAITING_FOR_MAIN_TASK_PAGE = "Your group chat will start when other students are ready.<br />If there are no others available, you'll get to reflect on your answer.<br />If time runs out and you don't see quiz question, please <a onclick='pageReload()'>refresh</a> the page and start again.";
 var WAITING_FOR_EXPLANATION = "Please wait until other students submit their responses.";
 var WAITING_FOR_DISCUSSION = "You will join discussion when other students are ready.";
 var WAITING_FOR_OTHERS = "Please wait until other students are ready.";
