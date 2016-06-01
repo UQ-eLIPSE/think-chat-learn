@@ -376,7 +376,9 @@ function quizWaitlistReq(data) {  //  data:{username}
       console.log("group timeout");
       socket.emit('quizWaitlistForceProceed', {username:username});
     }
-  }, ONE_SECOND);
+  }, ONE_SECOND / 2);     // Interval changed to half a second to avoid
+                          // issue #57 (occasional decrement by 2) due
+                          // to JS timer variability
 }
 
 function comeBackLater(data) {  //  data:{username}
