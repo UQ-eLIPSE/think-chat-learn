@@ -513,9 +513,32 @@ $(function() {
                     }
                 }
 
+                /**
+                 * Previously memberDisconnected().
+                 */
+                function chatMemberDisconnected(disconnectedMemberUsername) {
+                    //  IN COMMON
+                    numMembers--;
+                    //  TODO: SEND A REPORT TO THE SERVER
+
+                    //  SHOW A SYSTEM MESSAGE SAYING SOMEONE DISCONNECTED: TESTED
+                    var sn = 'A student in this group';
+                    for (var i = 0; i < userList.length; i++) {
+                        var user = userList[i];
+                        if (username == user['username']) {
+                            sn = user['screenName'];
+                            break;
+                        }
+                    }
+                    var message = sn + ' has disconnected. You can still finish this task, though.';
+                    showChatMessage({ username: 'system', quizRoomID: quizRoomID, screenName: 'system', message: message });
+                }
+
+
                 function setupSockets() {
                     socket.on("chatMessage", showChatMessage);
                     socket.on("requestToQuitUpdated", receiveChatQuitRequest);
+                    socket.on("memberDisconnected", chatMemberDisconnected);
                 }
 
                 function initPage() {
@@ -545,6 +568,8 @@ $(function() {
             },
             onLeave: function() {
                 socket.off("chatMessage");
+                socket.off("requestToQuitUpdated");
+                socket.off("memberDisconnected");
             }
         },
         {   // _STATE.QUIZ_REVISION
