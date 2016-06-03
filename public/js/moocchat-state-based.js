@@ -278,8 +278,7 @@ $(function() {
 
                             if (!j || typeof (j) != "string") { j = ""; }
                             
-                            // socket.emit("probingQuestionAnswerSubmission", { username: username, screenName: screenName, quizRoomID: quizRoomID, questionNumber: questionNumber, answer: probingQuestionChoicesClicked[0], justification: j, timestamp: new Date().toISOString() });
-                            // socket.emit('user_flow', { username: username, timestamp: new Date().toISOString(), page: 'Main Task Page', event: 'Submitted First Answer and Justification', data: probingQuestionChoicesClicked[0] });
+                            socket.emit('user_flow', { username: username, timestamp: new Date().toISOString(), page: 'Main Task Page', event: 'Submitted First Answer and Justification', data: probingQuestionChoicesClicked[0] });
                             
                             socket.emit("answerSubmissionInitial", {
                                 username: username,
