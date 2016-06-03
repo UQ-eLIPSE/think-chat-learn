@@ -27,7 +27,7 @@ $(function() {
         LOGIN_QUIZ_ALREADY_DONE: 3,
         AWAIT_GROUP_FORMATION: 4,
         QUIZ: 5,
-        AWAIT_QUIZ_DISCUSSION_ROOM: 6,
+        // AWAIT_QUIZ_DISCUSSION_ROOM: 6,  // No longer used - group formation state automatically passes to the discussion state
         QUIZ_DISCUSSION: 7,
         QUIZ_REVISION: 8,
         QUIZ_EXPLANATION: 9,
@@ -253,132 +253,20 @@ $(function() {
             state: _STATE.LOGIN_QUIZ_ALREADY_DONE,
             page: _PAGE.ALREADY_DONE_PAGE
         },
-        {   // _STATE.AWAIT_GROUP_FORMATION
-            state: _STATE.AWAIT_GROUP_FORMATION,
-            page: _PAGE.IDLE_PAGE,
-            onEnter: function(incomingStateData) {
-                // Socket callbacks
-
-                /**
-                 * Previously updateQuizWaitlistReq().
-                 * 
-                 * Stores info about quiz group.
-                 * Returns a new request to server to indicate updated waitlist.
-                 */
-                function quizGroupFormed(data) {  //  data:{username, quizRoomID, questionNumber, conditionAssigned, conditionSet, numMembers}
-                    quizRoomID = data.quizRoomID;
-                    questionNumber = data.questionNumber;
-                    numMembers = data.numMembers;
-                    conditionAssigned = data.conditionAssigned;
-                    conditionSet = data.conditionSet;
-
-                    console.log("[" + username + "] updateQuizWaitlistReq() - quizRoomID: " + quizRoomID);
-                    socket.emit('updateQuizWaitlistReq', { username: username, quizRoomID: quizRoomID });
-                }
-
-                /**
-                 * Previously joinQuizRoomReq().
-                 * 
-                 * Fires requests to join quiz room.
-                 */
-                function quizWaitlistUpdated(data) { //  data:{username, quizRoomID}
-                    console.log("[" + username + "] joinQuizRoomReq() - quizRoomID: " + quizRoomID);
-                    socket.emit('joinQuizRoomReq', data);
-                }
-
-                /**
-                 * Previously quizReq().
-                 * 
-                 * Sends two frames:
-                 *  - quizReq
-                 *  - finishedReading
-                 */
-                function quizRoomJoined(data) {   //  data:{username, quizRoomID}
-                    console.log("[" + username + "] quizReq() - quizRoomID: " + quizRoomID);
-                    socket.emit('quizReq', data);
-                    socket.emit("finishedReading", { username: username, quizRoomID: quizRoomID, promptResp: promptResp });
-                }
-
-                /**
-                 * Previously startQuiz().
-                 * 
-                 * Set up quiz when quiz request okay
-                 */
-                function quizRequestAccepted(data) {  //  data:{username, quizRoomID, quiz);
-                    console.log("[" + username + "] startQuiz() - quizRoomID: " + quizRoomID);
-                    clearInterval(quizWaitTimer);
-                    // quiz = data.quiz;
-                    var maxChoices = quiz['maxChoiceForStudentGenerateQuestion'];
-                    for (var i = 0; i < maxChoices; i++) {
-                        moocchatChoicesClicked.push(-1);
-                    }
-                    // goToPage(MAIN_TASK_PAGE);
-                }
-
-                /**
-                 * Previously receivePromptResp().
-                 * 
-                 * Saves prompts and requests userlist for group
-                 */
-                function receivePromptResponse(data) {
-                    promptResps = data;
-                    console.log(promptResps);
-                    socket.emit("userListReq", { username: username, quizRoomID: quizRoomID });
-                }
-
-                /**
-                 * Previously from receiveUserList() outside of this block.
-                 * 
-                 * Processes list of users in group, and proceeds to next state (displaying quiz)
-                 */
-                function receiveUserList(data) {
-                    userList = data;
-                    console.log(userList);
-                    for (var i = 0; i < userList.length; i++) {
-                        var user = userList[i];
-                        if (user["username"] == username) {
-                            screenName = user["screenName"];
-                        }
-                    }
-
-                    // Pass the incoming data along as part of the delayed answer submission
-                    StateFlow.goTo(_STATE.AWAIT_QUIZ_DISCUSSION_ROOM, incomingStateData);
-                }
-
-                function setupSockets() {
-                    socket.once("groupedForQuiz", quizGroupFormed);
-                    socket.once("quizWaitlistUpdated", quizWaitlistUpdated);
-                    socket.once("joinedForQuiz", quizRoomJoined);
-
-                    // TODO: Once or Always?
-                    //       I remember seeing this being fired multiple times... 
-                    socket.once("quiz", quizRequestAccepted);
-                    socket.once("promptResps", receivePromptResponse);
-
-                    socket.once("userList", receiveUserList);
-                }
-
-                function initPage() {
-                    // Stop the main quiz timer (the one for questions, NOT the waiting one)
-                    clearInterval(mainTimer);
-                    
-                    socket.emit('user_flow', { username: getUserName(), timestamp: new Date().toISOString(), page: 'Idle Page', event: "" });
-                    console.log(IDLE_PAGE);
-
-                    page$("#idle-message").html(WAITING_FOR_MAIN_TASK_PAGE);
-
-                    quizWaitlistReq({ username: username });
-                }
-
-                setStageAndPage(null, IDLE_PAGE);
-                setupSockets();
-                initPage();
-            }
-        },
         {   // _STATE.QUIZ
             state: _STATE.QUIZ,
             page: _PAGE.MAIN_TASK_PAGE,
             onEnter: function() {
+                // Socket callbacks
+                function receiveAnswerSubmissionConfirmation() {
+                    StateFlow.goTo(_STATE.AWAIT_GROUP_FORMATION);
+                }
+                
+                function setupSockets() {
+                    socket.once("answerSubmissionInitialSaved", receiveAnswerSubmissionConfirmation);
+                }
+                
+                
                 function initPage() {
                     renderMainTaskPage();
 
@@ -390,25 +278,20 @@ $(function() {
 
                             if (!j || typeof (j) != "string") { j = ""; }
                             
-                            // Below is commented out to delay sending the submission until AFTER the quiz
-                            // group has been formed (see the data below set for the state transition)
                             // socket.emit("probingQuestionAnswerSubmission", { username: username, screenName: screenName, quizRoomID: quizRoomID, questionNumber: questionNumber, answer: probingQuestionChoicesClicked[0], justification: j, timestamp: new Date().toISOString() });
                             // socket.emit('user_flow', { username: username, timestamp: new Date().toISOString(), page: 'Main Task Page', event: 'Submitted First Answer and Justification', data: probingQuestionChoicesClicked[0] });
                             
-                            // stage = DISCUSS_PROBING_STAGE;
-                            // updatePage(currentPage);
-                            
-                            // Pass the data along as part of the answer submission delay
-                            StateFlow.goTo(_STATE.AWAIT_GROUP_FORMATION, {
-                                submission: {
-                                    answer: probingQuestionChoicesClicked[0],
-                                    justification: j
-                                }
+                            socket.emit("answerSubmissionInitial", {
+                                username: username,
+                                questionId: questionNumber,
+                                answer: probingQuestionChoicesClicked[0],
+                                justification: j
                             });
                         });
                 }
 
                 setStageAndPage(PROBING_QUESTION_STAGE, MAIN_TASK_PAGE);
+                setupSockets();
                 initPage();
             },
             onLeave: function() {
@@ -416,36 +299,47 @@ $(function() {
                 page$(".moocchat-next-button").off("click");
             }
         },
-        {   // _STATE.AWAIT_QUIZ_DISCUSSION_ROOM
-            state: _STATE.AWAIT_QUIZ_DISCUSSION_ROOM,
+        {   // _STATE.AWAIT_GROUP_FORMATION
+            state: _STATE.AWAIT_GROUP_FORMATION,
             page: _PAGE.IDLE_PAGE,
-            onEnter: function(incomingStateData) {
+            onEnter: function() {
                 // Socket callbacks
 
                 /**
-                 * Previously receiveProbAnswers().
-                 * Callback run when we get the set of answers from everyone in the group
+                 * See ChatGroup#notifyEveryoneOnJoin() for data source.
+                 * 
+                 * data = {
+                 *      groupId {string}
+                 *      groupSize {number}
+                 *      groupAnswers {Object}
+                 * }
                  */
-                function receiveGroupAnswers(data) {   //  data : [{username, screenName, answer}, ...]
-                    probAnswers = data;
-                    console.log(probAnswers);
-
-                    StateFlow.goTo(_STATE.QUIZ_DISCUSSION);
+                function handleChatGroupFormation(data) {
+                    // Backwards compatibility
+                    // Setting probAnswers with client answer information as a lot of
+                    // existing code depends on it, including page management
+                    probAnswers = data.groupAnswers;
+                    
+                    StateFlow.goTo(_STATE.QUIZ_DISCUSSION, data);
                 }
 
                 function setupSockets() {
-                    socket.once("probAnswers", receiveGroupAnswers);
+                    socket.once("chatGroupFormed", handleChatGroupFormation);
                 }
 
                 function initPage() {
-                    // Send delayed answer submission now
-                    socket.emit("probingQuestionAnswerSubmission", { username: username, screenName: screenName, quizRoomID: quizRoomID, questionNumber: questionNumber, answer: incomingStateData.submission.answer, justification: incomingStateData.submission.justification, timestamp: new Date().toISOString() });
-                    socket.emit('user_flow', { username: username, timestamp: new Date().toISOString(), page: 'Main Task Page', event: 'Submitted First Answer and Justification', data: incomingStateData.submission.answer });
-                            
+                    // Stop the main quiz timer (the one for questions, NOT the waiting one)
+                    clearInterval(mainTimer);
+                    
                     socket.emit('user_flow', { username: getUserName(), timestamp: new Date().toISOString(), page: 'Idle Page', event: "" });
                     console.log(IDLE_PAGE);
 
-                    page$("#idle-message").html(WAITING_FOR_DISCUSSION);
+                    page$("#idle-message").html(WAITING_FOR_MAIN_TASK_PAGE);
+
+                    // Request to go into a chat group
+                    socket.emit("chatGroupJoinRequest", {
+                        username: username
+                    });
                 }
 
                 setStageAndPage(null, IDLE_PAGE);
@@ -456,85 +350,82 @@ $(function() {
         {   // _STATE.QUIZ_DISCUSSION
             state: _STATE.QUIZ_DISCUSSION,
             page: _PAGE.MAIN_TASK_PAGE,
-            onEnter: function() {
+            /**
+             * Data passed from AWAIT_GROUP_FORMATION state
+             * 
+             * data = {
+             *      groupId {string}
+             *      ... and others
+             * }
+             */
+            onEnter: function(data) {
+                var groupId = data.groupId;
+                
                 // Socket callbacks
-
                 /**
-                 * Previously showIncomingMessage().
+                 * See ChatGroup#broadcastMessage() for the source of the data.
+                 * 
+                 * data = {
+                 *      screenName {string}
+                 *      message {string}
+                 *      timestamp {number}
+                 * }
                  */
-                function showChatMessage(data) {   //  data {username, quizRoomID, screenName, message}
-                    var screenNameSlug = getSlug(data.screenName);
-                    var blockstart = "<blockquote class='moocchat-message " + screenNameSlug + "'>";
-                    var sn;
-                    if (data.screenName == screenName) sn = "Me";
-                    else if (data.screenName == "system") sn = "";
-                    else sn = data.screenName;
+                function displayChatMessage(data) {
+                    var screenName = data.screenName;
+                    
+                    var $messageWrapper = $("<blockquote>").addClass(["moocchat-message", getSlug(screenName)]);
+                    var $messageContent = $("<p>").text(screenName + ": " + data.message);
+                    
+                    $messageWrapper.append($messageContent);
 
-                    if (sn == "")
-                        var msg = "<p>" + htmlEscape(data.message) + "</p>";
-                    else
-                        var msg = "<p>" + sn + " : " + htmlEscape(data.message) + "</p>";
-
-                    var blockend = "</blockquote>";
-
-                    page$(".moocchat-chat").append(blockstart + msg + blockend);
-                    page$(".moocchat-chat").scrollTop(scrollPosition);
-                    scrollPosition += SCROLL_SPEED;
-
-                    lastChat = new Date();
+                    page$(".moocchat-chat")
+                        .append($messageWrapper)
+                        .scrollTop(page$(".moocchat-chat").outerHeight());
                 }
 
                 /**
-                 * Previously requestToQuitUpdated().
+                 * See ChatGroup#broadcastQuitChange() for the source of the data.
+                 * 
+                 * data = {
+                 *      groupId {string}
+                 *      groupSize {number}
+                 *      quitQueueSize {number}
+                 * 
+                 *      screenName {string}
+                 *      quitStatus {boolean}
+                 * }
                  */
-                function receiveChatQuitRequest(data) {   //  data {screenName, wantToQuit, numMembers, quitReq}
-                    if (data.numMembers != numMembers) numMembers = data.numMembers;
-
-                    if (typeof data.wantToQuit === 'undefined') {
-                        //  FORCE QUIT TO SKIP DISCUSSION STAGE
-                    }
-                    else if (data.wantToQuit) {
-                        showChatMessage({ username: "system", quizRoomID: quizRoomID, screenName: "system", message: data.screenName + " requested to end the discussion. You may end the discussion if all the members make the request. (" + data.quitReq + "/" + data.numMembers + ")." });
-                    }
-                    else {
-                        showChatMessage({ username: "system", quizRoomID: quizRoomID, screenName: "system", message: data.screenName + " canceled the request. You may end the discussion if all the members make the request. (" + data.quitReq + "/" + data.numMembers + ")." });
-                    }
-
-                    if (numMembers <= data.quitReq) {
-
-                        //  QUIT DISCUSSION AND PROCEED TO PROBING QUESTION STAGE
-                        if (typeof data.wantToQuit !== 'undefined') chatObj = page$(".moocchat-chat-area .moocchat-chat");
-
+                function handleChatQuitChange(data) {
+                    // If everyone quits, move on now
+                    if (data.quitQueueSize >= data.groupSize) {
                         StateFlow.goTo(_STATE.QUIZ_REVISION);
+                        return;
                     }
-                }
-
-                /**
-                 * Previously memberDisconnected().
-                 */
-                function chatMemberDisconnected(disconnectedMemberUsername) {
-                    //  IN COMMON
-                    numMembers--;
-                    //  TODO: SEND A REPORT TO THE SERVER
-
-                    //  SHOW A SYSTEM MESSAGE SAYING SOMEONE DISCONNECTED: TESTED
-                    var sn = 'A student in this group';
-                    for (var i = 0; i < userList.length; i++) {
-                        var user = userList[i];
-                        if (username == user['username']) {
-                            sn = user['screenName'];
-                            break;
-                        }
+                    
+                    // Build up message to display to chat
+                    var message = "";
+                    
+                    if (data.quitStatus) {
+                        message = data.screenName + " requested to end the discussion. \
+                                    You may end the discussion if all the members make the request. \
+                                    (" + data.quitQueueSize + "/" + data.groupSize + ")";
+                    } else {
+                        message = data.screenName + " canceled the request. \
+                                    You may end the discussion if all the members make the request. \
+                                    (" + data.quitQueueSize + "/" + data.groupSize + ").";
                     }
-                    var message = sn + ' has disconnected. You can still finish this task, though.';
-                    showChatMessage({ username: 'system', quizRoomID: quizRoomID, screenName: 'system', message: message });
+                    
+                    displayChatMessage({
+                        screenName: "system",
+                        message: message,
+                        timestamp: new Date().valueOf()
+                    });
                 }
-
 
                 function setupSockets() {
-                    socket.on("chatMessage", showChatMessage);
-                    socket.on("requestToQuitUpdated", receiveChatQuitRequest);
-                    socket.on("memberDisconnected", chatMemberDisconnected);
+                    socket.on("chatGroupMessage", displayChatMessage);
+                    socket.on("chatGroupQuitChange", handleChatQuitChange);
                 }
 
                 function initPage() {
@@ -544,8 +435,14 @@ $(function() {
                     page$(".moocchat-next-button")
                         .off("click")
                         .on("click", function() {
-                            socket.emit("discussionQuitReq", { screenName: screenName, quizRoomID: quizRoomID, wantToQuit: wantToQuit, timestamp: new Date().toISOString() });
+                            socket.emit("chatGroupQuitStatusChange", {
+                                groupId: groupId,
+                                username: username,
+                                quitStatus: wantToQuit
+                            });
+                            
                             wantToQuit = !wantToQuit;
+                            
                             if (wantToQuit) {
                                 socket.emit('user_flow', { username: username, timestamp: new Date().toISOString(), page: 'Main Task Page', event: 'In Chat Room' });
                                 page$(".moocchat-next-button").html("Request to End Chat");
@@ -563,9 +460,8 @@ $(function() {
                 initPage();
             },
             onLeave: function() {
-                socket.off("chatMessage");
-                socket.off("requestToQuitUpdated");
-                socket.off("memberDisconnected");
+                socket.off("chatGroupMessage");
+                socket.off("chatGroupQuitChange");
             }
         },
         {   // _STATE.QUIZ_REVISION

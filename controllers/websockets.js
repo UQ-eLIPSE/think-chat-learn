@@ -14,33 +14,23 @@ var app = global.app;
 var conf = global.conf;
 var db_wrapper = require('./database.js');
 
+var ClientAnswerPool = require("../models/ClientAnswerPool");
+var ChatGroup = require("../models/ChatGroup");
+
+
 var hitToQuestionMap = new Object();
 var lastQuestionNumberListIndex = -1;
 
-function getQuestionNumber(turkHitId) {
-  var index = conf.fixedQuestionNumber;
-
-  if(index>=0) {
-    //  RETURN ONE FIXED QUESTION
-    index = conf.fixedQuestionNumber;
-  }
-  else {
-    if (!(turkHitId in hitToQuestionMap)) {
-      //  NEW HIT - RETURN NEXT QUESTION
-      do {
-        lastQuestionNumberListIndex += 1;
-        if (lastQuestionNumberListIndex >= conf.fixedQuestionNumber.length) {
-          lastQuestionNumberListIndex = 0;
-        }
-      }
-      while(contains(conf.questionNumberToSkip, conf.fixedQuestionNumber[lastQuestionNumberListIndex]));
-      hitToQuestionMap[turkHitId] = conf.fixedQuestionNumber[lastQuestionNumberListIndex];
-    }
-    return hitToQuestionMap[turkHitId];
-  }
-
-  return index;
+/**
+ * Returns the fixed question number that is set in /config/conf.json.
+ * This question number points to "questionNumber" set in each record of the database table.
+ * 
+ * @return {number} Question number
+ */
+function getQuestionNumber() {
+    return conf.fixedQuestionNumber;   
 }
+
 
 // TODO: I feel this should be somewhere else
 var activeClients = new Object(); //  users online
@@ -147,7 +137,157 @@ db_wrapper.question.read({questionGroup: conf.activeQuestionGroup},
               conf.groupSize,
               NUM_QUESTIONS_PER_SESSION,
               conf.activeQuestionGroup);
+              
+    // Run initialisation
+    afterDbLoad();
 });
+
+/**
+ * TODO: Wrapping everything in a "after DB load" function
+ * so that we're sure some variables are initialised properly when we use them
+ */
+function afterDbLoad() {
+    // Create a new pool with reference to the quiz
+    // being used (the question number is always fixed)
+    var clientAnswerPool = new ClientAnswerPool(quizSet[getQuestionNumber()]);
+    
+    // Object(ChatGroupId{string} => ChatGroup)
+    var chatGroups = {};
+    
+    
+    function formChatGroupTask() {
+        var newChatGroup = clientAnswerPool.tryMakeChatGroup();
+        
+        // Store reference to chat group if formed
+        if (newChatGroup) {
+            chatGroups[newChatGroup.id] = newChatGroup;
+            return true;    // Indicate that the task did produce a chat group - useful for while loops
+        }
+    }
+    
+    /**
+     * @param {string} username
+     */
+    function getClientFromUsername(username) {
+        return activeClients[username];
+    }
+    
+    /**
+     * data = {
+     *      username {string}
+     * }
+     * 
+     * @param {any} data
+     */
+    function handleChatGroupJoinRequest(data) {
+        var client = getClientFromUsername(data.username);
+        clientAnswerPool.addClient(client);
+    }
+    
+    /**
+     * data = {
+     *      groupId {string}
+     *      username {string}
+     *      quitStatus {boolean}
+     * }
+     * 
+     * @param {any} data
+     */
+    function handleChatGroupQuitStatusChange(data) {
+        var chatGroup = chatGroups[data.groupId];
+        var client = getClientFromUsername(data.username);
+
+        if (data.quitStatus) {
+            chatGroup.queueClientToQuit(client);
+        } else {
+            chatGroup.unqueueClientToQuit(client);
+        }
+        
+        // If the chat group terminates, then remove the chat group reference
+        if (this.terminationCheck()) {
+            delete chatGroups[data.groupId];
+        }
+    }
+    
+    /**
+     * data = {
+     *      groupId {string}
+     *      username {string}
+     *      message {string}
+     * }
+     * 
+     * @param {any} data
+     */
+    function handleChatGroupMessage(data) {
+        var chatGroup = chatGroups[data.groupId];
+        var client = getClientFromUsername(data.username);
+        chatGroup.broadcastMessage(client, data.message);
+    }
+
+
+
+
+
+    /**
+     * data = {
+     *      username {string}
+     *      questionId {number|string?}     // Not used, hard coded question number presently
+     *      answer {number|string?}
+     *      justification {string}
+     * }
+     */
+    function handleAnswerSubmissionInitial(data) {
+        var username = data.username;
+        var client = getClientFromUsername(username);
+        var answer = data.answer;
+        var justification = data.justification;
+        
+        var socket = client.getSocket();
+        
+        // TODO: For some reason the last known answer is stored with the client...
+        // Carried over from saveProbingQuestionAnswerHelper()
+        client.probingQuestionAnswer = answer;
+        client.probingQuestionAnswerTime = new Date().toISOString();
+        
+        var update_criteria = {
+            socketID: client.socketID,
+            username: client.username,
+            questionGroup: conf.activeQuestionGroup
+        };
+        
+        var update_data = {
+            $set: {
+                probingQuestionAnswer: client.probingQuestionAnswer,
+                probingQuestionAnswerTime: client.probingQuestionAnswerTime,
+                probJustification: justification
+            }
+        };
+        
+        db_wrapper.userquiz.update(update_criteria, update_data, function(err, dbResults) {
+
+            console.log(new Date().toISOString(), username, update_criteria, update_data);
+
+            if ((typeof testHooks !== 'undefined') && (testHooks.location == 'afterUpdate')) {
+                testHooks.callback();
+            }
+            if (err || typeof dbResults === 'undefined' || dbResults.length == 0) {
+                console.log("#handleAnswerSubmissionInitial() ERROR - " +
+                    "username: %s", username);
+                if (err) console.log(err);
+                socket.emit('db_failure', 'handleAnswerSubmissionInitial()');
+            }
+            else {
+                console.log("#handleAnswerSubmissionInitial() - " +
+                    "probing question answer and timestamps " +
+                    "saved in database");
+                console.log(new Date().toISOString(), username, dbResults);
+                
+                socket.emit("answerSubmissionInitialSaved");
+            }
+        });
+    }
+
+
 
 
 io.sockets.on('connection', function(socket) {
@@ -192,6 +332,16 @@ io.sockets.on('connection', function(socket) {
   socket.on('readyForPostDiscussion', readyForPostDiscussion);
   socket.on('loadTestReq', loadTest);
   socket.on('saveLoadTestResults', saveLoadTestResults);
+
+
+    // New socket events
+    socket.on("chatGroupJoinRequest", handleChatGroupJoinRequest);
+    socket.on("chatGroupMessage", handleChatGroupMessage);
+    socket.on("chatGroupQuitStatusChange", handleChatGroupQuitStatusChange);
+
+    socket.on("answerSubmissionInitial", handleAnswerSubmissionInitial)
+
+
 
   function getClient(username) {
     if (!(username in activeClients)) {
@@ -458,6 +608,10 @@ io.sockets.on('connection', function(socket) {
                                               qnaSetTimestamps,
                                               quizIndex);
                       activeClients[username] = client;
+                      
+                      // Using socket referencing in newer code,
+                      // rather than using socket ID and looking it up again
+                      client.setSocket(socket);
 
                       client.questionNumber = questionNumber;
                       console.log("#login() - active clients: %d",
@@ -1812,6 +1966,6 @@ var search_criteria = {username:data.username};
 
 }
 
-
-
 });
+
+}
