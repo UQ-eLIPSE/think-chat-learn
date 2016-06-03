@@ -373,14 +373,21 @@ $(function() {
                 function displayChatMessage(data) {
                     var screenName = data.screenName;
                     
-                    var $messageWrapper = $("<blockquote>").addClass(["moocchat-message", getSlug(screenName)]);
+                    var $messageWrapper = $("<blockquote>")
+                                            .addClass("moocchat-message")
+                                            .addClass(getSlug(screenName));
+                                            
                     var $messageContent = $("<p>").text(screenName + ": " + data.message);
                     
                     $messageWrapper.append($messageContent);
 
-                    page$(".moocchat-chat")
+                    var $chatBox = page$(".moocchat-chat");
+
+                    // TODO: Don't scroll chat box if box is not scrolled
+                    // to bottom (user might be reviewing something)
+                    $chatBox
                         .append($messageWrapper)
-                        .scrollTop(page$(".moocchat-chat").outerHeight());
+                        .scrollTop($chatBox.get(0).scrollHeight);
                 }
 
                 /**
@@ -452,6 +459,24 @@ $(function() {
                                 socket.emit('user_flow', { username: username, timestamp: new Date().toISOString(), page: 'Main Task Page', event: 'Clicked Request to End Chat' });
                             }
                         });
+                    
+                    
+                    // Sends chat message on click
+                    // TODO: Place into separate function
+                    page$("#moocchat-chat-send")
+                        .on("click", function() {
+                            var message = page$("#moocchat-chat-input").val();
+                            if (message.length == 0) return;
+
+                            socket.emit("chatGroupMessage", {
+                                groupId: groupId,
+                                username: username,
+                                message: message
+                            });
+
+                            page$("#moocchat-chat-input").val("");
+                            page$("#moocchat-chat-input").focus();
+                        });
                 }
                 
                 setStageAndPage(DISCUSS_PROBING_STAGE, MAIN_TASK_PAGE);
@@ -461,6 +486,8 @@ $(function() {
             onLeave: function() {
                 socket.off("chatGroupMessage");
                 socket.off("chatGroupQuitChange");
+                
+                page$("#moocchat-chat-send").off("click");
             }
         },
         {   // _STATE.QUIZ_REVISION

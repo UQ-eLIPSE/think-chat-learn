@@ -705,14 +705,14 @@ function renderStage(cNames, sName) {
         // else alert("why?");
 
         //  EVENT LISTENER FOR CHAT
-        $("#moocchat-chat-send").click(function() {
-          var message = $("#moocchat-chat-input").val();
-          if(message.length==0) return;
-          var msg = {username:username, quizRoomID:quizRoomID, screenName:screenName, message:message};
-          socket.emit("chatMessage", msg);
-          $("#moocchat-chat-input").val("");
-          $("#moocchat-chat-input").focus();
-        });
+        // $("#moocchat-chat-send").click(function() {
+        //   var message = $("#moocchat-chat-input").val();
+        //   if(message.length==0) return;
+        //   var msg = {username:username, quizRoomID:quizRoomID, screenName:screenName, message:message};
+        //   socket.emit("chatMessage", msg);
+        //   $("#moocchat-chat-input").val("");
+        //   $("#moocchat-chat-input").focus();
+        // });
 
         $("#moocchat-chat-input").keydown(function(e) {
           if(e.which==TAB_KEY_CODE) {
@@ -879,18 +879,20 @@ function renderStage(cNames, sName) {
           shared += "<div class='list-group-item'>";
           var resp = probAnswers[i]["answer"];
           var respJustification = probAnswers[i]["justification"];
-          var un = probAnswers[i]["username"];
-          var sn = "";
+          // var un = probAnswers[i]["username"];
+          // var sn = "";
 
-          for(var j=0;j<userList.length;j++) {
-            if(userList[j]["username"]==un) {
-              sn = userList[j]["screenName"];
-              break;
-            }
-            else {
-              continue;
-            }
-          }
+          // for(var j=0;j<userList.length;j++) {
+          //   if(userList[j]["username"]==un) {
+          //     sn = userList[j]["screenName"];
+          //     break;
+          //   }
+          //   else {
+          //     continue;
+          //   }
+          // }
+
+          var sn = probAnswers[i].screenName;
 
           // shared += "<h4 class='list-group-item-heading'>" + "<span class='" + getSlug(sn) + "'>" + sn + "</span>" + " responded '" + resp + "'</h4>";
           shared += "<h4 class='list-group-item-heading'>" + "<span class='" + getSlug(sn) + "'>" + sn + "</span>" + " responded " + "<span class='moocchat-choice-box moocchat-choice-box-" + resp + "'>" + String.fromCharCode(CHAR_CODE_A + resp) + "</span>" + " Justification: " + respJustification + "</h4>";
@@ -917,14 +919,14 @@ function renderStage(cNames, sName) {
         // else alert("why?");
 
         //  EVENT LISTENER FOR CHAT
-        $("#moocchat-chat-send").click(function() {
-          var message = $("#moocchat-chat-input").val();
-          if(message.length==0) return;
-          var msg = {username:username, quizRoomID:quizRoomID, screenName:screenName, message:message};
-          socket.emit("chatMessage", msg);
-          $("#moocchat-chat-input").val("");
-          $("#moocchat-chat-input").focus();
-        });
+        // $("#moocchat-chat-send").click(function() {
+        //   var message = $("#moocchat-chat-input").val();
+        //   if(message.length==0) return;
+        //   var msg = {username:username, quizRoomID:quizRoomID, screenName:screenName, message:message};
+        //   socket.emit("chatMessage", msg);
+        //   $("#moocchat-chat-input").val("");
+        //   $("#moocchat-chat-input").focus();
+        // });
 
         $("#moocchat-chat-input").keydown(function(e) {
           if(e.which==TAB_KEY_CODE) {
@@ -944,18 +946,21 @@ function renderStage(cNames, sName) {
 
         //  SHOW WELCOME MESSAGE
         for(var i=0;i<probAnswers.length;i++) {
-          var un = probAnswers[i]["username"];
-          var sn = "";
+          // var un = probAnswers[i]["username"];
+          // var sn = "";
 
-          for(var j=0;j<userList.length;j++) {
-            if(userList[j]["username"]==un) {
-              sn = userList[j]["screenName"];
-              break;
-            }
-            else {
-              continue;
-            }
-          }
+          // for(var j=0;j<userList.length;j++) {
+          //   if(userList[j]["username"]==un) {
+          //     sn = userList[j]["screenName"];
+          //     break;
+          //   }
+          //   else {
+          //     continue;
+          //   }
+          // }
+          
+          var sn = probAnswers[i].screenName;
+          
           if(username==un) {
             showIncomingMessage({username:"system", quizRoomID:quizRoomID, screenName:"system", message:"You joined discussion as " + sn + "."});
           }
