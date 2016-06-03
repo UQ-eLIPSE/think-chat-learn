@@ -114,7 +114,7 @@ class ChatGroup extends Group {
                 answer: client.probingQuestionAnswer,
                 justification: client.probJustification
             }
-        });
+        }, this);
     }
     
     notifyEveryoneOnJoin() {
@@ -125,8 +125,8 @@ class ChatGroup extends Group {
         });
     }
         
-    constructor() {
-        // super();
+    constructor(clients) {
+        super(clients);
         
         this.log = [];
         this.clientsQueuedToQuit = [];

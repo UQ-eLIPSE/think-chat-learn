@@ -157,9 +157,11 @@ class ClientAnswerPool {
      * @return {number}
      */
     totalPoolSize() {
+        var answerQueues = this.answerQueues;
+        
         // Go over answerQueues and sum the length of each queues
-        return Object.keys(this.answerQueues).reduce(function(sum, queueKey) {
-            return sum + this.answerQueues[queueKey].length;
+        return Object.keys(answerQueues).reduce(function(sum, queueKey) {
+            return sum + answerQueues[queueKey].length;
         }, 0);
     }
 
@@ -167,9 +169,11 @@ class ClientAnswerPool {
      * @return {ClientAnswerWrapper[]}
      */
     getFlatQueue() {
+        var answerQueues = this.answerQueues;
+        
         // Go over answerQueues and concatenate each queue together
-        return Object.keys(this.answerQueues).reduce(function(arr, queueKey) {
-            return arr.concat(this.answerQueues[queueKey]);
+        return Object.keys(answerQueues).reduce(function(arr, queueKey) {
+            return arr.concat(answerQueues[queueKey]);
         }, []);
     }
 
@@ -218,12 +222,13 @@ class ClientAnswerPool {
 
             if (totalPoolSize < this.desiredGroupSize) {
 
-                // If there's only one, then have a backup client (e.g. tutor) join the group
-                if (totalPoolSize === 1) {
-                    // TODO: How to add a backup client?
-                    
-                    return;
-                }
+                // TODO: The below block needs to be implemented!
+                // // If there's only one, then have a backup client (e.g. tutor) join the group
+                // if (totalPoolSize === 1) {
+                //     // TODO: How to add a backup client?
+                                 
+                //     return;
+                // }
 
                 // If we have two or more students (but less than the ideal group size)
                 // then just throw them together
