@@ -161,9 +161,22 @@ function afterDbLoad() {
         // Store reference to chat group if formed
         if (newChatGroup) {
             chatGroups[newChatGroup.id] = newChatGroup;
-            return true;    // Indicate that the task did produce a chat group - useful for while loops
+            return newChatGroup;    // Indicate that the task did produce a chat group - useful for while loops
         }
     }
+    
+    // Recurring task
+    // TODO: Process as many clients in one go
+    // TODO: Optimise to have variable timing?
+    // TODO: Have a library/package handle this task in a different thread?
+    setInterval(function() {
+        var newChatGroup = formChatGroupTask();
+        
+        if (newChatGroup) {
+            console.log(`New group; size = ${newChatGroup.numberOfClients()}`);
+        }
+        
+    }, 1000);
     
     /**
      * @param {string} username
@@ -204,7 +217,7 @@ function afterDbLoad() {
         }
         
         // If the chat group terminates, then remove the chat group reference
-        if (this.terminationCheck()) {
+        if (chatGroup.terminationCheck()) {
             delete chatGroups[data.groupId];
         }
     }
@@ -248,6 +261,7 @@ function afterDbLoad() {
         // Carried over from saveProbingQuestionAnswerHelper()
         client.probingQuestionAnswer = answer;
         client.probingQuestionAnswerTime = new Date().toISOString();
+        client.probJustification = justification;
         
         var update_criteria = {
             socketID: client.socketID,

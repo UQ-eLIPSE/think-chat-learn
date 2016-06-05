@@ -77,7 +77,7 @@ class ChatGroup extends Group {
      * @param {Client} client
      */
     unqueueClientToQuit(client) {
-        let clientIndex = this.clientQueuedToQuit.indexOf(client); 
+        let clientIndex = this.clientsQueuedToQuit.indexOf(client); 
         if (clientIndex > -1) {
             this.clientsQueuedToQuit.splice(clientIndex, 1);
         }
