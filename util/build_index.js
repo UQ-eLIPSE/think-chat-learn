@@ -24,7 +24,7 @@ function getComponents(cb) {
 
     var filePaths = [];
     for (var i = 0; i < files.length; i++) {
-      filePaths.push(CONFIG.inputComponentsFolder + files[i]);
+      filePaths.push(CONFIG.inputComponentsFolder + "/" + files[i]);
       console.log("Adding " + CONFIG.inputComponentsFolder + "/" + files[i]);
     }
 
