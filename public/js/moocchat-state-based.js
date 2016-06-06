@@ -119,6 +119,11 @@ $(function() {
     function setStageAndPage(stageId, pageId) {
         stage = stageId;
         currentPage = pageId;
+        
+        // Kill the main timer - the old stage+page system has a lot
+        // of holes that can cause problems when transitioning in the
+        // state-based flow 
+        clearInterval(mainTimer);
     }
 
     //  ========================================
@@ -311,6 +316,7 @@ $(function() {
                  *      groupId {string}
                  *      groupSize {number}
                  *      groupAnswers {Object}
+                 *      screenName {string}
                  * }
                  */
                 function handleChatGroupFormation(data) {
@@ -354,11 +360,14 @@ $(function() {
              * 
              * data = {
              *      groupId {string}
+             *      screenName {string}
              *      ... and others
              * }
              */
             onEnter: function(data) {
                 var groupId = data.groupId;
+                var groupAnswers = data.groupAnswers;
+                var clientScreenName = data.screenName;
                 
                 // Socket callbacks
                 /**
@@ -372,12 +381,30 @@ $(function() {
                  */
                 function displayChatMessage(data) {
                     var screenName = data.screenName;
+                    var displayedScreenName = screenName;
                     
+                    switch (screenName) {
+                        case clientScreenName: 
+                            displayedScreenName = "Me";
+                            break;
+                        case "system":
+                            displayedScreenName = "";
+                            break;
+                    }
+                    
+                    var message = displayedScreenName + ": " + data.message;
+                    
+                    if (displayedScreenName === "") {
+                        message = data.message;
+                    }
+                    
+                    
+                    // Note that this uses the raw screen name slug
                     var $messageWrapper = $("<blockquote>")
                                             .addClass("moocchat-message")
                                             .addClass(getSlug(screenName));
-                                            
-                    var $messageContent = $("<p>").text(screenName + ": " + data.message);
+                    
+                    var $messageContent = $("<p>").text(message);
                     
                     $messageWrapper.append($messageContent);
 
@@ -408,10 +435,10 @@ $(function() {
                         StateFlow.goTo(_STATE.QUIZ_REVISION);
                         return;
                     }
-                    
+
                     // Build up message to display to chat
                     var message = "";
-                    
+
                     if (data.quitStatus) {
                         message = data.screenName + " requested to end the discussion. \
                                     You may end the discussion if all the members make the request. \
@@ -421,11 +448,30 @@ $(function() {
                                     You may end the discussion if all the members make the request. \
                                     (" + data.quitQueueSize + "/" + data.groupSize + ").";
                     }
-                    
+
                     displayChatMessage({
                         screenName: "system",
                         message: message,
                         timestamp: new Date().valueOf()
+                    });
+                }
+
+                /**
+                 * Puts messages into the chat box that indicates who joined the discussion.
+                 */
+                function displayClientsInChat() {
+                    groupAnswers.forEach(function(answerData) {
+                        var message = answerData.screenName + " joined discussion.";
+
+                        if (answerData.screenName === clientScreenName) {
+                            message = "You joined discussion as " + answerData.screenName + ".";
+                        }
+
+                        displayChatMessage({
+                            screenName: "system",
+                            message: message,
+                            timestamp: new Date().valueOf()
+                        });
                     });
                 }
 
@@ -436,6 +482,8 @@ $(function() {
 
                 function initPage() {
                     renderMainTaskPage();
+
+                    displayClientsInChat();
 
                     // Migrated from .moocchat-next-button onclick event handler
                     page$(".moocchat-next-button")

@@ -352,7 +352,7 @@ io.sockets.on('connection', function(socket) {
     socket.on("chatGroupJoinRequest", handleChatGroupJoinRequest);
     socket.on("chatGroupMessage", handleChatGroupMessage);
     socket.on("chatGroupQuitStatusChange", handleChatGroupQuitStatusChange);
-
+    
     socket.on("answerSubmissionInitial", handleAnswerSubmissionInitial)
 
 
@@ -1445,18 +1445,18 @@ db_wrapper.userquiz.update(update_criteria, update_data, function(err, dbResults
       });
     }
 
-    alreadyPushedAnswer = false;
-    for(var ans7 in quizRoom.probAns) {
-      if (ans7['username'] == username) {
-        alreadyPushedAnswer = true;
-      }
-    }
-    if (!alreadyPushedAnswer) {
-      quizRoom.probAns.push({username:username, screenName:screenName, answer:answer, justification:probJustification});
-      if(quizRoom.probAns.length==quizRoom.members.length) {
-        io.sockets.in(quizRoomID).emit('probAnswers', quizRoom.probAns);
-      }
-    }
+    // alreadyPushedAnswer = false;
+    // for(var ans7 in quizRoom.probAns) {
+    //   if (ans7['username'] == username) {
+    //     alreadyPushedAnswer = true;
+    //   }
+    // }
+    // if (!alreadyPushedAnswer) {
+    //   quizRoom.probAns.push({username:username, screenName:screenName, answer:answer, justification:probJustification});
+    //   if(quizRoom.probAns.length==quizRoom.members.length) {
+    //     io.sockets.in(quizRoomID).emit('probAnswers', quizRoom.probAns);
+    //   }
+    // }
   }
   catch(err)
   {

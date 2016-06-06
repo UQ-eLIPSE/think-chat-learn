@@ -744,12 +744,12 @@ function renderStage(cNames, sName) {
               continue;
             }
           }
-          if(username==un) {
-            showIncomingMessage({username:"system", quizRoomID:quizRoomID, screenName:"system", message:"You joined discussion as " + sn + "."});
-          }
-          else {
-            showIncomingMessage({username:"system", quizRoomID:quizRoomID, screenName:"system", message:sn + " joined discussion."});
-          }
+          // if(username==un) {
+          //   showIncomingMessage({username:"system", quizRoomID:quizRoomID, screenName:"system", message:"You joined discussion as " + sn + "."});
+          // }
+          // else {
+          //   showIncomingMessage({username:"system", quizRoomID:quizRoomID, screenName:"system", message:sn + " joined discussion."});
+          // }
         }
 
         $("#moocchat-chat-input").focus();
@@ -961,12 +961,12 @@ function renderStage(cNames, sName) {
           
           var sn = probAnswers[i].screenName;
           
-          if(username==un) {
-            showIncomingMessage({username:"system", quizRoomID:quizRoomID, screenName:"system", message:"You joined discussion as " + sn + "."});
-          }
-          else {
-            showIncomingMessage({username:"system", quizRoomID:quizRoomID, screenName:"system", message:sn + " joined discussion."});
-          }
+          // if(username==un) {
+          //   showIncomingMessage({username:"system", quizRoomID:quizRoomID, screenName:"system", message:"You joined discussion as " + sn + "."});
+          // }
+          // else {
+          //   showIncomingMessage({username:"system", quizRoomID:quizRoomID, screenName:"system", message:sn + " joined discussion."});
+          // }
         }
 
         $("#moocchat-chat-input").focus();

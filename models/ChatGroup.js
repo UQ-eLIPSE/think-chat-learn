@@ -118,11 +118,14 @@ class ChatGroup extends Group {
     }
     
     notifyEveryoneOnJoin() {
-        this.broadcastEvent("chatGroupFormed", {
-            groupId: this.id,
-            groupSize: this.numberOfClients(),
-            groupAnswers: this.getGroupProbAnswerObjArray()
-        });
+        this.clients.forEach(function(client) {
+            this.emitEvent(client, "chatGroupFormed", {
+                groupId: this.id,
+                groupSize: this.numberOfClients(),
+                groupAnswers: this.getGroupProbAnswerObjArray(),
+                screenName: this.getScreenName(client)
+            });
+        }, this);
     }
         
     constructor(clients) {

@@ -59,6 +59,19 @@ class Group {
     }
     
     /**
+     * @param {Client} client
+     * @param {string} event
+     * @param {any} data
+     */
+    emitEvent(client, event, data) {
+        if (!client.socket) {
+            throw new Error("Client socket not found");
+        }
+        
+        client.socket.emit(event, data);
+    }
+    
+    /**
      * @return {number}
      */
     numberOfClients() {
