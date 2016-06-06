@@ -14,12 +14,8 @@ class Group {
      */
     addClient(client) {
         if (this.clients.indexOf(client) < 0) {
-            this.clients.push(client);
-            
-            // TODO: Need to make `client` more OO-like and handle joining rooms as
-            // we don't actually know where the socket ID comes from at this point
-            // io.sockets.connected[client.socketID].join(this.id);
             client.getSocket().join(this.id);
+            this.clients.push(client);
         }
     }
     
@@ -64,11 +60,13 @@ class Group {
      * @param {any} data
      */
     emitEvent(client, event, data) {
-        if (!client.socket) {
+        var clientSocket = client.getSocket();
+        
+        if (!clientSocket) {
             throw new Error("Client socket not found");
         }
         
-        client.socket.emit(event, data);
+        clientSocket.emit(event, data);
     }
     
     /**
