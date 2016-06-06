@@ -74,7 +74,8 @@ include('session_config.php');
     <div class="container">
       <div class="row">
           <div id="completed-message" class="col-md-10 col-md-offset-1 h2">
-              You have now completed the task. Your responses have been recorded and will be graded.
+              Thank you for completing this session.<br>
+              <span style="font-size: 0.7em;">Your responses have been saved and will be graded.</span>
           </div>
       </div>
     </div>
@@ -237,7 +238,8 @@ include('session_config.php');
         </div>
         <div class="row">
             <div class="col-md-4 col-md-offset-4 text-center">
-                <label>Please input the alphanumeric student identifier supplied by your instructor.</label>&emsp;<input class="form-control" id="username" name="username" width="30em" type="text" tabIndex="-1" autocomplete="off" value="<?=$_SERVER['HTTP_X_UQ_USER'];?>"/>
+                <label>Please input the alphanumeric student identifier supplied by your instructor.</label>&emsp;
+                <input class="form-control" id="username" name="username" width="30em" type="text" tabIndex="-1" autocomplete="off" value="<?=$_SERVER['HTTP_X_UQ_USER'];?>"/>
             </div>
         </div>
         <div class="row">
@@ -562,9 +564,6 @@ include('session_config.php');
 </div>
 <!-- START wait-page -->
 <div id="wait-page" class="moocchat-page">
-    <div class="col-md-4 col-md-offset-4 text-center">
-       <label>It is recommended to complete this task on a PC/Mac using Firefox or Google Chrome.</label>
-    </div>
     <div class="container">
         <!-- <div id="wait-timer-bar" class="navbar navbar-default"> -->
             <!-- <div class="navbar-header"> -->
@@ -576,16 +575,19 @@ include('session_config.php');
         <div class="row">
             <div id="instruction-panel" class="col-md-10 col-md-offset-1">
 
-                    <h2>Task Instructions</h2><br />
+                    <h2>Steps on using MoocChat:</h2><br />
                     <ol>
-          <li>Log in using your student ID.</li>
-          <li>Respond to a multiple-choice question covering the course material and provide a justification for your answer (within 6 minutes).</li>
-          <li>Discuss the question answers from you and other students. You may have to wait up to 4 minutes for a group to be formed. The system will create your group as soon as 3 users are available.<br>
-                Try to learn from or help others so as to ensure that you all have a good understanding of the underlying concepts, rather than just focusing on what the right answer might be. This will ensure that you maximise the benefits to yourself and to your group from participating in the chat.</li>
-          <li>The answer selected and the justification will be displayed next to the chat window. In case there are no students available to do the task together with, reflect upon your own answer (up to 15 minutes).</li>
-          <li>Revise your response to the question based on the discussion (within 1.5 minutes).</li>
-          <li>Fill out a brief questionnaire about the chat room experience.</li>
-        </ol>
+                        <li>Respond to a multiple-choice question covering the course material and provide a justification for your answer.</li>
+                        <li>Discuss the question answers from you and other students. You may need to wait briefly while a group is formed.
+                            <ul>
+                                <li>Try to learn from or help others so as to ensure that you all have a good understanding of the underlying concepts,
+                                    rather than just focusing on what the right answer might be. This will ensure that you maximise the benefits
+                                    to yourself and to your group from participating in the chat.</li>
+                            </ul>
+                        </li>
+                        <li>Revise your response to the question based on the discussion.</li>
+                        <li>Fill out a brief questionnaire about your MoocChat experience.</li>
+                    </ol>
 
                 <p>
                       <button type="button" id="moocchat-start-button" class="col-md-4 col-sm-offset-4 btn btn-lg btn-info" style="margin-top:15px;">Start</button>
