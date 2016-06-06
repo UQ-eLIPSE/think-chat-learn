@@ -155,28 +155,44 @@ function afterDbLoad() {
     var chatGroups = {};
     
     
-    function formChatGroupTask() {
+    function formChatGroup() {
         var newChatGroup = clientAnswerPool.tryMakeChatGroup();
         
         // Store reference to chat group if formed
         if (newChatGroup) {
             chatGroups[newChatGroup.id] = newChatGroup;
-            return newChatGroup;    // Indicate that the task did produce a chat group - useful for while loops
+            return newChatGroup;
         }
     }
     
     // Recurring task
-    // TODO: Process as many clients in one go
-    // TODO: Optimise to have variable timing?
-    // TODO: Have a library/package handle this task in a different thread?
-    setInterval(function() {
-        var newChatGroup = formChatGroupTask();
+    // TODO: Have a library/package handle this task in a different thread?    
+    var chatGroupFormationLoop = (function() {
+        var timeBetweenChecks = 15000;  // 15 seconds
+        var timeoutHandle;
         
-        if (newChatGroup) {
-            console.log(`New group; size = ${newChatGroup.numberOfClients()}`);
+        function run() {
+            clearTimeout(timeoutHandle);
+            
+            var newChatGroup = formChatGroup();
+
+            if (newChatGroup) {
+                setImmediate(run);   // Process next group at next available timeslot
+            } else {
+                timeoutHandle = setTimeout(run, timeBetweenChecks);
+            }
         }
         
-    }, 1000);
+        return {
+            /**
+             * Runs another round of the loop, or starts the loop if not already active.
+             */
+            run: run
+        };
+    })();
+    
+    chatGroupFormationLoop.run();
+    
     
     /**
      * @param {string} username
@@ -195,6 +211,8 @@ function afterDbLoad() {
     function handleChatGroupJoinRequest(data) {
         var client = getClientFromUsername(data.username);
         clientAnswerPool.addClient(client);
+        
+        chatGroupFormationLoop.run();
     }
     
     /**
