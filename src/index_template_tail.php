@@ -63,7 +63,11 @@ Next session is on Thursday, 06/08/2015 from 20:00 to 22:00.
   <!-- MOOCchat Custom JavaScript -->
   <script src="./js/settings.js"></script>
   <script src="./js/moocchat-utilities.js"></script>
+  <script src="./js/moocchat.constants.js"></script>
+  <script src="./js/moocchat.stages.js"></script>
   <script src="./js/moocchat.js"></script>
+  <script src="./js/stateflow.js"></script>
+  <script src="./js/moocchat-state-based.js"></script>
 </html>
 <!-- Modal -->
 <div class="modal fade" id="participant_information_sheet_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
