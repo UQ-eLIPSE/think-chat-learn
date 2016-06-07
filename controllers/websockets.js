@@ -168,7 +168,7 @@ function afterDbLoad() {
     // Recurring task
     // TODO: Have a library/package handle this task in a different thread?    
     var chatGroupFormationLoop = (function() {
-        var timeBetweenChecks = 15000;  // 15 seconds
+        var timeBetweenChecks = 1000;  // TODO: 1 second for now
         var timeoutHandle;
         
         function run() {

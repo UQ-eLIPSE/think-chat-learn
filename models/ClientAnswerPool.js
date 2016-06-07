@@ -344,7 +344,7 @@ class ClientAnswerPool {
      */
     constructor(quiz) {
         this.desiredGroupSize = conf.groupSize;
-        this.desiredMaxWaitTime = 2 * 60 * 1000;    // TODO: 2 minutes for now
+        this.desiredMaxWaitTime = 1 * 60 * 1000;    // TODO: 1 minute for now
 
         this.quiz = quiz;
 
