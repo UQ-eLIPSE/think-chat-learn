@@ -222,6 +222,14 @@ class ClientAnswerPool {
 
             // Determine if there are not enough clients to form a group of the desired size
             let totalPoolSize = this.totalPoolSize();
+                
+            // If pool size = desiredGroupSize + 1, attempt to create a group of size 2
+            // now to attempt to prevent loners from appearing?
+            if (totalPoolSize === (this.desiredGroupSize + 1)) {
+                let groupOfTwo = this.getQueueSortedByTime().slice(0, 2);
+                this.removeClients(groupOfTwo);
+                return this.createChatGroupFromWrappedClients(groupOfTwo);
+            }
 
             if (totalPoolSize < this.desiredGroupSize) {
 
@@ -240,8 +248,6 @@ class ClientAnswerPool {
                 return this.createChatGroupFromWrappedClients(clientsToFormGroup);
             }
 
-            // TODO: Proportion the group so that we clear long queues first? Clear those waiting? Randomly?
-            
             // Clear those in order by wait time
             let clientsToFormGroup = this.getQueueSortedByTime().slice(0, this.desiredGroupSize)
             this.removeClients(clientsToFormGroup);
