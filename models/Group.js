@@ -14,7 +14,15 @@ class Group {
      */
     addClient(client) {
         if (this.clients.indexOf(client) < 0) {
-            client.getSocket().join(this.id);
+            let clientSocket = client.getSocket();
+            
+            if (!clientSocket) {
+                throw new Error("Client must have active socket");
+            }
+            
+            // Join client socket into the same "room" as this group using the group ID
+            clientSocket.join(this.id);
+            
             this.clients.push(client);
         }
     }
@@ -32,12 +40,9 @@ class Group {
      * @param {Client} client
      */
     removeClient(client) {
-        if (this.clients.indexOf(client) > -1) {
-            this.clients.splice(this.clients.indexOf(client), 1);
-            
-            // TODO: Need to make `client` more OO-like and handle joining rooms as
-            // we don't actually know where the socket ID comes from at this point
-            // io.sockets.connected[client.socketID].leave(this.id);
+        let clientIndex = this.getClientIndex(client);
+        if (clientIndex > -1) {
+            this.clients.splice(clientIndex, 1);
             client.getSocket().leave(this.id);
         }   
     }

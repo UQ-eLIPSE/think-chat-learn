@@ -35,7 +35,7 @@ function Client(id, name, fir_c, fir_time,
   this.groupSize = NUM_CLIENTS_PER_QUIZ_ROOM;
   
   /** Holds reference to the active socket in use */
-  this.socket = {};
+  this.socket;
 }
 
 Client.prototype = {
