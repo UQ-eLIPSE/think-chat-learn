@@ -157,7 +157,7 @@ class ClientAnswerPool {
      * @return {number}
      */
     totalPoolSize() {
-        var answerQueues = this.answerQueues;
+        let answerQueues = this.answerQueues;
         
         // Go over answerQueues and sum the length of each queues
         return Object.keys(answerQueues).reduce(function(sum, queueKey) {
@@ -169,12 +169,15 @@ class ClientAnswerPool {
      * @return {ClientAnswerWrapper[]}
      */
     getFlatQueue() {
-        var answerQueues = this.answerQueues;
+        let answerQueues = this.answerQueues;
         
-        // Go over answerQueues and concatenate each queue together
-        return Object.keys(answerQueues).reduce(function(arr, queueKey) {
-            return arr.concat(answerQueues[queueKey]);
-        }, []);
+        // Go over answerQueues to extract the queues themselves
+        // before applying them to Array#concat to join them together
+        let queues = Object.keys(answerQueues).map(function(queueKey) {
+            return answerQueues[queueKey];
+        });
+        
+        return [].concat.apply([], queues);
     }
 
     /**

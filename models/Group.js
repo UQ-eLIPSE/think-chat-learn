@@ -60,7 +60,7 @@ class Group {
      * @param {any} data
      */
     emitEvent(client, event, data) {
-        var clientSocket = client.getSocket();
+        let clientSocket = client.getSocket();
         
         if (!clientSocket) {
             throw new Error("Client socket not found");
