@@ -439,12 +439,18 @@ $(function() {
                     // Build up message to display to chat
                     var message = "";
 
+                    var displayedScreenName = data.screenName;
+                    
+                    if (displayedScreenName === clientScreenName) {
+                        displayedScreenName = "You";
+                    }
+
                     if (data.quitStatus) {
-                        message = data.screenName + " requested to end the discussion. \
+                        message = displayedScreenName + " requested to end the discussion. \
                                     You may end the discussion if all the members make the request. \
                                     (" + data.quitQueueSize + "/" + data.groupSize + ")";
                     } else {
-                        message = data.screenName + " canceled the request. \
+                        message = displayedScreenName + " canceled the chat termination request. \
                                     You may end the discussion if all the members make the request. \
                                     (" + data.quitQueueSize + "/" + data.groupSize + ").";
                     }
