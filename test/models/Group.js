@@ -19,7 +19,7 @@ describe("/models/Group", function() {
 
         it("should create Groups which have non identical IDs", function() {
             assert.notStrictEqual(group1.id, group2.id);
-        })
+        });
     });
 
     describe("#getNumberOfClients", function() {
