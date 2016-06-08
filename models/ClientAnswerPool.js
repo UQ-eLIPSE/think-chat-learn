@@ -69,7 +69,9 @@ class ClientAnswerPool {
     }
 
     /**
-     * @return {Object(QueueKey{number?} => {number})}
+     * Returns {Object(QueueKey{number?} => {number})}
+     * 
+     * @return {Object}
      */
     getQueueSizes() {
         let queueSizes = {};
@@ -100,7 +102,8 @@ class ClientAnswerPool {
     }
 
     /**
-     * @return {Object(QueueKey{number?} => Milliseconds[]{number[]})}
+     * Returns Object(QueueKey{number?} => Milliseconds[]{number[]})
+     * @return {Object}
      */
     getQueueTimes() {
         let queueTimes = {};
@@ -119,7 +122,9 @@ class ClientAnswerPool {
      * Retrieves only the wait times of the client
      * at the front of each answer queue.
      * 
-     * @return {Object(QueueKey{number?} => Milliseconds{number})}
+     * Returns Object(QueueKey{number?} => Milliseconds{number})
+     * 
+     * @return {Object}
      */
     getQueueFrontTimes() {
         let queueTimes = {};

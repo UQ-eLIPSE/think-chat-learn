@@ -1,3 +1,8 @@
+"use strict";
+
+const Group = require("./Group");
+const Client = require("./client");
+
 /**
  * ChatGroup
  * 
@@ -5,12 +10,6 @@
  * 
  * Class for handling chat-room specific methods for MOOCchat chat sessions.
  */
-
-"use strict";
-
-const Group = require("./Group");
-const Client = require("./client");
-
 class ChatGroup extends Group {
     /**
      * @param {Client} fromClient

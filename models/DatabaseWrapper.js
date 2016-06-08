@@ -1,16 +1,19 @@
+"use strict";
+
 /**
  * DatabaseWrapper
  * 
  * Base class for DB wrappers contained in /models/database.
  */
-
-"use strict";
-
-module.exports = class DatabaseWrapper {
+class DatabaseWrapper {
     get table() {
         return this.db[this.tableName];
     }
 
+    /**
+     * @param {Object} data
+     * @param {Function} callback
+     */
     create(data, callback) {
         this.table.insert(data, function(err, res) {
             if (err) {
@@ -20,6 +23,10 @@ module.exports = class DatabaseWrapper {
         });
     }
 
+    /**
+     * @param {Object} data
+     * @param {Function} callback
+     */
     read(query, callback) {
         this.table.find(query, function(err, res) {
             if (err) {
@@ -29,6 +36,10 @@ module.exports = class DatabaseWrapper {
         });
     }
     
+    /**
+     * @param {Object} data
+     * @param {Function} callback
+     */
     readEach(query, callback) {
         this.table.find(query, function(err, res) {
             if (err) {
@@ -41,6 +52,11 @@ module.exports = class DatabaseWrapper {
         });
     }
   
+    /**
+     * @param {Object} query
+     * @param {Object} data
+     * @param {Function} callback
+     */
     update(query, data, callback) {
         this.table.update(query, data, function(err, res) {
             if (err) {
@@ -52,6 +68,10 @@ module.exports = class DatabaseWrapper {
         });
     }
 
+    /**
+     * @param {Object} data
+     * @param {Function} callback
+     */
     delete(query, callback) {
         this.table.remove(query, function(err, res) {
             if (err) {
@@ -61,6 +81,11 @@ module.exports = class DatabaseWrapper {
         });
     }
     
+    /**
+     * Connects the wrapper to the database.
+     * 
+     * **Must be run before anything can be done to the tables.**
+     */
     init(database) {
         this.db = database;
     }
@@ -69,3 +94,5 @@ module.exports = class DatabaseWrapper {
         this.tableName = tableName;
     }
 }
+
+module.exports = DatabaseWrapper;
