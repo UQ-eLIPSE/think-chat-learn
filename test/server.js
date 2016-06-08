@@ -1448,7 +1448,7 @@ io.sockets.on('connection', function(socket) {
                                     'conditionAssigned':0,
                                     'questionNumber':'0'};
           activeClients['taek'] = {'username':'taek',
-                                   'socketID':02468,
+                                   'socketID':12468,
                                    'conditionAssigned':0,
                                    'questionNumber':'0'};
 
@@ -1492,7 +1492,7 @@ io.sockets.on('connection', function(socket) {
                                     'conditionAssigned':0,
                                     'questionNumber':'0'};
           activeClients['taek'] = {'username':'taek',
-                                   'socketID':02468,
+                                   'socketID':12468,
                                    'conditionAssigned':0,
                                    'questionNumber':'0'};
 
@@ -1537,7 +1537,7 @@ io.sockets.on('connection', function(socket) {
                                     'conditionAssigned':0,
                                     'questionNumber':'0'};
           activeClients['taek'] = {'username':'taek',
-                                   'socketID':02468,
+                                   'socketID':12468,
                                    'conditionAssigned':0,
                                    'questionNumber':'0'};
 
@@ -1584,7 +1584,7 @@ io.sockets.on('connection', function(socket) {
                                     'conditionAssigned':0,
                                     'questionNumber':'0'};
           activeClients['taek'] = {'username':'taek',
-                                   'socketID':02468,
+                                   'socketID':12468,
                                    'conditionAssigned':0,
                                    'questionNumber':'0'};
           activeQuizRooms['testRoom'] = new QuizRoom('testRoom', '0');
