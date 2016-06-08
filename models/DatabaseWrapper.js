@@ -7,8 +7,12 @@
 "use strict";
 
 module.exports = class DatabaseWrapper {
+    get table() {
+        return this.db[this.tableName];
+    }
+
     create(data, callback) {
-        this.db[this.tableName].insert(data, function(err, res) {
+        this.table.insert(data, function(err, res) {
             if (err) {
                 console.log("Failed to save data: " + err);
             }
@@ -17,7 +21,7 @@ module.exports = class DatabaseWrapper {
     }
 
     read(query, callback) {
-        this.db[this.tableName].find(query, function(err, res) {
+        this.table.find(query, function(err, res) {
             if (err) {
                 console.log("Failed to read data: " + err);
             }
@@ -26,7 +30,7 @@ module.exports = class DatabaseWrapper {
     }
     
     readEach(query, callback) {
-        this.db[this.tableName].find(query, function(err, res) {
+        this.table.find(query, function(err, res) {
             if (err) {
                 console.log("Failed to read data: " + err);
             }
@@ -38,7 +42,7 @@ module.exports = class DatabaseWrapper {
     }
   
     update(query, data, callback) {
-        this.db[this.tableName].update(query, data, function(err, res) {
+        this.table.update(query, data, function(err, res) {
             if (err) {
                 console.log("Failed to update data: " + err);
             }
@@ -49,7 +53,7 @@ module.exports = class DatabaseWrapper {
     }
 
     delete(query, callback) {
-        this.db[this.tableName].remove(query, function(err, res) {
+        this.table.remove(query, function(err, res) {
             if (err) {
                 console.log("Failed to delete data: " + err);
             }
