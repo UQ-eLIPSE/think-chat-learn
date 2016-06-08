@@ -1,5 +1,7 @@
 /**
  * DatabaseWrapper
+ * 
+ * Base class for DB wrappers contained in /models/database.
  */
 
 "use strict";

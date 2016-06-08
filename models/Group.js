@@ -1,5 +1,8 @@
 /**
  * Group
+ * 
+ * Class for organising MOOCchat clients (see /models/client) into "groups".
+ * Does not handle MOOCchat chat-specific tasks such as messaging or screen naming.
  */
 
 "use strict";

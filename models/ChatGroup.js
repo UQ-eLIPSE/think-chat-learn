@@ -1,5 +1,9 @@
 /**
  * ChatGroup
+ * 
+ * Inherits from Group.
+ * 
+ * Class for handling chat-room specific methods for MOOCchat chat sessions.
  */
 
 "use strict";
