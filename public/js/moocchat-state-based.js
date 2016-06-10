@@ -366,6 +366,7 @@ $(function() {
              */
             onEnter: function(data) {
                 var groupId = data.groupId;
+                    numMembers = data.groupSize;    // This is a global variable shared from ./moocchat.js
                 var groupAnswers = data.groupAnswers;
                 var clientScreenName = data.screenName;
                 
