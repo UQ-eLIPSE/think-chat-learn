@@ -5,9 +5,9 @@
 "use strict";
 
 // Configuration from /config/conf.json
-const conf = global.conf;
+var conf = global.conf;
 
-const ChatGroup = require("./ChatGroup");
+var ChatGroup = require("./ChatGroup");
 
 /**
  * Shuffles array in place.
@@ -16,8 +16,8 @@ const ChatGroup = require("./ChatGroup");
  * @param {any[]} a items The array containing the items.
  */
 function shuffle(a) {
-    let j, x, i;
-    for (let i = a.length; i; i -= 1) {
+    var j, x, i;
+    for (var i = a.length; i; i -= 1) {
         j = Math.floor(Math.random() * i);
         x = a[i - 1];
         a[i - 1] = a[j];
@@ -25,344 +25,355 @@ function shuffle(a) {
     }
 }
 
-
-class ClientAnswerWrapper {
-    timeAlive() {
-        return Date.now() - this.timestamp;
-    }
-
-    constructor(client) {
-        this.client = client;
-        this.timestamp = Date.now();
-    }
+/**
+ * Internal class for wrapping clients with their entry timestamp
+ */
+var ClientAnswerWrapper = function(client) {
+    this.client = client;
+    this.timestamp = Date.now();
 }
+
+ClientAnswerWrapper.prototype.timeAlive = function() {
+    return Date.now() - this.timestamp;
+}
+
 
 /**
  * Handles queues of clients and attempts to distribute them
  * into groups with diverse answers where possible
+ * 
+ * @param {Quiz} quiz
  */
-class ClientAnswerPool {
-    /**
-     * @param {Client} client
-     */
-    addClient(client) {
-        if (!client.isProbingQuestionAnswerValid()) {
-            throw new Error("Client answer not valid; Cannot assign to answer queue");
-        }
+var ClientAnswerPool = function(quiz) {
+    this.desiredGroupSize = conf.groupSize;
+    this.desiredMaxWaitTime = 1 * 60 * 1000;    // TODO: 1 minute for now
 
-        let clientAnswer = client.probingQuestionAnswer;
+    this.quiz = quiz;
 
-        // Answer is either not in range expected or some weird answer
-        if (!this.answerQueues.hasOwnProperty(clientAnswer)) {
-            throw new Error("Client answer not recognised; Cannot assign to answer queue");
-        }
+    // Determine how many answers are available
+    this.numberOfAnswers = this.quiz.probingQuestionChoices.length;
 
-        let answerQueue = this.answerQueues[clientAnswer];
+    // Set up answer queues as a map between an answer number => ClientAnswerWrapper[] 
+    this.answerQueues = {};
 
-        // If the client is already in the queue, don't do anything.
-        if (answerQueue.indexOf(client) > -1) {
-            return;
-        }
+    for (var i = 0; i < this.numberOfAnswers; ++i) {
+        this.answerQueues[i] = [];   // {ClientAnswerWrapper[]}
+    }
+}
 
-        // Add client to the queue once all okay 
-        answerQueue.push(new ClientAnswerWrapper(client));
+
+/**
+ * @param {Client} client
+ */
+ClientAnswerPool.prototype.addClient = function(client) {
+    if (!client.isProbingQuestionAnswerValid()) {
+        throw new Error("Client answer not valid; Cannot assign to answer queue");
     }
 
-    /**
-     * Returns {Object(QueueKey{number?} => {number})}
-     * 
-     * @return {Object}
-     */
-    getQueueSizes() {
-        let queueSizes = {};
+    var clientAnswer = client.probingQuestionAnswer;
 
-        for (let queueKey of Object.keys(this.answerQueues)) {
-            queueSizes[queueKey] = this.answerQueues[queueKey].length;
+    // Answer is either not in range expected or some weird answer
+    if (!this.answerQueues.hasOwnProperty(clientAnswer)) {
+        throw new Error("Client answer not recognised; Cannot assign to answer queue");
+    }
+
+    var answerQueue = this.answerQueues[clientAnswer];
+
+    // If the client is already in the queue, don't do anything.
+    if (answerQueue.indexOf(client) > -1) {
+        return;
+    }
+
+    // Add client to the queue once all okay 
+    answerQueue.push(new ClientAnswerWrapper(client));
+}
+
+/**
+ * Returns {Object(QueueKey{number?} => {number})}
+ * 
+ * @return {Object}
+ */
+ClientAnswerPool.prototype.getQueueSizes = function() {
+    var queueSizes = {};
+
+    var arr = Object.keys(this.answerQueues);
+    for (var i = 0; i < arr.length; ++i) {
+        var queueKey = arr[i];
+        queueSizes[queueKey] = this.answerQueues[queueKey].length;
+    }
+
+    return queueSizes;
+}
+
+/**
+ * Get keys of answer queues which have at least one client waiting.
+ * 
+ * @return {number[]} 
+ */
+ClientAnswerPool.prototype.getViableQueues = function() {
+    var queueSizes = this.getQueueSizes();
+    var viableAnswerQueues = [];         // to store answer keys where queue size > 0.
+
+    var arr = Object.keys(queueSizes);
+    for (var i = 0; i < arr.length; ++i) {
+        var queueKey = arr[i];
+        if (queueSizes[queueKey] > 0) {
+            viableAnswerQueues.push(queueKey);
         }
-
-        return queueSizes;
     }
 
-    /**
-     * Get keys of answer queues which have at least one client waiting.
-     * 
-     * @return {number[]} 
-     */
-    getViableQueues() {
-        let queueSizes = this.getQueueSizes();
-        let viableAnswerQueues = [];         // to store answer keys where queue size > 0.
+    return viableAnswerQueues;
+}
 
-        for (let queueKey of Object.keys(queueSizes)) {
-            if (queueSizes[queueKey] > 0) {
-                viableAnswerQueues.push(queueKey);
-            }
-        }
+/**
+ * Returns Object(QueueKey{number?} => Milliseconds[]{number[]})
+ * @return {Object}
+ */
+ClientAnswerPool.prototype.getQueueTimes = function() {
+    var queueTimes = {};
 
-        return viableAnswerQueues;
-    }
-
-    /**
-     * Returns Object(QueueKey{number?} => Milliseconds[]{number[]})
-     * @return {Object}
-     */
-    getQueueTimes() {
-        let queueTimes = {};
-
-        for (let queueKey of Object.keys(this.answerQueues)) {
-            queueTimes[queueKey] =
-                this.answerQueues[queueKey].map(function(clientWrappedObj) {
-                    return clientWrappedObj.timeAlive();
-                });
-        }
-
-        return queueTimes;
-    }
-
-    /**
-     * Retrieves only the wait times of the client
-     * at the front of each answer queue.
-     * 
-     * Returns Object(QueueKey{number?} => Milliseconds{number})
-     * 
-     * @return {Object}
-     */
-    getQueueFrontTimes() {
-        let queueTimes = {};
-
-        for (let queueKey of Object.keys(this.answerQueues)) {
-            let queue = this.answerQueues[queueKey];
-
-            if (queue.length === 0) {
-                queueTimes[queueKey] = 0;
-                continue;
-            }
-
-            queueTimes[queueKey] = queue[0].timeAlive();
-        }
-
-        return queueTimes;
-    }
-
-    /**
-     * @return {boolean} Whether there are clients waiting in some queue too long
-     */
-    areClientsWaitingTooLong() {
-        let waitTimes = this.getQueueFrontTimes();
-
-        for (let queueKey of Object.keys(waitTimes)) {
-            if (waitTimes[queueKey] > this.desiredMaxWaitTime) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @return {number}
-     */
-    totalPoolSize() {
-        let answerQueues = this.answerQueues;
-        
-        // Go over answerQueues and sum the length of each queues
-        return Object.keys(answerQueues).reduce(function(sum, queueKey) {
-            return sum + answerQueues[queueKey].length;
-        }, 0);
-    }
-
-    /**
-     * @return {ClientAnswerWrapper[]}
-     */
-    getFlatQueue() {
-        let answerQueues = this.answerQueues;
-        
-        // Go over answerQueues to extract the queues themselves
-        // before applying them to Array#concat to join them together
-        let queues = Object.keys(answerQueues).map(function(queueKey) {
-            return answerQueues[queueKey];
-        });
-        
-        return [].concat.apply([], queues);
-    }
-
-    /**
-     * Get flat queue sorted by wait time, where head is longest wait time.
-     * @return {ClientAnswerWrapper[]}
-     */
-    getQueueSortedByTime() {
-        return this.getFlatQueue()
-            .sort(function(a, b) {
-                let waitTimeA = a.timeAlive();
-                let waitTimeB = b.timeAlive();
-
-                if (waitTimeA < waitTimeB) {
-                    return 1;
-                }
-
-                if (waitTimeA > waitTimeB) {
-                    return -1;
-                }
-
-                return 0;
+    var arr = Object.keys(this.answerQueues);
+    for (var i = 0; i < arr.length; ++i) {
+        var queueKey = arr[i];
+        queueTimes[queueKey] =
+            this.answerQueues[queueKey].map(function(clientWrappedObj) {
+                return clientWrappedObj.timeAlive();
             });
     }
 
-    /**
-     * Generates a chat group, only when it deems possible or "good".
-     * 
-     * Does not automatically exhaust pool - this method must be run repeatedly.
-     * 
-     * @return {ChatGroup | undefined}
-     */
-    tryMakeChatGroup() {
-        let viableAnswerQueues = this.getViableQueues();
+    return queueTimes;
+}
 
-        // If there is enough diversity, create group now
-        if (viableAnswerQueues.length >= this.desiredGroupSize) {
-            return this.createChatGroupFromQueueKeys(viableAnswerQueues);
+/**
+ * Retrieves only the wait times of the client
+ * at the front of each answer queue.
+ * 
+ * Returns Object(QueueKey{number?} => Milliseconds{number})
+ * 
+ * @return {Object}
+ */
+ClientAnswerPool.prototype.getQueueFrontTimes = function() {
+    var queueTimes = {};
+
+    var arr = Object.keys(this.answerQueues);
+    for (var i = 0; i < arr.length; ++i) {
+        var queueKey = arr[i];
+        var queue = this.answerQueues[queueKey];
+
+        if (queue.length === 0) {
+            queueTimes[queueKey] = 0;
+            continue;
         }
 
-        // If someone is waiting too long, then create groups now
-        if (this.areClientsWaitingTooLong()) {
+        queueTimes[queueKey] = queue[0].timeAlive();
+    }
 
-            // Determine if there are not enough clients to form a group of the desired size
-            let totalPoolSize = this.totalPoolSize();
-                
-            // If pool size = desiredGroupSize + 1, attempt to create a group of size 2
-            // now to attempt to prevent loners from appearing?
-            if (totalPoolSize === (this.desiredGroupSize + 1)) {
-                let groupOfTwo = this.getQueueSortedByTime().slice(0, 2);
-                this.removeClients(groupOfTwo);
-                return this.createChatGroupFromWrappedClients(groupOfTwo);
+    return queueTimes;
+}
+
+/**
+ * @return {boolean} Whether there are clients waiting in some queue too long
+ */
+ClientAnswerPool.prototype.areClientsWaitingTooLong = function() {
+    var waitTimes = this.getQueueFrontTimes();
+
+    var arr = Object.keys(waitTimes);
+    for (var i = 0; i < arr.length; ++i) {
+        var queueKey = arr[i];
+        if (waitTimes[queueKey] > this.desiredMaxWaitTime) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * @return {number}
+ */
+ClientAnswerPool.prototype.totalPoolSize = function() {
+    var answerQueues = this.answerQueues;
+
+    // Go over answerQueues and sum the length of each queues
+    return Object.keys(answerQueues).reduce(function(sum, queueKey) {
+        return sum + answerQueues[queueKey].length;
+    }, 0);
+}
+
+/**
+ * @return {ClientAnswerWrapper[]}
+ */
+ClientAnswerPool.prototype.getFlatQueue = function() {
+    var answerQueues = this.answerQueues;
+
+    // Go over answerQueues to extract the queues themselves
+    // before applying them to Array#concat to join them together
+    var queues = Object.keys(answerQueues).map(function(queueKey) {
+        return answerQueues[queueKey];
+    });
+
+    return [].concat.apply([], queues);
+}
+
+/**
+ * Get flat queue sorted by wait time, where head is longest wait time.
+ * @return {ClientAnswerWrapper[]}
+ */
+ClientAnswerPool.prototype.getQueueSortedByTime = function() {
+    return this.getFlatQueue()
+        .sort(function(a, b) {
+            var waitTimeA = a.timeAlive();
+            var waitTimeB = b.timeAlive();
+
+            if (waitTimeA < waitTimeB) {
+                return 1;
             }
 
-            if (totalPoolSize < this.desiredGroupSize) {
-
-                // TODO: The below block needs to be implemented!
-                // // If there's only one, then have a backup client (e.g. tutor) join the group
-                // if (totalPoolSize === 1) {
-                //     // TODO: How to add a backup client?
-                                 
-                //     return;
-                // }
-
-                // If we have two or more students (but less than the ideal group size)
-                // then just throw them together
-                let clientsToFormGroup = this.getFlatQueue();
-                this.removeClients(clientsToFormGroup);
-                return this.createChatGroupFromWrappedClients(clientsToFormGroup);
+            if (waitTimeA > waitTimeB) {
+                return -1;
             }
 
-            // Clear those in order by wait time
-            let clientsToFormGroup = this.getQueueSortedByTime().slice(0, this.desiredGroupSize)
+            return 0;
+        });
+}
+
+/**
+ * Generates a chat group, only when it deems possible or "good".
+ * 
+ * Does not automatically exhaust pool - this method must be run repeatedly.
+ * 
+ * @return {ChatGroup | undefined}
+ */
+ClientAnswerPool.prototype.tryMakeChatGroup = function() {
+    var viableAnswerQueues = this.getViableQueues();
+
+    // If there is enough diversity, create group now
+    if (viableAnswerQueues.length >= this.desiredGroupSize) {
+        return this.createChatGroupFromQueueKeys(viableAnswerQueues);
+    }
+
+    // If someone is waiting too long, then create groups now
+    if (this.areClientsWaitingTooLong()) {
+
+        // Determine if there are not enough clients to form a group of the desired size
+        var totalPoolSize = this.totalPoolSize();
+
+        // If pool size = desiredGroupSize + 1, attempt to create a group of size 2
+        // now to attempt to prevent loners from appearing?
+        if (totalPoolSize === (this.desiredGroupSize + 1)) {
+            var groupOfTwo = this.getQueueSortedByTime().slice(0, 2);
+            this.removeClients(groupOfTwo);
+            return this.createChatGroupFromWrappedClients(groupOfTwo);
+        }
+
+        if (totalPoolSize < this.desiredGroupSize) {
+
+            // TODO: The below block needs to be implemented!
+            // // If there's only one, then have a backup client (e.g. tutor) join the group
+            // if (totalPoolSize === 1) {
+            //     // TODO: How to add a backup client?
+
+            //     return;
+            // }
+
+            // If we have two or more students (but less than the ideal group size)
+            // then just throw them together
+            var clientsToFormGroup = this.getFlatQueue();
             this.removeClients(clientsToFormGroup);
             return this.createChatGroupFromWrappedClients(clientsToFormGroup);
         }
 
-        // Don't produce a group when we don't deem it necessary
-        return;
+        // Clear those in order by wait time
+        var clientsToFormGroup = this.getQueueSortedByTime().slice(0, this.desiredGroupSize)
+        this.removeClients(clientsToFormGroup);
+        return this.createChatGroupFromWrappedClients(clientsToFormGroup);
     }
 
-    /**
-     * @param {number[]} queueKeys The keys to each answer queue from which to get clients from to form a group
-     * @return {ChatGroup}
-     */
-    createChatGroupFromQueueKeys(queueKeys) {
-        // Try to form the group of our desired size; otherwise use what we are given
-        let groupSize = this.desiredGroupSize;
+    // Don't produce a group when we don't deem it necessary
+    return;
+}
 
-        if (queueKeys.length < groupSize) {
-            groupSize = queueKeys.length;
-        }
+/**
+ * @param {number[]} queueKeys The keys to each answer queue from which to get clients from to form a group
+ * @return {ChatGroup}
+ */
+ClientAnswerPool.prototype.createChatGroupFromQueueKeys = function(queueKeys) {
+    // Try to form the group of our desired size; otherwise use what we are given
+    var groupSize = this.desiredGroupSize;
 
-        // Shuffle the queue keys so we get random answer spread in groups
-        shuffle(queueKeys);
-
-
-        let clientsToFormGroup = [];        // {Client[]}
-
-        for (let i = 0; i < groupSize; ++i) {
-            // Get the client at the front of the i-th answer queue
-            clientsToFormGroup.push(this.removeClientFromFrontOfAnswerQueue(queueKeys[i]));
-        }
-
-        return this.createChatGroupFromClients(clientsToFormGroup);
+    if (queueKeys.length < groupSize) {
+        groupSize = queueKeys.length;
     }
 
-    /**
-     * @param {Client[]} clients
-     * @return {ChatGroup}
-     */
-    createChatGroupFromClients(clients) {
-        return new ChatGroup(clients);
+    // Shuffle the queue keys so we get random answer spread in groups
+    shuffle(queueKeys);
+
+
+    var clientsToFormGroup = [];        // {Client[]}
+
+    for (var i = 0; i < groupSize; ++i) {
+        // Get the client at the front of the i-th answer queue
+        clientsToFormGroup.push(this.removeClientFromFrontOfAnswerQueue(queueKeys[i]));
     }
 
-    /**
-     * @param {ClientAnswerWrapper[]} clientWrappedObjs
-     * @return {ChatGroup}
-     */
-    createChatGroupFromWrappedClients(clientWrappedObjs) {
-        let clients = clientWrappedObjs.map(function(clientWrappedObj) {
-            return clientWrappedObj.client;
-        });
+    return this.createChatGroupFromClients(clientsToFormGroup);
+}
 
-        return this.createChatGroupFromClients(clients);
-    }
+/**
+ * @param {Client[]} clients
+ * @return {ChatGroup}
+ */
+ClientAnswerPool.prototype.createChatGroupFromClients = function(clients) {
+    return new ChatGroup(clients);
+}
 
-    /**
-     * @param {number} queueKey The key to the answer queue
-     * @return {Client}
-     */
-    removeClientFromFrontOfAnswerQueue(queueKey) {
-        // Array#shift() gets the first element of the array and then we unwrap the ClientAnswerWrapper
-        return this.answerQueues[queueKey].shift().client;
-    }
+/**
+ * @param {ClientAnswerWrapper[]} clientWrappedObjs
+ * @return {ChatGroup}
+ */
+ClientAnswerPool.prototype.createChatGroupFromWrappedClients = function(clientWrappedObjs) {
+    var clients = clientWrappedObjs.map(function(clientWrappedObj) {
+        return clientWrappedObj.client;
+    });
 
-    /**
-     * @param {Client} client
-     */
-    removeClient(client) {
-        // Need to search through the entire pool to remove
-        for (let queueKey of Object.keys(this.answerQueues)) {
-            let index = this.answerQueues[queueKey].indexOf(client);
-            
-            if (index > -1) {
-                // Remove the client out and return it
-                return this.answerQueues[queueKey].splice(index, 1)[0].client;
-            }
-        }
+    return this.createChatGroupFromClients(clients);
+}
 
-        throw new Error("Client could not be found in pool");
-    }
-    
-    /**
-     * @param {Client[]} clients
-     */
-    removeClients(clients) {
-        clients.forEach(function(client) {
-            this.removeClient(client);
-        }, this);
-    }
+/**
+ * @param {number} queueKey The key to the answer queue
+ * @return {Client}
+ */
+ClientAnswerPool.prototype.removeClientFromFrontOfAnswerQueue = function(queueKey) {
+    // Array#shift() gets the first element of the array and then we unwrap the ClientAnswerWrapper
+    return this.answerQueues[queueKey].shift().client;
+}
 
-    /**
-     * @param {Quiz} quiz
-     */
-    constructor(quiz) {
-        this.desiredGroupSize = conf.groupSize;
-        this.desiredMaxWaitTime = 1 * 60 * 1000;    // TODO: 1 minute for now
+/**
+ * @param {Client} client
+ */
+ClientAnswerPool.prototype.removeClient = function(client) {
+    // Need to search through the entire pool to remove
+    var arr = Object.keys(this.answerQueues);
+    for (var i = 0; i < arr.length; ++i) {
+        var queueKey = arr[i];
+        var index = this.answerQueues[queueKey].indexOf(client);
 
-        this.quiz = quiz;
-
-        // Determine how many answers are available
-        this.numberOfAnswers = this.quiz.probingQuestionChoices.length;
-
-        // Set up answer queues as a map between an answer number => ClientAnswerWrapper[] 
-        this.answerQueues = {};
-
-        for (let i = 0; i < this.numberOfAnswers; ++i) {
-            this.answerQueues[i] = [];   // {ClientAnswerWrapper[]}
+        if (index > -1) {
+            // Remove the client out and return it
+            return this.answerQueues[queueKey].splice(index, 1)[0].client;
         }
     }
+
+    throw new Error("Client could not be found in pool");
+}
+
+/**
+ * @param {Client[]} clients
+ */
+ClientAnswerPool.prototype.removeClients = function(clients) {
+    clients.forEach(function(client) {
+        this.removeClient(client);
+    }, this);
 }
 
 module.exports = ClientAnswerPool;

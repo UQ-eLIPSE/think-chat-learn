@@ -7,102 +7,100 @@
 
 "use strict";
 
-const io = global.io;
+var io = global.io;
 
-const Client = require("./client"); 
+var Client = require("./client");
 
-class Group {
-    /**
-     * @param {Client} client
-     */
-    addClient(client) {
-        if (this.clients.indexOf(client) < 0) {
-            let clientSocket = client.getSocket();
-            
-            if (!clientSocket) {
-                throw new Error("Client must have active socket");
-            }
-            
-            // Join client socket into the same "room" as this group using the group ID
-            clientSocket.join(this.id);
-            
-            this.clients.push(client);
-        }
+/**
+ * @param {Client[]} clients
+ */
+var Group = function(clients) {
+    this.id = require('crypto').randomBytes(16).toString('hex');    // {string}
+    this.clients = [];  // {Client[]}
+
+    if (clients) {
+        this.addClients(clients);
     }
-    
-    /**
-     * @param {Client[]} clients
-     */
-    addClients(clients) {
-        clients.forEach(function(client) {
-            this.addClient(client);
-        }, this);
-    }
-    
-    /**
-     * @param {Client} client
-     */
-    removeClient(client) {
-        let clientIndex = this.getClientIndex(client);
-        if (clientIndex > -1) {
-            this.clients.splice(clientIndex, 1);
-            client.getSocket().leave(this.id);
-        }   
-    }
-    
-    removeAllClients() {
-        this.clients.forEach(this.removeClient, this);
-    }
-    
-    /**
-     * @param {string} event Event name/ID of the socket event
-     * @param {any} data Data to pass with the frame
-     */
-    broadcastEvent(event, data) {
-        io.sockets.in(this.id).emit(event, data);
-    }
-    
-    /**
-     * @param {Client} client
-     * @param {string} event
-     * @param {any} data
-     */
-    emitEvent(client, event, data) {
-        let clientSocket = client.getSocket();
-        
+}
+
+/**
+ * @param {Client} client
+ */
+Group.prototype.addClient = function(client) {
+    if (this.clients.indexOf(client) < 0) {
+        var clientSocket = client.getSocket();
+
         if (!clientSocket) {
-            throw new Error("Client socket not found");
+            throw new Error("Client must have active socket");
         }
-        
-        clientSocket.emit(event, data);
+
+        // Join client socket into the same "room" as this group using the group ID
+        clientSocket.join(this.id);
+
+        this.clients.push(client);
     }
-    
-    /**
-     * @return {number}
-     */
-    numberOfClients() {
-        return this.clients.length;
+}
+
+/**
+ * @param {Client[]} clients
+ */
+Group.prototype.addClients = function(clients) {
+    clients.forEach(function(client) {
+        this.addClient(client);
+    }, this);
+}
+
+/**
+ * @param {Client} client
+ */
+Group.prototype.removeClient = function(client) {
+    var clientIndex = this.getClientIndex(client);
+    if (clientIndex > -1) {
+        this.clients.splice(clientIndex, 1);
+        client.getSocket().leave(this.id);
     }
-    
-    /**
-     * @param {Client} client
-     * @return {number} The index of the client in the group
-     */
-    getClientIndex(client) {
-        return this.clients.indexOf(client);
+}
+
+Group.prototype.removeAllClients = function() {
+    this.clients.forEach(this.removeClient, this);
+}
+
+/**
+ * @param {string} event Event name/ID of the socket event
+ * @param {any} data Data to pass with the frame
+ */
+Group.prototype.broadcastEvent = function(event, data) {
+    io.sockets.in(this.id).emit(event, data);
+}
+
+/**
+ * @param {Client} client
+ * @param {string} event
+ * @param {any} data
+ */
+Group.prototype.emitEvent = function(client, event, data) {
+    var clientSocket = client.getSocket();
+
+    if (!clientSocket) {
+        throw new Error("Client socket not found");
     }
-    
-    /**
-     * @param {Client[]} clients
-     */
-    constructor(clients) {
-        this.id = require('crypto').randomBytes(16).toString('hex');    // {string}
-        this.clients = [];  // {Client[]}
-        
-        if (clients) {
-            this.addClients(clients);
-        }
-    }
+
+    clientSocket.emit(event, data);
+}
+
+/**
+ * @return {number}
+ */
+Group.prototype.numberOfClients = function() {
+    return this.clients.length;
+}
+
+/**
+ * @param {Client} client
+ * @return {number} The index of the client in the group
+ */
+Group.prototype.getClientIndex = function(client) {
+    return this.clients.indexOf(client);
 }
 
 module.exports = Group;
