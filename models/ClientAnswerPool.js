@@ -244,7 +244,7 @@ ClientAnswerPool.prototype.getQueueSortedByTime = function() {
  * 
  * @return {ChatGroup | undefined}
  */
-ClientAnswerPool.prototype.tryMakeChatGroup = function() {
+ClientAnswerPool.prototype.tryMakeChatGroup = function(backupClientQueue) {
     var viableAnswerQueues = this.getViableQueues();
 
     // If there is enough diversity, create group now
@@ -267,16 +267,14 @@ ClientAnswerPool.prototype.tryMakeChatGroup = function() {
         }
 
         if (totalPoolSize < this.desiredGroupSize) {
+            if (totalPoolSize === 1 &&
+                backupClientQueue.attemptTransferBackupClientToClientPool(this)) {
+                // Don't do anything if there is a backup client to be placed into the pool
+                // (happens when #attemptTransferBackupClientToClientPool returns TRUE)
+                return;
+            }
 
-            // TODO: The below block needs to be implemented!
-            // // If there's only one, then have a backup client (e.g. tutor) join the group
-            // if (totalPoolSize === 1) {
-            //     // TODO: How to add a backup client?
-
-            //     return;
-            // }
-
-            // If we have two or more students (but less than the ideal group size)
+            // Give up: If we have students (but less than the ideal group size)
             // then just throw them together
             var clientsToFormGroup = this.getFlatQueue();
             this.removeClients(clientsToFormGroup);

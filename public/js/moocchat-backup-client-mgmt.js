@@ -1,7 +1,9 @@
+/// <reference path="./settings.js" />
 /// <reference path="./stateflow.js" />
 
 $(function() {
     var socket = connect();
+    var username;
 
     var STATE = {
         LOGIN: 1,
@@ -30,11 +32,20 @@ $(function() {
             e.preventDefault();
 
             // Sign in
-            var username = $("#username").val();
-            // TODO: Send to server, wait for response back
+            username = $("#username").val();
 
-            // Once signed in, proceed to question-response
-            _go(STATE.QUESTION_RESPONSE);
+            socket.emit("backupClientLogin", {
+                username: username
+            });
+
+            socket.once("backupClientLoginState", function(data) {
+                if (data.success) {
+                    // Once signed in, proceed to question-response
+                    _go(STATE.QUESTION_RESPONSE);
+                } else {
+                    alert(data.message);
+                }
+            });
         });
     }
 
@@ -43,21 +54,22 @@ $(function() {
         _$("form").on("submit", function(e) {
             e.preventDefault();
 
-            // Join queue
-            var data = void 0;      // Data from joining queue to include initial update of current queue + pool status
-            /**
-             * data = {
-             *      backupClientQueue: {
-             *          clients {Client[]}
-             *      },
-             *      clientPool: {
-             *          numberOfClients {number}
-             *      }
-             * }
-             */
+            var answer = 0; // TODO: index of answer
+            var justification = _$("#justification").val();
 
-            // When okay, proceed to management page
-            _go(STATE.MANAGEMENT, data);
+            // Store answers with client
+            socket.emit("backupClientEnterQueue", {
+                username: username,
+                answer: answer,
+                justification: justification
+            });
+
+            socket.once("backupClientEnterQueueState", function(data) {
+                if (data.success) {
+                    // When okay, proceed to management page
+                    _go(STATE.MANAGEMENT);
+                }
+            });
         });
     }
 
@@ -90,12 +102,11 @@ $(function() {
         // Attach socket listeners to queue and pool status
         socket.on("backupClientQueueUpdate", onBackupClientQueueUpdate);
         socket.on("clientPoolCountUpdate", onClientPoolCountUpdate);
-        
-        // Update once now with incoming data where available 
-        if (data) {
-            onBackupClientQueueUpdate(data.backupClientQueue);
-            onClientPoolCountUpdate(data.clientPool);
-        }
+
+        // Request information now (once only)
+        socket.emit("backupClientStatusRequest", {
+            username: username
+        });
     }
 
     function management_onLeave() {
@@ -107,7 +118,7 @@ $(function() {
 
     function chat_onEnter() {
         var $chatBox = _$("#chat-box");
-        
+
         function addMessageToChatBox(screenName, message) {
             $("<blockquote>")
                 .attr("data-screenname", screenName)
@@ -115,17 +126,19 @@ $(function() {
                 .appendTo($chatBox);
         }
 
-        // TODO: Will probably need updating to match #62
-        socket.on("chatMessage", function() {
+        socket.on("chatGroupMessage", function() {
+            addMessageToChatBox(0, 0);
+            $chatBox.scrollTop($chatBox.scrollHeight);
+        });
+
+        socket.on("chatGroupQuitChange", function() {
 
         });
     }
 
     function chat_onLeave() {
-        // TODO: Will probably need updating to match #62
-        socket.off("chatMessage");
-        socket.off("requestToQuitUpdated");
-        socket.off("memberDisconnected");
+        socket.off("chatGroupMessage");
+        socket.off("chatGroupQuitChange");
     }
 
 

@@ -11,8 +11,14 @@ var io = global.io;
 var Client = require("./client");
 
 var BackupClientQueue = function() {
+    this.maxOutTrayWaitTime = 15 * 1000;     // TODO: 15 seconds for now
+
     this.id = require('crypto').randomBytes(16).toString('hex');
     this.queue = [];
+
+    /** Client about to be transferred to pool pending confirmation, waiting in the out tray */
+    this.clientOutTray;
+    this.wipeClientOutTray();
 };
 
 BackupClientQueue.prototype.addClient = function(client) {
@@ -36,22 +42,27 @@ BackupClientQueue.prototype.removeClient = function(client) {
 
     if (clientIndex > -1) {
         this.queue.splice(clientIndex, 1);
+        
+        if (this.clientOutTray && client == this.clientOutTray.client) {
+            this.wipeClientOutTray();
+        }
+
         client.getSocket().leave(this.id);
         this.broadcastUpdate();
     }
 
 }
 
-BackupClientQueue.prototype.popClient = function() {
-    var client = this.queue.shift();
+// BackupClientQueue.prototype.popClient = function() {
+//     var client = this.queue.shift();
 
-    if (client) {
-        // Popped clients leave the queue (and join back in after chat if necessary)
-        client.getSocket().leave(this.id);
-    }
+//     if (client) {
+//         // Popped clients leave the queue (and join back in after chat if necessary)
+//         client.getSocket().leave(this.id);
+//     }
 
-    return client;
-}
+//     return client;
+// }
 
 BackupClientQueue.prototype.broadcastEvent = function(event, data) {
     io.sockets.in(this.id).emit(event, data);
@@ -69,14 +80,86 @@ BackupClientQueue.prototype.broadcastUpdate = function() {
     this.broadcastEvent("backupClientQueueUpdate", data);
 }
 
-BackupClientQueue.prototype.getClientFromUsername = function(username) {
+BackupClientQueue.prototype.isUsernameLoggedIn = function(username) {
     var arr = this.queue;
     for (var i = 0; i < arr.length; ++i) {
         var client = arr[i];
         if (arr[i].username === username) {
-            return client;
+            return true;
         }
     }
+    
+    return false;
 }
+
+BackupClientQueue.prototype.getQueueSize = function() {
+    return this.queue.length;
+}
+
+BackupClientQueue.prototype.wipeClientOutTray = function() {
+    this.setClientOutTray();    // Both parameters undefined
+}
+
+BackupClientQueue.prototype.setClientOutTray = function(client, pool) {
+    this.clientOutTray = {
+        client: client,
+        pool: pool,
+        timestamp: Date.now()
+    };
+}
+
+BackupClientQueue.prototype.isClientWaitingInOutTray = function() {
+    if (this.clientOutTray && this.clientOutTray.client) {
+        // Stale client in out tray needs to be ejected/logged out
+        if ((this.clientOutTray.timestamp + this.maxOutTrayWaitTime) > Date.now()) {
+            this.removeClient(this.clientOutTray.client);
+
+            // TODO: Notify client?
+            // client.getSocket.emit("backupClientEjected");
+
+            return false;
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * @param {ClientAnswerPool} clientAnswerPool
+ * @return {boolean} Whether a client is waiting in the out tray for transfer
+ */
+BackupClientQueue.prototype.attemptTransferBackupClientToClientPool = function(clientAnswerPool) {
+    // Don't do anything if there is already someone waiting to be transferred
+    if (this.isClientWaitingInOutTray()) {
+        return true;
+    }
+
+    if (this.getQueueSize() > 0) {
+        var client = this.queue[0];
+        
+        this.setClientOutTray(client, clientAnswerPool);
+        // TODO: Notify client
+        // client.getSocket().emit("backupClientAwaitingConfirmation");
+        
+        return true;
+    }
+
+    return false;   // We couldn't do the transfer because we don't have anyone
+}
+
+
+BackupClientQueue.prototype.moveOutTrayClientToClientPool = function() {
+    var client = this.clientOutTray.client;
+    var pool = this.clientOutTray.pool;
+
+    this.removeClient(client);
+    pool.addClient(client);
+
+    // Moved clients leave the queue (and join back in after chat if necessary)
+    client.getSocket().leave(this.id);
+}
+
 
 module.exports = BackupClientQueue;

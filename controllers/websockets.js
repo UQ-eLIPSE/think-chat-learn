@@ -16,6 +16,7 @@ var db_wrapper = require('./database.js');
 
 var ClientAnswerPool = require("../models/ClientAnswerPool");
 var ChatGroup = require("../models/ChatGroup");
+var BackupClientQueue = require("../models/BackupClientQueue");
 
 
 var hitToQuestionMap = new Object();
@@ -151,9 +152,13 @@ function afterDbLoad() {
     // being used (the question number is always fixed)
     var clientAnswerPool = new ClientAnswerPool(quizSet[getQuestionNumber()]);
     
+    // Queue for instructors/tutors on standby
+    var backupClientQueue = new BackupClientQueue();
+
     // Object(ChatGroupId{string} => ChatGroup)
     var chatGroups = {};
     
+
     
     function formChatGroup() {
         var newChatGroup = clientAnswerPool.tryMakeChatGroup();
@@ -161,6 +166,9 @@ function afterDbLoad() {
         // Store reference to chat group if formed
         if (newChatGroup) {
             chatGroups[newChatGroup.id] = newChatGroup;
+
+            broadcastPoolCountToBackupQueue();
+
             return newChatGroup;
         }
     }
@@ -211,7 +219,9 @@ function afterDbLoad() {
     function handleChatGroupJoinRequest(data) {
         var client = getClientFromUsername(data.username);
         clientAnswerPool.addClient(client);
-        
+
+        broadcastPoolCountToBackupQueue();
+
         chatGroupFormationLoop.run();
     }
     
@@ -256,6 +266,11 @@ function afterDbLoad() {
     }
 
 
+    function broadcastPoolCountToBackupQueue() {
+        backupClientQueue.broadcastEvent("clientPoolCountUpdate", {
+            numberOfClients: clientAnswerPool.totalPoolSize()
+        });
+    }
 
 
 
@@ -322,6 +337,96 @@ function afterDbLoad() {
 
 
 
+    /**
+     * @param {string} username
+     */
+    function createClient(username) {
+        // Only setting the username for new clients
+        // Ignored parameters are intentional, as well as the use of `void 0` to
+        // set the first parameter to `undefined`
+        return new Client(void 0, username);
+    }
+
+    /**
+     * data = ????
+     */
+    function handleBackupClientLogin(data, socket) {
+        // TODO: Validate user
+        var username = data.username;
+
+        var loginState = {
+            success: true,
+            message: ""
+        };
+
+        if (backupClientQueue.isUsernameLoggedIn(username)) {
+            loginState.success = false;
+            loginState.message = "Already logged in";
+        }
+
+        if (!loginState.success) {
+            socket.emit("backupClientLoginState", loginState);
+            return;
+        }
+
+        var newClient = createClient(data.username);
+        newClient.setSocket(socket);
+        activeClients[newClient.username] = newClient;
+
+        socket.emit("backupClientLoginState", loginState);
+    }
+
+    /**
+     * data = ????
+     */
+    function backupClientLogout(data) {
+        var client = getClientFromUsername(data.username);
+        backupClientQueue.removeClient(client);
+        delete activeClients[client.username];
+    }
+
+    /**
+     * data = ????
+     * 
+     * Needs question answer/justification before entering queue
+     */
+    function handleBackupClientEnterQueue(data) {
+        var client = getClientFromUsername(data.username);
+
+        // Index of the answer (0-based)
+        client.probingQuestionAnswer = data.answer;
+        client.probingQuestionAnswerTime = new Date().toISOString();
+        client.probJustification = data.justification;
+
+        // Add the client to the backup queue here, only *after* we
+        // have all the information for question/answer
+        backupClientQueue.addClient(client);
+
+        client.getSocket().emit("backupClientEnterQueueState", {
+            success: true
+        });
+    }
+
+    function broadcastBackupClientQueueStatus() {
+        backupClientQueue.broadcastUpdate();
+    }
+
+    /**
+     * data = ????
+     */
+    function handleBackupClientStatusRequest(data) {
+        if (!backupClientQueue.isUsernameLoggedIn(data.username)) {
+            return;
+        }
+
+        broadcastBackupClientQueueStatus();
+        broadcastPoolCountToBackupQueue();
+    }
+
+
+
+
+
 io.sockets.on('connection', function(socket) {
   //  socket is for ONE client
   //  EVENT-DRIVEN message exchange between a client and the server
@@ -373,7 +478,10 @@ io.sockets.on('connection', function(socket) {
     
     socket.on("answerSubmissionInitial", handleAnswerSubmissionInitial)
 
-
+    socket.on("backupClientLogin", function(data) { handleBackupClientLogin(data, socket); });
+    // socket.on("backupClientLogout", handleBackupClientLogout);
+    socket.on("backupClientEnterQueue", handleBackupClientEnterQueue);
+    socket.on("backupClientStatusRequest", handleBackupClientStatusRequest);
 
   function getClient(username) {
     if (!(username in activeClients)) {
@@ -1876,7 +1984,7 @@ function disconnect() {
     var username = "";
     var client;
     var state = -1;
-    debugger
+    // debugger
     //  SEARCH CLIENT FROM activeClients
     for(var clientIndex in activeClients) {
       var client = activeClients[clientIndex];
