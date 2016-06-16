@@ -111,7 +111,7 @@ BackupClientQueue.prototype.setClientOutTray = function(client, pool) {
 BackupClientQueue.prototype.isClientWaitingInOutTray = function() {
     if (this.clientOutTray && this.clientOutTray.client) {
         // Stale client in out tray needs to be ejected/logged out
-        if ((this.clientOutTray.timestamp + this.maxOutTrayWaitTime) > Date.now()) {
+        if ((this.clientOutTray.timestamp + this.maxOutTrayWaitTime) < Date.now()) {
             this.removeClient(this.clientOutTray.client);
 
             // TODO: Notify client?
@@ -140,8 +140,7 @@ BackupClientQueue.prototype.attemptTransferBackupClientToClientPool = function(c
         var client = this.queue[0];
         
         this.setClientOutTray(client, clientAnswerPool);
-        // TODO: Notify client
-        // client.getSocket().emit("backupClientAwaitingConfirmation");
+        client.getSocket().emit("backupClientTransferCall");
         
         return true;
     }

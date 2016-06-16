@@ -161,7 +161,7 @@ function afterDbLoad() {
 
     
     function formChatGroup() {
-        var newChatGroup = clientAnswerPool.tryMakeChatGroup();
+        var newChatGroup = clientAnswerPool.tryMakeChatGroup(backupClientQueue);
         
         // Store reference to chat group if formed
         if (newChatGroup) {
@@ -423,6 +423,18 @@ function afterDbLoad() {
         broadcastPoolCountToBackupQueue();
     }
 
+    /**
+     * data = ????
+     */
+    function handleBackupClientTransferConfirm(data) {
+        var client = getClientFromUsername(data.username);
+
+        if (backupClientQueue.clientOutTray &&
+            backupClientQueue.clientOutTray.client === client) {
+            backupClientQueue.moveOutTrayClientToClientPool();
+            chatGroupFormationLoop.run();
+        }
+    }
 
 
 
@@ -482,6 +494,7 @@ io.sockets.on('connection', function(socket) {
     // socket.on("backupClientLogout", handleBackupClientLogout);
     socket.on("backupClientEnterQueue", handleBackupClientEnterQueue);
     socket.on("backupClientStatusRequest", handleBackupClientStatusRequest);
+    socket.on("backupClientTransferConfirm", handleBackupClientTransferConfirm);
 
   function getClient(username) {
     if (!(username in activeClients)) {

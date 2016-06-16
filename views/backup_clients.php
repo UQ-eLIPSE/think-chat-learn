@@ -36,6 +36,43 @@
             padding: 15px;
             margin-bottom: 0;
         }
+        
+        #transfer-confirmation {
+            border: 3px solid red;
+            background: #ffebeb;
+            padding: 1em 2em;
+            position: absolute;
+            top: 0;
+            width: 94%;
+            left: 0;
+            margin-left: 3%;
+            margin-top: 3%;
+        }
+        
+        #transfer-remaining-seconds {
+            color: red;
+            font-weight: bold;
+            font-size: 1.8em;
+        }
+        
+        #chat-box {
+            height: 500px;
+            border: 1px solid #555;
+            overflow-y: scroll;
+        }
+
+        #chat-box > blockquote {
+            margin: 0;
+        }
+
+        #chat-box > blockquote::before {
+            content: attr(data-screenname) ": ";
+            display: inline;
+        }
+
+        #chat-box > blockquote.me {
+            color: darkblue;
+        }
     </style>
 </head>
 
@@ -46,7 +83,7 @@
             <img src="img/uq-logo.png" width="150" style="position: absolute; right: 15px; top: 36px;">
         </div>
 
-        <div>
+        <div style="position: relative;">
             <div id="login" class="row moocchat-page">
                 <div class="col-md-12">
                     <h2>Login to join backup client queue</h2>
@@ -94,21 +131,25 @@
                     <ul id="answers"></ul>
                     <p>Your selected answer: ...</p>
                 </div>
+                <div id="transfer-confirmation" class="hidden">
+                    <h2>You are being called for a discussion group</h2>
+                    <p>Please confirm that you are present.</p>
+                    <p>You have <span id="transfer-remaining-seconds">0</span> seconds remaining.</p>
+                    <p><button id="confirm-transfer" class="btn btn-success">Confirm</button></p>
+                </div>
             </div>
 
             <div id="chat" class="row moocchat-page">
                 <div class="col-md-2">
-                    <input type="button" value="Request End Chat" class="btn btn-danger btn-s" />
+                    <button id="request-end-chat" class="btn btn-danger btn-s">Request End Chat</button>
                 </div>
                 <div class="col-md-10">
                     <div id="chat-box"></div>
                     <form>
-                        <input type="text"></input><button>Send</button>
+                        <input type="text" id="chat-input"></input><button>Send</button>
                     </form>
                 </div>
             </div>
-
-
 
         </div>
 
