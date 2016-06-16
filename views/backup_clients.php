@@ -37,6 +37,37 @@
             margin-bottom: 0;
         }
         
+        #question-statement {
+            border-top: 1px solid #555;
+            padding-top: 1em;
+        }
+        
+        #answers {}
+        
+        #answers li {
+            margin: 0;
+            padding: 0.5em 1em;
+            border: 1px solid #555;
+            list-style-type: upper-alpha;
+        }
+        
+        #answers li + li {
+            border-top: 0;
+        }
+        
+        #answers li input[type="radio"] {
+            margin: 0 0.5em;
+        }
+        
+        #answers li.selected {
+            background: limegreen;
+        }
+        
+        #number-of-clients-in-pool {
+            display: block;
+            font-size: 5em;
+        }
+        
         #transfer-confirmation {
             border: 3px solid red;
             background: #ffebeb;
@@ -60,18 +91,42 @@
             border: 1px solid #555;
             overflow-y: scroll;
         }
-
+        
         #chat-box > blockquote {
             margin: 0;
         }
-
+        
         #chat-box > blockquote::before {
             content: attr(data-screenname) ": ";
             display: inline;
         }
-
-        #chat-box > blockquote.me {
-            color: darkblue;
+        
+        #chat-box > blockquote[data-screenname="system"] {
+            color: #d9230f;
+            border-left-color: #d9230f;
+        }
+        
+        #chat-box > blockquote[data-screenname="Student 1"] {
+            color: #3a87ad;
+            border-left-color: #3a87ad;
+        }
+        
+        #chat-box > blockquote[data-screenname="Student 2"] {
+            color: #468847;
+            border-left-color: #468847;
+        }
+        
+        #chat-box > blockquote[data-screenname="Student 3"] {
+            color: #c09853;
+            border-left-color: #c09853;
+        }
+        
+        #chat-box > blockquote[data-screenname="system"]::before {
+            display: none;
+        }
+        
+        #chat-box > blockquote.me::before {
+            content: "Me: ";
         }
     </style>
 </head>
@@ -121,7 +176,7 @@
                 </div>
                 <div class="col-md-8">
                     <h3>Status</h3>
-                    <p>There are currently <span id="number-of-clients-in-pool">5</span> student(s) waiting in the formation
+                    <p style="text-align: center;">There are currently <span id="number-of-clients-in-pool">5</span> student(s) waiting in the formation
                         pool.
                     </p>
 
@@ -129,7 +184,6 @@
                     <p id="question-reading"></p>
                     <p id="question-statement"></p>
                     <ul id="answers"></ul>
-                    <p>Your selected answer: ...</p>
                 </div>
                 <div id="transfer-confirmation" class="hidden">
                     <h2>You are being called for a discussion group</h2>
@@ -140,14 +194,24 @@
             </div>
 
             <div id="chat" class="row moocchat-page">
-                <div class="col-md-2">
-                    <button id="request-end-chat" class="btn btn-danger btn-s">Request End Chat</button>
-                </div>
-                <div class="col-md-10">
+                <div class="col-md-12">
                     <div id="chat-box"></div>
                     <form>
-                        <input type="text" id="chat-input"></input><button>Send</button>
+                        <div style="display: table; width: 100%;">
+                            <div style="display: table-cell; vertical-align: top;">
+                                <input type="text" id="chat-input" class="form-control"></input>
+                            </div>
+                            <div style="display: table-cell; width: 0.1px; vertical-align: top;">
+                                <button class="btn btn-success btn-s">Send</button>
+                            </div>
+                        </div>
                     </form>
+                    Time Left: <span id="chat-timer"></span>
+                    <button id="request-end-chat" class="btn btn-danger btn-s">Request End Chat</button>
+                    <h3>Question information</h3>
+                    <p id="question-reading"></p>
+                    <p id="question-statement"></p>
+                    <ul id="answers"></ul>
                 </div>
             </div>
 
@@ -158,6 +222,7 @@
         <script src="./js/jquery-2.2.3.min.js"></script>
         <!-- MOOCchat Custom JavaScript -->
         <script src="./js/settings.js"></script>
+        <script src="./js/moocchat.stages.js"></script>
         <script src="./js/stateflow.js"></script>
         <script src="./js/moocchat-backup-client-mgmt.js"></script>
 

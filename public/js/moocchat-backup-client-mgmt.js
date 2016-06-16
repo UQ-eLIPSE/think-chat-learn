@@ -1,9 +1,15 @@
 /// <reference path="./settings.js" />
+/// <reference path="./moocchat.stages.js" />
 /// <reference path="./stateflow.js" />
 
 $(function() {
     var socket = connect();
     var username;
+    var quiz;
+    var chatTimerHandle;
+    var selectedAnswerIndex;
+
+    var chatTimeSeconds = getStageSeconds(DISCUSS_PROBING_STAGE);  // Fetched from ./moocchat.stages.js
 
     var STATE = {
         LOGIN: 1,
@@ -59,13 +65,21 @@ $(function() {
         _$("form").on("submit", function(e) {
             e.preventDefault();
 
-            var answer = 0; // TODO: index of answer
+            var answer = _$("input[name='moocchat-question']:checked").val();
             var justification = _$("#justification").val();
+
+            if (!answer || $.trim(justification).length === 0) {
+                alert("Answer and/or justification required");
+                return;
+            }
+
+            // Convert answer string value into number
+            selectedAnswerIndex = +new Number(answer);
 
             // Store answers with client
             socket.emit("backupClientEnterQueue", {
                 username: username,
-                answer: answer,
+                answer: selectedAnswerIndex,
                 justification: justification
             });
 
@@ -74,6 +88,26 @@ $(function() {
                     // When okay, proceed to management page
                     _go(STATE.MANAGEMENT);
                 }
+            });
+        });
+
+
+        socket.emit("questionContentRequest", _usernameObj());
+
+        socket.once("questionContent", function(data) {
+            quiz = data.quiz;
+
+            _$("#question-reading").html(quiz.reading);
+            _$("#question-statement").html(quiz.probingQuestion);
+            quiz.probingQuestionChoices.forEach(function(answerChoice, i) {
+                $("<li>")
+                    .text(answerChoice)
+                    .prepend($("<input type='radio'>")
+                        .prop({
+                            name: "moocchat-question",
+                            value: i
+                        }))
+                    .appendTo(_$("#answers"));
             });
         });
     }
@@ -125,7 +159,7 @@ $(function() {
             $transferConfirmBox.removeClass("hidden");
 
             var value = 15;
-            
+
             function countdown() {
                 $transferCountdown.text(value--);
             }
@@ -144,6 +178,15 @@ $(function() {
             });
         }
 
+
+        _$("#question-reading").html(quiz.reading);
+        _$("#question-statement").html(quiz.probingQuestion);
+        quiz.probingQuestionChoices.forEach(function(answerChoice, i) {
+            $("<li>")
+                .addClass((i === selectedAnswerIndex) ? "selected" : "")
+                .text(answerChoice)
+                .appendTo(_$("#answers"));
+        });
 
         // Attach socket listeners to queue and pool status
         socket.on("backupClientQueueUpdate", onBackupClientQueueUpdate);
@@ -167,27 +210,59 @@ $(function() {
         var $chatBox = _$("#chat-box");
         var $requestQuitButton = _$("#request-end-chat");
         var $chatInputForm = _$("form");
+        var $chatTimer = _$("#chat-timer");
 
         var myScreenName = data.screenName;
         var chatGroupId = data.groupId;
         var chatGroupSize = data.groupSize;
         var chatGroupAnswers = data.groupAnswers;
 
+        var wantToQuit = false;
+
+        var chatStartTime = new Date().valueOf();
+
         function addMessageToChatBox(screenName, message) {
             $("<blockquote>")
+                .addClass((screenName === myScreenName) ? "me" : "")
                 .attr("data-screenname", screenName)
                 .text(message)
                 .appendTo($chatBox);
         }
 
-        addMessageToChatBox("SYSTEM", "Chat group size = " + chatGroupSize);
-        addMessageToChatBox("SYSTEM", "You are " + myScreenName);
+        addMessageToChatBox("system", "Chat group size = " + chatGroupSize);
+        addMessageToChatBox("system", "You are " + myScreenName);
 
         chatGroupAnswers.forEach(function(answerObj) {
-            addMessageToChatBox(answerObj.screenName, "Answer: " + answerObj.answer + "; Justification: " + answerObj.justification);
+            addMessageToChatBox(answerObj.screenName, "Answer: " + String.fromCharCode(65 + answerObj.answer) + "; Justification: " + answerObj.justification);
         });
 
+        _$("#question-reading").html(quiz.reading);
+        _$("#question-statement").html(quiz.probingQuestion);
+        quiz.probingQuestionChoices.forEach(function(answerChoice, i) {
+            $("<li>")
+                .addClass((i === selectedAnswerIndex) ? "selected" : "")
+                .text(answerChoice)
+                .appendTo(_$("#answers"));
+        });
 
+        chatTimerHandle = setInterval(function() {
+            var now = new Date().valueOf();
+
+            var timeLeftMs = (chatTimeSeconds * 1000) - (now - chatStartTime);
+
+            // End chat by clicking end chat button
+            if (timeLeftMs < 0) {
+                $requestQuitButton.trigger("click");
+                return;
+            }
+
+            // Cheating by using Date to get minutes and seconds for us
+            var timeLeft = new Date(timeLeftMs);
+            var sec = timeLeft.getUTCSeconds();
+            
+            $chatTimer.text(timeLeft.getUTCMinutes() + ":" + ((sec < 10) ? "0"+sec : sec));
+
+        }, 500);
 
         socket.on("chatGroupMessage", function(data) {
             addMessageToChatBox(data.screenName, data.message);
@@ -200,8 +275,22 @@ $(function() {
         socket.on("chatGroupQuitChange", function(data) {
             // If everyone quits, move on now
             if (data.quitQueueSize >= data.groupSize) {
-                alert("Session ended");
+                // Store answers with client
+                socket.emit("backupClientEnterQueue", {
+                    username: username,
+                    answer: selectedAnswerIndex,
+                    justification: justification
+                });
+
+                socket.once("backupClientEnterQueueState", function(data) {
+                    if (data.success) {
+                        // When okay, proceed to management page
+                        _go(STATE.MANAGEMENT);
+                    }
+                });
             }
+
+            addMessageToChatBox("system", data.quitQueueSize + " of " + data.groupSize + " members requesting to end chat");
         });
 
         $chatInputForm.on("submit", function(e) {
@@ -218,12 +307,25 @@ $(function() {
 
             _$("#chat-input").val("").focus();
         });
+
+        $requestQuitButton.on("click", function() {
+            socket.emit("chatGroupQuitStatusChange", {
+                groupId: chatGroupId,
+                username: username,
+                quitStatus: (wantToQuit = !wantToQuit)
+            });
+
+            $requestQuitButton.text(wantToQuit ? "Cancel End Chat Request" : "Request End Chat")
+        });
     }
 
     function chat_onLeave() {
         socket.off("chatGroupMessage");
         socket.off("chatGroupQuitChange");
         _$("form").off("submit");
+        _$("#request-end-chat").off("click");
+
+        clearInterval(chatTimerHandle);
     }
 
 

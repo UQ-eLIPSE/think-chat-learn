@@ -439,6 +439,15 @@ function afterDbLoad() {
 
 
 
+    function handleQuestionContentRequest(data) {
+        var client = getClientFromUsername(data.username);
+
+        client.getSocket().emit("questionContent", {
+            quiz: quizSet[getQuestionNumber()]
+        });
+    }
+
+
 io.sockets.on('connection', function(socket) {
   //  socket is for ONE client
   //  EVENT-DRIVEN message exchange between a client and the server
@@ -495,6 +504,8 @@ io.sockets.on('connection', function(socket) {
     socket.on("backupClientEnterQueue", handleBackupClientEnterQueue);
     socket.on("backupClientStatusRequest", handleBackupClientStatusRequest);
     socket.on("backupClientTransferConfirm", handleBackupClientTransferConfirm);
+
+    socket.on("questionContentRequest", handleQuestionContentRequest);
 
   function getClient(username) {
     if (!(username in activeClients)) {
