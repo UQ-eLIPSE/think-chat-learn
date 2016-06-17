@@ -63,6 +63,10 @@
             background: limegreen;
         }
         
+        #logout {
+            margin-left: 0.5em;
+        }
+
         #number-of-clients-in-pool {
             display: block;
             font-size: 5em;
@@ -169,9 +173,6 @@
                 <div class="col-md-4">
                     <h3>Backup client queue</h3>
                     <ul id="backup-client-queue">
-                        <li>Tutor1</li>
-                        <li>Tutor2 <input type="button" value="Logout" class="btn btn-danger btn-xs" /></li>
-                        <li>Tutor3</li>
                     </ul>
                 </div>
                 <div class="col-md-8">
@@ -179,11 +180,6 @@
                     <p style="text-align: center;">There are currently <span id="number-of-clients-in-pool">5</span> student(s) waiting in the formation
                         pool.
                     </p>
-
-                    <h3>Question information</h3>
-                    <p id="question-reading"></p>
-                    <p id="question-statement"></p>
-                    <ul id="answers"></ul>
                 </div>
                 <div id="transfer-confirmation" class="hidden">
                     <h2>You are being called for a discussion group</h2>

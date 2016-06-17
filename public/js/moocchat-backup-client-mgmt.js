@@ -7,7 +7,9 @@ $(function() {
     var username;
     var quiz;
     var chatTimerHandle;
+    
     var selectedAnswerIndex;
+    var selectedAnswerJustification;
 
     var chatTimeSeconds = getStageSeconds(DISCUSS_PROBING_STAGE);  // Fetched from ./moocchat.stages.js
 
@@ -39,6 +41,25 @@ $(function() {
             username: username
         }
     }
+
+
+    function joinBackupClientQueueProceedToMgmtState() {
+        // Store answers with client
+        socket.emit("backupClientEnterQueue", {
+            username: username,
+            answer: selectedAnswerIndex,
+            justification: selectedAnswerJustification
+        });
+
+        socket.once("backupClientEnterQueueState", function(data) {
+            if (data.success) {
+                // When okay, proceed to management page
+                _go(STATE.MANAGEMENT);
+            }
+        });
+    }
+
+
 
     function login_onEnter() {
         _$("form").on("submit", function(e) {
@@ -76,19 +97,9 @@ $(function() {
             // Convert answer string value into number
             selectedAnswerIndex = +new Number(answer);
 
-            // Store answers with client
-            socket.emit("backupClientEnterQueue", {
-                username: username,
-                answer: selectedAnswerIndex,
-                justification: justification
-            });
+            selectedAnswerJustification = justification;
 
-            socket.once("backupClientEnterQueueState", function(data) {
-                if (data.success) {
-                    // When okay, proceed to management page
-                    _go(STATE.MANAGEMENT);
-                }
-            });
+            joinBackupClientQueueProceedToMgmtState();
         });
 
 
@@ -112,7 +123,7 @@ $(function() {
         });
     }
 
-    function management_onEnter(data) {
+    function management_onEnter() {
         var $backupClientQueue = _$("ul#backup-client-queue");
         var $numOfClientsInPool = _$("span#number-of-clients-in-pool");
 
@@ -133,7 +144,7 @@ $(function() {
                         .prop("id", "logout")
                         .text("Logout")
                         .on("click", function() {
-                            // TODO: Fire logout
+                            window.location.reload(true);
                         })
                         .appendTo($backupClientLI);
                 }
@@ -151,8 +162,7 @@ $(function() {
             $numOfClientsInPool.text(data.numberOfClients);
         }
 
-
-        function onBackupClientTransferCall(data) {
+        function onBackupClientTransferCall() {
             var $transferConfirmBox = _$("#transfer-confirmation");
             var $transferCountdown = _$("#transfer-remaining-seconds");
 
@@ -179,15 +189,6 @@ $(function() {
         }
 
 
-        _$("#question-reading").html(quiz.reading);
-        _$("#question-statement").html(quiz.probingQuestion);
-        quiz.probingQuestionChoices.forEach(function(answerChoice, i) {
-            $("<li>")
-                .addClass((i === selectedAnswerIndex) ? "selected" : "")
-                .text(answerChoice)
-                .appendTo(_$("#answers"));
-        });
-
         // Attach socket listeners to queue and pool status
         socket.on("backupClientQueueUpdate", onBackupClientQueueUpdate);
         socket.on("clientPoolCountUpdate", onClientPoolCountUpdate);
@@ -204,7 +205,6 @@ $(function() {
         socket.off("clientPoolCountUpdate");
         socket.off("backupClientTransferCall");
     }
-
 
     function chat_onEnter(data) {
         var $chatBox = _$("#chat-box");
@@ -229,6 +229,7 @@ $(function() {
                 .appendTo($chatBox);
         }
 
+        $chatBox.empty();
         addMessageToChatBox("system", "Chat group size = " + chatGroupSize);
         addMessageToChatBox("system", "You are " + myScreenName);
 
@@ -238,6 +239,7 @@ $(function() {
 
         _$("#question-reading").html(quiz.reading);
         _$("#question-statement").html(quiz.probingQuestion);
+        _$("#answers").empty();
         quiz.probingQuestionChoices.forEach(function(answerChoice, i) {
             $("<li>")
                 .addClass((i === selectedAnswerIndex) ? "selected" : "")
@@ -259,8 +261,8 @@ $(function() {
             // Cheating by using Date to get minutes and seconds for us
             var timeLeft = new Date(timeLeftMs);
             var sec = timeLeft.getUTCSeconds();
-            
-            $chatTimer.text(timeLeft.getUTCMinutes() + ":" + ((sec < 10) ? "0"+sec : sec));
+
+            $chatTimer.text(timeLeft.getUTCMinutes() + ":" + ((sec < 10) ? "0" + sec : sec));
 
         }, 500);
 
@@ -275,19 +277,7 @@ $(function() {
         socket.on("chatGroupQuitChange", function(data) {
             // If everyone quits, move on now
             if (data.quitQueueSize >= data.groupSize) {
-                // Store answers with client
-                socket.emit("backupClientEnterQueue", {
-                    username: username,
-                    answer: selectedAnswerIndex,
-                    justification: justification
-                });
-
-                socket.once("backupClientEnterQueueState", function(data) {
-                    if (data.success) {
-                        // When okay, proceed to management page
-                        _go(STATE.MANAGEMENT);
-                    }
-                });
+                joinBackupClientQueueProceedToMgmtState();
             }
 
             addMessageToChatBox("system", data.quitQueueSize + " of " + data.groupSize + " members requesting to end chat");
