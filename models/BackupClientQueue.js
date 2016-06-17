@@ -131,10 +131,9 @@ BackupClientQueue.prototype.isClientWaitingInOutTray = function() {
     if (this.clientOutTray && this.clientOutTray.client) {
         // Stale client in out tray needs to be ejected/logged out
         if ((this.clientOutTray.timestamp + this.maxOutTrayWaitTime) < Date.now()) {
-            this.removeClient(this.clientOutTray.client);
+            var client = this.removeClient(this.clientOutTray.client);
 
-            // TODO: Notify client?
-            // client.getSocket.emit("backupClientEjected");
+            client.getSocket().emit("backupClientEjected");
 
             return false;
         }

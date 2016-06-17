@@ -72,7 +72,7 @@
             font-size: 5em;
         }
         
-        #transfer-confirmation {
+        #transfer-confirmation, #ejected-dialog {
             border: 3px solid red;
             background: #ffebeb;
             padding: 1em 2em;
@@ -82,6 +82,7 @@
             left: 0;
             margin-left: 3%;
             margin-top: 3%;
+            box-shadow: 0px 5px 20px #000;
         }
         
         #transfer-remaining-seconds {
@@ -186,6 +187,11 @@
                     <p>Please confirm that you are present.</p>
                     <p>You have <span id="transfer-remaining-seconds">0</span> seconds remaining.</p>
                     <p><button id="confirm-transfer" class="btn btn-success">Confirm</button></p>
+                </div>
+                <div id="ejected-dialog" class="hidden">
+                    <h2>You have been removed from the backup client queue</h2>
+                    <p>You were ejected as you did not respond to a request to join a discussion group.</p>
+                    <p><button id="re-login" class="btn btn-info">Login again</button></p>
                 </div>
             </div>
 

@@ -4,10 +4,13 @@
 
 $(function() {
     var socket = connect();
+
     var username;
-    var quiz;
+
     var chatTimerHandle;
-    
+    var countdownIntervalHandle;
+
+    var quiz;
     var selectedAnswerIndex;
     var selectedAnswerJustification;
 
@@ -174,7 +177,7 @@ $(function() {
                 $transferCountdown.text(value--);
             }
 
-            var countdownIntervalHandle = setInterval(countdown, 1000);
+            countdownIntervalHandle = setInterval(countdown, 1000);
             countdown();
 
             $transferConfirmBox.one("click", "#confirm-transfer", function() {
@@ -186,14 +189,31 @@ $(function() {
                     _go(STATE.CHAT, data);
                 });
             });
+
+            // https://notificationsounds.com/message-tones/mission-accomplished-252
+            var notificationTone = new Audio("./mp3/mission-accomplished.mp3");
+            notificationTone.play();
         }
 
+        function onbackupClientEjected() {
+            var $transferConfirmBox = _$("#transfer-confirmation");
+            var $ejectedBox = _$("#ejected-dialog");
+
+            clearInterval(countdownIntervalHandle);
+
+            $transferConfirmBox.addClass("hidden");
+            $ejectedBox.removeClass("hidden");
+
+            $("#re-login", $ejectedBox).one("click", function() {
+                window.location.reload(true);
+            });
+        }
 
         // Attach socket listeners to queue and pool status
         socket.on("backupClientQueueUpdate", onBackupClientQueueUpdate);
         socket.on("clientPoolCountUpdate", onClientPoolCountUpdate);
         socket.on("backupClientTransferCall", onBackupClientTransferCall);
-        // TODO: socket.on("backupClientEjected", onbackupClientEjected);
+        socket.on("backupClientEjected", onbackupClientEjected);
 
         // Request information now (once only)
         socket.emit("backupClientStatusRequest", _usernameObj());
@@ -204,6 +224,7 @@ $(function() {
         socket.off("backupClientQueueUpdate");
         socket.off("clientPoolCountUpdate");
         socket.off("backupClientTransferCall");
+        socket.off("backupClientEjected");
     }
 
     function chat_onEnter(data) {
