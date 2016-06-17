@@ -298,6 +298,8 @@ $(function() {
             _$("#chat-input").val("").focus();
         });
 
+        $requestQuitButton.text(wantToQuit ? "Cancel End Chat Request" : "Request End Chat");
+
         $requestQuitButton.on("click", function() {
             socket.emit("chatGroupQuitStatusChange", {
                 groupId: chatGroupId,
@@ -305,7 +307,7 @@ $(function() {
                 quitStatus: (wantToQuit = !wantToQuit)
             });
 
-            $requestQuitButton.text(wantToQuit ? "Cancel End Chat Request" : "Request End Chat")
+            $requestQuitButton.text(wantToQuit ? "Cancel End Chat Request" : "Request End Chat");
         });
     }
 
