@@ -262,7 +262,6 @@ ClientAnswerPool.prototype.tryMakeChatGroup = function(backupClientQueue) {
         // now to attempt to prevent loners from appearing?
         if (totalPoolSize === (this.desiredGroupSize + 1)) {
             var groupOfTwo = this.getQueueSortedByTime().slice(0, 2);
-            this.removeClients(groupOfTwo);
             return this.createChatGroupFromWrappedClients(groupOfTwo);
         }
 
@@ -277,13 +276,11 @@ ClientAnswerPool.prototype.tryMakeChatGroup = function(backupClientQueue) {
             // Give up: If we have students (but less than the ideal group size)
             // then just throw them together
             var clientsToFormGroup = this.getFlatQueue();
-            this.removeClients(clientsToFormGroup);
             return this.createChatGroupFromWrappedClients(clientsToFormGroup);
         }
 
         // Clear those in order by wait time
         var clientsToFormGroup = this.getQueueSortedByTime().slice(0, this.desiredGroupSize)
-        this.removeClients(clientsToFormGroup);
         return this.createChatGroupFromWrappedClients(clientsToFormGroup);
     }
 
@@ -322,6 +319,7 @@ ClientAnswerPool.prototype.createChatGroupFromQueueKeys = function(queueKeys) {
  * @return {ChatGroup}
  */
 ClientAnswerPool.prototype.createChatGroupFromClients = function(clients) {
+    this.removeClients(clients);
     return new ChatGroup(clients);
 }
 
@@ -348,21 +346,23 @@ ClientAnswerPool.prototype.removeClientFromFrontOfAnswerQueue = function(queueKe
 
 /**
  * @param {Client} client
+ * 
+ * @return {Client} Client that was removed
  */
 ClientAnswerPool.prototype.removeClient = function(client) {
     // Need to search through the entire pool to remove
     var arr = Object.keys(this.answerQueues);
     for (var i = 0; i < arr.length; ++i) {
         var queueKey = arr[i];
-        var index = this.answerQueues[queueKey].indexOf(client);
+        var thisAnswerWrappedClients = this.answerQueues[queueKey];
 
-        if (index > -1) {
-            // Remove the client out and return it
-            return this.answerQueues[queueKey].splice(index, 1)[0].client;
+        for (var j = 0; j < thisAnswerWrappedClients.length; ++j) {
+            if (thisAnswerWrappedClients[j].client === client) {
+                // Remove the client out and return it
+                return thisAnswerWrappedClients.splice(j, 1)[0].client;
+            }
         }
     }
-
-    // throw new Error("Client could not be found in pool");
 }
 
 /**

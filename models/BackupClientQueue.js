@@ -42,12 +42,14 @@ BackupClientQueue.prototype.addClient = function(client) {
 
 /**
  * @param {Client} client
+ * 
+ * @return {Client} Client that was removed
  */
 BackupClientQueue.prototype.removeClient = function(client) {
     var clientIndex = this.queue.indexOf(client);
 
     if (clientIndex > -1) {
-        this.queue.splice(clientIndex, 1);
+        var removedClient = this.queue.splice(clientIndex, 1)[0];
         
         if (this.clientOutTray && this.clientOutTray.client === client) {
             this.wipeClientOutTray();
@@ -55,6 +57,8 @@ BackupClientQueue.prototype.removeClient = function(client) {
 
         client.getSocket().leave(this.id);
         this.broadcastUpdate();
+
+        return removedClient;
     }
 
 }

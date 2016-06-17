@@ -199,8 +199,13 @@ function afterDbLoad() {
      * @param {Client} client
      */
     function removeClientFromEverything(client) {
-        backupClientQueue.removeClient(client);
-        clientAnswerPool.removeClient(client);
+        if (backupClientQueue.removeClient(client)) {
+            broadcastBackupClientQueueStatus();
+        }
+
+        if (clientAnswerPool.removeClient(client)) {
+            broadcastPoolCountToBackupQueue();
+        }
 
         var chatGroupIds = Object.keys(chatGroups);
         for (var i = 0; i < chatGroupIds.length; ++i) {
