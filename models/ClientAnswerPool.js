@@ -362,7 +362,7 @@ ClientAnswerPool.prototype.removeClient = function(client) {
         }
     }
 
-    throw new Error("Client could not be found in pool");
+    // throw new Error("Client could not be found in pool");
 }
 
 /**

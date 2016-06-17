@@ -94,7 +94,7 @@ ChatGroup.prototype.queueClientToQuit = function(client) {
     if (this.clientsQueuedToQuit.indexOf(client) < 0) {
         this.clientsQueuedToQuit.push(client);
     }
-
+    
     this.broadcastQuitChange(client, true);
 }
 
@@ -109,7 +109,6 @@ ChatGroup.prototype.unqueueClientToQuit = function(client) {
 
     this.broadcastQuitChange(client, false);
 }
-
 
 /**
  * @return {number}
@@ -180,6 +179,8 @@ ChatGroup.prototype.addClient = function(client) {
  */
 ChatGroup.prototype.removeClient = function(client) {
     Group.prototype.removeClient.call(this, client);
+
+    this.queueClientToQuit(client);
 
     // TODO: Broadcast chatGroupClientLeft socket event
     // this.broadcastEvent("chatGroupClientLeft", {

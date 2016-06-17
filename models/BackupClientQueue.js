@@ -21,6 +21,9 @@ var BackupClientQueue = function() {
     this.wipeClientOutTray();
 };
 
+/**
+ * @param {Client} client
+ */
 BackupClientQueue.prototype.addClient = function(client) {
     if (this.queue.indexOf(client) < 0) {
         var clientSocket = client.getSocket();
@@ -37,13 +40,16 @@ BackupClientQueue.prototype.addClient = function(client) {
     }
 }
 
+/**
+ * @param {Client} client
+ */
 BackupClientQueue.prototype.removeClient = function(client) {
     var clientIndex = this.queue.indexOf(client);
 
     if (clientIndex > -1) {
         this.queue.splice(clientIndex, 1);
         
-        if (this.clientOutTray && client == this.clientOutTray.client) {
+        if (this.clientOutTray && this.clientOutTray.client === client) {
             this.wipeClientOutTray();
         }
 
@@ -53,17 +59,10 @@ BackupClientQueue.prototype.removeClient = function(client) {
 
 }
 
-// BackupClientQueue.prototype.popClient = function() {
-//     var client = this.queue.shift();
-
-//     if (client) {
-//         // Popped clients leave the queue (and join back in after chat if necessary)
-//         client.getSocket().leave(this.id);
-//     }
-
-//     return client;
-// }
-
+/**
+ * @param {string} event
+ * @param {Object} data
+ */
 BackupClientQueue.prototype.broadcastEvent = function(event, data) {
     io.sockets.in(this.id).emit(event, data);
 }
@@ -80,6 +79,9 @@ BackupClientQueue.prototype.broadcastUpdate = function() {
     this.broadcastEvent("backupClientQueueUpdate", data);
 }
 
+/**
+ * @param {string} username
+ */
 BackupClientQueue.prototype.isUsernameLoggedIn = function(username) {
     var arr = this.queue;
     for (var i = 0; i < arr.length; ++i) {
@@ -92,14 +94,24 @@ BackupClientQueue.prototype.isUsernameLoggedIn = function(username) {
     return false;
 }
 
+/**
+ * @return {number}
+ */
 BackupClientQueue.prototype.getQueueSize = function() {
     return this.queue.length;
 }
 
+/**
+ * Removes any client waiting in the out tray.
+ */
 BackupClientQueue.prototype.wipeClientOutTray = function() {
     this.setClientOutTray();    // Both parameters undefined
 }
 
+/**
+ * @param {Client} client
+ * @param {ClientAnswerPool} pool
+ */
 BackupClientQueue.prototype.setClientOutTray = function(client, pool) {
     this.clientOutTray = {
         client: client,
@@ -108,6 +120,9 @@ BackupClientQueue.prototype.setClientOutTray = function(client, pool) {
     };
 }
 
+/**
+ * @return {boolean} Whether a client is waiting in the out tray for transfer
+ */
 BackupClientQueue.prototype.isClientWaitingInOutTray = function() {
     if (this.clientOutTray && this.clientOutTray.client) {
         // Stale client in out tray needs to be ejected/logged out
@@ -148,7 +163,9 @@ BackupClientQueue.prototype.attemptTransferBackupClientToClientPool = function(c
     return false;   // We couldn't do the transfer because we don't have anyone
 }
 
-
+/**
+ * Moves whichever client that is in the out tray to the client pool.
+ */
 BackupClientQueue.prototype.moveOutTrayClientToClientPool = function() {
     var client = this.clientOutTray.client;
     var pool = this.clientOutTray.pool;

@@ -159,7 +159,66 @@ function afterDbLoad() {
     var chatGroups = {};
     
 
+
+    // ===== Utils =====
+
+    /**
+     * @param {string} username
+     */
+    function getClientFromUsername(username) {
+        return activeClients[username];
+    }
     
+    /**
+     * @param {Socket} socket
+     */
+    function getClientFromSocket(socket) {
+        var activeUsernames = Object.keys(activeClients);
+
+        for (var i = 0; i < activeUsernames.length; ++i) {
+            var client = getClientFromUsername(activeUsernames[i]);
+            if (client.getSocket() === socket) {
+                return client;
+            }
+        }
+    }
+
+    /**
+     * @param {string} username
+     * 
+     * @return {Client}
+     */
+    function createClient(username) {
+        // Only setting the username for new clients
+        // Ignored parameters are intentional, as well as the use of `void 0` to
+        // set the first parameter to `undefined`
+        return new Client(void 0, username);
+    }
+
+    /**
+     * @param {Client} client
+     */
+    function removeClientFromEverything(client) {
+        backupClientQueue.removeClient(client);
+        clientAnswerPool.removeClient(client);
+
+        var chatGroupIds = Object.keys(chatGroups);
+        for (var i = 0; i < chatGroupIds.length; ++i) {
+            var chatGroup = chatGroups[chatGroupIds[i]];
+            if (chatGroup.getClientIndex(client) > -1) {
+                chatGroup.removeClient(client);
+                break;
+            }
+        }
+    }
+
+
+
+    // ===== Chat group =====
+
+    /**
+     * @return {ChatGroup | undefined}
+     */
     function formChatGroup() {
         var newChatGroup = clientAnswerPool.tryMakeChatGroup(backupClientQueue);
         
@@ -179,6 +238,9 @@ function afterDbLoad() {
         var timeBetweenChecks = 1000;  // TODO: 1 second for now
         var timeoutHandle;
         
+        /**
+         * Runs another round of the loop, or starts the loop if not already active.
+         */
         function run() {
             clearTimeout(timeoutHandle);
             
@@ -192,22 +254,11 @@ function afterDbLoad() {
         }
         
         return {
-            /**
-             * Runs another round of the loop, or starts the loop if not already active.
-             */
             run: run
         };
     })();
     
     chatGroupFormationLoop.run();
-    
-    
-    /**
-     * @param {string} username
-     */
-    function getClientFromUsername(username) {
-        return activeClients[username];
-    }
     
     /**
      * data = {
@@ -266,6 +317,9 @@ function afterDbLoad() {
     }
 
 
+
+    // ===== Student client pool =====
+
     function broadcastPoolCountToBackupQueue() {
         backupClientQueue.broadcastEvent("clientPoolCountUpdate", {
             numberOfClients: clientAnswerPool.totalPoolSize()
@@ -273,6 +327,21 @@ function afterDbLoad() {
     }
 
 
+
+    // ===== Question + answer =====
+
+    /**
+     * data = {
+     *      username {string}
+     * }
+     */
+    function handleQuestionContentRequest(data) {
+        var client = getClientFromUsername(data.username);
+
+        client.getSocket().emit("questionContent", {
+            quiz: quizSet[getQuestionNumber()]
+        });
+    }
 
     /**
      * data = {
@@ -336,19 +405,15 @@ function afterDbLoad() {
 
 
 
+    // ===== Backup client =====
 
     /**
-     * @param {string} username
-     */
-    function createClient(username) {
-        // Only setting the username for new clients
-        // Ignored parameters are intentional, as well as the use of `void 0` to
-        // set the first parameter to `undefined`
-        return new Client(void 0, username);
-    }
-
-    /**
-     * data = ????
+     * data = {
+     *      username {string}
+     * }
+     * 
+     * @param {Object} data
+     * @param {Socket} socket
      */
     function handleBackupClientLogin(data, socket) {
         // TODO: Validate user
@@ -377,18 +442,21 @@ function afterDbLoad() {
     }
 
     /**
-     * data = ????
+     * data = {
+     *      username {string}
+     * }
      */
-    function backupClientLogout(data) {
+    function handleBackupClientLogout(data) {
         var client = getClientFromUsername(data.username);
-        backupClientQueue.removeClient(client);
-        delete activeClients[client.username];
+        removeClientFromEverything(client);
     }
 
     /**
-     * data = ????
-     * 
-     * Needs question answer/justification before entering queue
+     * data = {
+     *      username {string}
+     *      answer {number}
+     *      justification {string}
+     * }
      */
     function handleBackupClientEnterQueue(data) {
         var client = getClientFromUsername(data.username);
@@ -407,12 +475,10 @@ function afterDbLoad() {
         });
     }
 
-    function broadcastBackupClientQueueStatus() {
-        backupClientQueue.broadcastUpdate();
-    }
-
     /**
-     * data = ????
+     * data = {
+     *      username {string}
+     * }
      */
     function handleBackupClientStatusRequest(data) {
         if (!backupClientQueue.isUsernameLoggedIn(data.username)) {
@@ -424,7 +490,9 @@ function afterDbLoad() {
     }
 
     /**
-     * data = ????
+     * data = {
+     *      username {string}
+     * }
      */
     function handleBackupClientTransferConfirm(data) {
         var client = getClientFromUsername(data.username);
@@ -436,16 +504,10 @@ function afterDbLoad() {
         }
     }
 
-
-
-
-    function handleQuestionContentRequest(data) {
-        var client = getClientFromUsername(data.username);
-
-        client.getSocket().emit("questionContent", {
-            quiz: quizSet[getQuestionNumber()]
-        });
+    function broadcastBackupClientQueueStatus() {
+        backupClientQueue.broadcastUpdate();
     }
+
 
 
 io.sockets.on('connection', function(socket) {
@@ -500,7 +562,7 @@ io.sockets.on('connection', function(socket) {
     socket.on("answerSubmissionInitial", handleAnswerSubmissionInitial)
 
     socket.on("backupClientLogin", function(data) { handleBackupClientLogin(data, socket); });
-    // socket.on("backupClientLogout", handleBackupClientLogout);
+    socket.on("backupClientLogout", handleBackupClientLogout);
     socket.on("backupClientEnterQueue", handleBackupClientEnterQueue);
     socket.on("backupClientStatusRequest", handleBackupClientStatusRequest);
     socket.on("backupClientTransferConfirm", handleBackupClientTransferConfirm);
@@ -2003,92 +2065,14 @@ function saveLoadTestResults(data) {  //  data {results, options}
   });
 }
 
-function disconnect() {
-  try {
-    var username = "";
-    var client;
-    var state = -1;
-    // debugger
-    //  SEARCH CLIENT FROM activeClients
-    for(var clientIndex in activeClients) {
-      var client = activeClients[clientIndex];
-      if(client.socketID==socket.id) {
-        username = client.username;
-        break;
-      }
-    }
+    function disconnect() {
+        var client = getClientFromSocket(socket);
 
-    if(username=="") {
-
-  console.log("#disconnect() - a passive user (%d remaining)",
-                  objectLength(activeClients));
-
-      return;
-    }
-
-    client = activeClients[username];
-    state = client.clientState;
-
-    switch(state) {
-      case CLIENT.IDLE:
-        //  DO NOTHING
-        break;
-
-      case CLIENT.QUIZ_WAITLIST:
-        //  REMOVE THE CLIENT FROM THE WAITLIST
-        var questionNumber = client.questionNumber;
-        var conditionAssigned = client.conditionAssigned;
-        quizWaitlists[questionNumber].splice(quizWaitlists[questionNumber].indexOf(client), 1);
-    socket.emit('user_flow', {username: username, timestamp:new Date().toISOString(), page:'Quiz Wait List', event:'Client Removed' });
-        console.log("#disconnect() - deleted client %s " +
-                    "from quiz waitlist (%d remaining)",
-                    username,
-                    quizWaitlists[questionNumber].length);
-
-        break;
-
-      case CLIENT.QUIZROOM:
-        //  REMOVE THE CLIENT FROM THE QUIZ ROOM AND NOTIFY THE GROUP
-        var quizRoomID = client.quizRoomID;
-        var quizRoom = activeQuizRooms[quizRoomID];
-        var index = quizRoom.members.indexOf(client);
-        quizRoom.members.splice(index, 1);
-        io.sockets.in(quizRoomID).emit("memberDisconnected", username);
-    socket.emit('user_flow', {username: username, timestamp:new Date().toISOString(), page:'Quiz Room', event:'REMOVE THE CLIENT FROM THE QUIZ ROOM AND NOTIFY THE GROUP' });
-        console.log("#disconnect() - deleted client %s " +
-                    "from quiz room (%d remaining in the room)",
-                    username,
-                    quizRoom.members.length);
-
-        if(quizRoom.members.length==0) {
-          delete activeQuizRooms[quizRoomID];
-          console.log("#disconnect() - deleted quiz room %s " +
-                      "from active quiz rooms (%d rooms remaining)",
-                      quizRoomID,
-                      objectLength(activeDiscussionRooms));
+        if (client) {
+            removeClientFromEverything(client);
+            delete activeClients[client.username];
         }
-
-        break;
-
-      default:
-
-        console.log("UNDEFINED CONDITION DETECTED " +
-                    "IN HANDLING A DISCONNECTED CLIENT");
-
-        break;
     }
-
-    //  IN COMMON: REMOVE FROM CLIENT LIST
-    delete activeClients[username];
-    console.log("#disconnect() - deleted client %s " +
-                "from active client list (%d remaining)",
-                username,
-                objectLength(activeClients));
-  }
-  catch(err) {
-    handleException(err);
-  }
-}
 
 //This records User's flow during the session
 function user_flow(data) {
