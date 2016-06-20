@@ -110,19 +110,19 @@ ClientAnswerPool.prototype.getQueueSizes = function() {
  * 
  * @return {number[]} 
  */
-ClientAnswerPool.prototype.getViableQueues = function() {
+ClientAnswerPool.prototype.getViableQueueKeys = function() {
     var queueSizes = this.getQueueSizes();
-    var viableAnswerQueues = [];         // to store answer keys where queue size > 0.
+    var viableAnswerQueueKeys = [];         // to store answer keys where queue size > 0.
 
     var arr = Object.keys(queueSizes);
     for (var i = 0; i < arr.length; ++i) {
         var queueKey = arr[i];
         if (queueSizes[queueKey] > 0) {
-            viableAnswerQueues.push(queueKey);
+            viableAnswerQueueKeys.push(queueKey);
         }
     }
 
-    return viableAnswerQueues;
+    return viableAnswerQueueKeys;
 }
 
 /**
@@ -245,11 +245,11 @@ ClientAnswerPool.prototype.getQueueSortedByTime = function() {
  * @return {ChatGroup | undefined}
  */
 ClientAnswerPool.prototype.tryMakeChatGroup = function() {
-    var viableAnswerQueues = this.getViableQueues();
+    var viableAnswerQueueKeys = this.getViableQueueKeys();
 
     // If there is enough diversity, create group now
-    if (viableAnswerQueues.length >= this.desiredGroupSize) {
-        return this.createChatGroupFromQueueKeys(viableAnswerQueues);
+    if (viableAnswerQueueKeys.length >= this.desiredGroupSize) {
+        return this.createChatGroupOfSize(this.desiredGroupSize);
     }
 
     // If someone is waiting too long, then create groups now
@@ -261,9 +261,7 @@ ClientAnswerPool.prototype.tryMakeChatGroup = function() {
         // If pool size = desiredGroupSize + 1, attempt to create a group of size 2
         // now to attempt to prevent loners from appearing?
         if (totalPoolSize === (this.desiredGroupSize + 1)) {
-            var groupOfTwo = this.getQueueSortedByTime().slice(0, 2);
-            this.removeClients(groupOfTwo);
-            return this.createChatGroupFromWrappedClients(groupOfTwo);
+            return this.createChatGroupOfSize(2);
         }
 
         if (totalPoolSize < this.desiredGroupSize) {
@@ -276,47 +274,14 @@ ClientAnswerPool.prototype.tryMakeChatGroup = function() {
             //     return;
             // }
 
-            // If we have two or more students (but less than the ideal group size)
-            // then just throw them together
-            var clientsToFormGroup = this.getFlatQueue();
-            this.removeClients(clientsToFormGroup);
-            return this.createChatGroupFromWrappedClients(clientsToFormGroup);
         }
 
-        // Clear those in order by wait time
-        var clientsToFormGroup = this.getQueueSortedByTime().slice(0, this.desiredGroupSize)
-        this.removeClients(clientsToFormGroup);
-        return this.createChatGroupFromWrappedClients(clientsToFormGroup);
+        // Create chat group (up to desired group size)
+        return this.createChatGroupOfSize(this.desiredGroupSize);
     }
 
     // Don't produce a group when we don't deem it necessary
     return;
-}
-
-/**
- * @param {number[]} queueKeys The keys to each answer queue from which to get clients from to form a group
- * @return {ChatGroup}
- */
-ClientAnswerPool.prototype.createChatGroupFromQueueKeys = function(queueKeys) {
-    // Try to form the group of our desired size; otherwise use what we are given
-    var groupSize = this.desiredGroupSize;
-
-    if (queueKeys.length < groupSize) {
-        groupSize = queueKeys.length;
-    }
-
-    // Shuffle the queue keys so we get random answer spread in groups
-    shuffle(queueKeys);
-
-
-    var clientsToFormGroup = [];        // {Client[]}
-
-    for (var i = 0; i < groupSize; ++i) {
-        // Get the client at the front of the i-th answer queue
-        clientsToFormGroup.push(this.removeClientFromFrontOfAnswerQueue(queueKeys[i]));
-    }
-
-    return this.createChatGroupFromClients(clientsToFormGroup);
 }
 
 /**
@@ -328,13 +293,52 @@ ClientAnswerPool.prototype.createChatGroupFromClients = function(clients) {
 }
 
 /**
- * @param {ClientAnswerWrapper[]} clientWrappedObjs
+ * Returns an array of Clients of a size no larger than provided, 
+ * with the aim of having maximal answer diversity within the group.
+ * 
+ * @param {number} size
+ * 
  * @return {ChatGroup}
  */
-ClientAnswerPool.prototype.createChatGroupFromWrappedClients = function(clientWrappedObjs) {
-    var clients = clientWrappedObjs.map(function(clientWrappedObj) {
-        return clientWrappedObj.client;
-    });
+ClientAnswerPool.prototype.createChatGroupOfSize = function(size) {
+    var totalPoolSize = this.totalPoolSize();
+
+    // Clamp size to be no larger than total pool size
+    if (size > totalPoolSize) {
+        size = totalPoolSize;
+    }
+
+    var queueSizes = this.getQueueSizes();
+    var queueKeys = Object.keys(queueSizes);
+    shuffle(queueKeys);         // Shuffle so that we don't skew groups with more of the first answer overall
+
+    var intendedQueueKeys = []; // Store queue keys to be mapped into clients for group formation
+
+    // Compile the queues with clients that we can pop into a new group
+    queueKeyCompilationLoop:
+    while (true) {
+        var intendedQueueKeysStartSize = intendedQueueKeys.length;
+
+        for (var i = 0; i < queueKeys.length; ++i) {
+            var queueKey = queueKeys[i];
+            var queueSize = queueSizes[queueKey];
+
+            if (queueSize <= 0) {
+                continue;
+            }
+
+            intendedQueueKeys.push(queueKey);
+            --queueSizes[queueKey];
+
+            if (intendedQueueKeys.length === size) {
+                break queueKeyCompilationLoop;
+            }
+        }
+    }
+
+    var clients = intendedQueueKeys.map(function(queueKey) {
+        return this.removeClientFromFrontOfAnswerQueue(queueKey);
+    }, this);
 
     return this.createChatGroupFromClients(clients);
 }
