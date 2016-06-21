@@ -8,7 +8,8 @@
     "seed": "node util/db_seed.js",
     "db_test": "node ./node_modules/mocha/bin/mocha test/database.js",
     "dependencies": "node ./util/get_dependencies.js",
-    "build_index": "node util/build_index.js"
+    "build_index": "node util/build_index.js",
+    "build_client": "tsc --project ./public/js && node-sass ./public/css/moocchat2.scss > ./public/css/moocchat2.css"
   },
   "author": "eLIPSE",
   "license": "MIT",
@@ -21,6 +22,9 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
-    "mocha": "^2.5.3"
+    "mocha": "^2.5.3",
+    "node-sass": "^3.8.0",
+    "typescript": "^1.8.0",
+    "typings": "^1.3.0"
   }
 }
