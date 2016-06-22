@@ -9,6 +9,9 @@ define(["require", "exports", "../MoocchatStates"], function (require, exports, 
                     page$("button").on("click", function () {
                         stateMachine.goTo(STATE.INITIAL_ANSWER);
                     });
+                    page$("a").on("click", function () {
+                        stateMachine.goTo(STATE.DISCUSSION);
+                    });
                 });
             },
             onLeave: function () {

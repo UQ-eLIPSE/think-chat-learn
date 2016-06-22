@@ -1,3 +1,4 @@
+import $ = require("jquery");
 import StateFlow = require("../StateFlow");
 import PageManager = require("../PageManager");
 import TaskSectionManager = require("../TaskSectionManager");
@@ -15,6 +16,17 @@ export = (stateMachine: StateFlow<STATE>, pageManager: PageManager, secManager: 
 
                 page$("button").on("click", () => {
                     stateMachine.goTo(STATE.AWAIT_GROUP_FORMATION);
+                });
+
+
+                let $answers = page$("#answers");
+
+                $answers.on("click", "li", function(e) {
+                    e.preventDefault();
+
+                    $("li", $answers).removeClass("selected");
+
+                    $(this).addClass("selected");
                 });
             });
         },

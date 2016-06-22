@@ -17,6 +17,8 @@ export = (stateMachine: StateFlow<STATE>, pageManager: PageManager, secManager: 
                 let waitTime = (Math.random() * 30 * 1000) + (10 * 1000);
 
                 setTimeout(() => {
+                    let playTone = page$("#play-group-formation-tone").is(":checked");
+                    sessionStorage.setItem("play-notification-tone", playTone ? "true" : "false");
                     stateMachine.goTo(STATE.DISCUSSION);
                 }, waitTime);
             });

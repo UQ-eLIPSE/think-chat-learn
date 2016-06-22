@@ -14,7 +14,18 @@ export = (stateMachine: StateFlow<STATE>, pageManager: PageManager, secManager: 
                 section.startTimer();
 
                 page$("button").on("click", () => {
-                    stateMachine.goTo(STATE.SURVEY);
+                    stateMachine.goTo(STATE.AWAIT_GROUP_FORMATION);
+                });
+
+
+                let $answers = page$("#answers");
+
+                $answers.on("click", "li", function(e) {
+                    e.preventDefault();
+
+                    $("li", $answers).removeClass("selected");
+
+                    $(this).addClass("selected");
                 });
             });
         },

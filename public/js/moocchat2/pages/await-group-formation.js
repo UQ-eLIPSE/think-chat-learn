@@ -9,6 +9,8 @@ define(["require", "exports", "../MoocchatStates"], function (require, exports, 
                     section.setPaused();
                     var waitTime = (Math.random() * 30 * 1000) + (10 * 1000);
                     setTimeout(function () {
+                        var playTone = page$("#play-group-formation-tone").is(":checked");
+                        sessionStorage.setItem("play-notification-tone", playTone ? "true" : "false");
                         stateMachine.goTo(STATE.DISCUSSION);
                     }, waitTime);
                 });

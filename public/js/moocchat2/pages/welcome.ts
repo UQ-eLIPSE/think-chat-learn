@@ -14,6 +14,10 @@ export = (stateMachine: StateFlow<STATE>, pageManager: PageManager, secManager: 
                 page$("button").on("click", () => {
                     stateMachine.goTo(STATE.INITIAL_ANSWER);
                 });
+
+                page$("a").on("click", () => {
+                    stateMachine.goTo(STATE.DISCUSSION);
+                })
             });
         },
         onLeave: () => {

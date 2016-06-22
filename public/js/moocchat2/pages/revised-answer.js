@@ -8,7 +8,13 @@ define(["require", "exports", "../MoocchatStates"], function (require, exports, 
                     section.setActive();
                     section.startTimer();
                     page$("button").on("click", function () {
-                        stateMachine.goTo(STATE.SURVEY);
+                        stateMachine.goTo(STATE.AWAIT_GROUP_FORMATION);
+                    });
+                    var $answers = page$("#answers");
+                    $answers.on("click", "li", function (e) {
+                        e.preventDefault();
+                        $("li", $answers).removeClass("selected");
+                        $(this).addClass("selected");
                     });
                 });
             },
