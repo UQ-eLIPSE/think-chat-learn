@@ -1,6 +1,6 @@
-define(["require", "exports", "../MoocchatStates"], function (require, exports, STATE) {
+define(["require", "exports", "../MoocchatStates"], function (require, exports, MoocchatStates_1) {
     "use strict";
-    return function (stateMachine, pageManager, secManager) {
+    exports.DiscussionPageFunc = function (stateMachine, pageManager, secManager) {
         var section = secManager.getSection("discussion");
         return {
             onEnter: function () {
@@ -8,7 +8,7 @@ define(["require", "exports", "../MoocchatStates"], function (require, exports, 
                     section.setActive();
                     section.startTimer();
                     page$("#end-chat").on("click", function () {
-                        stateMachine.goTo(STATE.REVISED_ANSWER);
+                        stateMachine.goTo(MoocchatStates_1.MoocchatState.REVISED_ANSWER);
                     });
                     var $activeSection = $("[data-active-section]", "#session-sections");
                     var $chatBox = page$("#chat-box");

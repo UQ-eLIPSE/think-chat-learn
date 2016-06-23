@@ -1,27 +1,26 @@
-import StateFlow = require("../StateFlow");
-import PageManager = require("../PageManager");
-import TaskSectionManager = require("../TaskSectionManager");
+import {IPageFunc} from "../IPageFunc";
 
-import STATE = require("../MoocchatStates");
+import {MoocchatState as STATE} from "../MoocchatStates";
 
-export = (stateMachine: StateFlow<STATE>, pageManager: PageManager, secManager: TaskSectionManager) => {
-    let section = secManager.getSection("welcome");
+export let WelcomePageFunc: IPageFunc<STATE> =
+    (stateMachine, pageManager, secManager) => {
+        let section = secManager.getSection("welcome");
 
-    return {
-        onEnter: () => {
-            pageManager.loadPage("welcome", (page$) => {
-                section.setActive();
-                page$("button").on("click", () => {
-                    stateMachine.goTo(STATE.INITIAL_ANSWER);
+        return {
+            onEnter: () => {
+                pageManager.loadPage("welcome", (page$) => {
+                    section.setActive();
+                    page$("button").on("click", () => {
+                        stateMachine.goTo(STATE.INITIAL_ANSWER);
+                    });
+
+                    page$("a").on("click", () => {
+                        stateMachine.goTo(STATE.DISCUSSION);
+                    })
                 });
-
-                page$("a").on("click", () => {
-                    stateMachine.goTo(STATE.DISCUSSION);
-                })
-            });
-        },
-        onLeave: () => {
-            section.setInactive();
+            },
+            onLeave: () => {
+                section.setInactive();
+            }
         }
     }
-}

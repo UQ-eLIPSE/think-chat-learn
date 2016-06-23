@@ -13,19 +13,19 @@ define(["require", "exports"], function (require, exports) {
             dataArray.forEach(function (data) { return _this.register(data); });
         };
         StateFlow.prototype.goTo = function (newState, goToData) {
-            var currentStateData = this.getCurrentState();
+            var oldStateData = this.getCurrentState();
             var newStateData = this.getStateData(newState);
             var onLeaveData;
-            if (currentStateData) {
-                var onLeave = currentStateData.onLeave;
+            if (oldStateData) {
+                var onLeave = oldStateData.onLeave;
                 if (onLeave) {
-                    onLeaveData = onLeave(goToData);
+                    onLeaveData = onLeave(goToData, newStateData.state);
                 }
             }
             this.setNewStateData(newStateData);
             var onEnter = newStateData.onEnter;
             if (onEnter) {
-                onEnter(goToData, onLeaveData);
+                onEnter(goToData, onLeaveData, ((oldStateData) ? oldStateData.state : void 0));
             }
         };
         StateFlow.prototype.getStateData = function (state) {
@@ -42,6 +42,6 @@ define(["require", "exports"], function (require, exports) {
         };
         return StateFlow;
     }());
-    return StateFlow;
+    exports.StateFlow = StateFlow;
 });
 //# sourceMappingURL=StateFlow.js.map

@@ -1,4 +1,4 @@
-define(["require", "exports", "./Utils"], function (require, exports, Utils) {
+define(["require", "exports", "./Utils"], function (require, exports, Utils_1) {
     "use strict";
     var TaskSection = (function () {
         function TaskSection(id, text, ms) {
@@ -82,12 +82,12 @@ define(["require", "exports", "./Utils"], function (require, exports, Utils) {
             this.runTimerUpdate();
         };
         TaskSection.prototype.updateTimerText = function () {
-            this.elem.attr("data-time-left", Utils.DateTime.formatIntervalAsMMSS(this.timeRemaining));
+            this.elem.attr("data-time-left", Utils_1.Utils.DateTime.formatIntervalAsMMSS(this.timeRemaining));
         };
         TaskSection.prototype.handleTimerCompletion = function () {
         };
         return TaskSection;
     }());
-    return TaskSection;
+    exports.TaskSection = TaskSection;
 });
 //# sourceMappingURL=TaskSection.js.map

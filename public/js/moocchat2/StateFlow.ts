@@ -1,3 +1,5 @@
+import {IStateTransition} from "./IStateTransition";
+
 /*
  * MOOCchat
  * StateFlow class module
@@ -5,40 +7,38 @@
  * Holds the state machine that transitions between pages
  */
 
-interface IStateFlowPage<StateEnumType> {
+interface IStateFlowState<StateEnumType> extends IStateTransition<StateEnumType> {
     state: StateEnumType;
-    onEnter?: (goToData?: any, onLeaveData?: any) => any;
-    onLeave?: (goToData?: any) => any;
 }
 
-class StateFlow<StateEnumType> {
-    private states: { [state: string]: IStateFlowPage<StateEnumType> } = {};
-    private history: IStateFlowPage<StateEnumType>[] = [];
+export class StateFlow<StateEnumType> {
+    private states: { [state: string]: IStateFlowState<StateEnumType> } = {};
+    private history: IStateFlowState<StateEnumType>[] = [];
 
     constructor() {
     }
 
-    public register(data: IStateFlowPage<StateEnumType>) {
+    public register(data: IStateFlowState<StateEnumType>) {
         this.states[data.state.toString()] = data;
     }
 
-    public registerAll(dataArray: IStateFlowPage<StateEnumType>[]) {
+    public registerAll(dataArray: IStateFlowState<StateEnumType>[]) {
         dataArray.forEach(data => this.register(data));
     }
 
     public goTo(newState: StateEnumType, goToData?: any) {
-        let currentStateData = this.getCurrentState();
+        let oldStateData = this.getCurrentState();
         var newStateData = this.getStateData(newState);
 
         let onLeaveData: any;
 
-        if (currentStateData) {
+        if (oldStateData) {
             // TODO: timespent
 
-            let onLeave = currentStateData.onLeave;
+            let onLeave = oldStateData.onLeave;
 
             if (onLeave) {
-                onLeaveData = onLeave(goToData);
+                onLeaveData = onLeave(goToData, newStateData.state);
             }
         }
 
@@ -51,7 +51,7 @@ class StateFlow<StateEnumType> {
         let onEnter = newStateData.onEnter;
 
         if (onEnter) {
-            onEnter(goToData, onLeaveData);
+            onEnter(goToData, onLeaveData, ((oldStateData) ? oldStateData.state : void 0));
         }
     }
 
@@ -61,7 +61,7 @@ class StateFlow<StateEnumType> {
         return this.states[state.toString()];
     }
 
-    private setNewStateData(data: IStateFlowPage<StateEnumType>) {
+    private setNewStateData(data: IStateFlowState<StateEnumType>) {
         this.history.push(data);
     }
 
@@ -73,5 +73,3 @@ class StateFlow<StateEnumType> {
         return this.history[this.history.length - 1];
     }
 }
-
-export = StateFlow;

@@ -3,7 +3,7 @@
  * Utilities module
  */
 
-let Utils = {
+export let Utils = {
 
     DateTime: {
         /**
@@ -48,5 +48,3 @@ let Utils = {
     }
 
 }
-
-export = Utils;

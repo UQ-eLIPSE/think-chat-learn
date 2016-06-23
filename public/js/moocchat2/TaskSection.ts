@@ -5,9 +5,9 @@
  * Handles *one* tab of the task section UL in the sidebar
  */
 
-import Utils = require("./Utils");
+import {Utils} from "./Utils";
 
-class TaskSection {
+export class TaskSection {
     private id: string;
 
     private milliseconds: number;
@@ -129,7 +129,4 @@ class TaskSection {
         // TODO: Fire timer expired event of some sort so that we can react to timer finishing
     }
 
-
 }
-
-export = TaskSection;

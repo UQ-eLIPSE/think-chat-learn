@@ -1,6 +1,6 @@
-define(["require", "exports", "../MoocchatStates"], function (require, exports, STATE) {
+define(["require", "exports", "../MoocchatStates"], function (require, exports, MoocchatStates_1) {
     "use strict";
-    return function (stateMachine, pageManager, secManager) {
+    exports.AwaitGroupFormationPageFunc = function (stateMachine, pageManager, secManager) {
         var section = secManager.getSection("discussion");
         return {
             onEnter: function () {
@@ -11,7 +11,7 @@ define(["require", "exports", "../MoocchatStates"], function (require, exports, 
                     setTimeout(function () {
                         var playTone = page$("#play-group-formation-tone").is(":checked");
                         sessionStorage.setItem("play-notification-tone", playTone ? "true" : "false");
-                        stateMachine.goTo(STATE.DISCUSSION);
+                        stateMachine.goTo(MoocchatStates_1.MoocchatState.DISCUSSION);
                     }, waitTime);
                 });
             },

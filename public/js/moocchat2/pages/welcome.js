@@ -1,16 +1,16 @@
-define(["require", "exports", "../MoocchatStates"], function (require, exports, STATE) {
+define(["require", "exports", "../MoocchatStates"], function (require, exports, MoocchatStates_1) {
     "use strict";
-    return function (stateMachine, pageManager, secManager) {
+    exports.WelcomePageFunc = function (stateMachine, pageManager, secManager) {
         var section = secManager.getSection("welcome");
         return {
             onEnter: function () {
                 pageManager.loadPage("welcome", function (page$) {
                     section.setActive();
                     page$("button").on("click", function () {
-                        stateMachine.goTo(STATE.INITIAL_ANSWER);
+                        stateMachine.goTo(MoocchatStates_1.MoocchatState.INITIAL_ANSWER);
                     });
                     page$("a").on("click", function () {
-                        stateMachine.goTo(STATE.DISCUSSION);
+                        stateMachine.goTo(MoocchatStates_1.MoocchatState.DISCUSSION);
                     });
                 });
             },

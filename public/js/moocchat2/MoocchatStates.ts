@@ -1,5 +1,5 @@
 // All the states we are using
-enum MoocchatState {
+export enum MoocchatState {
     WELCOME,
     INITIAL_ANSWER,
     AWAIT_GROUP_FORMATION,
@@ -8,5 +8,3 @@ enum MoocchatState {
     SURVEY,
     CONFIRMATION
 }
-
-export = MoocchatState;

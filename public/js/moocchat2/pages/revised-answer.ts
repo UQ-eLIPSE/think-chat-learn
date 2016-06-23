@@ -1,37 +1,36 @@
-import StateFlow = require("../StateFlow");
-import PageManager = require("../PageManager");
-import TaskSectionManager = require("../TaskSectionManager");
+import {IPageFunc} from "../IPageFunc";
 
-import STATE = require("../MoocchatStates");
+import {MoocchatState as STATE} from "../MoocchatStates";
 
-export = (stateMachine: StateFlow<STATE>, pageManager: PageManager, secManager: TaskSectionManager) => {
-    let section = secManager.getSection("revised-answer");
+export let RevisedAnswerPageFunc: IPageFunc<STATE> =
+    (stateMachine, pageManager, secManager) => {
+        let section = secManager.getSection("revised-answer");
 
-    return {
-        onEnter: () => {
-            pageManager.loadPage("revised-answer", (page$) => {
-                section.setActive();
-                section.startTimer();
+        return {
+            onEnter: () => {
+                pageManager.loadPage("revised-answer", (page$) => {
+                    section.setActive();
+                    section.startTimer();
 
-                page$("button").on("click", () => {
-                    stateMachine.goTo(STATE.AWAIT_GROUP_FORMATION);
+                    page$("button").on("click", () => {
+                        stateMachine.goTo(STATE.AWAIT_GROUP_FORMATION);
+                    });
+
+
+                    let $answers = page$("#answers");
+
+                    $answers.on("click", "li", function(e) {
+                        e.preventDefault();
+
+                        $("li", $answers).removeClass("selected");
+
+                        $(this).addClass("selected");
+                    });
                 });
-
-
-                let $answers = page$("#answers");
-
-                $answers.on("click", "li", function(e) {
-                    e.preventDefault();
-
-                    $("li", $answers).removeClass("selected");
-
-                    $(this).addClass("selected");
-                });
-            });
-        },
-        onLeave: () => {
-            section.setInactive();
-            section.hideTimer();
+            },
+            onLeave: () => {
+                section.setInactive();
+                section.hideTimer();
+            }
         }
     }
-}

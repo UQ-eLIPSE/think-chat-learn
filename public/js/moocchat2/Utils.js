@@ -1,6 +1,6 @@
 define(["require", "exports"], function (require, exports) {
     "use strict";
-    var Utils = {
+    exports.Utils = {
         DateTime: {
             secToMs: function (seconds) {
                 return seconds * 1000;
@@ -17,6 +17,5 @@ define(["require", "exports"], function (require, exports) {
             }
         }
     };
-    return Utils;
 });
 //# sourceMappingURL=Utils.js.map

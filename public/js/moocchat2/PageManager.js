@@ -34,6 +34,6 @@ define(["require", "exports", "jquery"], function (require, exports, $) {
         };
         return PageManager;
     }());
-    return PageManager;
+    exports.PageManager = PageManager;
 });
 //# sourceMappingURL=PageManager.js.map

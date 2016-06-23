@@ -6,20 +6,21 @@
  */
 
 import $ = require("jquery");
-import Utils = require("./Utils");
-import TaskSection = require("./TaskSection");
-import StateFlow = require("./StateFlow");
-import PageManager = require("./PageManager");
-import TaskSectionManager = require("./TaskSectionManager");
 
-import STATE = require("./MoocchatStates");
+import {Utils} from "./Utils";
+import {TaskSection} from "./TaskSection";
+import {StateFlow} from "./StateFlow";
+import {PageManager} from "./PageManager";
+import {TaskSectionManager} from "./TaskSectionManager";
+
+import {MoocchatState as STATE} from "./MoocchatStates";
     
-import WelcomePageFunc = require("./pages/welcome");
-import InitialAnswerPageFunc = require("./pages/initial-answer");
-import AwaitGroupFormationPageFunc = require("./pages/await-group-formation");
-import DiscussionPageFunc = require("./pages/discussion");
-import RevisedAnswerPageFunc = require("./pages/revised-answer");
-import SurveyPageFunc = require("./pages/survey");
+import {WelcomePageFunc} from "./pages/welcome";
+import {InitialAnswerPageFunc} from "./pages/initial-answer";
+import {AwaitGroupFormationPageFunc} from "./pages/await-group-formation";
+import {DiscussionPageFunc} from "./pages/discussion";
+import {RevisedAnswerPageFunc} from "./pages/revised-answer";
+import {SurveyPageFunc} from "./pages/survey";
 
 // On DOM Ready
 $(() => {
@@ -97,5 +98,3 @@ $(() => {
     // Start the state machine
     stateMachine.goTo(STATE.WELCOME);
 });
-
-

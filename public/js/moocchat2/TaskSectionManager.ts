@@ -5,10 +5,10 @@
  * Handles all task sections in the sidebar
  */
 
-import Utils = require("./Utils");
-import TaskSection = require("./TaskSection");
+import {Utils} from "./Utils";
+import {TaskSection} from "./TaskSection";
 
-class TaskSectionManager {
+export class TaskSectionManager {
     private sections: { [id: string]: TaskSection } = {};
 
     private $taskSectionRootElem: JQuery;
@@ -30,7 +30,4 @@ class TaskSectionManager {
         return this.sections[id];
     }
 
-
 }
-
-export = TaskSectionManager;

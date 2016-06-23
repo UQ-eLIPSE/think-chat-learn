@@ -1,6 +1,6 @@
-define(["require", "exports", "../MoocchatStates"], function (require, exports, STATE) {
+define(["require", "exports", "../MoocchatStates"], function (require, exports, MoocchatStates_1) {
     "use strict";
-    return function (stateMachine, pageManager, secManager) {
+    exports.RevisedAnswerPageFunc = function (stateMachine, pageManager, secManager) {
         var section = secManager.getSection("revised-answer");
         return {
             onEnter: function () {
@@ -8,7 +8,7 @@ define(["require", "exports", "../MoocchatStates"], function (require, exports, 
                     section.setActive();
                     section.startTimer();
                     page$("button").on("click", function () {
-                        stateMachine.goTo(STATE.AWAIT_GROUP_FORMATION);
+                        stateMachine.goTo(MoocchatStates_1.MoocchatState.AWAIT_GROUP_FORMATION);
                     });
                     var $answers = page$("#answers");
                     $answers.on("click", "li", function (e) {

@@ -6,9 +6,10 @@
  */
 
 import $ = require("jquery");
-import Utils = require("./Utils");
 
-class PageManager {
+import {Utils} from "./Utils";
+
+export class PageManager {
     private $contentElem: JQuery;
 
     constructor($contentElem: JQuery) {
@@ -47,5 +48,3 @@ class PageManager {
 
 
 }
-
-export = PageManager;
