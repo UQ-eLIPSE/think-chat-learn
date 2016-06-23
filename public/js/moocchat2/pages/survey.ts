@@ -3,12 +3,12 @@ import {IPageFunc} from "../IPageFunc";
 import {MoocchatState as STATE} from "../MoocchatStates";
 
 export let SurveyPageFunc: IPageFunc<STATE> =
-    (stateMachine, pageManager, secManager) => {
-        let section = secManager.getSection("survey");
+    (session) => {
+        let section = session.sectionManager.getSection("survey");
 
         return {
             onEnter: () => {
-                pageManager.loadPage("survey", (page$) => {
+                session.pageManager.loadPage("survey", (page$) => {
                     section.setActive();
                 });
             },

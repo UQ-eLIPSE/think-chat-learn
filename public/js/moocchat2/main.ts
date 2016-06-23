@@ -12,15 +12,24 @@ import {TaskSection} from "./TaskSection";
 import {StateFlow} from "./StateFlow";
 import {PageManager} from "./PageManager";
 import {TaskSectionManager} from "./TaskSectionManager";
+import {WebsocketManager} from "./Websockets";
+
+import {MoocchatSession} from "./MoocchatSession";
 
 import {MoocchatState as STATE} from "./MoocchatStates";
-    
+
 import {WelcomePageFunc} from "./pages/welcome";
 import {InitialAnswerPageFunc} from "./pages/initial-answer";
 import {AwaitGroupFormationPageFunc} from "./pages/await-group-formation";
 import {DiscussionPageFunc} from "./pages/discussion";
 import {RevisedAnswerPageFunc} from "./pages/revised-answer";
 import {SurveyPageFunc} from "./pages/survey";
+
+
+// Start Websockets as soon as possible
+let socket = new WebsocketManager();
+socket.open();
+
 
 // On DOM Ready
 $(() => {
@@ -29,9 +38,12 @@ $(() => {
     let $taskSections = $("#task-sections");
     let $content = $("#content");
 
-    let stateMachine = new StateFlow<STATE>();
-    let pageManager = new PageManager($content);
-    let secManager = new TaskSectionManager($taskSections);
+    let session =
+        new MoocchatSession<STATE>()
+            .setStateMachine(new StateFlow<STATE>())
+            .setPageManager(new PageManager($content))
+            .setTaskSectionManager(new TaskSectionManager($taskSections))
+            .setSocket(socket);
 
 
     // TODO: Should be somehow processing information that comes from Blackboard/LTI here
@@ -49,17 +61,17 @@ $(() => {
         ["survey", "Survey"]
     ];
 
-    secManager.registerAll(sectionDefinitions);
+    session.sectionManager.registerAll(sectionDefinitions);
 
     // Individual page handling code
-    let welcomePage = WelcomePageFunc(stateMachine, pageManager, secManager);
-    let initialAnswerPage = InitialAnswerPageFunc(stateMachine, pageManager, secManager);
-    let awaitGroupFormationPage = AwaitGroupFormationPageFunc(stateMachine, pageManager, secManager);
-    let discussionPage = DiscussionPageFunc(stateMachine, pageManager, secManager);
-    let revisedAnswerPage = RevisedAnswerPageFunc(stateMachine, pageManager, secManager);
-    let surveyPage = SurveyPageFunc(stateMachine, pageManager, secManager);
+    let welcomePage = WelcomePageFunc(session);
+    let initialAnswerPage = InitialAnswerPageFunc(session);
+    let awaitGroupFormationPage = AwaitGroupFormationPageFunc(session);
+    let discussionPage = DiscussionPageFunc(session);
+    let revisedAnswerPage = RevisedAnswerPageFunc(session);
+    let surveyPage = SurveyPageFunc(session);
 
-    stateMachine.registerAll([
+    session.stateMachine.registerAll([
         {   // Welcome
             state: STATE.WELCOME,
             onEnter: welcomePage.onEnter,
@@ -96,5 +108,5 @@ $(() => {
     ]);
 
     // Start the state machine
-    stateMachine.goTo(STATE.WELCOME);
+    session.stateMachine.goTo(STATE.WELCOME);
 });

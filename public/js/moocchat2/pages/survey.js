@@ -1,10 +1,10 @@
 define(["require", "exports"], function (require, exports) {
     "use strict";
-    exports.SurveyPageFunc = function (stateMachine, pageManager, secManager) {
-        var section = secManager.getSection("survey");
+    exports.SurveyPageFunc = function (session) {
+        var section = session.sectionManager.getSection("survey");
         return {
             onEnter: function () {
-                pageManager.loadPage("survey", function (page$) {
+                session.pageManager.loadPage("survey", function (page$) {
                     section.setActive();
                 });
             },

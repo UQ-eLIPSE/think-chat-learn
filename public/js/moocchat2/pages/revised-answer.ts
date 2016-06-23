@@ -1,19 +1,42 @@
+import * as $ from "jquery";
+
 import {IPageFunc} from "../IPageFunc";
 
 import {MoocchatState as STATE} from "../MoocchatStates";
 
+import {WebsocketEvents} from "../Websockets";
+
 export let RevisedAnswerPageFunc: IPageFunc<STATE> =
-    (stateMachine, pageManager, secManager) => {
-        let section = secManager.getSection("revised-answer");
+    (session) => {
+        let section = session.sectionManager.getSection("revised-answer");
 
         return {
             onEnter: () => {
-                pageManager.loadPage("revised-answer", (page$) => {
+                session.pageManager.loadPage("revised-answer", (page$) => {
                     section.setActive();
                     section.startTimer();
 
-                    page$("button").on("click", () => {
-                        stateMachine.goTo(STATE.AWAIT_GROUP_FORMATION);
+                    page$("#submit-answer").on("click", () => {
+                        let justification = $.trim(page$("#answer-justification").val());
+                        let answer = page$("#answers > ul > li.selected").index();
+
+                        if (justification.length === 0 || answer < 0) {
+                            alert("You must provide an answer.");
+                            return;
+                        }
+
+                        session.socket.emit(WebsocketEvents.OUTBOUND.REVISED_ANSWER_SUBMISSION, {
+                            username: session.user.username,
+                            questionNumber: session.quiz.questionNumber,
+                            answer: answer,
+                            justification: justification,
+
+                            screenName: "",         // Not used
+                            quizRoomID: -1,         // Not used
+                            timestamp: new Date().toISOString()
+                        });
+
+                        session.stateMachine.goTo(STATE.SURVEY);
                     });
 
 
@@ -26,6 +49,21 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
 
                         $(this).addClass("selected");
                     });
+
+
+                    let $answersUL = page$("#answers > ul");
+
+                    let answerDOMs: JQuery[] = [];
+
+                    // Render question, choices
+                    page$("#question-reading").html(session.quiz.questionReading);
+                    page$("#question-statement").html(session.quiz.questionStatement);
+
+                    session.quiz.questionChoices.forEach((choice) => {
+                        answerDOMs.push($("<li>").text(choice));
+                    });
+
+                    $answersUL.append(answerDOMs);
                 });
             },
             onLeave: () => {

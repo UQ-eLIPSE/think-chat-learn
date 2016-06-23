@@ -1,29 +1,32 @@
 import {IPageFunc} from "../IPageFunc";
 
 import {MoocchatState as STATE} from "../MoocchatStates";
+import {IEventData_ChatGroupFormed} from "../IEventData";
+
+import {WebsocketEvents} from "../Websockets";
 
 export let AwaitGroupFormationPageFunc: IPageFunc<STATE> =
-    (stateMachine, pageManager, secManager) => {
-        let section = secManager.getSection("discussion");
+    (session) => {
+        let section = session.sectionManager.getSection("discussion");
 
         return {
             onEnter: () => {
-                pageManager.loadPage("await-group-formation", (page$) => {
+                session.pageManager.loadPage("await-group-formation", (page$) => {
                     section.setActive();
                     section.setPaused();
 
-                    // TODO: Use incoming chat formation event to progress to next state
-                    let waitTime = (Math.random() * 30 * 1000) + (10 * 1000);
-
-                    setTimeout(() => {
+                    session.socket.once(WebsocketEvents.INBOUND.CHAT_GROUP_FORMED, (data: IEventData_ChatGroupFormed) => {
                         let playTone = page$("#play-group-formation-tone").is(":checked");
                         sessionStorage.setItem("play-notification-tone", playTone ? "true" : "false");
-                        stateMachine.goTo(STATE.DISCUSSION);
-                    }, waitTime);
-                });
-            },
-            onLeave: () => {
 
+                        // Pass chat group formation data along to the DISCUSSION state
+                        session.stateMachine.goTo(STATE.DISCUSSION, data);
+                    });
+
+                    session.socket.emit(WebsocketEvents.OUTBOUND.CHAT_GROUP_JOIN_REQUEST, {
+                        username: session.user.username
+                    });
+                });
             }
         }
     }

@@ -1,21 +1,21 @@
-define(["require", "exports", "../MoocchatStates"], function (require, exports, MoocchatStates_1) {
+define(["require", "exports", "../MoocchatStates", "../Websockets"], function (require, exports, MoocchatStates_1, Websockets_1) {
     "use strict";
-    exports.AwaitGroupFormationPageFunc = function (stateMachine, pageManager, secManager) {
-        var section = secManager.getSection("discussion");
+    exports.AwaitGroupFormationPageFunc = function (session) {
+        var section = session.sectionManager.getSection("discussion");
         return {
             onEnter: function () {
-                pageManager.loadPage("await-group-formation", function (page$) {
+                session.pageManager.loadPage("await-group-formation", function (page$) {
                     section.setActive();
                     section.setPaused();
-                    var waitTime = (Math.random() * 30 * 1000) + (10 * 1000);
-                    setTimeout(function () {
+                    session.socket.once(Websockets_1.WebsocketEvents.INBOUND.CHAT_GROUP_FORMED, function (data) {
                         var playTone = page$("#play-group-formation-tone").is(":checked");
                         sessionStorage.setItem("play-notification-tone", playTone ? "true" : "false");
-                        stateMachine.goTo(MoocchatStates_1.MoocchatState.DISCUSSION);
-                    }, waitTime);
+                        session.stateMachine.goTo(MoocchatStates_1.MoocchatState.DISCUSSION, data);
+                    });
+                    session.socket.emit(Websockets_1.WebsocketEvents.OUTBOUND.CHAT_GROUP_JOIN_REQUEST, {
+                        username: session.user.username
+                    });
                 });
-            },
-            onLeave: function () {
             }
         };
     };

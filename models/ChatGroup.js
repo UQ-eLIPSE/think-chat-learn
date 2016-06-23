@@ -29,6 +29,7 @@ ChatGroup.prototype = Object.create(Group.prototype);
 ChatGroup.prototype.broadcastMessage = function(fromClient, message) {
     var messageObj = {
         screenName: this.getScreenName(fromClient),
+        clientIndex: this.getClientIndex(fromClient),
         message: message,
         timestamp: Date.now()
     }
@@ -152,7 +153,8 @@ ChatGroup.prototype.notifyEveryoneOnJoin = function() {
             groupId: this.id,
             groupSize: this.numberOfClients(),
             groupAnswers: this.getGroupProbAnswerObjArray(),
-            screenName: this.getScreenName(client)
+            screenName: this.getScreenName(client),
+            clientIndex: this.getClientIndex(client)
         });
     }, this);
 }

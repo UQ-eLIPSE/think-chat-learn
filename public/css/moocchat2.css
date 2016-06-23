@@ -330,7 +330,7 @@ button.negative {
   border-bottom: 0.2rem solid; }
 
 #chat-box > blockquote::after {
-  content: attr(data-person);
+  content: attr(data-client-id);
   display: inline-block;
   position: absolute;
   left: 0.5rem;
@@ -350,6 +350,9 @@ button.negative {
   bottom: 0;
   left: 0; }
 
+#chat-box > blockquote[data-client-id="-1"]::after {
+  content: ""; }
+
 #chat-box > blockquote p {
   border: 0.05rem solid #888;
   padding: 1rem;
@@ -363,43 +366,40 @@ button.negative {
   margin-left: 2rem; }
 
 #chat-box > blockquote p + p,
-#chat-box[data-self-person="1"] > blockquote[data-person="1"] p + p,
-#chat-box[data-self-person="2"] > blockquote[data-person="2"] p + p,
-#chat-box[data-self-person="3"] > blockquote[data-person="3"] p + p {
+#chat-box[data-self-client-id="1"] > blockquote[data-client-id="1"] p + p,
+#chat-box[data-self-client-id="2"] > blockquote[data-client-id="2"] p + p,
+#chat-box[data-self-client-id="3"] > blockquote[data-client-id="3"] p + p {
   margin-top: -0.2rem;
   border-top: 0; }
 
-#chat-box > blockquote[data-person="1"]::after {
+#chat-box > blockquote[data-client-id="1"]::after {
   background: #000066; }
 
-#chat-box > blockquote[data-person="2"]::after {
+#chat-box > blockquote[data-client-id="2"]::after {
   background: #993366; }
 
-#chat-box > blockquote[data-person="3"]::after {
+#chat-box > blockquote[data-client-id="3"]::after {
   background: #669900; }
 
-#chat-box > blockquote[data-person="1"] p {
+#chat-box > blockquote[data-client-id="1"] p {
   border-color: #000066;
   color: #000066; }
 
-#chat-box > blockquote[data-person="2"] p {
+#chat-box > blockquote[data-client-id="2"] p {
   border-color: #993366;
   color: #993366; }
 
-#chat-box > blockquote[data-person="3"] p {
+#chat-box > blockquote[data-client-id="3"] p {
   border-color: #669900;
   color: #669900; }
 
-#chat-box > blockquote[data-person="1"] {
-  border-image: linear-gradient(to right, #000066, #000066 3rem, transparent 7rem, transparent) 1;
+#chat-box > blockquote[data-client-id="1"] {
   color: #000066; }
 
-#chat-box > blockquote[data-person="2"] {
-  border-image: linear-gradient(to right, #993366, #993366 3rem, transparent 7rem, transparent) 1;
+#chat-box > blockquote[data-client-id="2"] {
   color: #993366; }
 
-#chat-box > blockquote[data-person="3"] {
-  border-image: linear-gradient(to right, #669900, #669900 3rem, transparent 7rem, transparent) 1;
+#chat-box > blockquote[data-client-id="3"] {
   color: #669900; }
 
 #chat-input-wrapper {
