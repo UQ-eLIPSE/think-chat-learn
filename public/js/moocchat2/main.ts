@@ -5,7 +5,7 @@
  * Main JS module that handles the startup of MOOCchat
  */
 
-import $ = require("jquery");
+import * as $ from "jquery";
 
 import {Utils} from "./Utils";
 import {TaskSection} from "./TaskSection";

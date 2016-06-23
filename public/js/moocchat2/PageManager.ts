@@ -5,7 +5,7 @@
  * Manages swapping in and out of pages
  */
 
-import $ = require("jquery");
+import * as $ from "jquery";
 
 import {Utils} from "./Utils";
 
