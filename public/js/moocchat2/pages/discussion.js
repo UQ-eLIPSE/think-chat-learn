@@ -7,19 +7,25 @@ define(["require", "exports", "../MoocchatStates", "../MoocchatChat"], function 
                 session.pageManager.loadPage("discussion", function (page$) {
                     section.setActive();
                     section.startTimer();
-                    page$("#end-chat").on("click", function () {
-                        chat.terminate();
-                        session.stateMachine.goTo(MoocchatStates_1.MoocchatState.REVISED_ANSWER);
-                    });
                     var $activeSection = $("[data-active-section]", "#session-sections");
                     var $chatBox = page$("#chat-box");
+                    var chat = new MoocchatChat_1.MoocchatChat(session, data, $chatBox);
+                    function endChat() {
+                        chat.terminate();
+                        session.stateMachine.goTo(MoocchatStates_1.MoocchatState.REVISED_ANSWER);
+                    }
+                    page$("#end-chat").on("click", function () {
+                        endChat();
+                    });
+                    section.attachTimerCompleted(function () {
+                        endChat();
+                    });
                     var playTone = sessionStorage.getItem("play-notification-tone") === "true";
                     if (playTone) {
                         var notificationTone = new Audio("./mp3/here-i-am.mp3");
                         notificationTone.play();
                     }
                     sessionStorage.removeItem("play-notification-tone");
-                    var chat = new MoocchatChat_1.MoocchatChat(session, data, $chatBox);
                     page$("#chat-input-wrapper").on("submit", function (e) {
                         e.preventDefault();
                         var message = page$("#chat-input").val();
@@ -29,8 +35,11 @@ define(["require", "exports", "../MoocchatStates", "../MoocchatChat"], function 
                         chat.sendMessage(message);
                         page$("#chat-input").val("").focus();
                     });
-                    chat.displayMessage(-1, "Your discussion group has " + data.groupSize + " member" + ((data.groupSize !== 1) ? "s" : " only"));
-                    chat.displayMessage(-1, "You are Person #" + (data.clientIndex + 1));
+                    chat.displaySystemMessage("Your discussion group has " + data.groupSize + " member" + ((data.groupSize !== 1) ? "s" : " only"));
+                    chat.displaySystemMessage("You are Person #" + (data.clientIndex + 1));
+                    data.groupAnswers.forEach(function (answerData) {
+                        chat.displayMessage(answerData.clientIndex + 1, "Answer = " + String.fromCharCode(65 + answerData.answer) + "; Justification = " + answerData.justification);
+                    });
                     var $answersUL = page$("#chat-answers > ul");
                     var answerDOMs = [];
                     page$("#question-reading").html(session.quiz.questionReading);
@@ -42,7 +51,7 @@ define(["require", "exports", "../MoocchatStates", "../MoocchatChat"], function 
                 });
             },
             onLeave: function () {
-                section.setInactive();
+                section.unsetActive();
                 section.hideTimer();
             }
         };

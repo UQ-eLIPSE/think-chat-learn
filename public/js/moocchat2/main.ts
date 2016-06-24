@@ -11,7 +11,7 @@ import {Utils} from "./Utils";
 import {TaskSection} from "./TaskSection";
 import {StateFlow} from "./StateFlow";
 import {PageManager} from "./PageManager";
-import {TaskSectionManager} from "./TaskSectionManager";
+import {TaskSectionManager, TaskSectionDefinition} from "./TaskSectionManager";
 import {WebsocketManager} from "./Websockets";
 
 import {MoocchatSession} from "./MoocchatSession";
@@ -52,13 +52,14 @@ $(() => {
 
 
     // Sections must be defined now before other resources use them
-    let sectionDefinitions = [
-        // [id, name, milliseconds?]
+    let sectionDefinitions: TaskSectionDefinition[] = [
+        // [id, name, milliseconds]
         ["welcome", "Welcome"],
         ["initial-answer", "Initial Answer", Utils.DateTime.secToMs(15 * 60)],
         ["discussion", "Discussion", Utils.DateTime.secToMs(15 * 60)],
         ["revised-answer", "Revised Answer", Utils.DateTime.secToMs(6 * 60)],
-        ["survey", "Survey"]
+        ["survey", "Survey"],
+        ["finish", "Finish"]
     ];
 
     session.sectionManager.registerAll(sectionDefinitions);

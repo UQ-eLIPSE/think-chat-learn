@@ -11,10 +11,17 @@ export interface IEventData_LoginExistingUser {
     username: string;
 }
 
+export interface IEventData_ChatGroupAnswer {
+    screenName: string;
+    clientIndex: number;
+    answer: number;
+    justification: string;
+}
+
 export interface IEventData_ChatGroupFormed {
     groupId: string;
     groupSize: number;
-    groupAnswers: any[];    // TODO:
+    groupAnswers: IEventData_ChatGroupAnswer[];
     screenName: string;
     clientIndex: number;
 }

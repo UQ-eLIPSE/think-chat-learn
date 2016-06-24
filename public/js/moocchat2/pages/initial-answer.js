@@ -2,6 +2,17 @@ define(["require", "exports", "jquery", "../MoocchatStates", "../Websockets"], f
     "use strict";
     exports.InitialAnswerPageFunc = function (session) {
         var section = session.sectionManager.getSection("initial-answer");
+        function submitInitialAnswer(answer, justification) {
+            session.socket.emit(Websockets_1.WebsocketEvents.OUTBOUND.INITIAL_ANSWER_SUBMISSION, {
+                username: session.user.username,
+                questionId: session.quiz.questionNumber,
+                answer: answer,
+                justification: justification
+            });
+        }
+        section.attachTimerCompleted(function () {
+            submitInitialAnswer(0, "Did not answer");
+        });
         session.socket.once(Websockets_1.WebsocketEvents.INBOUND.INITIAL_ANSWER_SUBMISSION_SAVED, function () {
             session.stateMachine.goTo(MoocchatStates_1.MoocchatState.AWAIT_GROUP_FORMATION);
         });
@@ -17,12 +28,7 @@ define(["require", "exports", "jquery", "../MoocchatStates", "../Websockets"], f
                             alert("You must provide an answer.");
                             return;
                         }
-                        session.socket.emit(Websockets_1.WebsocketEvents.OUTBOUND.INITIAL_ANSWER_SUBMISSION, {
-                            username: session.user.username,
-                            questionId: session.quiz.questionNumber,
-                            answer: answer,
-                            justification: justification
-                        });
+                        submitInitialAnswer(answer, justification);
                     });
                     var $answers = page$("#answers");
                     $answers.on("click", "li", function (e) {
@@ -41,7 +47,7 @@ define(["require", "exports", "jquery", "../MoocchatStates", "../Websockets"], f
                 });
             },
             onLeave: function () {
-                section.setInactive();
+                section.unsetActive();
                 section.hideTimer();
             }
         };

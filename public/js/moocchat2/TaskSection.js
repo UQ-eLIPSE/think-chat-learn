@@ -1,7 +1,10 @@
-define(["require", "exports", "./Utils"], function (require, exports, Utils_1) {
+define(["require", "exports", "./Utils", "./EventBox"], function (require, exports, Utils_1, EventBox_1) {
     "use strict";
     var TaskSection = (function () {
         function TaskSection(id, text, ms) {
+            this.timerActive = false;
+            this.outOfTime = false;
+            this.eventBox = new EventBox_1.EventBox();
             this.id = id;
             this.milliseconds = ms;
             this.$elem = this.generateElement(text);
@@ -41,14 +44,28 @@ define(["require", "exports", "./Utils"], function (require, exports, Utils_1) {
         TaskSection.prototype.setActive = function () {
             this.elem.addClass("active").attr("data-active-section", "");
         };
-        TaskSection.prototype.setInactive = function () {
+        TaskSection.prototype.unsetActive = function () {
             this.elem.removeClass("active").removeAttr("data-active-section");
+            this.unsetOutOfTime();
         };
         TaskSection.prototype.setPaused = function () {
             this.elem.addClass("timer-paused");
         };
-        TaskSection.prototype.setUnpaused = function () {
+        TaskSection.prototype.unsetPaused = function () {
             this.elem.removeClass("timer-paused");
+            this.unsetOutOfTime();
+        };
+        TaskSection.prototype.setOutOfTime = function () {
+            var _this = this;
+            this.elem.addClass("out-of-time");
+            this.outOfTime = true;
+            this.outOfTimeAlternationIntervalHandle = setInterval(function () {
+                _this.elem.toggleClass("out-of-time-2");
+            }, 500);
+        };
+        TaskSection.prototype.unsetOutOfTime = function () {
+            clearInterval(this.outOfTimeAlternationIntervalHandle);
+            this.elem.removeClass("out-of-time out-of-time-2");
         };
         TaskSection.prototype.showTimer = function () {
             this.elem.addClass("timer");
@@ -57,25 +74,34 @@ define(["require", "exports", "./Utils"], function (require, exports, Utils_1) {
         TaskSection.prototype.hideTimer = function () {
             this.stopTimer();
             this.elem.removeClass("timer");
+            this.unsetOutOfTime();
         };
         TaskSection.prototype.startTimer = function () {
             this.showTimer();
-            this.setUnpaused();
+            this.unsetPaused();
             this.timerStart = Date.now();
+            this.timerActive = true;
             this.runTimerUpdate();
         };
         TaskSection.prototype.stopTimer = function () {
+            this.timerActive = false;
             cancelAnimationFrame(this.rafHandle);
         };
         TaskSection.prototype.runTimerUpdate = function () {
             this.rafHandle = requestAnimationFrame(this.updateTimerFrame.bind(this));
         };
         TaskSection.prototype.updateTimerFrame = function (ms) {
+            if (!this.timerActive) {
+                return;
+            }
             if (!this.lastUpdate || ms - this.lastUpdate > 200) {
                 this.updateTimerText();
                 this.lastUpdate = ms;
-                if (this.timeRemaining < 0) {
-                    this.handleTimerCompletion();
+                if (!this.outOfTime && this.timeRemaining < 60 * 1000) {
+                    this.setOutOfTime();
+                }
+                if (this.timeRemaining <= 200) {
+                    this.runTimerCompletionCallbacks();
                     return;
                 }
             }
@@ -84,7 +110,14 @@ define(["require", "exports", "./Utils"], function (require, exports, Utils_1) {
         TaskSection.prototype.updateTimerText = function () {
             this.elem.attr("data-time-left", Utils_1.Utils.DateTime.formatIntervalAsMMSS(this.timeRemaining));
         };
-        TaskSection.prototype.handleTimerCompletion = function () {
+        TaskSection.prototype.attachTimerCompleted = function (callback, runCallbackOnBindIfFired) {
+            this.eventBox.on("timerCompleted", callback, runCallbackOnBindIfFired);
+        };
+        TaskSection.prototype.detachTimerCompleted = function (callback) {
+            this.eventBox.off("timerCompleted", callback);
+        };
+        TaskSection.prototype.runTimerCompletionCallbacks = function () {
+            this.eventBox.dispatch("timerCompleted");
         };
         return TaskSection;
     }());

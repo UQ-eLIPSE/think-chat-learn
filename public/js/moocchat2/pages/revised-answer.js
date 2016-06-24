@@ -2,6 +2,21 @@ define(["require", "exports", "jquery", "../MoocchatStates", "../Websockets"], f
     "use strict";
     exports.RevisedAnswerPageFunc = function (session) {
         var section = session.sectionManager.getSection("revised-answer");
+        function submitRevisedAnswer(answer, justification) {
+            session.socket.emit(Websockets_1.WebsocketEvents.OUTBOUND.REVISED_ANSWER_SUBMISSION, {
+                username: session.user.username,
+                questionNumber: session.quiz.questionNumber,
+                answer: answer,
+                justification: justification,
+                screenName: "",
+                quizRoomID: -1,
+                timestamp: new Date().toISOString()
+            });
+            session.stateMachine.goTo(MoocchatStates_1.MoocchatState.SURVEY);
+        }
+        section.attachTimerCompleted(function () {
+            submitRevisedAnswer(0, "Did not answer");
+        });
         return {
             onEnter: function () {
                 session.pageManager.loadPage("revised-answer", function (page$) {
@@ -14,16 +29,7 @@ define(["require", "exports", "jquery", "../MoocchatStates", "../Websockets"], f
                             alert("You must provide an answer.");
                             return;
                         }
-                        session.socket.emit(Websockets_1.WebsocketEvents.OUTBOUND.REVISED_ANSWER_SUBMISSION, {
-                            username: session.user.username,
-                            questionNumber: session.quiz.questionNumber,
-                            answer: answer,
-                            justification: justification,
-                            screenName: "",
-                            quizRoomID: -1,
-                            timestamp: new Date().toISOString()
-                        });
-                        session.stateMachine.goTo(MoocchatStates_1.MoocchatState.SURVEY);
+                        submitRevisedAnswer(answer, justification);
                     });
                     var $answers = page$("#answers");
                     $answers.on("click", "li", function (e) {
@@ -42,7 +48,7 @@ define(["require", "exports", "jquery", "../MoocchatStates", "../Websockets"], f
                 });
             },
             onLeave: function () {
-                section.setInactive();
+                section.unsetActive();
                 section.hideTimer();
             }
         };

@@ -48,7 +48,7 @@ export let WelcomePageFunc: IPageFunc<STATE> =
                 });
             },
             onLeave: () => {
-                section.setInactive();
+                section.unsetActive();
             }
         }
     }

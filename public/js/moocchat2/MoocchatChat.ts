@@ -19,6 +19,8 @@ export class MoocchatChat {
     private groupData: ChatGroupData;
     private $chatWindow: JQuery;
 
+    private receiveMessageCallback: Function;
+
     constructor(session: MoocchatSession<any>, groupData: ChatGroupData, $chatWindow: JQuery) {
         this.session = session;
         this.groupData = groupData;
@@ -58,13 +60,12 @@ export class MoocchatChat {
 
 
     private attachReceiveMessageHandler() {
-        this.session.socket.on(WebsocketEvents.INBOUND.CHAT_GROUP_RECEIVE_MESSAGE, this.receiveMessage.bind(this));
+        this.receiveMessageCallback = this.receiveMessage.bind(this);
+        this.session.socket.on(WebsocketEvents.INBOUND.CHAT_GROUP_RECEIVE_MESSAGE, this.receiveMessageCallback);
     }
 
     private detachReceiveMessageHandler() {
-        let res = this.session.socket.off(WebsocketEvents.INBOUND.CHAT_GROUP_RECEIVE_MESSAGE, this.receiveMessage);
-
-        console.log(res.listeners(WebsocketEvents.INBOUND.CHAT_GROUP_RECEIVE_MESSAGE));
+        this.session.socket.off(WebsocketEvents.INBOUND.CHAT_GROUP_RECEIVE_MESSAGE, this.receiveMessageCallback);
     }
 
 
@@ -89,7 +90,7 @@ export class MoocchatChat {
     }
 
     public displaySystemMessage(message: string) {
-        // TODO:
+        this.displayMessage(-1, message);
     }
 
     public handleQuitStatusChange() {

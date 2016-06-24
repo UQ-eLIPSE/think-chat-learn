@@ -9,7 +9,9 @@
     "db_test": "node ./node_modules/mocha/bin/mocha test/database.js",
     "dependencies": "node ./util/get_dependencies.js",
     "build_index": "node util/build_index.js",
-    "build_client": "tsc --project ./public/js && node-sass ./public/css/moocchat2.scss > ./public/css/moocchat2.css"
+    "build_client": "tsc --project ./public/js && node-sass ./public/css/moocchat2.scss > ./public/css/moocchat2.css",
+    "build_server": "tsc --project ./controllers",
+    "build": "npm run build_client && npm run build_server"
   },
   "author": "eLIPSE",
   "license": "MIT",

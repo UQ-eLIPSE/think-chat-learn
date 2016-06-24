@@ -32,7 +32,7 @@ define(["require", "exports", "../MoocchatStates", "../MoocchatUser", "../Moocch
                 });
             },
             onLeave: function () {
-                section.setInactive();
+                section.unsetActive();
             }
         };
     };

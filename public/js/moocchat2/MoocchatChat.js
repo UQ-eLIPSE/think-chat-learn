@@ -29,11 +29,11 @@ define(["require", "exports", "jquery", "./Websockets"], function (require, expo
             this.displayMessage(data.clientIndex + 1, data.message);
         };
         MoocchatChat.prototype.attachReceiveMessageHandler = function () {
-            this.session.socket.on(Websockets_1.WebsocketEvents.INBOUND.CHAT_GROUP_RECEIVE_MESSAGE, this.receiveMessage.bind(this));
+            this.receiveMessageCallback = this.receiveMessage.bind(this);
+            this.session.socket.on(Websockets_1.WebsocketEvents.INBOUND.CHAT_GROUP_RECEIVE_MESSAGE, this.receiveMessageCallback);
         };
         MoocchatChat.prototype.detachReceiveMessageHandler = function () {
-            var res = this.session.socket.off(Websockets_1.WebsocketEvents.INBOUND.CHAT_GROUP_RECEIVE_MESSAGE, this.receiveMessage);
-            console.log(res.listeners(Websockets_1.WebsocketEvents.INBOUND.CHAT_GROUP_RECEIVE_MESSAGE));
+            this.session.socket.off(Websockets_1.WebsocketEvents.INBOUND.CHAT_GROUP_RECEIVE_MESSAGE, this.receiveMessageCallback);
         };
         MoocchatChat.prototype.displayMessage = function (clientId, message) {
             var $message = $("<p>").text(message);
@@ -52,6 +52,7 @@ define(["require", "exports", "jquery", "./Websockets"], function (require, expo
             this.$chatWindow.scrollTop(this.$chatWindow.get(0).scrollHeight);
         };
         MoocchatChat.prototype.displaySystemMessage = function (message) {
+            this.displayMessage(-1, message);
         };
         MoocchatChat.prototype.handleQuitStatusChange = function () {
         };

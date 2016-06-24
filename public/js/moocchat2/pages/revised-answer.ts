@@ -10,6 +10,27 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
     (session) => {
         let section = session.sectionManager.getSection("revised-answer");
 
+        function submitRevisedAnswer(answer: number, justification: string) {
+            session.socket.emit(WebsocketEvents.OUTBOUND.REVISED_ANSWER_SUBMISSION, {
+                username: session.user.username,
+                questionNumber: session.quiz.questionNumber,
+                answer: answer,
+                justification: justification,
+
+                screenName: "",         // Not used
+                quizRoomID: -1,         // Not used
+                timestamp: new Date().toISOString()
+            });
+
+            session.stateMachine.goTo(STATE.SURVEY);
+        }
+
+        // Force answer when timer runs out
+        section.attachTimerCompleted(() => {
+            // TODO: Use whatever is on the page rather than fixed values
+            submitRevisedAnswer(0, "Did not answer");
+        });
+
         return {
             onEnter: () => {
                 session.pageManager.loadPage("revised-answer", (page$) => {
@@ -25,18 +46,7 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
                             return;
                         }
 
-                        session.socket.emit(WebsocketEvents.OUTBOUND.REVISED_ANSWER_SUBMISSION, {
-                            username: session.user.username,
-                            questionNumber: session.quiz.questionNumber,
-                            answer: answer,
-                            justification: justification,
-
-                            screenName: "",         // Not used
-                            quizRoomID: -1,         // Not used
-                            timestamp: new Date().toISOString()
-                        });
-
-                        session.stateMachine.goTo(STATE.SURVEY);
+                        submitRevisedAnswer(answer, justification);
                     });
 
 
@@ -67,7 +77,7 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
                 });
             },
             onLeave: () => {
-                section.setInactive();
+                section.unsetActive();
                 section.hideTimer();
             }
         }

@@ -9,7 +9,7 @@ define(["require", "exports"], function (require, exports) {
                 });
             },
             onLeave: function () {
-                section.setInactive();
+                section.unsetActive();
             }
         };
     };

@@ -137,6 +137,7 @@ ChatGroup.prototype.getGroupProbAnswerObjArray = function() {
     return this.clients.map(function(client) {
         return {
             screenName: this.getScreenName(client),
+            clientIndex: this.getClientIndex(client),
             answer: client.probingQuestionAnswer,
             justification: client.probJustification
         }

@@ -13,7 +13,7 @@ export let SurveyPageFunc: IPageFunc<STATE> =
                 });
             },
             onLeave: () => {
-                section.setInactive();
+                section.unsetActive();
             }
         }
     }

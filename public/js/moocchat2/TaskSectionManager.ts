@@ -8,6 +8,11 @@
 import {Utils} from "./Utils";
 import {TaskSection} from "./TaskSection";
 
+/**
+ * Type mirrors TaskSection constructor parameters as array
+ */
+export type TaskSectionDefinition = [string, string] | [string, string, number];
+
 export class TaskSectionManager {
     private sections: { [id: string]: TaskSection } = {};
 
@@ -17,12 +22,15 @@ export class TaskSectionManager {
         this.$taskSectionRootElem = $taskSectionRootElem;
     }
 
-    // TODO: Fix any[] type
-    public registerAll(sectionDefinitions: any[]) {
+    public register(id: string, text: string, ms?: number) {
+        let newSection = new TaskSection(id, text, ms);
+        this.$taskSectionRootElem.append(newSection.elem);
+        this.sections[newSection.identifier] = newSection;
+    }
+
+    public registerAll(sectionDefinitions: TaskSectionDefinition[]) {
         sectionDefinitions.forEach((section) => {
-            let newSection = Utils.Object.applyConstructor<TaskSection>(TaskSection, section);
-            this.$taskSectionRootElem.append(newSection.elem);
-            this.sections[newSection.identifier] = newSection;
+            this.register.apply(this, section);
         });
     }
 

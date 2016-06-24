@@ -11,6 +11,7 @@ $mc-colour-2: $uq-colour-B5;
 $pos-colour: $uq-colour-B5;     // Positive action (e.g. submit)
 $neg-colour: $uq-colour-B6;     // Negative action (e.g. cancel)
 
+$warning-colour: $uq-colour-B6; // General warnings
 $danger-colour: $uq-colour-B1;  // Absolute warnings, errors etc.
 
 $body-bg-colour: lighten($mc-colour-1, 80%);
@@ -156,7 +157,7 @@ button.negative {
 
 #course-name {
     font-style: italic;
-    margin: $mc-sidebar-padding-tb $mc-sidebar-padding-lr $mc-sidebar-padding-tb*2;
+    margin: $mc-sidebar-padding-tb $mc-sidebar-padding-lr $mc-sidebar-padding-tb*1.5;
 }
 
 #logo {
@@ -189,23 +190,26 @@ button.negative {
 
         display: block;
 
-        padding: $mc-sidebar-padding-tb $mc-sidebar-padding-lr;
-        // padding: $mc-sidebar-padding-tb $mc-sidebar-padding-lr $mc-sidebar-padding-tb 3.5rem;
+        font-weight: 300;
+
+        // padding: $mc-sidebar-padding-tb $mc-sidebar-padding-lr;
+        padding: $mc-sidebar-padding-tb $mc-sidebar-padding-lr $mc-sidebar-padding-tb 3rem;
         margin: 0;
-        border-top: 0.05em solid darken($mc-colour-1, 5%);
-        border-bottom: 0.05em solid darken($mc-colour-1, 5%);
+        // border-top: 0.05em solid darken($mc-colour-1, 5%);
+        // border-bottom: 0.05em solid darken($mc-colour-1, 5%);
 
-        // background-image: url(../img/task-section-link-mid-open.png);
-        // background-repeat: no-repeat;
-        // background-position: 0.8rem center;
+        background-image: url(../img/task-section-link-mid-open.png);
+        background-repeat: no-repeat;
+        background-position: 0.8rem center;
+        background-size: 20px 200px;
 
-        // &:first-child {
-        //     background-image: url(../img/task-section-link-top-open.png);
-        // }
+        &:first-child {
+            background-image: url(../img/task-section-link-top-open.png);
+        }
 
-        // &:last-child {
-        //     background-image: url(../img/task-section-link-btm-open.png);
-        // }
+        &:last-child {
+            background-image: url(../img/task-section-link-btm-open.png);
+        }
 
         // &::before {
         //     content: counter(section-counter);
@@ -222,23 +226,23 @@ button.negative {
         // }
 
         &.active {
-            background: $body-bg-colour;
-            border-top-color: $body-bg-colour;
-            border-bottom-color: $body-bg-colour;
+            // background: $body-bg-colour;
+            // border-top-color: $body-bg-colour;
+            // border-bottom-color: $body-bg-colour;
 
-            color: #555;
-            text-shadow: 0.05em 0.05em 0 #e0e0e0;
+            // color: #555;
+            // text-shadow: 0.05em 0.05em 0 #e0e0e0;
             font-weight: bold;
 
-            // background-image: url(../img/task-section-link-mid-closed.png);
+            background-image: url(../img/task-section-link-mid-closed.png);
 
-            // &:first-child {
-            //     background-image: url(../img/task-section-link-top-closed.png);
-            // }
+            &:first-child {
+                background-image: url(../img/task-section-link-top-closed.png);
+            }
 
-            // &:last-child {
-            //     background-image: url(../img/task-section-link-btm-closed.png);
-            // }
+            &:last-child {
+                background-image: url(../img/task-section-link-btm-closed.png);
+            }
         }
 
         &.timer {
@@ -278,6 +282,11 @@ button.negative {
             &.out-of-time::after {
                 background: $danger-colour;
                 color: fg-on-bg($danger-colour);
+            }
+
+            &.out-of-time-2::after {
+                background: $warning-colour;
+                color: fg-on-bg($warning-colour);
             }
 
             &.timer-paused::after {

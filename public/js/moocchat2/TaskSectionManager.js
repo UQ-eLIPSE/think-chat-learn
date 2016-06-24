@@ -1,16 +1,19 @@
-define(["require", "exports", "./Utils", "./TaskSection"], function (require, exports, Utils_1, TaskSection_1) {
+define(["require", "exports", "./TaskSection"], function (require, exports, TaskSection_1) {
     "use strict";
     var TaskSectionManager = (function () {
         function TaskSectionManager($taskSectionRootElem) {
             this.sections = {};
             this.$taskSectionRootElem = $taskSectionRootElem;
         }
+        TaskSectionManager.prototype.register = function (id, text, ms) {
+            var newSection = new TaskSection_1.TaskSection(id, text, ms);
+            this.$taskSectionRootElem.append(newSection.elem);
+            this.sections[newSection.identifier] = newSection;
+        };
         TaskSectionManager.prototype.registerAll = function (sectionDefinitions) {
             var _this = this;
             sectionDefinitions.forEach(function (section) {
-                var newSection = Utils_1.Utils.Object.applyConstructor(TaskSection_1.TaskSection, section);
-                _this.$taskSectionRootElem.append(newSection.elem);
-                _this.sections[newSection.identifier] = newSection;
+                _this.register.apply(_this, section);
             });
         };
         TaskSectionManager.prototype.getSection = function (id) {

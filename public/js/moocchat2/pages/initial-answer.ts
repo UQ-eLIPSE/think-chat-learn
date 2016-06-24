@@ -10,6 +10,20 @@ export let InitialAnswerPageFunc: IPageFunc<STATE> =
     (session) => {
         let section = session.sectionManager.getSection("initial-answer");
 
+        function submitInitialAnswer(answer: number, justification: string) {
+            session.socket.emit(WebsocketEvents.OUTBOUND.INITIAL_ANSWER_SUBMISSION, {
+                username: session.user.username,
+                questionId: session.quiz.questionNumber,
+                answer: answer,
+                justification: justification
+            });
+        }
+
+        // Force answer when timer runs out
+        section.attachTimerCompleted(() => {
+            // TODO: Use whatever is on the page rather than fixed values
+            submitInitialAnswer(0, "Did not answer");
+        });
 
         // Successful initial answer save
         session.socket.once(WebsocketEvents.INBOUND.INITIAL_ANSWER_SUBMISSION_SAVED, () => {
@@ -31,12 +45,7 @@ export let InitialAnswerPageFunc: IPageFunc<STATE> =
                             return;
                         }
 
-                        session.socket.emit(WebsocketEvents.OUTBOUND.INITIAL_ANSWER_SUBMISSION, {
-                            username: session.user.username,
-                            questionId: session.quiz.questionNumber,
-                            answer: answer,
-                            justification: justification
-                        });
+                        submitInitialAnswer(answer, justification);
                     });
 
 
@@ -67,7 +76,7 @@ export let InitialAnswerPageFunc: IPageFunc<STATE> =
                 });
             },
             onLeave: () => {
-                section.setInactive();
+                section.unsetActive();
                 section.hideTimer();
             }
         }

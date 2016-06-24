@@ -15,17 +15,24 @@ export let DiscussionPageFunc: IPageFunc<STATE> =
                     section.setActive();
                     section.startTimer();
 
-                    page$("#end-chat").on("click", () => {
-                        chat.terminate();
-                        session.stateMachine.goTo(STATE.REVISED_ANSWER);
-                    });
-
-
-
                     let $activeSection = $("[data-active-section]", "#session-sections");
                     let $chatBox = page$("#chat-box");
 
+                    let chat = new MoocchatChat(session, data, $chatBox);
+                    
+                    function endChat() {
+                        chat.terminate();
+                        session.stateMachine.goTo(STATE.REVISED_ANSWER);
+                    }
 
+                    page$("#end-chat").on("click", () => {
+                        endChat();
+                    });
+
+                    // End chat when timer runs out
+                    section.attachTimerCompleted(() => {
+                        endChat();
+                    });
 
 
 
@@ -49,7 +56,6 @@ export let DiscussionPageFunc: IPageFunc<STATE> =
 
 
 
-                    let chat = new MoocchatChat(session, data, $chatBox);
 
                     page$("#chat-input-wrapper").on("submit", function(e) {
                         e.preventDefault();
@@ -67,11 +73,12 @@ export let DiscussionPageFunc: IPageFunc<STATE> =
 
 
                     // Notes at top
-                    chat.displayMessage(-1, `Your discussion group has ${data.groupSize} member${(data.groupSize !== 1) ? "s" : " only"}`);
-                    chat.displayMessage(-1, `You are Person #${data.clientIndex + 1}`);
+                    chat.displaySystemMessage(`Your discussion group has ${data.groupSize} member${(data.groupSize !== 1) ? "s" : " only"}`);
+                    chat.displaySystemMessage(`You are Person #${data.clientIndex + 1}`);
 
-
-
+                    data.groupAnswers.forEach((answerData) => {
+                        chat.displayMessage(answerData.clientIndex + 1, `Answer = ${String.fromCharCode(65 + answerData.answer)}; Justification = ${answerData.justification}`)
+                    });
 
 
 
@@ -93,7 +100,7 @@ export let DiscussionPageFunc: IPageFunc<STATE> =
                 });
             },
             onLeave: () => {
-                section.setInactive();
+                section.unsetActive();
                 section.hideTimer();
             }
         }

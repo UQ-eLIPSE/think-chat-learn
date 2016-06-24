@@ -18,7 +18,8 @@ define(["require", "exports", "jquery", "./Utils", "./StateFlow", "./PageManager
             ["initial-answer", "Initial Answer", Utils_1.Utils.DateTime.secToMs(15 * 60)],
             ["discussion", "Discussion", Utils_1.Utils.DateTime.secToMs(15 * 60)],
             ["revised-answer", "Revised Answer", Utils_1.Utils.DateTime.secToMs(6 * 60)],
-            ["survey", "Survey"]
+            ["survey", "Survey"],
+            ["finish", "Finish"]
         ];
         session.sectionManager.registerAll(sectionDefinitions);
         var welcomePage = welcome_1.WelcomePageFunc(session);

@@ -105,7 +105,7 @@ button.negative {
 
 #course-name {
   font-style: italic;
-  margin: 1.2rem 2rem 2.4rem; }
+  margin: 1.2rem 2rem 1.8rem; }
 
 #logo {
   position: absolute;
@@ -122,17 +122,24 @@ button.negative {
   #task-sections li {
     position: relative;
     display: block;
-    padding: 1.2rem 2rem;
+    font-weight: 300;
+    padding: 1.2rem 2rem 1.2rem 3rem;
     margin: 0;
-    border-top: 0.05em solid #007d9c;
-    border-bottom: 0.05em solid #007d9c; }
+    background-image: url(../img/task-section-link-mid-open.png);
+    background-repeat: no-repeat;
+    background-position: 0.8rem center;
+    background-size: 20px 200px; }
+    #task-sections li:first-child {
+      background-image: url(../img/task-section-link-top-open.png); }
+    #task-sections li:last-child {
+      background-image: url(../img/task-section-link-btm-open.png); }
     #task-sections li.active {
-      background: white;
-      border-top-color: white;
-      border-bottom-color: white;
-      color: #555;
-      text-shadow: 0.05em 0.05em 0 #e0e0e0;
-      font-weight: bold; }
+      font-weight: bold;
+      background-image: url(../img/task-section-link-mid-closed.png); }
+      #task-sections li.active:first-child {
+        background-image: url(../img/task-section-link-top-closed.png); }
+      #task-sections li.active:last-child {
+        background-image: url(../img/task-section-link-btm-closed.png); }
     #task-sections li.timer {
       padding-right: 4.5rem; }
       #task-sections li.timer::after {
@@ -157,6 +164,9 @@ button.negative {
         border: 0.1em solid white; }
       #task-sections li.timer.out-of-time::after {
         background: #aa0041;
+        color: white; }
+      #task-sections li.timer.out-of-time-2::after {
+        background: #d6492a;
         color: white; }
       #task-sections li.timer.timer-paused::after {
         background: none;
