@@ -64,18 +64,28 @@ $(function() {
     }
 
     /**
-     * Taken out of the section at the start of updatePage().
+     * Backwards compatibility for username-based websocket events.
      * 
-     * Returns the username that is in the form (remember that
-     * the "login" page is still available to be manipulated,
-     * but is generally out of sight in most states)
-     * 
-     * ***  Should only be used after the LOGIN state because   ***
-     * ***  this depends on the value in the form field!        ***
+     * Should migrate such events to use session IDs
      */
     function getUserName() {
-        if (SINGLE_SIGN_ON == true) {
-            return page$('#username').val();
+        return session.getUsername();
+    }
+
+    var session = {
+        id: "",
+        username: "",
+        setId: function(socketId) {
+            session.id = socketId;
+        },
+        getId: function() {
+            return session.id;
+        },
+        setUsername: function(username) {
+            session.username = username;
+        },
+        getUsername: function() {
+            return session.username;
         }
     }
 
@@ -168,13 +178,20 @@ $(function() {
                 }
 
                 /**
-                 * Previously startTask().
-                 * 
                  * Stores basic information about the user and quiz
                  * once login is okay.
+                 * 
+                 * data = {
+                 *      sessionId {string}
+                 *      username {string}       // Should now be mostly ignored because we no longer use usernames to keep track of sessions
+                 *      quiz: Object;           // Object containig all the question information for the task
+                 * }
                  */
                 function loginSuccess(data) {
-                    username = data.username;
+                    // username = data.username;
+                    session.setUsername(data.username);
+                    session.setId(data.sessionId);
+
                     if (data) {
                         quiz = data.quiz;
                     }
@@ -194,45 +211,17 @@ $(function() {
                 }
 
                 function initPage() {
-                    // Brought out from updatePage() -> LOGIN_PAGE
-                    console.log(LOGIN_PAGE);
-
-                    $.removeCookie(COOKIE_USERNAME, { path: "/" });  //  TO BE REMOVED
-
-                    if (getUserName()) {
-                        //UQ Single Sign On
-                        $.cookie(COOKIE_USERNAME, getUserName(), { path: "/" });
+                    // _LTI_INCOMING_DATA comes from the *page itself* - index.php should have injected it as a JS object literal
+                    // If missing, ask for JSON object
+                    var data;
+                    
+                    if (typeof _LTI_INCOMING_DATA !== "undefined") {
+                        data = _LTI_INCOMING_DATA;
+                    } else {
+                        data = JSON.parse(prompt("Please enter LTI data **JSON** object")); 
                     }
 
-                    //----//
-
-                    page$("#login-button").click(function(e) {  //  login button is clicked
-                        if (!isCookieSet) {
-                            // No String.trim in IE - see http://stackoverflow.com/questions/3439316/ie8-and-jquerys-trim
-                            username = $.trim(page$("#username").val());
-                        }
-                        if (username == "") return;
-                        console.log(username);
-                        $.cookie(COOKIE_USERNAME, username, { path: "/" }); // TO REMOVE COOKIE: $.removeCookie(COOKIE_USERNAME, {path:"/"});
-                        isCookieSet = true;
-                        page$("#username").blur();
-                        socket.emit('login_req', { username: username, password: "ischool", turkHitId: turkHitId, browserInformation: navigator.userAgent });
-                    });
-
-                    page$("#username").keydown(function(e) {
-                        if (e.which != ENTER_KEY_CODE) return;
-                        page$("#login-button").click();
-                    });
-
-                    if ($.cookie(COOKIE_USERNAME) != null) {
-                        isCookieSet = true;
-                        username = $.cookie(COOKIE_USERNAME);
-                        socket.emit('user_flow', { username: username, timestamp: new Date().toISOString(), page: 'Logged In - Wait Page', event: "" });
-
-                        if (isCookieSet) page$("#login-button").click();
-                    }
-
-                    page$("#username").focus();
+                    socket.emit("loginLti", data);
                 }
 
                 setStageAndPage(null, LOGIN_PAGE);
@@ -283,10 +272,10 @@ $(function() {
 
                             if (!j || typeof (j) != "string") { j = ""; }
                             
-                            socket.emit('user_flow', { username: username, timestamp: new Date().toISOString(), page: 'Main Task Page', event: 'Submitted First Answer and Justification', data: probingQuestionChoicesClicked[0] });
+                            socket.emit('user_flow', { username: getUserName(), timestamp: new Date().toISOString(), page: 'Main Task Page', event: 'Submitted First Answer and Justification', data: probingQuestionChoicesClicked[0] });
                             
                             socket.emit("answerSubmissionInitial", {
-                                username: username,
+                                sessionId: session.getId(),
                                 questionId: questionNumber,
                                 answer: probingQuestionChoicesClicked[0],
                                 justification: j
@@ -343,7 +332,7 @@ $(function() {
 
                     // Request to go into a chat group
                     socket.emit("chatGroupJoinRequest", {
-                        username: username
+                        sessionId: session.getId()
                     });
                 }
 
@@ -498,20 +487,20 @@ $(function() {
                         .on("click", function() {
                             socket.emit("chatGroupQuitStatusChange", {
                                 groupId: groupId,
-                                username: username,
+                                sessionId: session.getId(),
                                 quitStatus: wantToQuit
                             });
                             
                             wantToQuit = !wantToQuit;
                             
                             if (wantToQuit) {
-                                socket.emit('user_flow', { username: username, timestamp: new Date().toISOString(), page: 'Main Task Page', event: 'In Chat Room' });
+                                socket.emit('user_flow', { username: getUserName(), timestamp: new Date().toISOString(), page: 'Main Task Page', event: 'In Chat Room' });
                                 page$(".moocchat-next-button").html("Request to End Chat");
 
                             }
                             else {
                                 page$(".moocchat-next-button").html("Cancel the Request");
-                                socket.emit('user_flow', { username: username, timestamp: new Date().toISOString(), page: 'Main Task Page', event: 'Clicked Request to End Chat' });
+                                socket.emit('user_flow', { username: getUserName(), timestamp: new Date().toISOString(), page: 'Main Task Page', event: 'Clicked Request to End Chat' });
                             }
                         });
                     
@@ -525,7 +514,7 @@ $(function() {
 
                             socket.emit("chatGroupMessage", {
                                 groupId: groupId,
-                                username: username,
+                                sessionId: session.getId(),
                                 message: message
                             });
 
@@ -563,8 +552,16 @@ $(function() {
                             var j = page$("#moocchat-justification-blank").val();
                             if (!j || typeof (j) != "string") { j = ""; }
 
-                            socket.emit("probingQuestionFinalAnswerSubmission", { username: username, screenName: screenName, quizRoomID: quizRoomID, questionNumber: questionNumber, answer: probingQuestionChoicesClicked[0], justification: j, timestamp: new Date().toISOString() });
-                            socket.emit('user_flow', { username: username, timestamp: new Date().toISOString(), page: 'Main Task Page', event: 'Submitted Final Answer and Justification', data: probingQuestionChoicesClicked[0] });
+                            socket.emit("probingQuestionFinalAnswerSubmission", {
+                                sessionId: session.getId(),
+                                screenName: screenName,
+                                quizRoomID: quizRoomID,
+                                questionNumber: questionNumber,
+                                answer: probingQuestionChoicesClicked[0],
+                                justification: j,
+                                timestamp: new Date().toISOString()
+                             });
+                            socket.emit('user_flow', { username: getUserName(), timestamp: new Date().toISOString(), page: 'Main Task Page', event: 'Submitted Final Answer and Justification', data: probingQuestionChoicesClicked[0] });
 
                             StateFlow.goTo(_STATE.SURVEY);
                         });
@@ -668,7 +665,7 @@ $(function() {
                             page$("general_error,.discussion_error,.level_of_understanding_error,.in_discussion_error,.in_discussion_group_error").removeClass('has-error');
 
                             //  SUBMIT
-                            socket.emit("submitSurvey", { username: username, general: general, discussion: discussion, level_of_understanding: level_of_understanding, in_discussion: in_discussion, in_discussion_group: in_discussion_group, english: english, past: past, pastComment: pastComment, timestamp: new Date().toISOString() });
+                            socket.emit("submitSurvey", { username: getUserName(), general: general, discussion: discussion, level_of_understanding: level_of_understanding, in_discussion: in_discussion, in_discussion_group: in_discussion_group, english: english, past: past, pastComment: pastComment, timestamp: new Date().toISOString() });
 
                             //  FINISH
                             StateFlow.goTo(_STATE.SURVEY_COMPLETION);
@@ -685,7 +682,7 @@ $(function() {
             state: _STATE.SURVEY_COMPLETION,
             page: _PAGE.COMPLETED_PAGE,
             onEnter: function() {
-                socket.emit('user_flow', { username: getUserName, timestamp: new Date().toISOString(), page: 'Completed', event: '' });
+                socket.emit('user_flow', { username: getUserName(), timestamp: new Date().toISOString(), page: 'Completed', event: '' });
                 console.log(COMPLETED_PAGE);
 
                 setStageAndPage(null, COMPLETED_PAGE);
