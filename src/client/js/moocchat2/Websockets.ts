@@ -38,6 +38,10 @@ export class WebsocketManager {
             path: "/socket.io",
             transports: ["websocket"]
         });
+
+        this.on("error", () => {
+            alert("The server for this task is currently unavailable. It may be currently offline for maintenance. Please try again later.");
+        })
     }
 
     public close() {
