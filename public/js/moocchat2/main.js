@@ -10,7 +10,7 @@ define(["require", "exports", "jquery", "./Utils", "./StateFlow", "./PageManager
         var session = new MoocchatSession_1.MoocchatSession()
             .setStateMachine(new StateFlow_1.StateFlow())
             .setPageManager(new PageManager_1.PageManager($content))
-            .setTaskSectionManager(new TaskSectionManager_1.TaskSectionManager($taskSections))
+            .setSectionManager(new TaskSectionManager_1.TaskSectionManager($taskSections))
             .setSocket(socket);
         $courseName.text("ENGG1200");
         var sectionDefinitions = [

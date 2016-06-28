@@ -1,15 +1,17 @@
 import {IQuiz} from "./IQuiz";
 
-/*
+/**
  * MOOCchat
  * Quiz class module
  * 
  * Wraps around the quiz data that is returned from the server
  */
-
 export class MoocchatQuiz {
     private data: IQuiz;
 
+    /**
+     * @param {IQuiz} data The quiz data returned from the server when first logging in
+     */
     constructor(data: IQuiz) {
         this.data = data;
     }

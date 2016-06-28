@@ -1,3 +1,9 @@
+/**
+ * MOOCchat
+ * Quiz interface
+ * 
+ * Encodes the expected quiz data from the server.
+ */
 export interface IQuiz {
     questionGroup: number;
     questionNumber: number;

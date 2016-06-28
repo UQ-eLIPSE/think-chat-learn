@@ -1,16 +1,27 @@
+/**
+ * MOOCchat
+ * EventData interfaces
+ * 
+ * Encodes the expected event data from the server.
+ */
+
 import {IQuiz} from "./IQuiz";
 
+/** loginSuccess */
 export interface IEventData_LoginSuccess {
     username: string;
     quiz: IQuiz;
 }
 
+/** loginFailure */
 export type IEventData_LoginFailure = string;
 
+/** loginExistingUser */
 export interface IEventData_LoginExistingUser {
     username: string;
 }
 
+/** A person's answer to the quiz in the initial answer stage */
 export interface IEventData_ChatGroupAnswer {
     screenName: string;
     clientIndex: number;
@@ -18,6 +29,7 @@ export interface IEventData_ChatGroupAnswer {
     justification: string;
 }
 
+/** chatGroupFormed */
 export interface IEventData_ChatGroupFormed {
     groupId: string;
     groupSize: number;
@@ -26,6 +38,7 @@ export interface IEventData_ChatGroupFormed {
     clientIndex: number;
 }
 
+/** chatGroupMessage */
 export interface IEventData_ChatGroupMessageReceived {
     screenName: string;
     clientIndex: number;

@@ -37,6 +37,10 @@ define(["require", "exports"], function (require, exports) {
             this.dispatchedEvents[eventName] = data;
             this.runCallbacks(eventName, data);
         };
+        EventBox.prototype.destroy = function () {
+            this.eventCallbacks = {};
+            this.dispatchedEvents = {};
+        };
         EventBox.prototype.runCallbacks = function (eventName, data) {
             var callbacks = this.eventCallbacks[eventName];
             if (callbacks) {

@@ -1,4 +1,9 @@
-// All the states we are using
+/**
+ * MOOCchat
+ * State enum
+ * 
+ * All the states used for the state machine
+ */
 export enum MoocchatState {
     WELCOME,
     INITIAL_ANSWER,

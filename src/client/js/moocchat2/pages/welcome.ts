@@ -13,11 +13,11 @@ export let WelcomePageFunc: IPageFunc<STATE> =
             onEnter: () => {
                 session.pageManager.loadPage("welcome", (page$) => {
                     section.setActive();
+
                     page$("button").on("click", () => {
                         let username = prompt("username", "test2");
 
                         let user = new MoocchatUser(username);
-
 
                         user.onLoginSuccess = (data) => {
                             session.setQuiz(new MoocchatQuiz(data.quiz));
@@ -29,8 +29,10 @@ export let WelcomePageFunc: IPageFunc<STATE> =
                             let reason: string;
 
                             if (typeof data === "string") {
+                                // General login failure
                                 reason = data;
                             } else {
+                                // Login failed because user still signed in
                                 reason = `User "${data.username}" is still signed in`;
                             }
 
@@ -43,8 +45,6 @@ export let WelcomePageFunc: IPageFunc<STATE> =
                     page$("a").on("click", () => {
                         session.stateMachine.goTo(STATE.DISCUSSION);
                     });
-
-
                 });
             },
             onLeave: () => {

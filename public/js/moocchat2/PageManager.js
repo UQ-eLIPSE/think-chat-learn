@@ -4,18 +4,11 @@ define(["require", "exports", "jquery"], function (require, exports, $) {
         function PageManager($contentElem) {
             this.$contentElem = $contentElem;
         }
-        Object.defineProperty(PageManager.prototype, "elem", {
-            get: function () {
-                return this.$contentElem;
-            },
-            enumerable: true,
-            configurable: true
-        });
         PageManager.prototype.page$ = function (selector) {
             if (selector) {
-                return $(selector, this.elem);
+                return $(selector, this.$contentElem);
             }
-            return this.elem;
+            return this.$contentElem;
         };
         PageManager.prototype.loadPage = function (name, onDone) {
             var _this = this;

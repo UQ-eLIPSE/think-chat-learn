@@ -29,7 +29,7 @@ define(["require", "exports"], function (require, exports) {
             }
             return this;
         };
-        MoocchatSession.prototype.setTaskSectionManager = function (sectionManager) {
+        MoocchatSession.prototype.setSectionManager = function (sectionManager) {
             if (!this._sectionManager) {
                 this._sectionManager = sectionManager;
             }

@@ -1,10 +1,3 @@
-/*
- * MOOCchat
- * Main module
- * 
- * Main JS module that handles the startup of MOOCchat
- */
-
 import * as $ from "jquery";
 
 import {Utils} from "./Utils";
@@ -25,11 +18,16 @@ import {DiscussionPageFunc} from "./pages/discussion";
 import {RevisedAnswerPageFunc} from "./pages/revised-answer";
 import {SurveyPageFunc} from "./pages/survey";
 
+/*
+ * MOOCchat
+ * Main module
+ * 
+ * Main JS module that handles the startup of MOOCchat
+ */
 
 // Start Websockets as soon as possible
 let socket = new WebsocketManager();
 socket.open();
-
 
 // On DOM Ready
 $(() => {
@@ -42,8 +40,9 @@ $(() => {
         new MoocchatSession<STATE>()
             .setStateMachine(new StateFlow<STATE>())
             .setPageManager(new PageManager($content))
-            .setTaskSectionManager(new TaskSectionManager($taskSections))
+            .setSectionManager(new TaskSectionManager($taskSections))
             .setSocket(socket);
+
 
 
     // TODO: Should be somehow processing information that comes from Blackboard/LTI here

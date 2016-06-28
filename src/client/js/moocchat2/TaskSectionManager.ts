@@ -1,11 +1,3 @@
-/*
- * MOOCchat
- * Task section manager class module
- * 
- * Handles all task sections in the sidebar
- */
-
-import {Utils} from "./Utils";
 import {TaskSection} from "./TaskSection";
 
 /**
@@ -13,27 +5,53 @@ import {TaskSection} from "./TaskSection";
  */
 export type TaskSectionDefinition = [string, string] | [string, string, number];
 
+/**
+ * MOOCchat
+ * Task section manager class module
+ * 
+ * Handles all task sections in the sidebar
+ */
 export class TaskSectionManager {
     private sections: { [id: string]: TaskSection } = {};
 
     private $taskSectionRootElem: JQuery;
 
+    /**
+     * @param {JQuery} $taskSectionRootElem Root element where task sections are to be inserted
+     */
     constructor($taskSectionRootElem: JQuery) {
         this.$taskSectionRootElem = $taskSectionRootElem;
     }
 
+    /**
+     * Registers a task section.
+     * 
+     * @param {string} id A unique identifier
+     * @param {string} text Text label to show on the element
+     * @param {number} ms Timer value in milliseconds 
+     */
     public register(id: string, text: string, ms?: number) {
         let newSection = new TaskSection(id, text, ms);
         this.$taskSectionRootElem.append(newSection.elem);
         this.sections[newSection.identifier] = newSection;
     }
 
+    /**
+     * Registers multiple task sections.
+     * 
+     * @param {TaskSectionDefinition[]} sectionDefinitions
+     */
     public registerAll(sectionDefinitions: TaskSectionDefinition[]) {
         sectionDefinitions.forEach((section) => {
             this.register.apply(this, section);
         });
     }
 
+    /**
+     * Gets requested section.
+     * 
+     * @param {string} id
+     */
     public getSection(id: string) {
         return this.sections[id];
     }

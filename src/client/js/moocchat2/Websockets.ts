@@ -24,13 +24,12 @@ export const WebsocketEvents = {
     }
 }
 
-/*
+/**
  * MOOCchat
  * Websocket management class module
  * 
- * 
+ * Acts as thin layer over Socket.IO object
  */
-
 export class WebsocketManager {
     private socket: SocketIOClient.Socket;
 

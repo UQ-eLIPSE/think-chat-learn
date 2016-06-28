@@ -1,17 +1,21 @@
-/*
+import {Utils} from "./Utils";
+
+import {EventBox, EventBoxCallback} from "./EventBox";
+
+const TaskSection_InternalLoginEvents = {
+    TIMER_COMPLETED: "MCTS_TIMER_COMPLETED"
+}
+
+/**
  * MOOCchat
  * Task section class module
  * 
  * Handles *one* tab of the task section UL in the sidebar
  */
-
-import {Utils} from "./Utils";
-
-import {EventBox, EventBoxCallback} from "./EventBox";
-
 export class TaskSection {
     private id: string;
 
+    // TODO: Probably should move timer related stuff to a timer class
     private milliseconds: number;
     private timerStart: number;
     private timerActive: boolean = false;
@@ -41,15 +45,29 @@ export class TaskSection {
         }
     }
 
+    /**
+     * The ID of the task section
+     * 
+     * @return {string}
+     */
     public get identifier() {
         return this.id;
     }
 
+    /**
+     * The jQuery wrapped element of the task section
+     * 
+     * @return {JQuery}
+     */
     public get elem() {
         return this.$elem;
     }
 
-    /** Time remaining in milliseconds */
+    /**
+     * Time remaining in milliseconds
+     * 
+     * @return {number}
+     */
     public get timeRemaining() {
         if (this.timerStart) {
             return this.milliseconds - (Date.now() - this.timerStart);
@@ -58,8 +76,11 @@ export class TaskSection {
         return this.milliseconds;
     }
 
-
-
+    /**
+     * Create the element to be injected into the page for a task section.
+     * 
+     * @return {JQuery}
+     */
     private generateElement(text: string) {
         let $sectionElement = $("<li>");
 
@@ -68,26 +89,39 @@ export class TaskSection {
         return $sectionElement;
     }
 
-
-
+    /**
+     * Sets state of task section to active.
+     */
     public setActive() {
         this.elem.addClass("active").attr("data-active-section", "");
     }
 
+    /**
+     * Unsets state of task section from active.
+     */
     public unsetActive() {
         this.elem.removeClass("active").removeAttr("data-active-section");
         this.unsetOutOfTime();
     }
 
+    /**
+     * Sets state of task section to paused.
+     */
     public setPaused() {
         this.elem.addClass("timer-paused");
     }
 
+    /**
+     * Unsets state of task section from paused.
+     */
     public unsetPaused() {
         this.elem.removeClass("timer-paused");
         this.unsetOutOfTime();
     }
 
+    /**
+     * Sets state of task section to "out of time".
+     */
     public setOutOfTime() {
         this.elem.addClass("out-of-time");
         this.outOfTime = true;
@@ -97,43 +131,63 @@ export class TaskSection {
         }, 500);
     }
 
+    /**
+     * Unsets state of task section from "out of time".
+     */
     public unsetOutOfTime() {
         clearInterval(this.outOfTimeAlternationIntervalHandle);
         this.elem.removeClass("out-of-time out-of-time-2");
     }
 
-
+    /**
+     * Makes timer visible.
+     */
     public showTimer() {
         this.elem.addClass("timer");
         this.updateTimerText();
     }
 
+    /**
+     * Makes timer not visible and stops the timer.
+     */
     public hideTimer() {
         this.stopTimer();
         this.elem.removeClass("timer");
         this.unsetOutOfTime();
     }
 
+    /**
+     * Starts timer and shows timer if necessary.
+     */
     public startTimer() {
         this.showTimer();
         this.unsetPaused();
 
         this.timerStart = Date.now();
         this.timerActive = true;
-        
-        this.runTimerUpdate();
+
+        this.requestTimerUpdate();
     }
 
+    /**
+     * Stops timer.
+     */
     public stopTimer() {
         this.timerActive = false;
 
         cancelAnimationFrame(this.rafHandle);
     }
 
-    private runTimerUpdate() {
+    /**
+     * Request timer update on next frame render.
+     */
+    private requestTimerUpdate() {
         this.rafHandle = requestAnimationFrame(this.updateTimerFrame.bind(this));
     }
 
+    /**
+     * Updates timer visually and triggers request for timer update on next frame render. 
+     */
     private updateTimerFrame(ms: number) {
         // Terminate refresh loop when timer inactive
         if (!this.timerActive) {
@@ -158,23 +212,40 @@ export class TaskSection {
         }
 
         // Frame updates are continuous
-        this.runTimerUpdate();
+        this.requestTimerUpdate();
     }
 
+    /**
+     * Update timer text with time remaining value.
+     */
     private updateTimerText() {
         this.elem.attr("data-time-left", Utils.DateTime.formatIntervalAsMMSS(this.timeRemaining));
     }
 
+    /**
+     * Attach callback to timer completed event.
+     * 
+     * @param {EventBoxCallback} callback
+     * @param {boolean} runCallbackOnBindIfFired Run callback when bound, if event has already previously occurred.
+     */
     public attachTimerCompleted(callback: EventBoxCallback, runCallbackOnBindIfFired?: boolean) {
-        this.eventBox.on("timerCompleted", callback, runCallbackOnBindIfFired);
+        this.eventBox.on(TaskSection_InternalLoginEvents.TIMER_COMPLETED, callback, runCallbackOnBindIfFired);
     }
 
+    /**
+     * Detach callback from timer completed event.
+     * 
+     * @param {EventBoxCallback} callback
+     */
     public detachTimerCompleted(callback: EventBoxCallback) {
-        this.eventBox.off("timerCompleted", callback);
+        this.eventBox.off(TaskSection_InternalLoginEvents.TIMER_COMPLETED, callback);
     }
 
+    /**
+     * Run all callbacks for timer completed event.
+     */
     private runTimerCompletionCallbacks() {
-        this.eventBox.dispatch("timerCompleted");
+        this.eventBox.dispatch(TaskSection_InternalLoginEvents.TIMER_COMPLETED);
     }
 
 }

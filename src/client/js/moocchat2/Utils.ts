@@ -1,9 +1,8 @@
-/*
+/**
  * MOOCchat
  * Utilities module
  */
-
-export let Utils = {
+export const Utils = {
 
     DateTime: {
         /**
@@ -46,5 +45,4 @@ export let Utils = {
             return new (constructor.bind.apply(constructor, [].concat(null, args)));
         }
     }
-
 }

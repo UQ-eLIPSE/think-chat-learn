@@ -8,13 +8,6 @@ define(["require", "exports", "jquery", "./Websockets"], function (require, expo
             this.attachReceiveMessageHandler();
             this.$chatWindow.attr("data-self-client-id", (this.groupData.clientIndex + 1).toString());
         }
-        Object.defineProperty(MoocchatChat.prototype, "screenName", {
-            get: function () {
-                return this.groupData.screenName;
-            },
-            enumerable: true,
-            configurable: true
-        });
         MoocchatChat.prototype.terminate = function () {
             this.detachReceiveMessageHandler();
         };
@@ -27,13 +20,6 @@ define(["require", "exports", "jquery", "./Websockets"], function (require, expo
         };
         MoocchatChat.prototype.receiveMessage = function (data) {
             this.displayMessage(data.clientIndex + 1, data.message);
-        };
-        MoocchatChat.prototype.attachReceiveMessageHandler = function () {
-            this.receiveMessageCallback = this.receiveMessage.bind(this);
-            this.session.socket.on(Websockets_1.WebsocketEvents.INBOUND.CHAT_GROUP_RECEIVE_MESSAGE, this.receiveMessageCallback);
-        };
-        MoocchatChat.prototype.detachReceiveMessageHandler = function () {
-            this.session.socket.off(Websockets_1.WebsocketEvents.INBOUND.CHAT_GROUP_RECEIVE_MESSAGE, this.receiveMessageCallback);
         };
         MoocchatChat.prototype.displayMessage = function (clientId, message) {
             var $message = $("<p>").text(message);
@@ -54,7 +40,12 @@ define(["require", "exports", "jquery", "./Websockets"], function (require, expo
         MoocchatChat.prototype.displaySystemMessage = function (message) {
             this.displayMessage(-1, message);
         };
-        MoocchatChat.prototype.handleQuitStatusChange = function () {
+        MoocchatChat.prototype.attachReceiveMessageHandler = function () {
+            this.receiveMessageCallback = this.receiveMessage.bind(this);
+            this.session.socket.on(Websockets_1.WebsocketEvents.INBOUND.CHAT_GROUP_RECEIVE_MESSAGE, this.receiveMessageCallback);
+        };
+        MoocchatChat.prototype.detachReceiveMessageHandler = function () {
+            this.session.socket.off(Websockets_1.WebsocketEvents.INBOUND.CHAT_GROUP_RECEIVE_MESSAGE, this.receiveMessageCallback);
         };
         return MoocchatChat;
     }());
