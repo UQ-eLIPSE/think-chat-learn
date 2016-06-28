@@ -18,44 +18,22 @@ var SessionManager = require("../models/SessionManager");
 var util = require('../helpers/util');
 var randomInteger = util.randomInteger;
 
-// it's decided when the server loads quiz data from database
-var NUM_QUESTIONS_PER_SESSION;
 
-//  collection (in mongoDB) = table (in sql DB)
-// var COLLECTION_PREFIX = conf.collectionPrefix;
-
-var NUM_CASES = 1;
-for (var indepVar in conf.expConditions) {
-    NUM_CASES *= conf.expConditions[indepVar].length;
-}
-
-//TODO: This should be in its own module (question module?)
-
-var quizSet;
+/**
+ * Holds the quiz information for each question
+ * Type: {[questionNumber: number]: Quiz}
+ */
+var quizSet = {};
 
 console.log("Active question group: " + conf.activeQuestionGroup);
 
 db_wrapper.question.read({ questionGroup: conf.activeQuestionGroup },
     function(err, dbResults) {
-        //  SELECT * FROM QUESTION_TABLE WHERE questionGroup==conf.activeQuestionGroup;
-        //  db["collection_name"].find(...
-
-        //  initializes the right number (for this question set) of empty waitlists
-        //  for users
-        quizSet = new Array();
-        for (var i = 0; i < dbResults.length; i++) {
-            quizSet[i] = null;
-        }
+        // Load up the quiz information
         for (var i = 0; i < dbResults.length; i++) {
             quizSet[dbResults[i].questionNumber] = dbResults[i];
         }
 
-        //  accessing a user in a waitlist
-        // quizWaitlists[conditionAssigned]
-        // discussionWaitlists[conditionAssigned]
-        NUM_QUESTIONS_PER_SESSION = dbResults.length;
-        // for (var i = 0; i < quizSet.length; i++) { quizWaitlists[i] = new Array(); }
-        // for (var i = 0; i < quizSet.length; i++) { discussionWaitlists[i] = new Array(); }
         //  initializes the right number (for questions) of empty
         //  waitlists for users
         console.log("#MOOCchat server has started\n" +
@@ -65,7 +43,7 @@ db_wrapper.question.read({ questionGroup: conf.activeQuestionGroup },
             "\tactive question group: %d\n",
             conf.portNum,
             conf.groupSize,
-            NUM_QUESTIONS_PER_SESSION,
+            dbResults.length,
             conf.activeQuestionGroup);
 
         // Run initialisation
@@ -73,7 +51,7 @@ db_wrapper.question.read({ questionGroup: conf.activeQuestionGroup },
     });
 
 /**
- * TODO: Wrapping everything in a "after DB load" function
+ * Wrapping everything in a "after DB load" function
  * so that we're sure some variables are initialised properly when we use them
  */
 function afterDbLoad() {
@@ -457,14 +435,23 @@ function afterDbLoad() {
             saveProbingQuestionAnswerHelper(data, true, testHooks);
         }
 
-        function saveProbingQuestionAnswerHelper(data, finalAnswer, testHooks) { //  data : {username, screenName, , quizRoomID, questionNumber, answer, justification}
+        /**
+         * data = {
+         *      sessionId {string}
+         *      screenName {string}
+         *      quizRoomID {string}
+         *      questionNumber {number}
+         *      answer {number}
+         *      justification {string}
+         *      timestamp {string}
+         * }
+         */
+        function saveProbingQuestionAnswerHelper(data, finalAnswer, testHooks) {
             try {
                 if (!checkArgs("saveProbingQuestionAnswer", data,
                     [
                         //  "username", 
                         "screenName", "questionNumber", "answer", "justification"])) return;
-                // var username = data.username;
-                // var screenName = data.screenName;
                 var client = allSessions.getSessionById(data.sessionId).client;
                 var username = client.username;
                 if (!client) return;
@@ -472,118 +459,66 @@ function afterDbLoad() {
                 var answer = data.answer;
                 var probJustification = data.justification;
                 var quizRoomID = data.quizRoomID;
-                // var quizRoom = activeQuizRooms[quizRoomID];
 
                 client.probingQuestionAnswer = answer;
                 client.probingQuestionAnswerTime = new Date().toISOString();
 
-                // SAVE STUDENT PROBING QUESTION ANSWER AND TIMESTAMPS
-                if (finalAnswer) {
-                    // TODO FIXME: Code duplication with else branch
+                var update_criteria = {
+                    socketID: client.getSocket().id,
+                    username: client.username,
+                    questionGroup: conf.activeQuestionGroup
+                };
 
-                    // moocchat-30
-                    var update_criteria = {
-                        socketID: client.getSocket().id,
-                        username: client.username,
-                        questionGroup: conf.activeQuestionGroup
-                    };
-                    var update_data = {
+                // There are different document portions to update when there is a final answer 
+                var update_data;
+                var function_name;
+
+                if (finalAnswer) {
+
+                    update_data = {
                         $set: {
                             probingQuestionFinalAnswer: client.probingQuestionAnswer,
                             probingQuestionFinalAnswerTime: client.probingQuestionAnswerTime,
                             probFinalJustification: probJustification
                         }
                     };
-                    db_wrapper.userquiz.update(update_criteria, update_data, function(err, dbResults) {
-                        console.log(new Date().toISOString(), username, update_criteria, update_data);
 
+                    function_name = "saveProbingQuestionFinalAnswer()";
 
-                        /*
-                            db[collections[USER_QUIZ_COLLECTION]].update({socketID:client.getSocket().id,
-                                                                          username:username,
-                                                                          questionGroup:conf.activeQuestionGroup,
-                                                                          questionNumber:questionNumber},
-                                                                         {$set: {probingQuestionFinalAnswer:client.probingQuestionAnswer,
-                                                                                 probingQuestionFinalAnswerTime:client.probingQuestionAnswerTime,
-                                                                                 probFinalJustification:probJustification}},
-                                                                         function(err, dbResults) {
-                        */
-                        if ((typeof testHooks !== 'undefined') && (testHooks.location == 'afterUpdate')) {
-                            testHooks.callback();
-                        }
-                        if (err || typeof dbResults === 'undefined' || dbResults.length == 0) {
-                            console.log("#saveProbingQuestionFinalAnswer() ERROR - " +
-                                "username: %s", username);
-                            if (err) console.log(err);
-                            socket.emit('db_failure', 'saveProbingQuestionFinalAnswer()');
-                        }
-                        else {
-                            console.log("#saveProbingQuestionFinalAnswer() - " +
-                                "probing question answer and timestamps " +
-                                "saved in database");
-                            console.log(new Date().toISOString(), username, dbResults);
-                        }
-                    });
                 } else {
 
-                    // moocchat-30
-                    var update_criteria = {
-                        socketID: client.getSocket().id,
-                        username: client.username,
-                        questionGroup: conf.activeQuestionGroup
-                    };
-                    var update_data = {
+                    update_data = {
                         $set: {
                             probingQuestionAnswer: client.probingQuestionAnswer,
                             probingQuestionAnswerTime: client.probingQuestionAnswerTime,
                             probJustification: probJustification
                         }
                     };
-                    db_wrapper.userquiz.update(update_criteria, update_data, function(err, dbResults) {
 
-                        console.log(new Date().toISOString(), username, update_criteria, update_data);
+                    function_name = "saveProbingQuestionAnswer()";
 
-
-                        /*
-                           db[collections[USER_QUIZ_COLLECTION]].update({socketID:client.getSocket().id,
-                                                                         username:username,
-                                                                         questionGroup:conf.activeQuestionGroup,
-                                                                         questionNumber:questionNumber},
-                                                                        {$set: {probingQuestionAnswer:client.probingQuestionAnswer,
-                                                                                probingQuestionAnswerTime:client.probingQuestionAnswerTime,
-                                                                                probJustification:probJustification}},
-                                                                        function(err, dbResults) {
-                       */
-                        if ((typeof testHooks !== 'undefined') && (testHooks.location == 'afterUpdate')) {
-                            testHooks.callback();
-                        }
-                        if (err || typeof dbResults === 'undefined' || dbResults.length == 0) {
-                            console.log("#saveProbingQuestionAnswer() ERROR - " +
-                                "username: %s", username);
-                            if (err) console.log(err);
-                            socket.emit('db_failure', 'saveProbingQuestionAnswer()');
-                        }
-                        else {
-                            console.log("#saveProbingQuestionAnswer() - " +
-                                "probing question answer and timestamps " +
-                                "saved in database");
-                            console.log(new Date().toISOString(), username, dbResults);
-                        }
-                    });
                 }
 
-                // alreadyPushedAnswer = false;
-                // for(var ans7 in quizRoom.probAns) {
-                //   if (ans7['username'] == username) {
-                //     alreadyPushedAnswer = true;
-                //   }
-                // }
-                // if (!alreadyPushedAnswer) {
-                //   quizRoom.probAns.push({username:username, screenName:screenName, answer:answer, justification:probJustification});
-                //   if(quizRoom.probAns.length==quizRoom.members.length) {
-                //     io.sockets.in(quizRoomID).emit('probAnswers', quizRoom.probAns);
-                //   }
-                // }
+                // Update the database 
+                db_wrapper.userquiz.update(update_criteria, update_data, function(err, dbResults) {
+                    console.log(new Date().toISOString(), username, update_criteria, update_data);
+
+                    if ((typeof testHooks !== 'undefined') && (testHooks.location == 'afterUpdate')) {
+                        testHooks.callback();
+                    }
+                    if (err || typeof dbResults === 'undefined' || dbResults.length == 0) {
+                        console.log("#" + function_name + " ERROR - " +
+                            "username: %s", username);
+                        if (err) console.log(err);
+                        socket.emit('db_failure', function_name);
+                    }
+                    else {
+                        console.log("#" + function_name + " - " +
+                            "probing question answer and timestamps " +
+                            "saved in database");
+                        console.log(new Date().toISOString(), username, dbResults);
+                    }
+                });
             }
             catch (err) {
                 handleException(err);
@@ -613,7 +548,6 @@ function afterDbLoad() {
         }
 
         function loadTest(data) {  //  SPECIAL EVENT HANDLER FOR LOAD TEST
-            //db[collections[QUESTION_COLLECTION]].find({questionGroup:conf.activeQuestionGroup},
             db_wrapper.question.read({ questionGroup: conf.activeQuestionGroup },
                 function(err, dbResults) {
                     var qNum = randomInteger(0, dbResults.length);
@@ -654,8 +588,6 @@ function afterDbLoad() {
         //This records User's flow during the session
         function user_flow(data) {
             var username = data.username;
-            // var search_criteria = { username: data.username };
-            //db[collections[USER_FLOW_COLLECTION]].find({'username':data.username},function(err, dbResults) {
             db_wrapper.userflow.read({ 'username': data.username }, function(err, dbResults) {
                 //console.log(dbResults);
                 if (err || typeof dbResults === 'undefined' || dbResults.length == 0) {
@@ -664,21 +596,36 @@ function afterDbLoad() {
                     if (err) console.log(err);
                 }
                 if (!err && dbResults == 0) {
+                    db_wrapper.userflow.create(
+                        {
+                            username: data.username,
+                            events: [
+                                {
+                                    timestamp: data.timestamp,
+                                    page: data.page,
+                                    event: data.event,
+                                    data: data.data
+                                }
+                            ]
+                        }, function(err, res) {
 
-                    //db[collections[USER_FLOW_COLLECTION]].insert( {username:data.username, events:[{timestamp:data.timestamp, page:data.page, event:data.event, data:data.data}] } );
-                    db_wrapper.userflow.create({ username: data.username, events: [{ timestamp: data.timestamp, page: data.page, event: data.event, data: data.data }] }, function(err, res) {
-
-                    });
+                        });
                 }
 
                 else {
-                    //db[collections[USER_FLOW_COLLECTION]].update(
                     db_wrapper.userflow.update(
                         { username: data.username },
                         {
                             $addToSet: {
                                 events: {
-                                    $each: [{ timestamp: data.timestamp, event: data.event, page: data.page, data: data.data }]
+                                    $each: [
+                                        {
+                                            timestamp: data.timestamp,
+                                            event: data.event,
+                                            page: data.page,
+                                            data: data.data
+                                        }
+                                    ]
                                 }
                             }
                         }
