@@ -1,5 +1,8 @@
 define(["require", "exports", "./Utils", "./EventBox"], function (require, exports, Utils_1, EventBox_1) {
     "use strict";
+    var TaskSection_InternalLoginEvents = {
+        TIMER_COMPLETED: "MCTS_TIMER_COMPLETED"
+    };
     var TaskSection = (function () {
         function TaskSection(id, text, ms) {
             this.timerActive = false;
@@ -81,13 +84,13 @@ define(["require", "exports", "./Utils", "./EventBox"], function (require, expor
             this.unsetPaused();
             this.timerStart = Date.now();
             this.timerActive = true;
-            this.runTimerUpdate();
+            this.requestTimerUpdate();
         };
         TaskSection.prototype.stopTimer = function () {
             this.timerActive = false;
             cancelAnimationFrame(this.rafHandle);
         };
-        TaskSection.prototype.runTimerUpdate = function () {
+        TaskSection.prototype.requestTimerUpdate = function () {
             this.rafHandle = requestAnimationFrame(this.updateTimerFrame.bind(this));
         };
         TaskSection.prototype.updateTimerFrame = function (ms) {
@@ -105,19 +108,19 @@ define(["require", "exports", "./Utils", "./EventBox"], function (require, expor
                     return;
                 }
             }
-            this.runTimerUpdate();
+            this.requestTimerUpdate();
         };
         TaskSection.prototype.updateTimerText = function () {
             this.elem.attr("data-time-left", Utils_1.Utils.DateTime.formatIntervalAsMMSS(this.timeRemaining));
         };
         TaskSection.prototype.attachTimerCompleted = function (callback, runCallbackOnBindIfFired) {
-            this.eventBox.on("timerCompleted", callback, runCallbackOnBindIfFired);
+            this.eventBox.on(TaskSection_InternalLoginEvents.TIMER_COMPLETED, callback, runCallbackOnBindIfFired);
         };
         TaskSection.prototype.detachTimerCompleted = function (callback) {
-            this.eventBox.off("timerCompleted", callback);
+            this.eventBox.off(TaskSection_InternalLoginEvents.TIMER_COMPLETED, callback);
         };
         TaskSection.prototype.runTimerCompletionCallbacks = function () {
-            this.eventBox.dispatch("timerCompleted");
+            this.eventBox.dispatch(TaskSection_InternalLoginEvents.TIMER_COMPLETED);
         };
         return TaskSection;
     }());

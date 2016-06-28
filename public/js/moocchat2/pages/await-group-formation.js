@@ -1,12 +1,11 @@
 define(["require", "exports", "../MoocchatStates", "../Websockets"], function (require, exports, MoocchatStates_1, Websockets_1) {
     "use strict";
     exports.AwaitGroupFormationPageFunc = function (session) {
-        var section = session.sectionManager.getSection("discussion");
+        var section = session.sectionManager.getSection("await-group-formation");
         return {
             onEnter: function () {
                 session.pageManager.loadPage("await-group-formation", function (page$) {
                     section.setActive();
-                    section.setPaused();
                     session.socket.once(Websockets_1.WebsocketEvents.INBOUND.CHAT_GROUP_FORMED, function (data) {
                         var playTone = page$("#play-group-formation-tone").is(":checked");
                         sessionStorage.setItem("play-notification-tone", playTone ? "true" : "false");
@@ -16,6 +15,9 @@ define(["require", "exports", "../MoocchatStates", "../Websockets"], function (r
                         username: session.user.username
                     });
                 });
+            },
+            onLeave: function () {
+                section.unsetActive();
             }
         };
     };

@@ -55,6 +55,7 @@ $(() => {
         // [id, name, milliseconds]
         ["welcome", "Welcome"],
         ["initial-answer", "Initial Answer", Utils.DateTime.secToMs(15 * 60)],
+        ["await-group-formation", "Forming Group"],
         ["discussion", "Discussion", Utils.DateTime.secToMs(15 * 60)],
         ["revised-answer", "Revised Answer", Utils.DateTime.secToMs(6 * 60)],
         ["survey", "Survey"],

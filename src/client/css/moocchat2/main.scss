@@ -23,7 +23,7 @@ $button-neg-colour: $neg-colour;
 // Dimensions
 $mc-sidebar-width: 18rem;
 
-$mc-sidebar-padding-tb: 1.2rem;
+$mc-sidebar-padding-tb: 1rem;
 $mc-sidebar-padding-lr: 2rem;
 
 
@@ -147,6 +147,15 @@ button.negative {
     padding: $mc-sidebar-padding-tb*2;
 }
 
+// This is the page content that is loaded dynamically
+#content > section {
+    & > h1:first-child,
+    & > h2:first-child,
+    & > h3:first-child,
+    & > h4:first-child {
+        margin-top: 0;
+    }
+}
 
 /** Header/sidebar **/
 
@@ -200,7 +209,7 @@ button.negative {
 
         background-image: url(../../img/task-section-link-mid-open.png);
         background-repeat: no-repeat;
-        background-position: 0.8rem center;
+        background-position: 1rem center;
         background-size: 20px 200px;
 
         &:first-child {

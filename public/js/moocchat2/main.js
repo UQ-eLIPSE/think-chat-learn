@@ -16,6 +16,7 @@ define(["require", "exports", "jquery", "./Utils", "./StateFlow", "./PageManager
         var sectionDefinitions = [
             ["welcome", "Welcome"],
             ["initial-answer", "Initial Answer", Utils_1.Utils.DateTime.secToMs(15 * 60)],
+            ["await-group-formation", "Forming Group"],
             ["discussion", "Discussion", Utils_1.Utils.DateTime.secToMs(15 * 60)],
             ["revised-answer", "Revised Answer", Utils_1.Utils.DateTime.secToMs(6 * 60)],
             ["survey", "Survey"],

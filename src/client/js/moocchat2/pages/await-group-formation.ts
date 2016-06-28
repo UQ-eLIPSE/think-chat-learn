@@ -7,13 +7,12 @@ import {WebsocketEvents} from "../Websockets";
 
 export let AwaitGroupFormationPageFunc: IPageFunc<STATE> =
     (session) => {
-        let section = session.sectionManager.getSection("discussion");
+        let section = session.sectionManager.getSection("await-group-formation");
 
         return {
             onEnter: () => {
                 session.pageManager.loadPage("await-group-formation", (page$) => {
                     section.setActive();
-                    section.setPaused();
 
                     session.socket.once(WebsocketEvents.INBOUND.CHAT_GROUP_FORMED, (data: IEventData_ChatGroupFormed) => {
                         let playTone = page$("#play-group-formation-tone").is(":checked");
@@ -27,6 +26,9 @@ export let AwaitGroupFormationPageFunc: IPageFunc<STATE> =
                         username: session.user.username
                     });
                 });
+            },
+            onLeave: () => {
+                section.unsetActive();
             }
         }
     }
