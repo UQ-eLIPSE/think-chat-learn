@@ -20,4 +20,3 @@ define(["require", "exports", "../MoocchatStates", "../Websockets"], function (r
         };
     };
 });
-//# sourceMappingURL=await-group-formation.js.map

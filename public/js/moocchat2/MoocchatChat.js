@@ -60,4 +60,3 @@ define(["require", "exports", "jquery", "./Websockets"], function (require, expo
     }());
     exports.MoocchatChat = MoocchatChat;
 });
-//# sourceMappingURL=MoocchatChat.js.map

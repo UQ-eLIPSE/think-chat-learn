@@ -36,4 +36,3 @@ define(["require", "exports"], function (require, exports) {
     }());
     exports.MoocchatQuiz = MoocchatQuiz;
 });
-//# sourceMappingURL=MoocchatQuiz.js.map

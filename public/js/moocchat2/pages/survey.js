@@ -14,4 +14,3 @@ define(["require", "exports"], function (require, exports) {
         };
     };
 });
-//# sourceMappingURL=survey.js.map

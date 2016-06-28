@@ -198,17 +198,17 @@ button.negative {
         // border-top: 0.05em solid darken($mc-colour-1, 5%);
         // border-bottom: 0.05em solid darken($mc-colour-1, 5%);
 
-        background-image: url(../img/task-section-link-mid-open.png);
+        background-image: url(../../img/task-section-link-mid-open.png);
         background-repeat: no-repeat;
         background-position: 0.8rem center;
         background-size: 20px 200px;
 
         &:first-child {
-            background-image: url(../img/task-section-link-top-open.png);
+            background-image: url(../../img/task-section-link-top-open.png);
         }
 
         &:last-child {
-            background-image: url(../img/task-section-link-btm-open.png);
+            background-image: url(../../img/task-section-link-btm-open.png);
         }
 
         // &::before {
@@ -234,14 +234,14 @@ button.negative {
             // text-shadow: 0.05em 0.05em 0 #e0e0e0;
             font-weight: bold;
 
-            background-image: url(../img/task-section-link-mid-closed.png);
+            background-image: url(../../img/task-section-link-mid-closed.png);
 
             &:first-child {
-                background-image: url(../img/task-section-link-top-closed.png);
+                background-image: url(../../img/task-section-link-top-closed.png);
             }
 
             &:last-child {
-                background-image: url(../img/task-section-link-btm-closed.png);
+                background-image: url(../../img/task-section-link-btm-closed.png);
             }
         }
 

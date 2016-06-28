@@ -9,7 +9,7 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.1.1/normalize.min.css" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,700" />
-    <link rel="stylesheet" href="./css/moocchat2.css" />
+    <link rel="stylesheet" href="./css/moocchat2/main.css" />
 
     <!--[if lte IE9]>
     <script src="./js/rAF.js"></script>

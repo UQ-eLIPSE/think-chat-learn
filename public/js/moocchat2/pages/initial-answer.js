@@ -53,4 +53,3 @@ define(["require", "exports", "jquery", "../MoocchatStates", "../Websockets"], f
         };
     };
 });
-//# sourceMappingURL=initial-answer.js.map

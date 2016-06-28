@@ -123,4 +123,3 @@ define(["require", "exports", "./Utils", "./EventBox"], function (require, expor
     }());
     exports.TaskSection = TaskSection;
 });
-//# sourceMappingURL=TaskSection.js.map

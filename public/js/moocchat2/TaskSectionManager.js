@@ -23,4 +23,3 @@ define(["require", "exports", "./TaskSection"], function (require, exports, Task
     }());
     exports.TaskSectionManager = TaskSectionManager;
 });
-//# sourceMappingURL=TaskSectionManager.js.map

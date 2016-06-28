@@ -42,4 +42,3 @@ define(["require", "exports", "./Websockets"], function (require, exports, Webso
     }());
     exports.MoocchatUser = MoocchatUser;
 });
-//# sourceMappingURL=MoocchatUser.js.map

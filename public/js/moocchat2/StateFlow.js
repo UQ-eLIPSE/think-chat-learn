@@ -44,4 +44,3 @@ define(["require", "exports"], function (require, exports) {
     }());
     exports.StateFlow = StateFlow;
 });
-//# sourceMappingURL=StateFlow.js.map

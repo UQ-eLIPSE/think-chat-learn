@@ -11,4 +11,3 @@ define(["require", "exports"], function (require, exports) {
     })(exports.MoocchatState || (exports.MoocchatState = {}));
     var MoocchatState = exports.MoocchatState;
 });
-//# sourceMappingURL=MoocchatStates.js.map

@@ -57,4 +57,3 @@ define(["require", "exports", "../MoocchatStates", "../MoocchatChat"], function 
         };
     };
 });
-//# sourceMappingURL=discussion.js.map

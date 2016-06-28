@@ -52,4 +52,3 @@ define(["require", "exports"], function (require, exports) {
     }());
     exports.EventBox = EventBox;
 });
-//# sourceMappingURL=EventBox.js.map

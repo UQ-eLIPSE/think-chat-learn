@@ -66,4 +66,3 @@ define(["require", "exports", "jquery", "./Utils", "./StateFlow", "./PageManager
         session.stateMachine.goTo(MoocchatStates_1.MoocchatState.WELCOME);
     });
 });
-//# sourceMappingURL=main.js.map

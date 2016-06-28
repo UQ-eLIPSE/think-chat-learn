@@ -37,4 +37,3 @@ define(["require", "exports", "../MoocchatStates", "../MoocchatUser", "../Moocch
         };
     };
 });
-//# sourceMappingURL=welcome.js.map

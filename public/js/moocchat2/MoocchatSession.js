@@ -67,4 +67,3 @@ define(["require", "exports"], function (require, exports) {
     }());
     exports.MoocchatSession = MoocchatSession;
 });
-//# sourceMappingURL=MoocchatSession.js.map

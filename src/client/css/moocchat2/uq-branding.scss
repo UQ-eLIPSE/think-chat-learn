@@ -17,7 +17,7 @@ $uq-colour-B6: rgb(214,73,42);      // UQ Warm Red
 $uq-logo: "";
 
 .uq-logo {
-    background-image: url(../img/uq-logo.png);
+    background-image: url(../../img/uq-logo.png);
     background-repeat: no-repeat;
     background-size: contain;
     background-position: center center;
@@ -26,5 +26,5 @@ $uq-logo: "";
 .uq-logo-white {
     @extend .uq-logo;
     
-    background-image: url(../img/uq-logo-white.png);
+    background-image: url(../../img/uq-logo-white.png);
 }

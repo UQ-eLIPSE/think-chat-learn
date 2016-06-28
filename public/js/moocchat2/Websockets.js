@@ -50,4 +50,3 @@ define(["require", "exports", "socket.io-client"], function (require, exports, s
     }());
     exports.WebsocketManager = WebsocketManager;
 });
-//# sourceMappingURL=Websockets.js.map
