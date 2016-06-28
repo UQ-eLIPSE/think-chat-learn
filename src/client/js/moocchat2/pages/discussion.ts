@@ -1,3 +1,5 @@
+import * as $ from "jquery";
+
 import {IPageFunc} from "../IPageFunc";
 
 import {MoocchatState as STATE} from "../MoocchatStates";
@@ -60,7 +62,7 @@ export let DiscussionPageFunc: IPageFunc<STATE> =
                     page$("#chat-input-wrapper").on("submit", function(e) {
                         e.preventDefault();
 
-                        var message = page$("#chat-input").val();
+                        var message = $.trim(page$("#chat-input").val());
 
                         if (message.length === 0) {
                             return;

@@ -604,6 +604,7 @@ button.negative {
     margin: 1em 0;
     margin: 1em 0.5rem;
     border-bottom: 0.2rem solid;
+    border-image: linear-gradient(to right, currentColor, currentColor 3rem, transparent 60%, transparent) 1;
 }
 
 #chat-box > blockquote::after {
@@ -704,39 +705,36 @@ button.negative {
     background: #669900;
 }
 
-#chat-box > blockquote[data-client-id="1"] p {
-    // background: #bebee8;
-    // border-color: #9090ad
-    border-color: #000066;
-    color: #000066;
-}
+// #chat-box > blockquote[data-client-id="1"] p {
+//     // background: #bebee8;
+//     // border-color: #9090ad
+//     border-color: #000066;
+//     color: #000066;
+// }
 
-#chat-box > blockquote[data-client-id="2"] p {
-    // background: #e2b6cc;
-    // border-color: #ab8a9a;
-    border-color: #993366;
-    color: #993366;
-}
+// #chat-box > blockquote[data-client-id="2"] p {
+//     // background: #e2b6cc;
+//     // border-color: #ab8a9a;
+//     border-color: #993366;
+//     color: #993366;
+// }
 
-#chat-box > blockquote[data-client-id="3"] p {
-    // background: #c8daa4;
-    // border-color: #a0ab8c;
-    border-color: #669900;
-    color: #669900;
-}
+// #chat-box > blockquote[data-client-id="3"] p {
+//     // background: #c8daa4;
+//     // border-color: #a0ab8c;
+//     border-color: #669900;
+//     color: #669900;
+// }
 
 #chat-box > blockquote[data-client-id="1"] {
-    // border-image: linear-gradient(to right, #000066, #000066 3rem, transparent 7rem, transparent) 1;
     color: #000066;
 }
 
 #chat-box > blockquote[data-client-id="2"] {
-    // border-image: linear-gradient(to right, #993366, #993366 3rem, transparent 7rem, transparent) 1;
     color: #993366;
 }
 
 #chat-box > blockquote[data-client-id="3"] {
-    // border-image: linear-gradient(to right, #669900, #669900 3rem, transparent 7rem, transparent) 1;
     color: #669900;
 }
 
