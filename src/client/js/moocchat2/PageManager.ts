@@ -8,6 +8,7 @@ export const PageManager_Events = {
 
 export interface IPageManager_PageLoad {
     name: string;
+    loadTimeMs: number;
 }
 
 /**
@@ -62,10 +63,15 @@ export class PageManager {
             method: "GET"
         });
 
+        let loadStartTime = new Date().getTime();
+
         pageFetchXHR.done((html: string) => {
+            let loadEndTime = new Date().getTime();
+
             this.$contentElem.html(html);
             this.dispatchOnPageLoad({
-                name: name
+                name: name,
+                loadTimeMs: (loadEndTime - loadStartTime)
             });
 
             if (onDone) {

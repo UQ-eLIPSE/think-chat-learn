@@ -47,7 +47,8 @@ export class MoocchatAnalytics {
     // so that references to this are preserved correctly
     private trackPageView = (data: IPageManager_PageLoad) => {
         _paq.push(["setDocumentTitle", data.name]);
-        // _paq.push(["setHeartBeatTimer", [0, 5]]);
+        _paq.push(["setCustomUrl", "/internal_page/"+data.name]);
+        _paq.push(["setGenerationTimeMs", data.loadTimeMs]);    // Generation time now reflects the load time of the page
         _paq.push(["trackPageView", data.name]);
     }
 
@@ -66,7 +67,7 @@ export class MoocchatAnalytics {
 
     private setupHeartBeatTimer() {
         // Have page view time analytics to a 5 second granularity
-        // _paq.push(["enableHeartBeatTimer", 5]);
+        _paq.push(["enableHeartBeatTimer", 5]);
     }
 
     private setupTrackPageView() {
