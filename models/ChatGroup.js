@@ -94,7 +94,7 @@ ChatGroup.prototype.queueClientToQuit = function(client) {
     if (this.clientsQueuedToQuit.indexOf(client) < 0) {
         this.clientsQueuedToQuit.push(client);
     }
-
+    
     this.broadcastQuitChange(client, true);
 }
 
@@ -109,7 +109,6 @@ ChatGroup.prototype.unqueueClientToQuit = function(client) {
 
     this.broadcastQuitChange(client, false);
 }
-
 
 /**
  * @return {number}
@@ -179,14 +178,15 @@ ChatGroup.prototype.addClient = function(client) {
  * @param {Client} client
  */
 ChatGroup.prototype.removeClient = function(client) {
+    this.queueClientToQuit(client);
+
     Group.prototype.removeClient.call(this, client);
 
-    // TODO: Broadcast chatGroupClientLeft socket event
-    // this.broadcastEvent("chatGroupClientLeft", {
-    //     groupId: this.id,
-    //     groupSize: this.numberOfClients()
-    //     // ???
-    // });
+    // Need to remove the client out of the queue to quit because it shouldn't exist anymore
+    var clientIndex = this.clientsQueuedToQuit.indexOf(client);
+    if (clientIndex > -1){
+        this.clientsQueuedToQuit.splice(clientIndex, 1);
+    }
 }
 
 module.exports = ChatGroup;

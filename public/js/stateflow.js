@@ -88,7 +88,7 @@ var StateFlow = (function(){
             if (getCurrentState().id) {
                 var timeSpent = getCurrentStateTime();
                 //console.log(timeSpent);
-                ga('send', 'event', getCurrentPageName(), timeSpent);
+                // ga('send', 'event', getCurrentPageName(), timeSpent);
                 
                 var onLeave = stateActionDict[getCurrentState().id].onLeave;
             

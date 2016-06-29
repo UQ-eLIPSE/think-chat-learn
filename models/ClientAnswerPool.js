@@ -244,7 +244,7 @@ ClientAnswerPool.prototype.getQueueSortedByTime = function() {
  * 
  * @return {ChatGroup | undefined}
  */
-ClientAnswerPool.prototype.tryMakeChatGroup = function() {
+ClientAnswerPool.prototype.tryMakeChatGroup = function(backupClientQueue) {
     var viableAnswerQueueKeys = this.getViableQueueKeys();
 
     // If there is enough diversity, create group now
@@ -265,15 +265,12 @@ ClientAnswerPool.prototype.tryMakeChatGroup = function() {
         }
 
         if (totalPoolSize < this.desiredGroupSize) {
-
-            // TODO: The below block needs to be implemented!
-            // // If there's only one, then have a backup client (e.g. tutor) join the group
-            // if (totalPoolSize === 1) {
-            //     // TODO: How to add a backup client?
-
-            //     return;
-            // }
-
+            if (totalPoolSize === 1 &&
+                backupClientQueue.attemptTransferBackupClientToClientPool(this)) {
+                // Don't do anything if there is a backup client to be placed into the pool
+                // (happens when #attemptTransferBackupClientToClientPool returns TRUE)
+                return;
+            }
         }
 
         // Create chat group (up to desired group size)
@@ -329,7 +326,7 @@ ClientAnswerPool.prototype.createChatGroupOfSize = function(size) {
 
             intendedQueueKeys.push(queueKey);
             --queueSizes[queueKey];
-
+            
             if (intendedQueueKeys.length === size) {
                 break queueKeyCompilationLoop;
             }
@@ -354,21 +351,23 @@ ClientAnswerPool.prototype.removeClientFromFrontOfAnswerQueue = function(queueKe
 
 /**
  * @param {Client} client
+ * 
+ * @return {Client} Client that was removed
  */
 ClientAnswerPool.prototype.removeClient = function(client) {
     // Need to search through the entire pool to remove
     var arr = Object.keys(this.answerQueues);
     for (var i = 0; i < arr.length; ++i) {
         var queueKey = arr[i];
-        var index = this.answerQueues[queueKey].indexOf(client);
+        var thisAnswerWrappedClients = this.answerQueues[queueKey];
 
-        if (index > -1) {
-            // Remove the client out and return it
-            return this.answerQueues[queueKey].splice(index, 1)[0].client;
+        for (var j = 0; j < thisAnswerWrappedClients.length; ++j) {
+            if (thisAnswerWrappedClients[j].client === client) {
+                // Remove the client out and return it
+                return thisAnswerWrappedClients.splice(j, 1)[0].client;
+            }
         }
     }
-
-    throw new Error("Client could not be found in pool");
 }
 
 /**
