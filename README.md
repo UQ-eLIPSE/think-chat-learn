@@ -7,11 +7,10 @@
 3. Start Mongodb, usually the command to run is `mongod`
 4. Run `npm install` from within Moocchat folder
 5. Seed the database by running `npm run seed` (only needs to be done once)
-6. Download the dependencies for the client, `npm run dependencies`. This will download bootstrap, jquery, etc.
+6. Build the client: `npm run build_client`
 7. Run `npm start`
 
 ## Compiling client-side code
-
 After any changes to the SASS or TypeScript code, run `npm run build_client`.
 
 ## Running tests
