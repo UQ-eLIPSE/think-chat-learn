@@ -10,10 +10,14 @@ export let SurveyPageFunc: IPageFunc<STATE> =
             onEnter: () => {
                 session.pageManager.loadPage("survey", (page$) => {
                     section.setActive();
+
+                    session.analytics.trackEvent("SURVEY", "START");
+
                 });
             },
             onLeave: () => {
                 section.unsetActive();
+                session.analytics.trackEvent("SURVEY", "END");
             }
         }
     }

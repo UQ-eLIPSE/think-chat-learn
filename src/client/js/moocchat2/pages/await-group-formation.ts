@@ -11,12 +11,20 @@ export let AwaitGroupFormationPageFunc: IPageFunc<STATE> =
 
         return {
             onEnter: () => {
+                let waitStartTime = new Date().getTime();
+
                 session.pageManager.loadPage("await-group-formation", (page$) => {
                     section.setActive();
 
                     session.socket.once(WebsocketEvents.INBOUND.CHAT_GROUP_FORMED, (data: IEventData_ChatGroupFormed) => {
                         let playTone = page$("#play-group-formation-tone").is(":checked");
                         sessionStorage.setItem("play-notification-tone", playTone ? "true" : "false");
+
+                        // Grouping events
+                        let waitEndTime = new Date().getTime();
+                        let waitTimeInSec = Math.floor((waitEndTime - waitStartTime) / 1000);
+                        session.analytics.trackEvent("GROUP", data.groupId, "SIZE", data.groupSize);
+                        session.analytics.trackEvent("GROUP", data.groupId, "WAIT_TIME_SECONDS", waitTimeInSec);
 
                         // Pass chat group formation data along to the DISCUSSION state
                         session.stateMachine.goTo(STATE.DISCUSSION, data);
