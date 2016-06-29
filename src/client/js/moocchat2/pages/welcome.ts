@@ -17,7 +17,7 @@ export let WelcomePageFunc: IPageFunc<STATE> =
                     page$("button").on("click", () => {
                         let username = prompt("username", "test2");
 
-                        let user = new MoocchatUser(username);
+                        let user = new MoocchatUser(session.eventManager, username);
 
                         user.onLoginSuccess = (data) => {
                             session.setQuiz(new MoocchatQuiz(data.quiz));

@@ -27,16 +27,18 @@ export class TaskSection {
     private outOfTime: boolean = false;
     private outOfTimeAlternationIntervalHandle: number;
 
-    private eventBox: EventBox = new EventBox();
+    private eventBox: EventBox;
 
     /**
      * @param {string} id
      * @param {string} text Text presented in the element itself
      * @param {number} ms Timer value in milliseconds
      */
-    constructor(id: string, text: string, ms?: number) {
+    constructor(eventBox: EventBox, id: string, text: string, ms?: number) {
         this.id = id;
         this.milliseconds = ms;
+
+        this.eventBox = eventBox;
 
         this.$elem = this.generateElement(text);
 

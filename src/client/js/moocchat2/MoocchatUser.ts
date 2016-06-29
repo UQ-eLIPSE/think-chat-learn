@@ -4,10 +4,12 @@ import {EventBox, EventBoxCallback} from "./EventBox";
 import {WebsocketManager, WebsocketEvents} from "./Websockets";
 import {IEventData_LoginSuccess, IEventData_LoginFailure, IEventData_LoginExistingUser} from "./IEventData";
 
-const MoocchatUser_InternalLoginEvents = {
-    SUCCESS: "MCUSER_LOGIN_SUCCESS",
-    FAIL: "MCUSER_LOGIN_FAIL"
+export const MoocchatUser_Events = {
+    LOGIN_SUCCESS: "MCUSER_LOGIN_SUCCESS",
+    LOGIN_FAIL: "MCUSER_LOGIN_FAIL"
 }
+
+export type IMoocchatUser_LoginSuccess = IEventData_LoginSuccess;
 
 /**
  * MOOCchat
@@ -18,12 +20,13 @@ const MoocchatUser_InternalLoginEvents = {
 export class MoocchatUser {
     private _username: string;
 
-    private eventBox: EventBox = new EventBox();
+    private eventBox: EventBox;
 
     /**
      * @param {string} username
      */
-    constructor(username: string) {
+    constructor(eventBox: EventBox, username: string) {
+        this.eventBox = eventBox;
         this._username = username;
     }
 
@@ -37,7 +40,7 @@ export class MoocchatUser {
      * @param {Function} callback
      */
     public set onLoginSuccess(callback: (data?: IEventData_LoginSuccess) => void) {
-        this.eventBox.on(MoocchatUser_InternalLoginEvents.SUCCESS, callback);
+        this.eventBox.on(MoocchatUser_Events.LOGIN_SUCCESS, callback);
     }
 
     /**
@@ -46,7 +49,7 @@ export class MoocchatUser {
      * @param {Function} callback
      */
     public set onLoginFail(callback: (data?: IEventData_LoginFailure | IEventData_LoginExistingUser) => void) {
-        this.eventBox.on(MoocchatUser_InternalLoginEvents.FAIL, callback);
+        this.eventBox.on(MoocchatUser_Events.LOGIN_FAIL, callback);
     }
 
     /**
@@ -79,16 +82,16 @@ export class MoocchatUser {
      */
     private attachLoginReturnHandlers(socket: WebsocketManager) {
         socket.once(WebsocketEvents.INBOUND.LOGIN_SUCCESS, (data: IEventData_LoginSuccess) => {
-            this.eventBox.dispatch(MoocchatUser_InternalLoginEvents.SUCCESS, data);
+            this.eventBox.dispatch(MoocchatUser_Events.LOGIN_SUCCESS, data);
             this.detachLoginReturnHandlers(socket);
         });
 
         socket.once(WebsocketEvents.INBOUND.LOGIN_FAILURE, (data: IEventData_LoginFailure) => {
-            this.eventBox.dispatch(MoocchatUser_InternalLoginEvents.FAIL, data);
+            this.eventBox.dispatch(MoocchatUser_Events.LOGIN_FAIL, data);
             this.detachLoginReturnHandlers(socket);
         });
         socket.once(WebsocketEvents.INBOUND.LOGIN_USER_ALREADY_EXISTS, (data: IEventData_LoginExistingUser) => {
-            this.eventBox.dispatch(MoocchatUser_InternalLoginEvents.FAIL, data);
+            this.eventBox.dispatch(MoocchatUser_Events.LOGIN_FAIL, data);
             this.detachLoginReturnHandlers(socket);
         });
     }

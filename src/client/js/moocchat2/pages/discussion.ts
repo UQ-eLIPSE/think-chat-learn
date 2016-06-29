@@ -17,13 +17,16 @@ export let DiscussionPageFunc: IPageFunc<STATE> =
                     section.setActive();
                     section.startTimer();
 
+                    session.analytics.trackEvent("CHAT", "START");
+
                     let $activeSection = $("[data-active-section]", "#session-sections");
                     let $chatBox = page$("#chat-box");
 
                     let chat = new MoocchatChat(session, data, $chatBox);
-                    
+
                     function endChat() {
                         chat.terminate();
+                        session.analytics.trackEvent("CHAT", "END");
                         session.stateMachine.goTo(STATE.REVISED_ANSWER);
                     }
 
@@ -101,7 +104,7 @@ export let DiscussionPageFunc: IPageFunc<STATE> =
 
                 });
             },
-            onLeave: () => {
+            onLeave: () => {                
                 section.unsetActive();
                 section.hideTimer();
             }

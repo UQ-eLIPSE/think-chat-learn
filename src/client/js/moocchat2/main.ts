@@ -1,13 +1,12 @@
 import * as $ from "jquery";
 
 import {Utils} from "./Utils";
-import {TaskSection} from "./TaskSection";
-import {StateFlow} from "./StateFlow";
-import {PageManager} from "./PageManager";
-import {TaskSectionManager, TaskSectionDefinition} from "./TaskSectionManager";
+
+import {TaskSectionDefinition} from "./TaskSectionManager";
 import {WebsocketManager} from "./Websockets";
 
 import {MoocchatSession} from "./MoocchatSession";
+import {MoocchatAnalytics} from "./MoocchatAnalytics";
 
 import {MoocchatState as STATE} from "./MoocchatStates";
 
@@ -36,12 +35,17 @@ $(() => {
     let $taskSections = $("#task-sections");
     let $content = $("#content");
 
-    let session =
-        new MoocchatSession<STATE>()
-            .setStateMachine(new StateFlow<STATE>())
-            .setPageManager(new PageManager($content))
-            .setSectionManager(new TaskSectionManager($taskSections))
-            .setSocket(socket);
+    // TODO: Need to make MoocchatSession easier to use as it's a
+    // bit opaque as to what the $xxx elements are 
+    let session = new MoocchatSession<STATE>($content, $taskSections).setSocket(socket);
+
+
+    // Send event on any button click
+    $content.on("click", "button, input[type=button]", (e) => {
+        let $elem = $(e.currentTarget);
+        session.analytics.trackEvent("BUTTON_CLICK", $elem.text() || $elem.val());
+    });
+
 
 
 
@@ -104,10 +108,14 @@ $(() => {
             onLeave: surveyPage.onLeave
         },
         {   // Confirmation/receipt
-            state: STATE.CONFIRMATION
+            state: STATE.CONFIRMATION,
+            onEnter: () => {
+                session.analytics.trackEvent("MOOCCHAT", "FINISH");
+            }
         }
     ]);
 
     // Start the state machine
     session.stateMachine.goTo(STATE.WELCOME);
+    session.analytics.trackEvent("MOOCCHAT", "START");
 });
