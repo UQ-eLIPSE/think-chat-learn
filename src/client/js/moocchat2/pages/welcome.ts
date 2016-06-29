@@ -5,6 +5,10 @@ import {MoocchatState as STATE} from "../MoocchatStates";
 import {MoocchatUser} from "../MoocchatUser";
 import {MoocchatQuiz} from "../MoocchatQuiz";
 
+import {ILTIBasicLaunchData} from "./ILTIBasicLaunchData";
+
+declare const _LTI_BASIC_LAUNCH_DATA: ILTIBasicLaunchData;
+
 export let WelcomePageFunc: IPageFunc<STATE> =
     (session) => {
         let section = session.sectionManager.getSection("welcome");
@@ -15,13 +19,23 @@ export let WelcomePageFunc: IPageFunc<STATE> =
                     section.setActive();
 
                     page$("button").on("click", () => {
-                        let username = prompt("username", "test2");
+                        // let username = prompt("username", "test2");
 
-                        let user = new MoocchatUser(session.eventManager, username);
+                        let ltiData: ILTIBasicLaunchData;
+
+                        // Attempt to use LTI Basic Launch data that should have been injected on to the page first
+                        if (typeof _LTI_BASIC_LAUNCH_DATA !== "undefined") {
+                            ltiData = _LTI_BASIC_LAUNCH_DATA;
+                        } else {
+                            ltiData = JSON.parse(prompt("Please enter LTI data **JSON** object"));
+                        }
+
+                        let user = new MoocchatUser(session.eventManager, ltiData);
 
                         user.onLoginSuccess = (data) => {
                             session.setQuiz(new MoocchatQuiz(data.quiz));
                             session.setUser(user);
+                            session.sessionId = data.sessionId;
                             session.stateMachine.goTo(STATE.INITIAL_ANSWER);
                         }
 
@@ -38,7 +52,7 @@ export let WelcomePageFunc: IPageFunc<STATE> =
 
                             alert(`Login failed.\n\n${reason}`);
                         }
-                        
+
                         user.login(session.socket);
                     });
 

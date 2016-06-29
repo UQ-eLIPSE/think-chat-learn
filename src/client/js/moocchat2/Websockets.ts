@@ -14,7 +14,8 @@ export const WebsocketEvents = {
 
     OUTBOUND: {
         LOGIN_REQUEST: "login_req",
-
+        LOGIN_LTI_REQUEST: "loginLti",
+        
         INITIAL_ANSWER_SUBMISSION: "answerSubmissionInitial",
 
         CHAT_GROUP_JOIN_REQUEST: "chatGroupJoinRequest",

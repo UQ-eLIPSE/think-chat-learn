@@ -53,7 +53,7 @@ export class MoocchatChat {
     public sendMessage(message: string) {
         this.session.socket.emit(WebsocketEvents.OUTBOUND.CHAT_GROUP_SEND_MESSAGE, {
             groupId: this.groupData.groupId,
-            username: this.session.user.username,
+            sessionId: this.session.sessionId,
             message: message
         });
     }

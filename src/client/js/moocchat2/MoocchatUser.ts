@@ -3,6 +3,7 @@ import * as socket from "socket.io-client";
 import {EventBox, EventBoxCallback} from "./EventBox";
 import {WebsocketManager, WebsocketEvents} from "./Websockets";
 import {IEventData_LoginSuccess, IEventData_LoginFailure, IEventData_LoginExistingUser} from "./IEventData";
+import {ILTIBasicLaunchData} from "./ILTIBasicLaunchData";
 
 export const MoocchatUser_Events = {
     LOGIN_SUCCESS: "MCUSER_LOGIN_SUCCESS",
@@ -20,18 +21,20 @@ export type IMoocchatUser_LoginSuccess = IEventData_LoginSuccess;
 export class MoocchatUser {
     private _username: string;
 
+    private ltiData: ILTIBasicLaunchData;
+
     private eventBox: EventBox;
 
     /**
      * @param {string} username
      */
-    constructor(eventBox: EventBox, username: string) {
+    constructor(eventBox: EventBox, ltiData: ILTIBasicLaunchData) {
         this.eventBox = eventBox;
-        this._username = username;
+        this.ltiData = ltiData;
     }
 
     public get username() {
-        return this._username;
+        return this.ltiData.user_id;
     }
 
     /**
@@ -67,12 +70,7 @@ export class MoocchatUser {
     public login(socket: WebsocketManager) {
         this.attachLoginReturnHandlers(socket);
 
-        socket.emit(WebsocketEvents.OUTBOUND.LOGIN_REQUEST, {
-            username: this.username,
-            password: "ischool",    // TODO: Password is fixed
-            turkHitId: undefined,
-            browserInformation: navigator.userAgent
-        });
+        socket.emit(WebsocketEvents.OUTBOUND.LOGIN_LTI_REQUEST, this.ltiData);
     }
 
     /**

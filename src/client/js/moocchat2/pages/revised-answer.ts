@@ -12,7 +12,7 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
 
         function submitRevisedAnswer(answer: number, justification: string) {
             session.socket.emit(WebsocketEvents.OUTBOUND.REVISED_ANSWER_SUBMISSION, {
-                username: session.user.username,
+                sessionId: session.sessionId,
                 questionNumber: session.quiz.questionNumber,
                 answer: answer,
                 justification: justification,

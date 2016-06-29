@@ -12,7 +12,7 @@ export let InitialAnswerPageFunc: IPageFunc<STATE> =
 
         function submitInitialAnswer(answer: number, justification: string) {
             session.socket.emit(WebsocketEvents.OUTBOUND.INITIAL_ANSWER_SUBMISSION, {
-                username: session.user.username,
+                sessionId: session.sessionId,
                 questionId: session.quiz.questionNumber,
                 answer: answer,
                 justification: justification

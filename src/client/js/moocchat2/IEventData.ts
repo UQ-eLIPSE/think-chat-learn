@@ -9,6 +9,7 @@ import {IQuiz} from "./IQuiz";
 
 /** loginSuccess */
 export interface IEventData_LoginSuccess {
+    sessionId: string;
     username: string;
     quiz: IQuiz;
 }

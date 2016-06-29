@@ -27,6 +27,8 @@ export class MoocchatSession<StateTypeEnum> {
     public user: MoocchatUser;
     public socket: WebsocketManager;
 
+    public sessionId: string;
+
     constructor($content: JQuery, $taskSections: JQuery) {
         this._eventManager = new EventBox();
         this._pageManager = new PageManager(this._eventManager, $content);

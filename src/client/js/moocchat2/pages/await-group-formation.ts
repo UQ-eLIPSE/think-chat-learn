@@ -31,7 +31,7 @@ export let AwaitGroupFormationPageFunc: IPageFunc<STATE> =
                     });
 
                     session.socket.emit(WebsocketEvents.OUTBOUND.CHAT_GROUP_JOIN_REQUEST, {
-                        username: session.user.username
+                        sessionId: session.sessionId
                     });
                 });
             },
