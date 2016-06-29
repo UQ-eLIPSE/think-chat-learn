@@ -1,0 +1,31 @@
+<!-- All pages must specify <section data-name="..." /> as root element -->
+<section data-name="discussion">
+    <h1>Discuss your group's answers to the question.</h1>
+    <p>When you're ready to move on, click "End chat and revise answer".</p>
+    <button id="end-chat" class="negative" style="float: right;">End chat and revise answer</button>
+    <!--<button id="toggle-chat-qa-block" style="float: left;">Show/hide original questions and answers</button>-->
+    <div style="clear: both;"><br></div>
+
+    <div id="chat-ui-wrapper">
+        <div id="chat-question-answers-block">
+            <div id="chat-question">
+                <p id="question-reading"></p>
+                <p id="question-statement"></p>
+            </div>
+            <div id="chat-answers">
+                <ul></ul>
+            </div>
+        </div>
+
+        <div id="chat-box-wrapper">
+            <div id="chat-box">
+            </div>
+
+            <form id="chat-input-wrapper">
+                <div id="chat-input-field-wrapper"><input type="text" id="chat-input"></input>
+                </div>
+                <div id="chat-input-button-wrapper"><button id="chat-send" class="positive">Send</button></div>
+            </form>
+        </div>
+    </div>
+</section>

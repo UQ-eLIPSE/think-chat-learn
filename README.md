@@ -10,6 +10,10 @@
 6. Download the dependencies for the client, `npm run dependencies`. This will download bootstrap, jquery, etc.
 7. Run `npm start`
 
+## Compiling client-side code
+
+After any changes to the SASS or TypeScript code, run `npm run build_client`.
+
 ## Running tests
 To run the database tests, run `npm run db_test`, if the tests don't run make sure to run `npm install` to pull down the test runner dependencies.
 

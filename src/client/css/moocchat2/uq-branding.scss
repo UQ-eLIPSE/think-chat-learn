@@ -1,0 +1,30 @@
+// University of Queensland branding
+
+// Brand (A)
+$uq-colour-A1: rgb(189,161,78);     // UQ Gold
+$uq-colour-A2: rgb(73,7,94);        // UQ Purple
+$uq-colour-A3: rgb(140,184,0);      // UQ Green
+
+// Secondary (B)
+$uq-colour-B1: rgb(170,0,65);       // UQ Red
+$uq-colour-B2: rgb(255,200,46);     // UQ Yellow
+$uq-colour-B3: rgb(0,145,181);      // UQ Aqua
+$uq-colour-B4: rgb(58,125,218);     // UQ Blue
+$uq-colour-B5: rgb(57,137,47);      // UQ Emerald
+$uq-colour-B6: rgb(214,73,42);      // UQ Warm Red
+
+
+$uq-logo: "";
+
+.uq-logo {
+    background-image: url(../../img/uq-logo.png);
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center center;
+}
+
+.uq-logo-white {
+    @extend .uq-logo;
+    
+    background-image: url(../../img/uq-logo-white.png);
+}
