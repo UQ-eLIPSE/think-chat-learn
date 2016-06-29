@@ -60,7 +60,7 @@ function afterDbLoad() {
     var quizBeingUsed = quizSet[conf.fixedQuestionNumber];
 
     var allSessions = new SessionManager();
-    
+
     // Queue for instructors/tutors on standby
     var backupClientQueue = new BackupClientQueue();
 
@@ -70,6 +70,156 @@ function afterDbLoad() {
 
     // Object(ChatGroupId{string} => ChatGroup)
     var chatGroups = {};
+
+
+
+
+    // ===== Utils =====
+
+    /**
+     * @param {string} sessionId
+     */
+    function getClientFromSessionId(sessionId) {
+        return allSessions.getSessionById(sessionId).client;
+    }
+
+    /**
+     * @param {Client} client
+     */
+    function removeClientFromEverything(client) {
+        if (backupClientQueue.removeClient(client)) {
+            broadcastBackupClientQueueStatus();
+        }
+
+        if (clientAnswerPool.removeClient(client)) {
+            broadcastPoolCountToBackupQueue();
+        }
+
+        var chatGroupIds = Object.keys(chatGroups);
+        for (var i = 0; i < chatGroupIds.length; ++i) {
+            var chatGroup = chatGroups[chatGroupIds[i]];
+            if (chatGroup.getClientIndex(client) > -1) {
+                chatGroup.removeClient(client);
+
+                // If the chat group terminates, then remove the chat group reference
+                if (chatGroup.terminationCheck()) {
+                    delete chatGroups[data.groupId];
+                }
+
+                break;
+            }
+        }
+    }
+
+
+
+    // ===== Chat group =====
+
+    /**
+     * @return {ChatGroup | undefined}
+     */
+    function formChatGroup() {
+        var newChatGroup = clientAnswerPool.tryMakeChatGroup(backupClientQueue);
+
+        // Store reference to chat group if formed
+        if (newChatGroup) {
+            chatGroups[newChatGroup.id] = newChatGroup;
+
+            broadcastPoolCountToBackupQueue();
+
+            return newChatGroup;
+        }
+    }
+
+    // Recurring task
+    // TODO: Have a library/package handle this task in a different thread?    
+    var chatGroupFormationLoop = (function() {
+        var timeBetweenChecks = 1000;  // TODO: 1 second for now
+        var timeoutHandle;
+
+
+
+        /**
+         * Runs another round of the loop, or starts the loop if not already active.
+         */
+        function run() {
+            clearTimeout(timeoutHandle);
+
+            var newChatGroup = formChatGroup();
+
+            if (newChatGroup) {
+                setImmediate(run);   // Process next group at next available timeslot
+            } else {
+                timeoutHandle = setTimeout(run, timeBetweenChecks);
+            }
+        }
+
+        return {
+            run: run
+        };
+    })();
+
+    chatGroupFormationLoop.run();
+
+    /**
+     * data = {
+     *      sessionId {string}
+     * }
+     * 
+     * @param {any} data
+     */
+    function handleChatGroupJoinRequest(data) {
+        var client = getClientFromSessionId(data.sessionId);
+        clientAnswerPool.addClient(client);
+
+        broadcastPoolCountToBackupQueue();
+
+        chatGroupFormationLoop.run();
+    }
+
+    /**
+     * data = {
+     *      groupId {string}
+     *      sessionId {string}
+     *      quitStatus {boolean}
+     * }
+     * 
+     * @param {any} data
+     */
+    function handleChatGroupQuitStatusChange(data) {
+        var client = getClientFromSessionId(data.sessionId);
+        var chatGroup = chatGroups[data.groupId];
+
+        if (data.quitStatus) {
+            chatGroup.queueClientToQuit(client);
+        } else {
+            chatGroup.unqueueClientToQuit(client);
+        }
+
+        // If the chat group terminates, then remove the chat group reference
+        if (chatGroup.terminationCheck()) {
+            delete chatGroups[data.groupId];
+        }
+    }
+
+    /**
+     * data = {
+     *      groupId {string}
+     *      sessionId {string}
+     *      message {string}
+     * }
+     * 
+     * @param {any} data
+     */
+    function handleChatGroupMessage(data) {
+        var client = getClientFromSessionId(data.sessionId);
+        var chatGroup = chatGroups[data.groupId];
+        chatGroup.broadcastMessage(client, data.message);
+    }
+
+
+
+    // ===== Logins =====
 
     /**
      * data is whatever LTI gives us
@@ -215,174 +365,51 @@ function afterDbLoad() {
             }); // end db[user_login].insert()
     }
 
-
-
-
-    // ===== Utils =====
-
     /**
-     * @param {string} username
-     */
-    function getClientFromUsername(username) {
-        // return activeClients[username];
-    }
-    
-    /**
+     * data = {
+     *      username {string}
+     * }
+     * 
+     * @param {Object} data
      * @param {Socket} socket
      */
-    function getClientFromSocket(socket) {
-        var activeUsernames = Object.keys(activeClients);
-
-        for (var i = 0; i < activeUsernames.length; ++i) {
-            var client = getClientFromUsername(activeUsernames[i]);
-            if (client.getSocket() === socket) {
-                return client;
-            }
-        }
-    }
-
-    /**
-     * @param {string} username
-     * 
-     * @return {Client}
-     */
-    function createClient(username) {
-        // Only setting the username for new clients
-        // Ignored parameters are intentional, as well as the use of `void 0` to
-        // set the first parameter to `undefined`
-        return new Client(void 0, username);
-    }
-
-    /**
-     * @param {Client} client
-     */
-    function removeClientFromEverything(client) {
-        if (backupClientQueue.removeClient(client)) {
-            broadcastBackupClientQueueStatus();
-        }
-
-        if (clientAnswerPool.removeClient(client)) {
-            broadcastPoolCountToBackupQueue();
-        }
-
-        var chatGroupIds = Object.keys(chatGroups);
-        for (var i = 0; i < chatGroupIds.length; ++i) {
-            var chatGroup = chatGroups[chatGroupIds[i]];
-            if (chatGroup.getClientIndex(client) > -1) {
-                chatGroup.removeClient(client);
-                break;
-            }
-        }
-    }
+    function handleBackupClientLogin(data, socket) {
+        // TODO: Consolidate this login method with LTI login.
 
 
+        // TODO: Validate user
+        var username = data.username;
 
-    // ===== Chat group =====
-
-    /**
-     * @return {ChatGroup | undefined}
-     */
-    function formChatGroup() {
-        var newChatGroup = clientAnswerPool.tryMakeChatGroup(backupClientQueue);
-
-        // Store reference to chat group if formed
-        if (newChatGroup) {
-            chatGroups[newChatGroup.id] = newChatGroup;
-
-            broadcastPoolCountToBackupQueue();
-
-            return newChatGroup;
-        }
-    }
-
-    // Recurring task
-    // TODO: Have a library/package handle this task in a different thread?    
-    var chatGroupFormationLoop = (function() {
-        var timeBetweenChecks = 1000;  // TODO: 1 second for now
-        var timeoutHandle;
-        
-
-        
-        /**
-         * Runs another round of the loop, or starts the loop if not already active.
-         */
-        function run() {
-            clearTimeout(timeoutHandle);
-
-            var newChatGroup = formChatGroup();
-
-            if (newChatGroup) {
-                setImmediate(run);   // Process next group at next available timeslot
-            } else {
-                timeoutHandle = setTimeout(run, timeBetweenChecks);
-            }
-        }
-
-        return {
-            run: run
+        var loginState = {
+            success: true,
+            message: ""
         };
-    })();
 
-    chatGroupFormationLoop.run();
-    
-    /**
-     * data = {
-     *      sessionId {string}
-     * }
-     * 
-     * @param {any} data
-     */
-    function handleChatGroupJoinRequest(data) {
-        var client = allSessions.getSessionById(data.sessionId).client;
-        clientAnswerPool.addClient(client);
-
-        broadcastPoolCountToBackupQueue();
-
-        chatGroupFormationLoop.run();
-    }
-
-    /**
-     * data = {
-     *      groupId {string}
-     *      sessionId {string}
-     *      quitStatus {boolean}
-     * }
-     * 
-     * @param {any} data
-     */
-    function handleChatGroupQuitStatusChange(data) {
-        var client = allSessions.getSessionById(data.sessionId).client;
-        var chatGroup = chatGroups[data.groupId];
-
-        if (data.quitStatus) {
-            chatGroup.queueClientToQuit(client);
-        } else {
-            chatGroup.unqueueClientToQuit(client);
+        if (allSessions.hasSessionWithUsername(username)) {
+            loginState.success = false;
+            loginState.message = "Already logged in";
         }
 
-        // If the chat group terminates, then remove the chat group reference
-        if (chatGroup.terminationCheck()) {
-            delete chatGroups[data.groupId];
+        if (!loginState.success) {
+            socket.emit("backupClientLoginState", loginState);
+            return;
         }
+
+        var client = new Client();
+        client.username = username;
+        client.setSocket(socket);
+
+        var session = new Session(client);
+
+        allSessions.addSession(session);
+
+        // TODO: This bit of code below is only a temporary patch to support session IDs.
+        // Add session ID to loginState object
+
+        loginState.sessionId = session.id;
+
+        socket.emit("backupClientLoginState", loginState);
     }
-
-    /**
-     * data = {
-     *      groupId {string}
-     *      sessionId {string}
-     *      message {string}
-     * }
-     * 
-     * @param {any} data
-     */
-    function handleChatGroupMessage(data) {
-        var client = allSessions.getSessionById(data.sessionId).client;
-        var chatGroup = chatGroups[data.groupId];
-        chatGroup.broadcastMessage(client, data.message);
-    }
-
-
-
 
 
 
@@ -401,29 +428,27 @@ function afterDbLoad() {
 
     /**
      * data = {
-     *      username {string}
      *      sessionId {string}
-     *      username {string}
      * }
      */
     function handleQuestionContentRequest(data) {
-        var client = getClientFromUsername(data.username);
+        var client = getClientFromSessionId(data.sessionId);
 
         client.getSocket().emit("questionContent", {
-            quiz: quizSet[getQuestionNumber()]
+            quiz: quizBeingUsed
         });
     }
 
     /**
      * data = {
-     *      username {string}
+     *      sessionId {string}
      *      questionId {number|string?}     // Not used, hard coded question number presently
      *      answer {number|string?}
      *      justification {string}
      * }
      */
     function handleAnswerSubmissionInitial(data) {
-        var client = allSessions.getSessionById(data.sessionId).client;
+        var client = getClientFromSessionId(data.sessionId);
         var username = client.username;
         var answer = data.answer;
         var justification = data.justification;
@@ -480,57 +505,23 @@ function afterDbLoad() {
 
     /**
      * data = {
-     *      username {string}
-     * }
-     * 
-     * @param {Object} data
-     * @param {Socket} socket
-     */
-    function handleBackupClientLogin(data, socket) {
-        // TODO: Validate user
-        var username = data.username;
-
-        var loginState = {
-            success: true,
-            message: ""
-        };
-
-        if (backupClientQueue.isUsernameLoggedIn(username)) {
-            loginState.success = false;
-            loginState.message = "Already logged in";
-        }
-
-        if (!loginState.success) {
-            socket.emit("backupClientLoginState", loginState);
-            return;
-        }
-
-        var newClient = createClient(data.username);
-        newClient.setSocket(socket);
-        activeClients[newClient.username] = newClient;
-
-        socket.emit("backupClientLoginState", loginState);
-    }
-
-    /**
-     * data = {
-     *      username {string}
+     *      sessionId {string}
      * }
      */
     function handleBackupClientLogout(data) {
-        var client = getClientFromUsername(data.username);
+        var client = getClientFromSessionId(data.sessionId);
         removeClientFromEverything(client);
     }
 
     /**
      * data = {
-     *      username {string}
+     *      sessionId {string}
      *      answer {number}
      *      justification {string}
      * }
      */
     function handleBackupClientEnterQueue(data) {
-        var client = getClientFromUsername(data.username);
+        var client = getClientFromSessionId(data.sessionId);
 
         // Index of the answer (0-based)
         client.probingQuestionAnswer = data.answer;
@@ -548,11 +539,11 @@ function afterDbLoad() {
 
     /**
      * data = {
-     *      username {string}
+     *      sessionId {string}
      * }
      */
     function handleBackupClientStatusRequest(data) {
-        if (!backupClientQueue.isUsernameLoggedIn(data.username)) {
+        if (!allSessions.hasSessionId(data.sessionId)) {
             return;
         }
 
@@ -562,14 +553,13 @@ function afterDbLoad() {
 
     /**
      * data = {
-     *      username {string}
+     *      sessionId {string}
      * }
      */
     function handleBackupClientTransferConfirm(data) {
-        var client = getClientFromUsername(data.username);
+        var client = getClientFromSessionId(data.sessionId);
 
-        if (backupClientQueue.clientOutTray &&
-            backupClientQueue.clientOutTray.client === client) {
+        if (backupClientQueue.clientOutTray && backupClientQueue.clientOutTray.client === client) {
             backupClientQueue.moveOutTrayClientToClientPool();
             chatGroupFormationLoop.run();
         }
@@ -598,11 +588,20 @@ function afterDbLoad() {
 
         /* Log ins */
         socket.on("loginLti", function(data) { handleLoginLti(data, socket); });
+        socket.on("backupClientLogin", function(data) { handleBackupClientLogin(data, socket); });
 
         /* Chat group discussion */
         socket.on("chatGroupJoinRequest", handleChatGroupJoinRequest);
         socket.on("chatGroupMessage", handleChatGroupMessage);
         socket.on("chatGroupQuitStatusChange", handleChatGroupQuitStatusChange);
+
+        /* Backup client */
+        socket.on("backupClientLogout", handleBackupClientLogout);
+        socket.on("backupClientEnterQueue", handleBackupClientEnterQueue);
+        socket.on("backupClientStatusRequest", handleBackupClientStatusRequest);
+        socket.on("backupClientTransferConfirm", handleBackupClientTransferConfirm);
+
+        socket.on("questionContentRequest", handleQuestionContentRequest);
 
         /* Testing */
         socket.on('loadTestReq', loadTest);
@@ -610,14 +609,6 @@ function afterDbLoad() {
 
         // For unit test framework to know when to begin
         socket.emit('connected');
-
-    socket.on("backupClientLogin", function(data) { handleBackupClientLogin(data, socket); });
-    socket.on("backupClientLogout", handleBackupClientLogout);
-    socket.on("backupClientEnterQueue", handleBackupClientEnterQueue);
-    socket.on("backupClientStatusRequest", handleBackupClientStatusRequest);
-    socket.on("backupClientTransferConfirm", handleBackupClientTransferConfirm);
-
-    socket.on("questionContentRequest", handleQuestionContentRequest);
 
         // Makes sure all names in argNames are in data
         function checkArgs(eventName, data, argNames) {
@@ -664,7 +655,7 @@ function afterDbLoad() {
                     [
                         //  "username", 
                         "screenName", "questionNumber", "answer", "justification"])) return;
-                var client = allSessions.getSessionById(data.sessionId).client;
+                var client = getClientFromSessionId(data.sessionId);
                 var username = client.username;
                 if (!client) return;
                 var questionNumber = client.questionNumber;
@@ -798,6 +789,7 @@ function afterDbLoad() {
 
             allSessions.removeSession(session);
         }
+
         //This records User's flow during the session
         function user_flow(data) {
             var username = data.username;

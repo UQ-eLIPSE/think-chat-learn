@@ -6,6 +6,7 @@ $(function() {
     var socket = connect();
 
     var username;
+    var sessionId;
 
     var chatTimerHandle;
     var countdownIntervalHandle;
@@ -38,10 +39,10 @@ $(function() {
     /** Maps to StateFlow.goTo */
     var _go = StateFlow.goTo;
 
-    /** Useful for plain socket communication that requires username as only input */
-    var _usernameObj = function() {
+    /** Useful for plain socket communication that requires session ID as only input */
+    var _sessionIdObj = function() {
         return {
-            username: username
+            sessionId: sessionId
         }
     }
 
@@ -49,7 +50,7 @@ $(function() {
     function joinBackupClientQueueProceedToMgmtState() {
         // Store answers with client
         socket.emit("backupClientEnterQueue", {
-            username: username,
+            sessionId: sessionId,
             answer: selectedAnswerIndex,
             justification: selectedAnswerJustification
         });
@@ -71,11 +72,14 @@ $(function() {
             // Sign in
             username = $("#username").val();
 
-            socket.emit("backupClientLogin", _usernameObj());
+            socket.emit("backupClientLogin", {
+                username: username
+            });
 
             socket.once("backupClientLoginState", function(data) {
                 if (data.success) {
                     // Once signed in, proceed to question-response
+                    sessionId = data.sessionId;
                     _go(STATE.QUESTION_RESPONSE);
                 } else {
                     alert(data.message);
@@ -106,7 +110,7 @@ $(function() {
         });
 
 
-        socket.emit("questionContentRequest", _usernameObj());
+        socket.emit("questionContentRequest", _sessionIdObj());
 
         socket.once("questionContent", function(data) {
             quiz = data.quiz;
@@ -183,7 +187,7 @@ $(function() {
             $transferConfirmBox.one("click", "#confirm-transfer", function() {
                 $transferConfirmBox.addClass("hidden");
                 clearInterval(countdownIntervalHandle);
-                socket.emit("backupClientTransferConfirm", _usernameObj());
+                socket.emit("backupClientTransferConfirm", _sessionIdObj());
 
                 socket.once("chatGroupFormed", function(data) {
                     _go(STATE.CHAT, data);
@@ -216,7 +220,7 @@ $(function() {
         socket.on("backupClientEjected", onbackupClientEjected);
 
         // Request information now (once only)
-        socket.emit("backupClientStatusRequest", _usernameObj());
+        socket.emit("backupClientStatusRequest", _sessionIdObj());
     }
 
     function management_onLeave() {
@@ -312,7 +316,7 @@ $(function() {
 
             socket.emit("chatGroupMessage", {
                 groupId: chatGroupId,
-                username: username,
+                sessionId: sessionId,
                 message: message
             });
 
@@ -324,7 +328,7 @@ $(function() {
         $requestQuitButton.on("click", function() {
             socket.emit("chatGroupQuitStatusChange", {
                 groupId: chatGroupId,
-                username: username,
+                sessionId: sessionId,
                 quitStatus: (wantToQuit = !wantToQuit)
             });
 

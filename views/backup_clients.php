@@ -220,8 +220,8 @@
         </div>
 
         <!-- Core JavaScript -->
-        <script src="./js/socket.io-1.4.5.js"></script>
-        <script src="./js/jquery-2.2.3.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.5/socket.io.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.3/jquery.min.js"></script>
         <!-- MOOCchat Custom JavaScript -->
         <script src="./js/settings.js"></script>
         <script src="./js/moocchat.stages.js"></script>
