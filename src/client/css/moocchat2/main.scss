@@ -14,7 +14,7 @@ $neg-colour: $uq-colour-B6;     // Negative action (e.g. cancel)
 $warning-colour: $uq-colour-B6; // General warnings
 $danger-colour: $uq-colour-B1;  // Absolute warnings, errors etc.
 
-$body-bg-colour: lighten($mc-colour-1, 80%);
+$body-bg-colour: #fdfdfd;
 
 $button-def-colour: $mc-colour-1;  // Default
 $button-pos-colour: $pos-colour;

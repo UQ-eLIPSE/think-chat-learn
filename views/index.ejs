@@ -10,9 +10,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.1.1/normalize.min.css" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,700" />
     <link rel="stylesheet" href="./css/moocchat2/main.css" />
-
+    
     <!-- Piwik code must sit BEFORE require.js loads in main code -->
-    <script type="text/javascript">
+    <script>
         var _paq = _paq || [];
         (function() {
             var u="//localhost:8081/piwik/";
@@ -24,6 +24,13 @@
     </script>
     <noscript><p><img src="//localhost:8081/piwik/piwik.php?idsite=1" style="border:0;" alt="" /></p></noscript>
     <!-- End Piwik Code -->
+
+    <% if (typeof postData !== "undefined" && postData.lti_message_type === "basic-lti-launch-request") { %>
+    <!-- LTI Basic Launch data -->
+    <script>
+        var _LTI_BASIC_LAUNCH_DATA = <%- JSON.stringify(postData); %>;
+    </script>
+    <% } %>
 
     <!--[if lte IE9]>
     <script src="./js/rAF.js"></script>

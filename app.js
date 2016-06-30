@@ -1,39 +1,26 @@
 var express = require('express');
 var app = express();
-var sso = require('./controllers/single_sign_on');
-var url = require('url');
-
-var phpExpress = require('php-express')({
-  binPath: 'php'
-});
-
-app.set('views', './views');
-app.engine('php', phpExpress.engine);
-app.set('view engine', 'php');
-
-// Route all php files to php-express
-app.all(/.+\.php$/, phpExpress.router);
 
 global.app = app;
 
 var conf;
 if (process.argv.length >= 2 + 1) {
-  conf = require(process.argv[2]);
+    conf = require(process.argv[2]);
 } else {
-  conf = require('./config/conf.json');
+    conf = require('./config/conf.json');
 }
 
 global.conf = conf;
 
 if (conf.ssl) {
-  var options = {
-    key: fs.readFileSync(conf.key),
-    cert: fs.readFileSync(conf.cert)
-  };
-  server = https.createServer(options, app).listen(conf.portNum);
+    var options = {
+        key: fs.readFileSync(conf.key),
+        cert: fs.readFileSync(conf.cert)
+    };
+    server = https.createServer(options, app).listen(conf.portNum);
 } else {
-  server = require('http').createServer(app).listen(conf.portNum);
-  console.log('Socket.io server listening on port ' + conf.portNum);
+    server = require('http').createServer(app).listen(conf.portNum);
+    console.log('Socket.io server listening on port ' + conf.portNum);
 }
 
 var io = require('socket.io')(server, { serveClient: false });
@@ -49,25 +36,39 @@ global.collections = database.collections;
 // Load the websocket
 var websockets = require('./controllers/websockets');
 
+
+
+// Use ejs for templating on pages
+app.set("view engine", "ejs");
+
+
+// POST body parsing
+var bodyParser = require('body-parser')
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
+
+
+// Everything under URL/* will be statically delivered from PROJECT/public/*
 app.use(express.static('public'));
 
-app.get('/login', function(req, res) {
-  //TODO: Replace the redirect URI with an actual one
-  var uri = url.format({
-    protocol: req.protocol,
-    host: req.get('host'),
-    pathname: req.originalUrl
-  });
 
-  res.redirect(sso.redirects.login(uri));
+// LTI test page
+app.get("/lti-test", function(req, res) {
+    res.render("lti-test.ejs");
 });
 
-/**
- * The root of the website
- */
-app.get('/', function (req, res) {
-  // Redirect the user to the index.php page
-  console.log(req.headers);
+// LTI test page
+app.get("/backup-client", function(req, res) {
+    res.render("backup-client.ejs");
+});
 
-  res.redirect('index.php');
+// MOOCchat index page with POST data should pass POST along
+app.post("/", function(req, res) {
+    res.render("index.ejs", { postData: req.body });
+});
+
+// MOOCchat index page with no POST data
+app.get("/", function(req, res) {
+    res.render("index.ejs");
 });

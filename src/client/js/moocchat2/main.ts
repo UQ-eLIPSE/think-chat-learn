@@ -7,6 +7,8 @@ import {WebsocketManager} from "./Websockets";
 
 import {MoocchatSession} from "./MoocchatSession";
 import {MoocchatAnalytics} from "./MoocchatAnalytics";
+import {MoocchatUser} from "./MoocchatUser";
+import {MoocchatQuiz} from "./MoocchatQuiz";
 
 import {MoocchatState as STATE} from "./MoocchatStates";
 
@@ -16,6 +18,10 @@ import {AwaitGroupFormationPageFunc} from "./pages/await-group-formation";
 import {DiscussionPageFunc} from "./pages/discussion";
 import {RevisedAnswerPageFunc} from "./pages/revised-answer";
 import {SurveyPageFunc} from "./pages/survey";
+
+import {ILTIBasicLaunchData} from "./ILTIBasicLaunchData";
+
+declare const _LTI_BASIC_LAUNCH_DATA: ILTIBasicLaunchData;
 
 /*
  * MOOCchat
@@ -47,13 +53,6 @@ $(() => {
     });
 
 
-
-
-    // TODO: Should be somehow processing information that comes from Blackboard/LTI here
-    $courseName.text("ENGG1200");
-
-
-
     // Sections must be defined now before other resources use them
     let sectionDefinitions: TaskSectionDefinition[] = [
         // [id, name, milliseconds]
@@ -77,6 +76,49 @@ $(() => {
     let surveyPage = SurveyPageFunc(session);
 
     session.stateMachine.registerAll([
+        {   // No LTI data
+            state: STATE.NO_LTI_DATA,
+            onEnter: () => {
+                session.pageManager.loadPage("no-lti-data");
+            }
+        },
+        {
+            state: STATE.STARTUP_LOGIN,
+            onEnter: () => {
+                let user = new MoocchatUser(session.eventManager, _LTI_BASIC_LAUNCH_DATA);
+
+                user.onLoginSuccess = (data) => {
+                    session.setQuiz(new MoocchatQuiz(data.quiz));
+                    session.setUser(user);
+                    session.sessionId = data.sessionId;
+                    session.stateMachine.goTo(STATE.WELCOME);
+                }
+
+                user.onLoginFail = (data) => {
+                    let reason: string;
+
+                    if (typeof data === "string") {
+                        // General login failure
+                        reason = data;
+                    } else {
+                        // Login failed because user still signed in
+                        reason = `User "${data.username}" is still signed in`;
+                    }
+
+                    session.stateMachine.goTo(STATE.INVALID_LOGIN, { reason: reason });
+                }
+
+                user.login(session.socket);
+            }
+        },
+        {   // Invalid login
+            state: STATE.INVALID_LOGIN,
+            onEnter: (data) => {
+                session.pageManager.loadPage("invalid-login", (page$) => {
+                    page$("#reason").text(data.reason);
+                });
+            }
+        },
         {   // Welcome
             state: STATE.WELCOME,
             onEnter: welcomePage.onEnter,
@@ -116,6 +158,15 @@ $(() => {
     ]);
 
     // Start the state machine
-    session.stateMachine.goTo(STATE.WELCOME);
-    session.analytics.trackEvent("MOOCCHAT", "START");
+    if (typeof _LTI_BASIC_LAUNCH_DATA === "undefined") {
+        // No LTI data detected
+        session.stateMachine.goTo(STATE.NO_LTI_DATA);
+        session.analytics.trackEvent("MOOCCHAT", "NO_LTI_DATA");
+    } else {
+        // $courseName.text(_LTI_BASIC_LAUNCH_DATA.lis_course_section_sourcedid.split("_")[0]);
+        $courseName.text("ENGG1200");
+        session.stateMachine.goTo(STATE.STARTUP_LOGIN);
+        session.analytics.trackEvent("MOOCCHAT", "START");
+    }
+
 });

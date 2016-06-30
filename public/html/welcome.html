@@ -1,7 +1,10 @@
 <!-- All pages must specify <section data-name="..." /> as root element -->
 <section data-name="welcome">
-    <h1>Welcome, <span id="username">[Name From LTI Missing]</span></h1>
-    <a href="#">Is this not you?</a>
+    <h1>Welcome, <span id="name">{{name}}</span></h1>
+    <a id="not-you-help-link" href="#">Not you?</a>
+    <p id="not-you-help" style="border: 1px solid #ccc; background: #ddd; padding: 1em;">
+        MOOCchat uses data from Blackboard. If you would like to log in as someone else, please close MOOCchat, log out of Blackboard and try again.
+    </p>
 
     <h2>Steps on using MoocChat:</h2>
     <ol>

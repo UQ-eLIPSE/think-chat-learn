@@ -97,13 +97,14 @@ function afterDbLoad() {
 
         var chatGroupIds = Object.keys(chatGroups);
         for (var i = 0; i < chatGroupIds.length; ++i) {
-            var chatGroup = chatGroups[chatGroupIds[i]];
+            var chatGroupId = chatGroupIds[i];
+            var chatGroup = chatGroups[chatGroupId];
             if (chatGroup.getClientIndex(client) > -1) {
                 chatGroup.removeClient(client);
 
                 // If the chat group terminates, then remove the chat group reference
                 if (chatGroup.terminationCheck()) {
-                    delete chatGroups[data.groupId];
+                    delete chatGroups[chatGroupId];
                 }
 
                 break;

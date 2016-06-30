@@ -16,7 +16,9 @@
   "author": "eLIPSE",
   "license": "MIT",
   "dependencies": {
+    "body-parser": "^1.15.2",
     "concat-files": "^0.1.0",
+    "ejs": "^2.4.2",
     "express": "4.13.4",
     "mongojs": "2.3.0",
     "php-express": "0.0.3",
