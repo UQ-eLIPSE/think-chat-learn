@@ -58,7 +58,11 @@ app.get("/lti-test", function(req, res) {
     res.render("lti-test.ejs");
 });
 
-// LTI test page
+// Backup client
+app.post("/backup-client", function(req, res) {
+    res.render("backup-client.ejs", { postData: req.body });
+});
+
 app.get("/backup-client", function(req, res) {
     res.render("backup-client.ejs");
 });
@@ -68,7 +72,6 @@ app.post("/", function(req, res) {
     res.render("index.ejs", { postData: req.body });
 });
 
-// MOOCchat index page with no POST data
 app.get("/", function(req, res) {
     res.render("index.ejs");
 });
