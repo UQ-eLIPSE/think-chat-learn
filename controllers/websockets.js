@@ -284,6 +284,39 @@ function afterDbLoad() {
         allSessions.addSession(session);
 
 
+        // Determine if person has elevated permissions
+        var hasElevatedPermissions = false;
+        var roles = data.roles.toLowerCase().split(",");
+
+        if (roles.indexOf("instructor") > -1 ||
+            roles.indexOf("mentor") > -1 ||
+            roles.indexOf("teachingassistant") > -1 ||
+            roles.indexOf("administrator") > -1) {
+            hasElevatedPermissions = true;
+        }
+
+
+        function notifyClientOfLogin() {
+            // Complete login by notifying client
+            socket.emit('loginSuccess', {
+                sessionId: session.id,
+                username: user_id,
+                hasElevatedPermissions: hasElevatedPermissions,
+                quiz: quizBeingUsed,
+            });
+        }
+
+
+        if (hasElevatedPermissions) {
+            // Sign in and notify immediately - no need to write log in to DB
+            session.setElevatedPermissions(true); 
+            notifyClientOfLogin();
+            return;
+        }
+
+
+        // If not elevated permissions, then we assume to be student who needs to be tracked
+
         // Documents to be stored into DB
         var userLoginEntry = {
             username: client.username,
@@ -354,12 +387,7 @@ function afterDbLoad() {
                                     client.username);
                                 console.log(new Date().toISOString(), client.username, dbResults);
 
-                                // Complete login by notifying client
-                                socket.emit('loginSuccess', {
-                                    sessionId: session.id,
-                                    username: user_id,
-                                    quiz: quizBeingUsed
-                                });
+                                notifyClientOfLogin();
                             }
                         }); // end db[user_quiz_collection].insert()
                 }
@@ -374,43 +402,43 @@ function afterDbLoad() {
      * @param {Object} data
      * @param {Socket} socket
      */
-    function handleBackupClientLogin(data, socket) {
-        // TODO: Consolidate this login method with LTI login.
+    // function handleBackupClientLogin(data, socket) {
+    //     // TODO: Consolidate this login method with LTI login.
 
 
-        // TODO: Validate user
-        var username = data.username;
+    //     // TODO: Validate user
+    //     var username = data.username;
 
-        var loginState = {
-            success: true,
-            message: ""
-        };
+    //     var loginState = {
+    //         success: true,
+    //         message: ""
+    //     };
 
-        if (allSessions.hasSessionWithUsername(username)) {
-            loginState.success = false;
-            loginState.message = "Already logged in";
-        }
+    //     if (allSessions.hasSessionWithUsername(username)) {
+    //         loginState.success = false;
+    //         loginState.message = "Already logged in";
+    //     }
 
-        if (!loginState.success) {
-            socket.emit("backupClientLoginState", loginState);
-            return;
-        }
+    //     if (!loginState.success) {
+    //         socket.emit("backupClientLoginState", loginState);
+    //         return;
+    //     }
 
-        var client = new Client();
-        client.username = username;
-        client.setSocket(socket);
+    //     var client = new Client();
+    //     client.username = username;
+    //     client.setSocket(socket);
 
-        var session = new Session(client);
+    //     var session = new Session(client);
 
-        allSessions.addSession(session);
+    //     allSessions.addSession(session);
 
-        // TODO: This bit of code below is only a temporary patch to support session IDs.
-        // Add session ID to loginState object
+    //     // TODO: This bit of code below is only a temporary patch to support session IDs.
+    //     // Add session ID to loginState object
 
-        loginState.sessionId = session.id;
+    //     loginState.sessionId = session.id;
 
-        socket.emit("backupClientLoginState", loginState);
-    }
+    //     socket.emit("backupClientLoginState", loginState);
+    // }
 
 
 
@@ -432,13 +460,13 @@ function afterDbLoad() {
      *      sessionId {string}
      * }
      */
-    function handleQuestionContentRequest(data) {
-        var client = getClientFromSessionId(data.sessionId);
+    // function handleQuestionContentRequest(data) {
+    //     var client = getClientFromSessionId(data.sessionId);
 
-        client.getSocket().emit("questionContent", {
-            quiz: quizBeingUsed
-        });
-    }
+    //     client.getSocket().emit("questionContent", {
+    //         quiz: quizBeingUsed
+    //     });
+    // }
 
     /**
      * data = {
@@ -589,7 +617,7 @@ function afterDbLoad() {
 
         /* Log ins */
         socket.on("loginLti", function(data) { handleLoginLti(data, socket); });
-        socket.on("backupClientLogin", function(data) { handleBackupClientLogin(data, socket); });
+        // socket.on("backupClientLogin", function(data) { handleBackupClientLogin(data, socket); });
 
         /* Chat group discussion */
         socket.on("chatGroupJoinRequest", handleChatGroupJoinRequest);
@@ -602,7 +630,7 @@ function afterDbLoad() {
         socket.on("backupClientStatusRequest", handleBackupClientStatusRequest);
         socket.on("backupClientTransferConfirm", handleBackupClientTransferConfirm);
 
-        socket.on("questionContentRequest", handleQuestionContentRequest);
+        // socket.on("questionContentRequest", handleQuestionContentRequest);
 
         /* Testing */
         socket.on('loadTestReq', loadTest);

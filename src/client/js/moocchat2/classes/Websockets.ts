@@ -9,7 +9,9 @@ export const WebsocketEvents = {
         INITIAL_ANSWER_SUBMISSION_SAVED: "answerSubmissionInitialSaved",
 
         CHAT_GROUP_FORMED: "chatGroupFormed",
-        CHAT_GROUP_RECEIVE_MESSAGE: "chatGroupMessage"
+        CHAT_GROUP_RECEIVE_MESSAGE: "chatGroupMessage",
+
+        BACKUP_CLIENT_ENTER_QUEUE_STATE: "backupClientEnterQueueState"
     },
 
     OUTBOUND: {
@@ -21,7 +23,9 @@ export const WebsocketEvents = {
         CHAT_GROUP_JOIN_REQUEST: "chatGroupJoinRequest",
         CHAT_GROUP_SEND_MESSAGE: "chatGroupMessage",
 
-        REVISED_ANSWER_SUBMISSION: "probingQuestionFinalAnswerSubmission"
+        REVISED_ANSWER_SUBMISSION: "probingQuestionFinalAnswerSubmission",
+
+        BACKUP_CLIENT_ANSWER_AND_JOIN_QUEUE: "backupClientEnterQueue",
     }
 }
 

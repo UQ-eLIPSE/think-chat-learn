@@ -3,7 +3,7 @@ import * as $ from "jquery";
 import {Utils} from "./classes/Utils";
 
 import {TaskSectionDefinition} from "./classes/TaskSectionManager";
-import {WebsocketManager} from "./classes/Websockets";
+import {WebsocketManager, WebsocketEvents} from "./classes/Websockets";
 
 import {MoocchatSession} from "./classes/MoocchatSession";
 import {MoocchatAnalytics} from "./classes/MoocchatAnalytics";
@@ -20,6 +20,7 @@ import {RevisedAnswerPageFunc} from "./pages/revised-answer";
 import {SurveyPageFunc} from "./pages/survey";
 
 import {ILTIBasicLaunchData} from "./classes/ILTIBasicLaunchData";
+import {IEventData_BackupClientEnterQueueState} from "./classes/IEventData";
 
 declare const _LTI_BASIC_LAUNCH_DATA: ILTIBasicLaunchData;
 
@@ -50,11 +51,9 @@ $(() => {
     let sectionDefinitions: TaskSectionDefinition[] = [
         // [id, name, milliseconds]
         ["welcome", "Welcome"],
-        ["initial-answer", "Initial Answer", Utils.DateTime.secToMs(15 * 60)],
-        ["await-group-formation", "Forming Group"],
+        ["backup-client-answer", "Provide Answer"],
+        ["backup-client-wait", "Wait To Be Called"],
         ["discussion", "Discussion", Utils.DateTime.secToMs(15 * 60)],
-        ["revised-answer", "Revised Answer", Utils.DateTime.secToMs(6 * 60)],
-        ["survey", "Survey"],
         ["finish", "Finish"]
     ];
 
@@ -62,11 +61,7 @@ $(() => {
 
     // Individual page handling code
     let welcomePage = WelcomePageFunc(session);
-    let initialAnswerPage = InitialAnswerPageFunc(session);
-    let awaitGroupFormationPage = AwaitGroupFormationPageFunc(session);
     let discussionPage = DiscussionPageFunc(session);
-    let revisedAnswerPage = RevisedAnswerPageFunc(session);
-    let surveyPage = SurveyPageFunc(session);
 
     session.stateMachine.registerAll([
         {   // No LTI data
@@ -84,7 +79,7 @@ $(() => {
                     session.setQuiz(new MoocchatQuiz(data.quiz));
                     session.setUser(user);
                     session.sessionId = data.sessionId;
-                    session.stateMachine.goTo(STATE.WELCOME);
+                    session.stateMachine.goTo(STATE.WELCOME, { nextState: STATE.BACKUP_CLIENT_ANSWER });
                 }
 
                 user.onLoginFail = (data) => {
@@ -117,30 +112,90 @@ $(() => {
             onEnter: welcomePage.onEnter,
             onLeave: welcomePage.onLeave
         },
-        {   // Initial answer
-            state: STATE.INITIAL_ANSWER,
-            onEnter: initialAnswerPage.onEnter,
-            onLeave: initialAnswerPage.onLeave
+        {   // Instructor answer to question/Backup queue answer
+            state: STATE.BACKUP_CLIENT_ANSWER,
+            onEnter: () => {
+                let section = session.sectionManager.getSection("backup-client-answer");
+
+                session.socket.once(WebsocketEvents.INBOUND.BACKUP_CLIENT_ENTER_QUEUE_STATE, (data: IEventData_BackupClientEnterQueueState) => {
+                    if (data.success) {
+                        session.stateMachine.goTo(STATE.BACKUP_CLIENT_WAIT);
+                    }
+                });
+
+                function submitAnswerAndJoinQueue(answer: number, justification: string) {
+                    session.socket.emit(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_ANSWER_AND_JOIN_QUEUE, {
+                        sessionId: session.sessionId,
+                        answer: answer,
+                        justification: justification
+                    });
+                }
+
+                // Reuse initial answer page for backup queue answer submission
+                session.pageManager.loadPage("initial-answer", (page$) => {
+                    section.setActive();
+
+                    page$("#submit-answer").on("click", () => {
+                        let justification = $.trim(page$("#answer-justification").val());
+                        let answer = page$("#answers > ul > li.selected").index();
+
+                        if (justification.length === 0 || answer < 0) {
+                            alert("You must provide an answer.");
+                            return;
+                        }
+
+                        submitAnswerAndJoinQueue(answer, justification);
+                    });
+
+
+                    let $answers = page$("#answers");
+
+                    $answers.on("click", "li", function(e) {
+                        e.preventDefault();
+
+                        $("li", $answers).removeClass("selected");
+
+                        $(this).addClass("selected");
+                    });
+
+
+                    let $answersUL = page$("#answers > ul");
+
+                    let answerDOMs: JQuery[] = [];
+
+                    // Render question, choices
+                    page$("#question-reading").html(session.quiz.questionReading);
+                    page$("#question-statement").html(session.quiz.questionStatement);
+
+                    session.quiz.questionChoices.forEach((choice) => {
+                        answerDOMs.push($("<li>").text(choice));
+                    });
+
+                    $answersUL.append(answerDOMs);
+                });
+            },
+            onLeave: () => {
+                let section = session.sectionManager.getSection("backup-client-answer");
+                section.unsetActive();
+            }
         },
-        {   // Await group formation
-            state: STATE.AWAIT_GROUP_FORMATION,
-            onEnter: awaitGroupFormationPage.onEnter,
-            onLeave: awaitGroupFormationPage.onLeave
+        {   // Wait to be called/Backup client wait
+            state: STATE.BACKUP_CLIENT_WAIT,
+            onEnter: () => {
+                let section = session.sectionManager.getSection("backup-client-wait");
+                session.pageManager.loadPage("backup-client-wait", (page$) => {
+                    section.setActive();
+                });
+            },
+            onLeave: () => {
+                let section = session.sectionManager.getSection("backup-client-wait");
+                section.unsetActive();
+            }
         },
         {   // Discussion
             state: STATE.DISCUSSION,
             onEnter: discussionPage.onEnter,
             onLeave: discussionPage.onLeave
-        },
-        {   // Revised answer
-            state: STATE.REVISED_ANSWER,
-            onEnter: revisedAnswerPage.onEnter,
-            onLeave: revisedAnswerPage.onLeave
-        },
-        {   // Survey
-            state: STATE.SURVEY,
-            onEnter: surveyPage.onEnter,
-            onLeave: surveyPage.onLeave
         },
         {   // Confirmation/receipt
             state: STATE.CONFIRMATION,
