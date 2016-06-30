@@ -106,6 +106,7 @@ export let DiscussionPageFunc: IPageFunc<STATE> =
             },
             onLeave: () => {                
                 section.unsetActive();
+                section.clearTimer();
                 section.hideTimer();
             }
         }

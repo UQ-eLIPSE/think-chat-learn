@@ -77,6 +77,7 @@ export let InitialAnswerPageFunc: IPageFunc<STATE> =
             },
             onLeave: () => {
                 section.unsetActive();
+                section.clearTimer();
                 section.hideTimer();
             }
         }

@@ -35,7 +35,7 @@ export class TaskSectionManager {
      * @param {number} ms Timer value in milliseconds 
      */
     public register(id: string, text: string, ms?: number) {
-        let newSection = new TaskSection(this.eventBox, id, text, ms);
+        let newSection = new TaskSection(id, text, ms);
         this.$taskSectionRootElem.append(newSection.elem);
         this.sections[newSection.identifier] = newSection;
     }
