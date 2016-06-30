@@ -43,14 +43,7 @@ $(() => {
 
     // TODO: Need to make MoocchatSession easier to use as it's a
     // bit opaque as to what the $xxx elements are 
-    let session = new MoocchatSession<STATE>($content, $taskSections).setSocket(socket);
-
-
-    // Send event on any button click
-    $content.on("click", "button, input[type=button]", (e) => {
-        let $elem = $(e.currentTarget);
-        session.analytics.trackEvent("BUTTON_CLICK", $elem.text() || $elem.val());
-    });
+    let session = new MoocchatSession<STATE>(false, $content, $taskSections).setSocket(socket);
 
 
     // Sections must be defined now before other resources use them
@@ -164,7 +157,7 @@ $(() => {
         session.analytics.trackEvent("MOOCCHAT", "NO_LTI_DATA");
     } else {
         // $courseName.text(_LTI_BASIC_LAUNCH_DATA.lis_course_section_sourcedid.split("_")[0]);
-        $courseName.text("ENGG1200");
+        $courseName.text("ENGG1200 Backup Queue");
         session.stateMachine.goTo(STATE.STARTUP_LOGIN);
         session.analytics.trackEvent("MOOCCHAT", "START");
     }

@@ -14,14 +14,27 @@ interface IMoocchatAnalytics_TrackEvent {
 
 /**
  * MOOCchat
+ * AnalyticsCore class module
+ * 
+ * This is used to represent the public methods for the analytics class,
+ * and can be used to represent a MoocchatAnalytics object when analytics is turned off. 
+ */
+export class MoocchatAnalyticsCore {
+    public trackEvent(category: string, action: string, name?: string, value?: number) {}
+    public listenAndForwardEvent<EventData>(eventName: string, func: (data: EventData) => IMoocchatAnalytics_TrackEvent) {}
+}
+
+/**
+ * MOOCchat
  * Analytics class module
  * 
  * Analytics between client and Piwik.
  */
-export class MoocchatAnalytics {
+export class MoocchatAnalytics extends MoocchatAnalyticsCore {
     private session: MoocchatSession<any>;
 
     constructor(session: MoocchatSession<any>) {
+        super();
         this.session = session;
         this.setup();
     }
@@ -47,7 +60,7 @@ export class MoocchatAnalytics {
     // so that references to this are preserved correctly
     private trackPageView = (data: IPageManager_PageLoad) => {
         _paq.push(["setDocumentTitle", data.name]);
-        _paq.push(["setCustomUrl", "/internal_page/"+data.name]);
+        _paq.push(["setCustomUrl", "/internal_page/" + data.name]);
         _paq.push(["setGenerationTimeMs", data.loadTimeMs]);    // Generation time now reflects the load time of the page
         _paq.push(["trackPageView", data.name]);
     }

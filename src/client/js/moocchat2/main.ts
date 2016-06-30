@@ -43,7 +43,7 @@ $(() => {
 
     // TODO: Need to make MoocchatSession easier to use as it's a
     // bit opaque as to what the $xxx elements are 
-    let session = new MoocchatSession<STATE>($content, $taskSections).setSocket(socket);
+    let session = new MoocchatSession<STATE>(true, $content, $taskSections).setSocket(socket);
 
 
     // Send event on any button click

@@ -53,9 +53,9 @@ app.use(bodyParser.urlencoded({
 app.use(express.static('public'));
 
 
-// LTI test page
-app.get("/lti-test", function(req, res) {
-    res.render("lti-test.ejs");
+// LTI launcher page
+app.get("/lti-launch", function(req, res) {
+    res.render("lti-launch.ejs");
 });
 
 // Backup client

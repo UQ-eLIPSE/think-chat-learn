@@ -6,8 +6,8 @@
 </head>
 
 <body>
-    <h1> LTI Test </h1>
-    <form action="/" method="POST">
+    <h1> LTI Launcher for MOOCchat </h1>
+    <form action="." method="POST">
         <table>
             <tr><td>user_id</td><td><input type="text" name="user_id" value="uqjli23"></td></tr>
             <tr><td>lis_person_name_full</td><td><input type="text" name="lis_person_name_full" value="James Li"></td></tr>
@@ -45,7 +45,8 @@
             <tr><td>oauth_version</td><td><input type="text" name="oauth_version" value="1.0"></td></tr>
             <tr><td>oauth_signature</td><td><input type="text" name="oauth_signature" value="+AKF4oayRUKaIjCL80z6u5+yAms="></td></tr>
 
-            <td><input type="submit" value="Launch LTI">
+            <tr><td><button formaction="/">Launch standard client</button> <button formaction="/backup-client">Launch client for backup queue</button></td></tr>
+        </table>
     </form>
 </body>
 
