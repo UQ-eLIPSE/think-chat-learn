@@ -1,8 +1,8 @@
-import {IPageFunc} from "../IPageFunc";
+import {IPageFunc} from "../classes/IPageFunc";
 
-import {MoocchatState as STATE} from "../MoocchatStates";
+import {MoocchatState as STATE} from "../classes/MoocchatStates";
 
-import {ILTIBasicLaunchData} from "../ILTIBasicLaunchData";
+import {ILTIBasicLaunchData} from "../classes/ILTIBasicLaunchData";
 
 declare const _LTI_BASIC_LAUNCH_DATA: ILTIBasicLaunchData;
 

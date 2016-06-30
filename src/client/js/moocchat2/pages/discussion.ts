@@ -1,11 +1,11 @@
 import * as $ from "jquery";
 
-import {IPageFunc} from "../IPageFunc";
+import {IPageFunc} from "../classes/IPageFunc";
 
-import {MoocchatState as STATE} from "../MoocchatStates";
-import {IEventData_ChatGroupFormed} from "../IEventData";
+import {MoocchatState as STATE} from "../classes/MoocchatStates";
+import {IEventData_ChatGroupFormed} from "../classes/IEventData";
 
-import {MoocchatChat} from "../MoocchatChat";
+import {MoocchatChat} from "../classes/MoocchatChat";
 
 export let DiscussionPageFunc: IPageFunc<STATE> =
     (session) => {

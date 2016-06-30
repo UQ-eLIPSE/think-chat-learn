@@ -25,9 +25,9 @@ declare const _LTI_BASIC_LAUNCH_DATA: ILTIBasicLaunchData;
 
 /*
  * MOOCchat
- * Main module
+ * Backup-client module
  * 
- * Main JS module that handles the startup of MOOCchat
+ * Main JS module for backup clients (e.g. tutor/instructors in backup queue)
  */
 
 // Start Websockets as soon as possible

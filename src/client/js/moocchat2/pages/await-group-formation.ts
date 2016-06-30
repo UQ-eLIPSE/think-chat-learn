@@ -1,9 +1,9 @@
-import {IPageFunc} from "../IPageFunc";
+import {IPageFunc} from "../classes/IPageFunc";
 
-import {MoocchatState as STATE} from "../MoocchatStates";
-import {IEventData_ChatGroupFormed} from "../IEventData";
+import {MoocchatState as STATE} from "../classes/MoocchatStates";
+import {IEventData_ChatGroupFormed} from "../classes/IEventData";
 
-import {WebsocketEvents} from "../Websockets";
+import {WebsocketEvents} from "../classes/Websockets";
 
 export let AwaitGroupFormationPageFunc: IPageFunc<STATE> =
     (session) => {
