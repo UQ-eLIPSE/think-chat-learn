@@ -5,8 +5,10 @@
  */
 
 // Colours
-$mc-colour-1: $uq-colour-B3;
-$mc-colour-2: $uq-colour-B5;
+$mc-colour-1: #265569;
+// $mc-colour-2: $uq-colour-B5;
+
+$mc-colour-1-backup-client: $uq-colour-B5;
 
 $pos-colour: $uq-colour-B5;     // Positive action (e.g. submit)
 $neg-colour: $uq-colour-B6;     // Negative action (e.g. cancel)
@@ -133,6 +135,11 @@ button.negative {
     width: $mc-sidebar-width;
 
     font-size: 1.2rem;
+}
+
+.backup-client #header {
+    background: $mc-colour-1-backup-client;
+    color: fg-on-bg($mc-colour-1-backup-client);
 }
 
 #content {
