@@ -40,3 +40,6 @@ jspm_packages
 # Compiled client code
 public/js/moocchat2
 public/css/moocchat2
+
+# SASS cache directory
+.sass-cache
