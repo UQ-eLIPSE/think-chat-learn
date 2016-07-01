@@ -7,6 +7,14 @@
 
 import {IQuiz} from "./IQuiz";
 
+
+
+export interface IEventData_GenericSuccessState {
+    success: boolean;
+}
+
+
+
 /** loginSuccess */
 export interface IEventData_LoginSuccess {
     sessionId: string;
@@ -45,4 +53,17 @@ export interface IEventData_ChatGroupMessageReceived {
     clientIndex: number;
     message: string;
     timestamp: number;
+}
+
+/* backupClientEnterQueueState */
+export type IEventData_BackupClientEnterQueueState = IEventData_GenericSuccessState;
+
+export interface IEventData_ClientPoolCountUpdate {
+    numberOfClients: number;
+}
+
+export interface IEventData_BackupClientQueueUpdate {
+    clients: {
+        username: string;
+    }[];
 }

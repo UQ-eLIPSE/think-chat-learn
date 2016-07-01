@@ -27,18 +27,19 @@ export class TaskSection {
     private outOfTime: boolean = false;
     private outOfTimeAlternationIntervalHandle: number;
 
-    private eventBox: EventBox;
+    private eventBox: EventBox = new EventBox();
 
     /**
      * @param {string} id
      * @param {string} text Text presented in the element itself
      * @param {number} ms Timer value in milliseconds
      */
-    constructor(eventBox: EventBox, id: string, text: string, ms?: number) {
+    // constructor(eventBox: EventBox, id: string, text: string, ms?: number) {
+    constructor(id: string, text: string, ms?: number) {
         this.id = id;
         this.milliseconds = ms;
 
-        this.eventBox = eventBox;
+        // this.eventBox = eventBox;
 
         this.$elem = this.generateElement(text);
 
@@ -181,6 +182,14 @@ export class TaskSection {
     }
 
     /**
+     * Clears all callbacks and stops timer.
+     */
+    public clearTimer() {
+        this.stopTimer();
+        this.detachTimerCompleted();
+    }
+
+    /**
      * Request timer update on next frame render.
      */
     private requestTimerUpdate() {
@@ -209,6 +218,10 @@ export class TaskSection {
             // Halt updating timer when completed
             if (this.timeRemaining <= 200) {
                 this.runTimerCompletionCallbacks();
+                
+                // Clear all timer callbacks (as timers are intended to be run once only)
+                this.detachTimerCompleted();
+
                 return;     // This halts the update loop
             }
         }
@@ -239,7 +252,7 @@ export class TaskSection {
      * 
      * @param {EventBoxCallback} callback
      */
-    public detachTimerCompleted(callback: EventBoxCallback) {
+    public detachTimerCompleted(callback?: EventBoxCallback) {
         this.eventBox.off(TaskSection_InternalLoginEvents.TIMER_COMPLETED, callback);
     }
 

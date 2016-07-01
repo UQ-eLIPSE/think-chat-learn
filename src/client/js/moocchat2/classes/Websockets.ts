@@ -9,7 +9,15 @@ export const WebsocketEvents = {
         INITIAL_ANSWER_SUBMISSION_SAVED: "answerSubmissionInitialSaved",
 
         CHAT_GROUP_FORMED: "chatGroupFormed",
-        CHAT_GROUP_RECEIVE_MESSAGE: "chatGroupMessage"
+        CHAT_GROUP_RECEIVE_MESSAGE: "chatGroupMessage",
+
+        BACKUP_CLIENT_ENTER_QUEUE_STATE: "backupClientEnterQueueState",
+        BACKUP_CLIENT_QUEUE_UPDATE: "backupClientQueueUpdate",
+        BACKUP_CLIENT_TRANSFER_CALL: "backupClientTransferCall",
+        BACKUP_CLIENT_EJECTED: "backupClientEjected",
+
+        BACKUP_CLIENT_STANDARD_CLIENT_POOL_COUNT_UPDATE: "clientPoolCountUpdate",
+
     },
 
     OUTBOUND: {
@@ -21,7 +29,13 @@ export const WebsocketEvents = {
         CHAT_GROUP_JOIN_REQUEST: "chatGroupJoinRequest",
         CHAT_GROUP_SEND_MESSAGE: "chatGroupMessage",
 
-        REVISED_ANSWER_SUBMISSION: "probingQuestionFinalAnswerSubmission"
+        REVISED_ANSWER_SUBMISSION: "probingQuestionFinalAnswerSubmission",
+
+        BACKUP_CLIENT_ANSWER_AND_JOIN_QUEUE: "backupClientEnterQueue",
+        BACKUP_CLIENT_RETURN_TO_QUEUE: "backupClientReturnToQueue",
+        BACKUP_CLIENT_STATUS_REQUEST: "backupClientStatusRequest",
+        BACKUP_CLIENT_TRANSFER_CONFIRM: "backupClientTransferConfirm",
+
     }
 }
 

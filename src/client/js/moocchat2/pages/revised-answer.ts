@@ -1,10 +1,10 @@
 import * as $ from "jquery";
 
-import {IPageFunc} from "../IPageFunc";
+import {IPageFunc} from "../classes/IPageFunc";
 
-import {MoocchatState as STATE} from "../MoocchatStates";
+import {MoocchatState as STATE} from "../classes/MoocchatStates";
 
-import {WebsocketEvents} from "../Websockets";
+import {WebsocketEvents} from "../classes/Websockets";
 
 export let RevisedAnswerPageFunc: IPageFunc<STATE> =
     (session) => {
@@ -78,6 +78,7 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
             },
             onLeave: () => {
                 section.unsetActive();
+                section.clearTimer();
                 section.hideTimer();
             }
         }

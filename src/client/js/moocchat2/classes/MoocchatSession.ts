@@ -4,7 +4,7 @@ import {PageManager} from "./PageManager";
 import {TaskSectionManager} from "./TaskSectionManager";
 import {WebsocketManager} from "./Websockets";
 
-import {MoocchatAnalytics} from "./MoocchatAnalytics";
+import {MoocchatAnalytics, MoocchatAnalyticsCore} from "./MoocchatAnalytics";
 import {MoocchatUser} from "./MoocchatUser";
 import {MoocchatQuiz} from "./MoocchatQuiz";
 
@@ -29,12 +29,15 @@ export class MoocchatSession<StateTypeEnum> {
 
     public sessionId: string;
 
-    constructor($content: JQuery, $taskSections: JQuery) {
+    constructor(turnOnAnalytics: boolean = true, $content: JQuery, $taskSections: JQuery) {
         this._eventManager = new EventBox();
         this._pageManager = new PageManager(this._eventManager, $content);
         this._sectionManager = new TaskSectionManager(this._eventManager, $taskSections);
         this._stateMachine = new StateFlow<StateTypeEnum>();
-        this._analytics = new MoocchatAnalytics(this);
+
+        if (turnOnAnalytics) {
+            this._analytics = new MoocchatAnalytics(this);
+        }
     }
 
     /**
@@ -162,7 +165,7 @@ export class MoocchatSession<StateTypeEnum> {
     }
 
     public get analytics() {
-        return this._analytics;
+        return this._analytics || new MoocchatAnalyticsCore();
     }
 
 }

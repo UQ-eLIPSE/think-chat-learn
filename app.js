@@ -53,12 +53,25 @@ app.use(bodyParser.urlencoded({
 app.use(express.static('public'));
 
 
-// LTI test page
-app.get("/lti-test", function(req, res) {
-    res.render("lti-test.ejs");
+// LTI launcher page
+app.get("/lti-launch", function(req, res) {
+    res.render("lti-launch.ejs");
 });
 
-// LTI test page
+// LTI intermediary (for incoming requests from Blackboard)
+app.post("/lti.php", function(req, res) {
+    res.render("lti-intermediary.ejs", { postData: req.body });
+});
+
+app.get("/lti.php", function(req, res) {
+    res.render("lti-intermediary.ejs");
+});
+
+// Backup client
+app.post("/backup-client", function(req, res) {
+    res.render("backup-client.ejs", { postData: req.body });
+});
+
 app.get("/backup-client", function(req, res) {
     res.render("backup-client.ejs");
 });
@@ -68,7 +81,6 @@ app.post("/", function(req, res) {
     res.render("index.ejs", { postData: req.body });
 });
 
-// MOOCchat index page with no POST data
 app.get("/", function(req, res) {
     res.render("index.ejs");
 });

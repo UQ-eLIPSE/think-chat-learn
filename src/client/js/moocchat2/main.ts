@@ -1,16 +1,16 @@
 import * as $ from "jquery";
 
-import {Utils} from "./Utils";
+import {Utils} from "./classes/Utils";
 
-import {TaskSectionDefinition} from "./TaskSectionManager";
-import {WebsocketManager} from "./Websockets";
+import {TaskSectionDefinition} from "./classes/TaskSectionManager";
+import {WebsocketManager} from "./classes/Websockets";
 
-import {MoocchatSession} from "./MoocchatSession";
-import {MoocchatAnalytics} from "./MoocchatAnalytics";
-import {MoocchatUser} from "./MoocchatUser";
-import {MoocchatQuiz} from "./MoocchatQuiz";
+import {MoocchatSession} from "./classes/MoocchatSession";
+import {MoocchatAnalytics} from "./classes/MoocchatAnalytics";
+import {MoocchatUser} from "./classes/MoocchatUser";
+import {MoocchatQuiz} from "./classes/MoocchatQuiz";
 
-import {MoocchatState as STATE} from "./MoocchatStates";
+import {MoocchatState as STATE} from "./classes/MoocchatStates";
 
 import {WelcomePageFunc} from "./pages/welcome";
 import {InitialAnswerPageFunc} from "./pages/initial-answer";
@@ -19,7 +19,7 @@ import {DiscussionPageFunc} from "./pages/discussion";
 import {RevisedAnswerPageFunc} from "./pages/revised-answer";
 import {SurveyPageFunc} from "./pages/survey";
 
-import {ILTIBasicLaunchData} from "./ILTIBasicLaunchData";
+import {ILTIBasicLaunchData} from "./classes/ILTIBasicLaunchData";
 
 declare const _LTI_BASIC_LAUNCH_DATA: ILTIBasicLaunchData;
 
@@ -43,7 +43,7 @@ $(() => {
 
     // TODO: Need to make MoocchatSession easier to use as it's a
     // bit opaque as to what the $xxx elements are 
-    let session = new MoocchatSession<STATE>($content, $taskSections).setSocket(socket);
+    let session = new MoocchatSession<STATE>(true, $content, $taskSections).setSocket(socket);
 
 
     // Send event on any button click

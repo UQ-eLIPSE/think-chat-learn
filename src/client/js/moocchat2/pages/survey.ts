@@ -1,6 +1,6 @@
-import {IPageFunc} from "../IPageFunc";
+import {IPageFunc} from "../classes/IPageFunc";
 
-import {MoocchatState as STATE} from "../MoocchatStates";
+import {MoocchatState as STATE} from "../classes/MoocchatStates";
 
 export let SurveyPageFunc: IPageFunc<STATE> =
     (session) => {

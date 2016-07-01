@@ -10,6 +10,7 @@
     },
     "files": [
         "./typings/index.d.ts",
-        "./moocchat2/main.ts"
+        "./moocchat2/main.ts",
+        "./moocchat2/backup-client.ts"
     ]
 }
