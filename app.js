@@ -58,6 +58,15 @@ app.get("/lti-launch", function(req, res) {
     res.render("lti-launch.ejs");
 });
 
+// LTI intermediary (for incoming requests from Blackboard)
+app.post("/lti.php", function(req, res) {
+    res.render("lti-intermediary.ejs", { postData: req.body });
+});
+
+app.get("/lti.php", function(req, res) {
+    res.render("lti-intermediary.ejs");
+});
+
 // Backup client
 app.post("/backup-client", function(req, res) {
     res.render("backup-client.ejs", { postData: req.body });
