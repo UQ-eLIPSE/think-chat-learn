@@ -57,3 +57,13 @@ export interface IEventData_ChatGroupMessageReceived {
 
 /* backupClientEnterQueueState */
 export type IEventData_BackupClientEnterQueueState = IEventData_GenericSuccessState;
+
+export interface IEventData_ClientPoolCountUpdate {
+    numberOfClients: number;
+}
+
+export interface IEventData_BackupClientQueueUpdate {
+    clients: {
+        username: string;
+    }[];
+}

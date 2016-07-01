@@ -309,7 +309,7 @@ function afterDbLoad() {
 
         if (hasElevatedPermissions) {
             // Sign in and notify immediately - no need to write log in to DB
-            session.setElevatedPermissions(true); 
+            session.setElevatedPermissions(true);
             notifyClientOfLogin();
             return;
         }
@@ -571,6 +571,27 @@ function afterDbLoad() {
      *      sessionId {string}
      * }
      */
+    function handleBackupClientReturnToQueue(data) {
+        var client = getClientFromSessionId(data.sessionId);
+
+        // If 
+        if (client.probingQuestionAnswer > -1 &&
+            client.probingQuestionAnswerTime &&
+            client.probJustification) {
+
+            backupClientQueue.addClient(client);
+
+            client.getSocket().emit("backupClientEnterQueueState", {
+                success: true
+            });
+        }
+    }
+
+    /**
+     * data = {
+     *      sessionId {string}
+     * }
+     */
     function handleBackupClientStatusRequest(data) {
         if (!allSessions.hasSessionId(data.sessionId)) {
             return;
@@ -627,6 +648,7 @@ function afterDbLoad() {
         /* Backup client */
         socket.on("backupClientLogout", handleBackupClientLogout);
         socket.on("backupClientEnterQueue", handleBackupClientEnterQueue);
+        socket.on("backupClientReturnToQueue", handleBackupClientReturnToQueue);
         socket.on("backupClientStatusRequest", handleBackupClientStatusRequest);
         socket.on("backupClientTransferConfirm", handleBackupClientTransferConfirm);
 

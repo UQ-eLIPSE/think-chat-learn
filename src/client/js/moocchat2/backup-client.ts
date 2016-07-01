@@ -20,7 +20,7 @@ import {RevisedAnswerPageFunc} from "./pages/revised-answer";
 import {SurveyPageFunc} from "./pages/survey";
 
 import {ILTIBasicLaunchData} from "./classes/ILTIBasicLaunchData";
-import {IEventData_BackupClientEnterQueueState} from "./classes/IEventData";
+import {IEventData_BackupClientEnterQueueState, IEventData_ClientPoolCountUpdate, IEventData_BackupClientQueueUpdate, IEventData_ChatGroupFormed} from "./classes/IEventData";
 
 declare const _LTI_BASIC_LAUNCH_DATA: ILTIBasicLaunchData;
 
@@ -185,6 +185,69 @@ $(() => {
                 let section = session.sectionManager.getSection("backup-client-wait");
                 session.pageManager.loadPage("backup-client-wait", (page$) => {
                     section.setActive();
+
+                    var $backupClientQueue = page$("ul#backup-client-queue");
+                    var $numOfClientsInPool = page$("span#number-of-clients-in-pool");
+
+                    function onBackupClientQueueUpdate(data: IEventData_BackupClientQueueUpdate) {
+                        $backupClientQueue.empty();
+
+                        data.clients.forEach(function(client) {
+                            var $backupClientLI = $("<li>").text(client.username);
+
+                            if (client.username === session.user.username) {
+                                $backupClientLI.css("font-weight", "bold");
+                            }
+
+                            $backupClientLI.appendTo($backupClientQueue);
+                        });
+                    }
+
+                    function onClientPoolCountUpdate(data: IEventData_ClientPoolCountUpdate) {
+                        $numOfClientsInPool.text(data.numberOfClients);
+                    }
+
+                    let countdownIntervalHandle: number;
+
+                    function onBackupClientTransferCall() {
+                        var $transferConfirmBox = page$("#transfer-confirmation");
+                        var $transferCountdown = page$("#transfer-remaining-seconds");
+
+                        $transferConfirmBox.removeClass("hidden");
+
+                        var value = 15;
+
+                        function countdown() {
+                            $transferCountdown.text(value--);
+                        }
+
+                        countdownIntervalHandle = setInterval(countdown, 1000);
+                        countdown();
+
+                        $transferConfirmBox.one("click", "#confirm-transfer", function() {
+                            $transferConfirmBox.addClass("hidden");
+                            clearInterval(countdownIntervalHandle);
+                            session.socket.emit(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_TRANSFER_CONFIRM, { sessionId: session.sessionId });
+
+                            session.socket.once(WebsocketEvents.INBOUND.CHAT_GROUP_FORMED, function(data: IEventData_ChatGroupFormed) {
+                                session.stateMachine.goTo(STATE.DISCUSSION, data);
+                            });
+                        });
+
+                        // https://notificationsounds.com/message-tones/mission-accomplished-252
+                        var notificationTone = new Audio("./mp3/mission-accomplished.mp3");
+                        notificationTone.play();
+                    }
+
+                    // Attach socket listeners to queue and pool status
+                    session.socket.on(WebsocketEvents.INBOUND.BACKUP_CLIENT_QUEUE_UPDATE, onBackupClientQueueUpdate);
+                    session.socket.on(WebsocketEvents.INBOUND.BACKUP_CLIENT_STANDARD_CLIENT_POOL_COUNT_UPDATE, onClientPoolCountUpdate);
+                    session.socket.on(WebsocketEvents.INBOUND.BACKUP_CLIENT_TRANSFER_CALL, onBackupClientTransferCall);
+                    session.socket.on(WebsocketEvents.INBOUND.BACKUP_CLIENT_EJECTED, () => { session.stateMachine.goTo(STATE.BACKUP_CLIENT_EJECTED); });
+
+                    // Request information now (once only)
+                    session.socket.emit(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_STATUS_REQUEST, { sessionId: session.sessionId });
+
                     page$("#logout").on("click", () => {
                         session.stateMachine.goTo(STATE.BACKUP_CLIENT_LOGOUT);
                     });
@@ -193,12 +256,32 @@ $(() => {
             onLeave: () => {
                 let section = session.sectionManager.getSection("backup-client-wait");
                 section.unsetActive();
+
+                // Detach listeners
+                session.socket.off(WebsocketEvents.INBOUND.BACKUP_CLIENT_QUEUE_UPDATE);
+                session.socket.off(WebsocketEvents.INBOUND.BACKUP_CLIENT_STANDARD_CLIENT_POOL_COUNT_UPDATE);
+                session.socket.off(WebsocketEvents.INBOUND.BACKUP_CLIENT_TRANSFER_CALL);
+                session.socket.off(WebsocketEvents.INBOUND.BACKUP_CLIENT_EJECTED);
+
             }
         },
         {   // Discussion
             state: STATE.DISCUSSION,
             onEnter: discussionPage.onEnter,
             onLeave: discussionPage.onLeave
+        },
+        {   // TODO: Temporary measure so that the discussion then moves back to WAIT for backup clients
+            state: STATE.REVISED_ANSWER,
+            onEnter: () => {
+                // Must re-register to return to the queue
+                session.socket.once(WebsocketEvents.INBOUND.BACKUP_CLIENT_ENTER_QUEUE_STATE, (data: IEventData_BackupClientEnterQueueState) => {
+                    if (data.success) {
+                        session.stateMachine.goTo(STATE.BACKUP_CLIENT_WAIT);
+                    }
+                });
+
+                session.socket.emit(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_RETURN_TO_QUEUE, { sessionId: session.sessionId });
+            }
         },
         {   // Ejected
             state: STATE.BACKUP_CLIENT_EJECTED,
