@@ -54,7 +54,7 @@ $(() => {
         ["backup-client-answer", "Provide Answer"],
         ["backup-client-wait", "Wait To Be Called"],
         ["discussion", "Discussion", Utils.DateTime.secToMs(15 * 60)],
-        ["finish", "Finish"]
+        ["backup-client-logout", "Log Out"]
     ];
 
     session.sectionManager.registerAll(sectionDefinitions);
@@ -185,6 +185,9 @@ $(() => {
                 let section = session.sectionManager.getSection("backup-client-wait");
                 session.pageManager.loadPage("backup-client-wait", (page$) => {
                     section.setActive();
+                    page$("#logout").on("click", () => {
+                        session.stateMachine.goTo(STATE.BACKUP_CLIENT_LOGOUT);
+                    });
                 });
             },
             onLeave: () => {
@@ -197,10 +200,40 @@ $(() => {
             onEnter: discussionPage.onEnter,
             onLeave: discussionPage.onLeave
         },
-        {   // Confirmation/receipt
-            state: STATE.CONFIRMATION,
+        {   // Ejected
+            state: STATE.BACKUP_CLIENT_EJECTED,
             onEnter: () => {
-                session.analytics.trackEvent("MOOCCHAT", "FINISH");
+                // Log out by closing socket
+                session.socket.close();
+
+                let section = session.sectionManager.getSection("backup-client-logout");
+                session.pageManager.loadPage("backup-client-ejected", (page$) => {
+                    section.setActive();
+                    page$("#login-again").on("click", () => {
+                        session.socket.open();
+                        session.stateMachine.goTo(STATE.STARTUP_LOGIN);
+                        // TODO: There is an issue with this as .setQuiz() won't work as second time as the session object needs to be reinstantiated
+                    });
+
+                    page$("#go-to-return-url").on("click", () => {
+                        window.top.location.href = _LTI_BASIC_LAUNCH_DATA.launch_presentation_return_url;
+                    });
+                });
+            }
+        },
+        {   // Logout
+            state: STATE.BACKUP_CLIENT_LOGOUT,
+            onEnter: () => {
+                // Log out by closing socket
+                session.socket.close();
+
+                let section = session.sectionManager.getSection("backup-client-logout");
+                session.pageManager.loadPage("backup-client-logout", (page$) => {
+                    section.setActive();
+                    page$("#go-to-return-url").on("click", () => {
+                        window.top.location.href = _LTI_BASIC_LAUNCH_DATA.launch_presentation_return_url;
+                    });
+                });
             }
         }
     ]);

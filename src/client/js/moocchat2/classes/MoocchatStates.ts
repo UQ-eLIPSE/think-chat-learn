@@ -20,5 +20,6 @@ export enum MoocchatState {
 
     BACKUP_CLIENT_ANSWER,
     BACKUP_CLIENT_WAIT,
-
+    BACKUP_CLIENT_EJECTED,
+    BACKUP_CLIENT_LOGOUT
 }
