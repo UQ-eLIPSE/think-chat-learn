@@ -190,11 +190,11 @@ export class LTIProcessor {
         }
 
         if (!LTIUtil.validateMessageTimestamp(data)) {
-            // throw new Error("LTI data timestamp invalid or stale");
+            throw new Error("LTI data timestamp invalid or stale");
         }
 
         if (this.nonceStore && !this.nonceStore.verifyAndStore(data.oauth_nonce)) {
-            // throw new Error("LTI data nonce invalid or replayed");
+            throw new Error("LTI data nonce invalid or replayed");
         }
 
         if (!LTIUtil.validateMessageSignature(data, this.signingInfo)) {
