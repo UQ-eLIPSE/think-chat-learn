@@ -2,10 +2,10 @@
  * Handles all writing and reading to the database
  * @author eLIPSE
  */
-var conf = require('../config/conf.json');
+var conf = require('../../config/conf.json');
 
 // The new way to get table names
-var tables = require('../config/db_tables.json');
+var tables = require('../../config/db_tables.json');
 
 var collection_suffixes = [
   "userLogin",

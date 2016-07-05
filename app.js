@@ -29,12 +29,12 @@ global.io = io;
 global.server = server;
 
 // Load the database module
-var database = require('./controllers/database');
+var database = require('./build/controllers/database');
 global.db = database.db;
 global.collections = database.collections;
 
 // Load the websocket
-var websockets = require('./controllers/websockets');
+var websockets = require('./build/controllers/websockets');
 
 
 

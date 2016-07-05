@@ -2,11 +2,15 @@
 	"compilerOptions": {
         "target": "es5",
         "module": "commonjs",
+
         "noImplicitAny": true,
         "removeComments": true,
         "preserveConstEnums": true,
-        "sourceMap": true
-    },
-    "files": [
-    ]
+        "sourceMap": true,
+
+        "allowJs": true,
+
+        "outDir": "../../build",
+        "rootDir": "."
+    }
 }
