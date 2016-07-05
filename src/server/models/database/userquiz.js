@@ -3,7 +3,7 @@
  * @author eLIPSE
  */
 
-var tables = require('../../config/db_tables.json');
+var tables = require('../../../config/db_tables.json');
 
 var DatabaseWrapper = require("../DatabaseWrapper");
 

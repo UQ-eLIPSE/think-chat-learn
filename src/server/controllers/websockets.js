@@ -4,6 +4,9 @@ var io = global.io;
 
 var db_wrapper = require('./database.js');
 
+var _LTI = require("./LTI");
+var LTIProcessor = _LTI.LTIProcessor;
+
 var Client = require('../models/client');
 
 var DiscussionRoom = require('../models/discussionRoom');
@@ -60,6 +63,10 @@ function afterDbLoad() {
     var quizBeingUsed = quizSet[conf.fixedQuestionNumber];
 
     var allSessions = new SessionManager();
+    
+    // LTI processor for incoming logins
+    var ltiProcessor = new LTIProcessor(conf.lti.signingInfo);
+    ltiProcessor.setTestMode(conf.lti.testMode);
 
     // Queue for instructors/tutors on standby
     var backupClientQueue = new BackupClientQueue();
@@ -242,7 +249,17 @@ function afterDbLoad() {
      * }
      */
     function handleLoginLti(data, socket) {
-        var user_id = data.user_id;
+        // Process LTI data
+        var ltiObject;
+
+        try {
+            ltiObject = ltiProcessor.verifyAndCreateLTIObj(data);
+        } catch (e) {
+            socket.emit('loginFailure', e.message);
+            return;
+        }
+
+        var user_id = ltiObject.data.user_id;
 
         if (!user_id) {
             socket.emit('loginFailure', 'No user ID received.');
@@ -253,24 +270,6 @@ function afterDbLoad() {
             socket.emit('loginFailure', 'The username is being used.');
             return;
         }
-
-        // Verify timestamp (within 5 minutes?)
-        var timestamp = data.oauth_timestamp;
-
-        if (!timestamp) {
-            // TODO: No timestamp!!!
-            // return;
-        }
-
-        var timestampDifference = Math.abs(timestamp - (Date.now() / 1000));
-
-        // TODO: 5 minutes max timestamp difference
-        // if (timestampDifference > (5 * 60)) {
-        //     // TODO: Message too old
-        //     return;
-        // }
-
-        // TODO: Verify signature on whole message
 
         // TODO: Need to contact database to confirm user is recognised?
         // TODO: Do we need to do this? Can't we just assume that people coming through LTI with verified messages are valid users?
@@ -286,7 +285,7 @@ function afterDbLoad() {
 
         // Determine if person has elevated permissions
         var hasElevatedPermissions = false;
-        var roles = data.roles.toLowerCase().split(",");
+        var roles = ltiObject.data.roles.toLowerCase().split(",");
 
         if (roles.indexOf("instructor") > -1 ||
             roles.indexOf("mentor") > -1 ||

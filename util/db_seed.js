@@ -3,7 +3,7 @@
  */
 
 var conf = require('../config/conf.json');
-var db = require('../controllers/database.js');
+var db = require('../build/controllers/database.js');
 
 function addNextUser(userData, count) {
   console.log("Adding user '" + userData[count].username + "'");

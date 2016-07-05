@@ -4,7 +4,7 @@
  */
 
 var assert = require('chai').assert;
-var db = require('../controllers/database');
+var db = require('../build/controllers/database');
 var util = require('../helpers/util.js');
 
 describe('Utility', function() {
