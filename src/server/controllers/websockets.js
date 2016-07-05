@@ -7,16 +7,6 @@ var db_wrapper = require('./database.js');
 var _LTI = require("./LTI");
 var LTIProcessor = _LTI.LTIProcessor;
 
-// TODO: To be split off into config file?
-var LTISigningInfo = {
-    method: "POST",
-    url: "https://mc-stg.uqcloud.net/lti.php",
-    consumer: {
-        key: "moocchat.uqcloud.net",
-        secret: "q3npRzgGi7yQRbcK73lw"
-    }
-};
-
 var Client = require('../models/client');
 
 var DiscussionRoom = require('../models/discussionRoom');
@@ -74,8 +64,9 @@ function afterDbLoad() {
 
     var allSessions = new SessionManager();
     
-    var ltiProcessor = new LTIProcessor(LTISigningInfo);
-    // ltiProcessor.setTestMode(true);
+    // LTI processor for incoming logins
+    var ltiProcessor = new LTIProcessor(conf.lti.signingInfo);
+    ltiProcessor.setTestMode(conf.lti.testMode);
 
     // Queue for instructors/tutors on standby
     var backupClientQueue = new BackupClientQueue();

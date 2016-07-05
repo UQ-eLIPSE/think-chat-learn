@@ -6,6 +6,8 @@ class NonceStore {
     private lastSaveTimestamp: number;
     private noncePeriodSeconds: number;
 
+    private lastCleanTime: number = 0;
+
     constructor(noncePeriodSeconds: number = 600) {
         this.noncePeriodSeconds = noncePeriodSeconds;
     }
@@ -15,6 +17,11 @@ class NonceStore {
     }
 
     public clean() {
+        // Don't clean too frequently (roughly every ~this.noncePeriodSeconds)
+        if (this.lastCleanTime > this.oldestTimestampToKeep) {
+            return;
+        }
+
         let storedNonces = Object.keys(this.nonceToTimestamp);
         let oldestTimestampToKeep = this.oldestTimestampToKeep;
 
@@ -23,16 +30,15 @@ class NonceStore {
                 delete this.nonceToTimestamp[nonce];
             }
         });
+
+        this.lastCleanTime = Date.now();
     }
 
     public verifyAndStore(nonce: string) {
         let storedNonces = Object.keys(this.nonceToTimestamp);
         let oldestTimestampToKeep = this.oldestTimestampToKeep;
 
-        // Clean if we're starting to collect old timestamps
-        if (this.lastSaveTimestamp < oldestTimestampToKeep) {
-            this.clean();
-        }
+        this.clean();
 
         // Nonce not found
         if (storedNonces.indexOf(nonce) < 0) {
@@ -45,7 +51,7 @@ class NonceStore {
             return false;
         }
 
-        // Nonce found + not replayed
+        // Nonce found + not replayed within active timeframe
         this.store(nonce);
         return true;
     }
@@ -119,7 +125,6 @@ interface ILTISignatureVerifyInfo {
         secret: string;
     };
     token?: {
-        // TODO:
         secret?: string;
     }
 }
