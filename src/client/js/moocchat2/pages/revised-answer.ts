@@ -11,11 +11,14 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
         let section = session.sectionManager.getSection("revised-answer");
 
         function submitRevisedAnswer(answer: number, justification: string) {
+            session.answers.revised.answer = answer;
+            session.answers.revised.justification = justification;
+
             session.socket.emit(WebsocketEvents.OUTBOUND.REVISED_ANSWER_SUBMISSION, {
                 sessionId: session.sessionId,
                 questionNumber: session.quiz.questionNumber,
-                answer: answer,
-                justification: justification,
+                answer: session.answers.revised.answer,
+                justification: session.answers.revised.justification,
 
                 screenName: "",         // Not used
                 quizRoomID: -1,         // Not used

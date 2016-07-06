@@ -476,9 +476,7 @@ button.negative {
 
 #answer-block {
     margin-top: 1rem;
-}
 
-#answer-block {
     background: #eee;
     border: 0.05rem solid #2f6890;
 
@@ -508,6 +506,7 @@ button.negative {
 
 #answers li:hover {
     background: #eee;
+    cursor: pointer;
 }
 
 #answers li::before, #chat-answers li::before {
@@ -550,7 +549,8 @@ button.negative {
 }
 
 #answers li.selected, #chat-answers li.selected {
-    background: #ddffdd;
+    background: $uq-colour-B5;
+    color: fg-on-bg($uq-colour-B5);
 }
 
 #justification {
@@ -561,7 +561,7 @@ button.negative {
 
 #justification textarea {
     width: 100%;
-    height: 70%;
+    height: 10em;
     display: block;
     resize: vertical;
     overflow: auto;
@@ -789,4 +789,24 @@ button.negative {
     background: #eee;
     border: 0.05rem solid #2f6890;
     padding: 1.5rem 2rem;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/*** Narrower width ***/
+@media (max-width: 70rem) {
+    #answers,
+    #justification {
+        display: block;
+        width: auto;
+    }
 }

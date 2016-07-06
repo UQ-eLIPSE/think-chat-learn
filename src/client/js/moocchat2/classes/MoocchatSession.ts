@@ -7,6 +7,7 @@ import {WebsocketManager} from "./Websockets";
 import {MoocchatAnalytics, MoocchatAnalyticsCore} from "./MoocchatAnalytics";
 import {MoocchatUser} from "./MoocchatUser";
 import {MoocchatQuiz} from "./MoocchatQuiz";
+import {MoocchatAnswerContainer} from "./MoocchatAnswerContainer";
 
 /**
  * MOOCchat
@@ -26,6 +27,7 @@ export class MoocchatSession<StateTypeEnum> {
 
     public user: MoocchatUser;
     public socket: WebsocketManager;
+    public answers: MoocchatAnswerContainer;
 
     public sessionId: string;
 
@@ -34,6 +36,8 @@ export class MoocchatSession<StateTypeEnum> {
         this._pageManager = new PageManager(this._eventManager, $content);
         this._sectionManager = new TaskSectionManager(this._eventManager, $taskSections);
         this._stateMachine = new StateFlow<StateTypeEnum>();
+        
+        this.answers = new MoocchatAnswerContainer();
 
         if (turnOnAnalytics) {
             this._analytics = new MoocchatAnalytics(this);
@@ -138,6 +142,13 @@ export class MoocchatSession<StateTypeEnum> {
         }
 
         return this;
+    }
+
+    /**
+     * Resets the answer container.
+     */
+    public resetAnswers() {
+        this.answers.reset();
     }
 
     public get quiz() {

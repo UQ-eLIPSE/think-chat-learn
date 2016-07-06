@@ -27,10 +27,6 @@ export class PageManager {
     constructor(eventBox: EventBox, $contentElem: JQuery) {
         this.$contentElem = $contentElem;
         this.eventBox = eventBox;
-
-        this.$contentElem.on("click", "button, input[type=button]", (e) => {
-            let $elem = $(e.currentTarget);
-        });
     }
 
     /**

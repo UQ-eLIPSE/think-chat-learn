@@ -11,11 +11,14 @@ export let InitialAnswerPageFunc: IPageFunc<STATE> =
         let section = session.sectionManager.getSection("initial-answer");
 
         function submitInitialAnswer(answer: number, justification: string) {
+            session.answers.initial.answer = answer;
+            session.answers.initial.justification = justification;
+
             session.socket.emit(WebsocketEvents.OUTBOUND.INITIAL_ANSWER_SUBMISSION, {
                 sessionId: session.sessionId,
                 questionId: session.quiz.questionNumber,
-                answer: answer,
-                justification: justification
+                answer: session.answers.initial.answer,
+                justification: session.answers.initial.justification
             });
         }
 
