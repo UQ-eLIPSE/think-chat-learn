@@ -13,6 +13,21 @@
         postData = {};
     }
 
+
+    // Offer backup client to instructor etc.
+    var offerBackupClient = false;
+
+    if (postData.roles) {
+        var roles = postData.roles.toLowerCase().split(",");
+
+        if (roles.indexOf("instructor") > -1 ||
+            roles.indexOf("mentor") > -1 ||
+            roles.indexOf("teachingassistant") > -1 ||
+            roles.indexOf("administrator") > -1) {
+            offerBackupClient = true;
+        }
+    }
+
     %>
     <form action="/" method="POST">
         <%
@@ -25,9 +40,17 @@
         <%
         });
         %>
+
+        <% if (offerBackupClient) { %>
+        <h1>MOOCchat</h1>
+        <p><input type="submit" value="Launch standard MOOCchat (student)" formaction="/"></p>
+        <p><input type="submit" value="Launch backup queue MOOCchat (tutor/instructor)" formaction="/backup-client"> (IE10+ or latest browsers only)</p>
+    </form>
+        <% } else { %>
         <input type="submit" value="Click here to continue">
     </form>
     <script>document.forms[0].submit();</script>
+        <% } %>
 </body>
 
 </html>
