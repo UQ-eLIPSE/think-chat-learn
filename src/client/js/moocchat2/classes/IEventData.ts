@@ -78,3 +78,7 @@ export interface IEventData_BackupClientQueueUpdate {
         username: string;
     }[];
 }
+
+export interface IEventData_SessionAvailableStatus {
+    available: boolean;
+}

@@ -44,7 +44,7 @@ $mc-sidebar-padding-lr: 2rem;
 
     background: $reference-colour;
     border-color: darken($reference-colour, 10%);
-    border-width: 0 0 0.1em 0;
+    border-width: 0 0 2px 0;
     border-style: solid;
 
     color: fg-on-bg($reference-colour);
@@ -63,8 +63,8 @@ $mc-sidebar-padding-lr: 2rem;
 
 @mixin button-active($std-bg-colour) {
     background: darken($std-bg-colour, 5%);
-    border-bottom-width: 0.05em;
-    border-top-width: 0.05em;
+    border-bottom-width: 1px;
+    border-top-width: 1px;
 
     outline: none;
 }

@@ -3,22 +3,10 @@
     "activeQuestionGroup": 0,
     "database": "localhost/moocchatDB",
     "collectionPrefix": "uq_",
-    "numTask": 1,
     "ssl": 0,
     "key": "/etc/pki/tls/private/persimmon.key",
     "cert": "/etc/pki/tls/certs/persimmon.pem",
-    "expConditions": {
-        "discussion": [
-            "moocchat-discussion-high"
-        ]
-    },
-    "casesToSkip": [],
     "fixedQuestionNumber": 1,
-    "questionNumberList": [
-        1
-    ],
-    "questionNumberToSkip": [],
-    "allowRepeat": 1,
     "lti": {
         "testMode": false,
         "signingInfo": {

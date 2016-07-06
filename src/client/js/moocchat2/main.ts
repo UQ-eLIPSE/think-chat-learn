@@ -3,7 +3,7 @@ import * as $ from "jquery";
 import {Utils} from "./classes/Utils";
 
 import {TaskSectionDefinition} from "./classes/TaskSectionManager";
-import {WebsocketManager} from "./classes/Websockets";
+import {WebsocketEvents, WebsocketManager} from "./classes/Websockets";
 
 import {MoocchatSession} from "./classes/MoocchatSession";
 import {MoocchatAnalytics} from "./classes/MoocchatAnalytics";
@@ -20,6 +20,7 @@ import {RevisedAnswerPageFunc} from "./pages/revised-answer";
 import {SurveyPageFunc} from "./pages/survey";
 
 import {ILTIBasicLaunchData} from "./classes/ILTIBasicLaunchData";
+import {IEventData_SessionAvailableStatus} from "./classes/IEventData";
 
 declare const _LTI_BASIC_LAUNCH_DATA: ILTIBasicLaunchData;
 
@@ -76,6 +77,28 @@ $(() => {
     let surveyPage = SurveyPageFunc(session);
 
     session.stateMachine.registerAll([
+        {   // Startup
+            state: STATE.STARTUP,
+            onEnter: () => {
+                if (typeof _LTI_BASIC_LAUNCH_DATA === "undefined") {
+                    // No LTI data detected
+                    session.stateMachine.goTo(STATE.NO_LTI_DATA);
+                    session.analytics.trackEvent("MOOCCHAT", "NO_LTI_DATA");
+                } else {
+                    session.socket.emit(WebsocketEvents.OUTBOUND.SESSION_AVAILABLE_CHECK);
+                    session.socket.once(WebsocketEvents.INBOUND.SESSION_AVAILABLE_STATUS, (data: IEventData_SessionAvailableStatus) => {
+                        if (data.available) {
+                            // $courseName.text(_LTI_BASIC_LAUNCH_DATA.lis_course_section_sourcedid.split("_")[0]);
+                            $courseName.text("ENGG1200");
+                            session.stateMachine.goTo(STATE.LOGIN);
+                            session.analytics.trackEvent("MOOCCHAT", "START");
+                        } else {
+                            session.stateMachine.goTo(STATE.SESSION_NOT_AVAILABLE);
+                        }
+                    });
+                }
+            }
+        },
         {   // No LTI data
             state: STATE.NO_LTI_DATA,
             onEnter: () => {
@@ -83,7 +106,7 @@ $(() => {
             }
         },
         {
-            state: STATE.STARTUP_LOGIN,
+            state: STATE.LOGIN,
             onEnter: () => {
                 let user = new MoocchatUser(session.eventManager, _LTI_BASIC_LAUNCH_DATA);
 
@@ -116,6 +139,16 @@ $(() => {
             onEnter: (data) => {
                 session.pageManager.loadPage("invalid-login", (page$) => {
                     page$("#reason").text(data.reason);
+                });
+            }
+        },
+        {   // Session not available
+            state: STATE.SESSION_NOT_AVAILABLE,
+            onEnter: () => {
+                session.pageManager.loadPage("session-not-available", (page$) => {
+                    page$("#go-to-return-url").on("click", () => {
+                        window.top.location.href = _LTI_BASIC_LAUNCH_DATA.launch_presentation_return_url;
+                    });
                 });
             }
         },
@@ -158,15 +191,6 @@ $(() => {
     ]);
 
     // Start the state machine
-    if (typeof _LTI_BASIC_LAUNCH_DATA === "undefined") {
-        // No LTI data detected
-        session.stateMachine.goTo(STATE.NO_LTI_DATA);
-        session.analytics.trackEvent("MOOCCHAT", "NO_LTI_DATA");
-    } else {
-        // $courseName.text(_LTI_BASIC_LAUNCH_DATA.lis_course_section_sourcedid.split("_")[0]);
-        $courseName.text("ENGG1200");
-        session.stateMachine.goTo(STATE.STARTUP_LOGIN);
-        session.analytics.trackEvent("MOOCCHAT", "START");
-    }
+    session.stateMachine.goTo(STATE.STARTUP);
 
 });
