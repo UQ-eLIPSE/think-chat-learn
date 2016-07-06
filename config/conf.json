@@ -1,6 +1,5 @@
 {
     "portNum": 8080,
-    "groupSize": 3,
     "activeQuestionGroup": 0,
     "database": "localhost/moocchatDB",
     "collectionPrefix": "uq_",
@@ -30,5 +29,15 @@
                 "secret": "q3npRzgGi7yQRbcK73lw"
             }
         }
+    },
+    "chat": {
+        "groups": {
+            "desiredSize": 3,
+            "formationIntervalMs": 1000,
+            "formationTimeoutMs": 120000
+        }
+    },
+    "backupClient": {
+        "callConfirmTimeoutMs": 15000
     }
 }

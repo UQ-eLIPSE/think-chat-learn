@@ -6,12 +6,10 @@
 
 "use strict";
 
-var io = global.io;
-
-var Client = require("./client");
+var conf = global.conf;
 
 var BackupClientQueue = function() {
-    this.maxOutTrayWaitTime = 15 * 1000;     // TODO: 15 seconds for now
+    this.maxOutTrayWaitTime = conf.backupClient.callConfirmTimeoutMs;
 
     this.id = require('crypto').randomBytes(16).toString('hex');
     this.queue = [];

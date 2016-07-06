@@ -46,7 +46,7 @@ db_wrapper.question.read({ questionGroup: conf.activeQuestionGroup },
             "\ttotal number of questions in DB: %d\n" +
             "\tactive question group: %d\n",
             conf.portNum,
-            conf.groupSize,
+            conf.chat.groups.desiredSize,
             dbResults.length,
             conf.activeQuestionGroup);
 
@@ -142,7 +142,7 @@ function afterDbLoad() {
     // Recurring task
     // TODO: Have a library/package handle this task in a different thread?    
     var chatGroupFormationLoop = (function() {
-        var timeBetweenChecks = 1000;  // TODO: 1 second for now
+        var timeBetweenChecks = conf.chat.groups.formationIntervalMs;
         var timeoutHandle;
 
 

@@ -1,6 +1,5 @@
 // TODO: Replace these with the global configuration
 var CLIENT_STATE_IDLE = 100;
-var NUM_CLIENTS_PER_QUIZ_ROOM = 3;
 
 function Client(id, name, fir_c, fir_time,
                 fin_c, fin_time, sg_q, sg_qt, qna, qnaT, qi) {
@@ -32,7 +31,6 @@ function Client(id, name, fir_c, fir_time,
   this.evalJustification = "";
   this.conditionAssigned = -1;
   this.grouped = false;
-  this.groupSize = NUM_CLIENTS_PER_QUIZ_ROOM;
   
   /** Holds reference to the active socket in use */
   this.socket;

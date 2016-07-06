@@ -45,8 +45,8 @@ ClientAnswerWrapper.prototype.timeAlive = function() {
  * @param {Quiz} quiz
  */
 var ClientAnswerPool = function(quiz) {
-    this.desiredGroupSize = conf.groupSize;
-    this.desiredMaxWaitTime = 1 * 60 * 1000;    // TODO: 1 minute for now
+    this.desiredGroupSize = conf.chat.groups.desiredSize;
+    this.desiredMaxWaitTime = conf.chat.groups.formationTimeoutMs;
 
     this.quiz = quiz;
 

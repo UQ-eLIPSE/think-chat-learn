@@ -123,7 +123,7 @@ ChatGroup.prototype.numberOfClientsQueuedToQuit = function() {
  * @return {string}
  */
 ChatGroup.prototype.getScreenName = function(client) {
-    return "Student " + (this.getClientIndex(client) + 1);    // TODO: Screen name needs review
+    return "Student " + (this.getClientIndex(client) + 1);
 }
 
 /**
