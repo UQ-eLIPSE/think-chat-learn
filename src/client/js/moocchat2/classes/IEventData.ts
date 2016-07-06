@@ -55,6 +55,17 @@ export interface IEventData_ChatGroupMessageReceived {
     timestamp: number;
 }
 
+/** chatGroupQuitChange */
+export interface IEventData_ChatGroupQuitChange {
+    groupId: string;
+    groupSize: number;
+    quitQueueSize: number;
+
+    screenName: string;
+    clientIndex: number;
+    quitStatus: boolean;
+}
+
 /* backupClientEnterQueueState */
 export type IEventData_BackupClientEnterQueueState = IEventData_GenericSuccessState;
 

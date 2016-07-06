@@ -84,6 +84,7 @@ ChatGroup.prototype.broadcastQuitChange = function(client, quitStatus) {
         quitQueueSize: this.numberOfClientsQueuedToQuit(),
 
         screenName: this.getScreenName(client),
+        clientIndex: this.getClientIndex(client),
         quitStatus: quitStatus
     });
 }
@@ -94,9 +95,8 @@ ChatGroup.prototype.broadcastQuitChange = function(client, quitStatus) {
 ChatGroup.prototype.queueClientToQuit = function(client) {
     if (this.clientsQueuedToQuit.indexOf(client) < 0) {
         this.clientsQueuedToQuit.push(client);
+        this.broadcastQuitChange(client, true);
     }
-    
-    this.broadcastQuitChange(client, true);
 }
 
 /**
@@ -106,9 +106,8 @@ ChatGroup.prototype.unqueueClientToQuit = function(client) {
     var clientIndex = this.clientsQueuedToQuit.indexOf(client);
     if (clientIndex > -1) {
         this.clientsQueuedToQuit.splice(clientIndex, 1);
+        this.broadcastQuitChange(client, false);
     }
-
-    this.broadcastQuitChange(client, false);
 }
 
 /**

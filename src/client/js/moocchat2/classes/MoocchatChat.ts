@@ -1,7 +1,7 @@
 import * as $ from "jquery";
 
 import {MoocchatSession} from "./MoocchatSession";
-import {IEventData_ChatGroupFormed, IEventData_ChatGroupMessageReceived} from "./IEventData";
+import {IEventData_ChatGroupFormed, IEventData_ChatGroupMessageReceived, IEventData_ChatGroupQuitChange} from "./IEventData";
 
 import {WebsocketEvents} from "./Websockets";
 
@@ -20,6 +20,7 @@ export class MoocchatChat {
     private $chatWindow: JQuery;
 
     private receiveMessageCallback: Function;
+    private receiveQuitStatusChangeCallback: Function;
 
     /**
      * @param {MoocchatSession} session MoocchatSession object for the current user
@@ -42,7 +43,11 @@ export class MoocchatChat {
     public terminate() {
         this.detachReceiveMessageHandler();
 
-        // TODO: Notify server
+        this.session.socket.emit(WebsocketEvents.OUTBOUND.CHAT_GROUP_QUIT_STATUS_CHANGE, {
+            groupId: this.groupData.groupId,
+            sessionId: this.session.sessionId,
+            quitStatus: true    // Indicate we are quitting
+        });
     }
 
     /**
@@ -103,11 +108,26 @@ export class MoocchatChat {
     }
 
     /**
+     * Handler for chat member quit updates.
+     * 
+     * @param {IEventData_ChatGroupQuitChange} data
+     */
+    private receiveQuitStatusChange(data: IEventData_ChatGroupQuitChange) {
+        if (data.quitStatus) {
+            let clientId = data.clientIndex + 1;
+            this.displaySystemMessage(`Person #${clientId} has quit this chat session.`)
+        }
+    }
+
+    /**
      * Attaches the incoming message event handler.
      */
     private attachReceiveMessageHandler() {
         this.receiveMessageCallback = this.receiveMessage.bind(this);
+        this.receiveQuitStatusChangeCallback = this.receiveQuitStatusChange.bind(this);
+
         this.session.socket.on(WebsocketEvents.INBOUND.CHAT_GROUP_RECEIVE_MESSAGE, this.receiveMessageCallback);
+        this.session.socket.on(WebsocketEvents.INBOUND.CHAT_GROUP_QUIT_STATUS_CHANGE, this.receiveQuitStatusChangeCallback);
     }
 
     /**
@@ -115,5 +135,6 @@ export class MoocchatChat {
      */
     private detachReceiveMessageHandler() {
         this.session.socket.off(WebsocketEvents.INBOUND.CHAT_GROUP_RECEIVE_MESSAGE, this.receiveMessageCallback);
+        this.session.socket.off(WebsocketEvents.INBOUND.CHAT_GROUP_QUIT_STATUS_CHANGE, this.receiveQuitStatusChangeCallback);
     }
 }
