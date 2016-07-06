@@ -220,6 +220,13 @@ $(() => {
 
                     function onClientPoolCountUpdate(data: IEventData_ClientPoolCountUpdate) {
                         $numOfClientsInPool.text(data.numberOfClients);
+
+                        // Play tone if fewer than 2 remain to get people's attention
+                        if (data.numberOfClients < 2) {
+                            // https://notificationsounds.com/message-tones/mission-accomplished-252
+                            var notificationTone = new Audio("./mp3/mission-accomplished.mp3");
+                            notificationTone.play();
+                        }
                     }
 
                     let countdownIntervalHandle: number;
@@ -307,16 +314,20 @@ $(() => {
                 let section = session.sectionManager.getSection("backup-client-logout");
                 session.pageManager.loadPage("backup-client-ejected", (page$) => {
                     section.setActive();
+                    
                     page$("#login-again").on("click", () => {
                         session.socket.open();
                         session.stateMachine.goTo(STATE.LOGIN);
-                        // TODO: There is an issue with this as .setQuiz() won't work as second time as the session object needs to be reinstantiated
                     });
 
                     page$("#go-to-return-url").on("click", () => {
                         window.top.location.href = _LTI_BASIC_LAUNCH_DATA.launch_presentation_return_url;
                     });
                 });
+            },
+            onLeave: () => {
+                let section = session.sectionManager.getSection("backup-client-logout");
+                section.unsetActive();
             }
         },
         {   // Logout

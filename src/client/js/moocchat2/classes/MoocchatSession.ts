@@ -66,17 +66,13 @@ export class MoocchatSession<StateTypeEnum> {
 
     /**
      * Sets the session quiz/question.
-     * Only settable once; further sets are ignored.
      * 
      * @param {MoocchatQuiz} quiz
      * 
      * @return {this}
      */
     public setQuiz(quiz: MoocchatQuiz) {
-        if (!this._quiz) {
-            this._quiz = quiz;
-        }
-
+        this._quiz = quiz;
         return this;
     }
 
