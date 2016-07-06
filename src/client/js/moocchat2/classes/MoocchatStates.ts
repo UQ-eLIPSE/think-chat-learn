@@ -5,10 +5,12 @@
  * All the states used for the state machine
  */
 export enum MoocchatState {
-    STARTUP_LOGIN,
+    STARTUP,
+    LOGIN,
 
     NO_LTI_DATA,
     INVALID_LOGIN,
+    SESSION_NOT_AVAILABLE,
 
     WELCOME,
     INITIAL_ANSWER,

@@ -64,6 +64,21 @@ $(() => {
     let discussionPage = DiscussionPageFunc(session);
 
     session.stateMachine.registerAll([
+        {   // Startup
+            state: STATE.STARTUP,
+            onEnter: () => {
+                if (typeof _LTI_BASIC_LAUNCH_DATA === "undefined") {
+                    // No LTI data detected
+                    session.stateMachine.goTo(STATE.NO_LTI_DATA);
+                    session.analytics.trackEvent("MOOCCHAT", "NO_LTI_DATA");
+                } else {
+                    // $courseName.text(_LTI_BASIC_LAUNCH_DATA.lis_course_section_sourcedid.split("_")[0]);
+                    $courseName.text("ENGG1200 Backup Queue");
+                    session.stateMachine.goTo(STATE.LOGIN);
+                    session.analytics.trackEvent("MOOCCHAT", "START");
+                }
+            }
+        },
         {   // No LTI data
             state: STATE.NO_LTI_DATA,
             onEnter: () => {
@@ -71,7 +86,7 @@ $(() => {
             }
         },
         {
-            state: STATE.STARTUP_LOGIN,
+            state: STATE.LOGIN,
             onEnter: () => {
                 let user = new MoocchatUser(session.eventManager, _LTI_BASIC_LAUNCH_DATA);
 
@@ -294,7 +309,7 @@ $(() => {
                     section.setActive();
                     page$("#login-again").on("click", () => {
                         session.socket.open();
-                        session.stateMachine.goTo(STATE.STARTUP_LOGIN);
+                        session.stateMachine.goTo(STATE.LOGIN);
                         // TODO: There is an issue with this as .setQuiz() won't work as second time as the session object needs to be reinstantiated
                     });
 
@@ -322,15 +337,6 @@ $(() => {
     ]);
 
     // Start the state machine
-    if (typeof _LTI_BASIC_LAUNCH_DATA === "undefined") {
-        // No LTI data detected
-        session.stateMachine.goTo(STATE.NO_LTI_DATA);
-        session.analytics.trackEvent("MOOCCHAT", "NO_LTI_DATA");
-    } else {
-        // $courseName.text(_LTI_BASIC_LAUNCH_DATA.lis_course_section_sourcedid.split("_")[0]);
-        $courseName.text("ENGG1200 Backup Queue");
-        session.stateMachine.goTo(STATE.STARTUP_LOGIN);
-        session.analytics.trackEvent("MOOCCHAT", "START");
-    }
+    session.stateMachine.goTo(STATE.STARTUP);
 
 });

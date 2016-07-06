@@ -2,6 +2,8 @@ var app = global.app;
 var conf = global.conf;
 var io = global.io;
 
+var sessionData = require('../../config/sessions.json');
+
 var db_wrapper = require('./database.js');
 
 var _LTI = require("./LTI");
@@ -63,7 +65,7 @@ function afterDbLoad() {
     var quizBeingUsed = quizSet[conf.fixedQuestionNumber];
 
     var allSessions = new SessionManager();
-    
+
     // LTI processor for incoming logins
     var ltiProcessor = new LTIProcessor(conf.lti.signingInfo);
     ltiProcessor.setTestMode(conf.lti.testMode);
@@ -120,6 +122,43 @@ function afterDbLoad() {
     }
 
 
+
+    // ===== Sessions =====
+
+    /**
+     * @return {boolean}
+     */
+    function isSessionAvailable() {
+        var timezone = sessionData.timezone;
+        var sessions = sessionData.sessions;
+
+        var now = new Date();
+
+        for (var i = 0; i < sessions.length; ++i) {
+            var session = sessions[i];
+
+            var endDate = new Date(session.end.date + "T" + session.end.time + timezone);
+
+            // Skip this one if this session already concluded
+            if (endDate < now) {
+                continue;
+            }
+
+            var startDate = new Date(session.start.date + "T" + session.start.time + timezone);
+
+            if (startDate <= now && endDate >= now) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    function handleSessionAvailableCheck(data, socket) {
+        socket.emit("sessionAvailableStatus", {
+            available: isSessionAvailable()
+        });
+    }
 
     // ===== Chat group =====
 
@@ -634,6 +673,9 @@ function afterDbLoad() {
         socket.on("answerSubmissionInitial", handleAnswerSubmissionInitial);
         socket.on("probingQuestionFinalAnswerSubmission", saveProbingQuestionFinalAnswer);
         socket.on('submitSurvey', saveSurvey);
+
+        /* Sessions */
+        socket.on("sessionAvailableCheck", function(data) { handleSessionAvailableCheck(data, socket) });
 
         /* Log ins */
         socket.on("loginLti", function(data) { handleLoginLti(data, socket); });

@@ -2,6 +2,8 @@ import * as socket from "socket.io-client";
 
 export const WebsocketEvents = {
     INBOUND: {
+        SESSION_AVAILABLE_STATUS: "sessionAvailableStatus",
+
         LOGIN_SUCCESS: "loginSuccess",
         LOGIN_FAILURE: "loginFailure",
         LOGIN_USER_ALREADY_EXISTS: "loginExistingUser",
@@ -22,6 +24,8 @@ export const WebsocketEvents = {
     },
 
     OUTBOUND: {
+        SESSION_AVAILABLE_CHECK: "sessionAvailableCheck",
+
         LOGIN_REQUEST: "login_req",
         LOGIN_LTI_REQUEST: "loginLti",
         
