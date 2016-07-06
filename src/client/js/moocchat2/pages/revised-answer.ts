@@ -25,24 +25,37 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
             session.stateMachine.goTo(STATE.SURVEY);
         }
 
-        // Force answer when timer runs out
-        section.attachTimerCompleted(() => {
-            // TODO: Use whatever is on the page rather than fixed values
-            submitRevisedAnswer(0, "Did not answer");
-        });
-
         return {
             onEnter: () => {
                 session.pageManager.loadPage("revised-answer", (page$) => {
                     section.setActive();
                     section.startTimer();
 
+                    let $justification = page$("#answer-justification");
+
+                    // Force answer when timer runs out
+                    section.attachTimerCompleted(() => {
+                        let justification = $.trim($justification.val());
+                        let answer = page$("#answers > ul > li.selected").index();
+
+                        if (justification.length === 0) {
+                            justification = "[NO JUSTIFICATION]";
+                        }
+
+                        if (answer < 0) {
+                            justification = "[DID NOT ANSWER]";
+                            answer = 0;
+                        }
+
+                        submitRevisedAnswer(answer, justification);
+                    });
+
                     page$("#submit-answer").on("click", () => {
-                        let justification = $.trim(page$("#answer-justification").val());
+                        let justification = $.trim($justification.val());
                         let answer = page$("#answers > ul > li.selected").index();
 
                         if (justification.length === 0 || answer < 0) {
-                            alert("You must provide an answer.");
+                            alert("You must provide an answer and justification.");
                             return;
                         }
 

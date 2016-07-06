@@ -19,12 +19,6 @@ export let InitialAnswerPageFunc: IPageFunc<STATE> =
             });
         }
 
-        // Force answer when timer runs out
-        section.attachTimerCompleted(() => {
-            // TODO: Use whatever is on the page rather than fixed values
-            submitInitialAnswer(0, "Did not answer");
-        });
-
         // Successful initial answer save
         session.socket.once(WebsocketEvents.INBOUND.INITIAL_ANSWER_SUBMISSION_SAVED, () => {
             session.stateMachine.goTo(STATE.AWAIT_GROUP_FORMATION);
@@ -36,12 +30,31 @@ export let InitialAnswerPageFunc: IPageFunc<STATE> =
                     section.setActive();
                     section.startTimer();
 
+                    let $justification = page$("#answer-justification");
+
+                    // Force answer when timer runs out
+                    section.attachTimerCompleted(() => {
+                        let justification = $.trim($justification.val());
+                        let answer = page$("#answers > ul > li.selected").index();
+
+                        if (justification.length === 0) {
+                            justification = "[NO JUSTIFICATION]";
+                        }
+
+                        if (answer < 0) {
+                            justification = "[DID NOT ANSWER]";
+                            answer = 0;
+                        }
+
+                        submitInitialAnswer(answer, justification);
+                    });
+
                     page$("#submit-answer").on("click", () => {
-                        let justification = $.trim(page$("#answer-justification").val());
+                        let justification = $.trim($justification.val());
                         let answer = page$("#answers > ul > li.selected").index();
 
                         if (justification.length === 0 || answer < 0) {
-                            alert("You must provide an answer.");
+                            alert("You must provide an answer and justification.");
                             return;
                         }
 
