@@ -53,10 +53,12 @@ app.use(bodyParser.urlencoded({
 app.use(express.static('public'));
 
 
-// LTI launcher page
-app.get("/lti-launch", function(req, res) {
-    res.render("lti-launch.ejs");
-});
+// LTI launcher page only available in test mode
+if (conf.lti && conf.lti.testMode) {
+    app.get("/lti-launch", function(req, res) {
+        res.render("lti-launch.ejs");
+    });
+}
 
 // LTI intermediary (for incoming requests from Blackboard)
 app.post("/lti.php", function(req, res) {
