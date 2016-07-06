@@ -4,6 +4,11 @@ interface IStateFlowState<StateEnumType> extends IStateTransition<StateEnumType>
     state: StateEnumType;
 }
 
+interface IStateFlowStateHistory<StateEnumType> {
+    entryTimestamp: number;
+    stateData: IStateFlowState<StateEnumType>;
+}
+
 /**
  * MOOCchat
  * StateFlow class module
@@ -12,7 +17,7 @@ interface IStateFlowState<StateEnumType> extends IStateTransition<StateEnumType>
  */
 export class StateFlow<StateEnumType> {
     private states: { [state: string]: IStateFlowState<StateEnumType> } = {};
-    private history: IStateFlowState<StateEnumType>[] = [];
+    private history: IStateFlowStateHistory<StateEnumType>[] = [];
 
     /**
      * Registers a state.
@@ -39,15 +44,16 @@ export class StateFlow<StateEnumType> {
      * @param {any} goToData Data to pass to the onLeave() function of the old state and onEnter() function of the new state
      */
     public goTo(newState: StateEnumType, goToData?: any) {
-        let oldStateData = this.getCurrentState();
+        let oldStateHistoryData = this.getCurrentStateHistoryData();
         var newStateData = this.getStateData(newState);
 
         let onLeaveData: any;
 
-        if (oldStateData) {
-            // TODO: record time spent in state 
+        if (oldStateHistoryData) {
+            // TODO: Time spent needs to be sent out as event?
+            let timeSpent = Date.now() - oldStateHistoryData.entryTimestamp;
 
-            let onLeave = oldStateData.onLeave;
+            let onLeave = oldStateHistoryData.stateData.onLeave;
 
             if (onLeave) {
                 onLeaveData = onLeave(goToData, newStateData.state);
@@ -63,7 +69,7 @@ export class StateFlow<StateEnumType> {
         let onEnter = newStateData.onEnter;
 
         if (onEnter) {
-            onEnter(goToData, onLeaveData, ((oldStateData) ? oldStateData.state : void 0));
+            onEnter(goToData, onLeaveData, ((oldStateHistoryData) ? oldStateHistoryData.stateData.state : void 0));
         }
     }
 
@@ -82,7 +88,10 @@ export class StateFlow<StateEnumType> {
      * @param {IStateFlowState} data
      */
     private setNewStateData(data: IStateFlowState<StateEnumType>) {
-        this.history.push(data);
+        this.history.push({
+            entryTimestamp: Date.now(),
+            stateData: data
+        });
     }
 
     /**
@@ -91,6 +100,21 @@ export class StateFlow<StateEnumType> {
      * @return {IStateFlowState}
      */
     private getCurrentState() {
+        let historyData = this.getCurrentStateHistoryData();
+        
+        if (!historyData) {
+            return;
+        }
+
+        return historyData.stateData;
+    }
+
+    /**
+     * Gets the history data for the current state.
+     * 
+     * @return {IStateFlowStateHistory}
+     */
+    private getCurrentStateHistoryData() {
         if (this.history.length === 0) {
             return;
         }

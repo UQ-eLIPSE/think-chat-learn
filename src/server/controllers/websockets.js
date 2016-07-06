@@ -483,7 +483,7 @@ function afterDbLoad() {
 
         var socket = client.getSocket();
 
-        // TODO: For some reason the last known answer is stored with the client...
+        // For some reason the last known answer is stored with the client...
         // Carried over from saveProbingQuestionAnswerHelper()
         client.probingQuestionAnswer = answer;
         client.probingQuestionAnswerTime = new Date().toISOString();
