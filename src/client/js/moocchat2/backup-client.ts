@@ -131,6 +131,7 @@ $(() => {
             state: STATE.BACKUP_CLIENT_ANSWER,
             onEnter: () => {
                 let section = session.sectionManager.getSection("backup-client-answer");
+                let maxJustificationLength = conf.answers.justification.maxLength;
 
                 session.socket.once(WebsocketEvents.INBOUND.BACKUP_CLIENT_ENTER_QUEUE_STATE, (data: IEventData_BackupClientEnterQueueState) => {
                     if (data.success) {
@@ -139,10 +140,13 @@ $(() => {
                 });
 
                 function submitAnswerAndJoinQueue(answer: number, justification: string) {
+                    session.answers.initial.answer = answer;
+                    session.answers.initial.justification = justification.substr(0, maxJustificationLength);
+
                     session.socket.emit(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_ANSWER_AND_JOIN_QUEUE, {
                         sessionId: session.sessionId,
-                        answer: answer,
-                        justification: justification
+                        answer: session.answers.initial.answer,
+                        justification: session.answers.initial.justification
                     });
                 }
 
@@ -150,20 +154,28 @@ $(() => {
                 session.pageManager.loadPage("initial-answer", (page$) => {
                     section.setActive();
 
-                    page$("#submit-answer").on("click", () => {
-                        let justification = $.trim(page$("#answer-justification").val());
+                    let $answers = page$("#answers");
+                    let $answersUL = page$("#answers > ul");
+                    let $justification = page$("#answer-justification");
+                    let $submitAnswer = page$("#submit-answer");
+                    let $charAvailable = page$("#char-available");
+
+                    $submitAnswer.on("click", () => {
+                        let justification = $.trim($justification.val());
                         let answer = page$("#answers > ul > li.selected").index();
 
                         if (justification.length === 0 || answer < 0) {
-                            alert("You must provide an answer.");
+                            alert("You must provide an answer and justification.");
+                            return;
+                        }
+
+                        if (justification.length > maxJustificationLength) {
+                            alert("Justification is too long. Reduce your justification length.");
                             return;
                         }
 
                         submitAnswerAndJoinQueue(answer, justification);
                     });
-
-
-                    let $answers = page$("#answers");
 
                     $answers.on("click", "li", function(e) {
                         e.preventDefault();
@@ -173,15 +185,24 @@ $(() => {
                         $(this).addClass("selected");
                     });
 
+                    $justification.on("change input", () => {
+                        let charRemaining = maxJustificationLength - $justification.val().length;
 
-                    let $answersUL = page$("#answers > ul");
+                        $charAvailable.text(charRemaining);
 
-                    let answerDOMs: JQuery[] = [];
+                        if (charRemaining < 0) {
+                            $charAvailable.addClass("invalid");
+                        } else {
+                            $charAvailable.removeClass("invalid");
+                        }
+                    }).trigger("input");
+
 
                     // Render question, choices
                     page$("#question-reading").html(session.quiz.questionReading);
                     page$("#question-statement").html(session.quiz.questionStatement);
 
+                    let answerDOMs: JQuery[] = [];
                     session.quiz.questionChoices.forEach((choice) => {
                         answerDOMs.push($("<li>").text(choice));
                     });
@@ -314,7 +335,7 @@ $(() => {
                 let section = session.sectionManager.getSection("backup-client-logout");
                 session.pageManager.loadPage("backup-client-ejected", (page$) => {
                     section.setActive();
-                    
+
                     page$("#login-again").on("click", () => {
                         session.socket.open();
                         session.stateMachine.goTo(STATE.LOGIN);

@@ -583,6 +583,20 @@ button.negative {
     color: red;
 }
 
+#question-content > h1:first-child,
+#question-content > h2:first-child,
+#question-content > h3:first-child,
+#answers > h1:first-child,
+#answers > h2:first-child,
+#answers > h3:first-child,
+#justification > h1:first-child,
+#justification > h2:first-child,
+#justification > h3:first-child {
+    margin-top: 0;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 0.5em;
+}
+
 /** Chat */
 
 #chat-question-answers-wrapper {
