@@ -15,7 +15,7 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
 
         function submitRevisedAnswer(answer: number, justification: string) {
             session.answers.revised.answer = answer;
-            session.answers.initial.justification = justification.substr(0, maxJustificationLength);
+            session.answers.revised.justification = justification.substr(0, maxJustificationLength);
 
             session.socket.emit(WebsocketEvents.OUTBOUND.REVISED_ANSWER_SUBMISSION, {
                 sessionId: session.sessionId,
