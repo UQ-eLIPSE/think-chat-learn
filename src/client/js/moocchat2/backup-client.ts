@@ -1,6 +1,6 @@
-import * as $ from "jquery";
+import {conf} from "./conf";
 
-import {Utils} from "./classes/Utils";
+import * as $ from "jquery";
 
 import {TaskSectionDefinition} from "./classes/TaskSectionManager";
 import {WebsocketManager, WebsocketEvents} from "./classes/Websockets";
@@ -53,7 +53,7 @@ $(() => {
         ["welcome", "Welcome"],
         ["backup-client-answer", "Provide Answer"],
         ["backup-client-wait", "Wait To Be Called"],
-        ["discussion", "Discussion", Utils.DateTime.secToMs(15 * 60)],
+        ["discussion", "Discussion", conf.timings.initialAnswerMs],
         ["backup-client-logout", "Log Out"]
     ];
 

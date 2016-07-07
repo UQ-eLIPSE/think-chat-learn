@@ -468,6 +468,8 @@ button.negative {
     padding: 1.2rem 2rem;
 
     border: 0.05rem solid #2f6890;
+
+    width: 100%;
 }
 
 #question-statement {
@@ -482,6 +484,8 @@ button.negative {
 
     display: table;
     position: relative;
+
+    width: 100%;
 }
 
 #answers {
@@ -569,6 +573,15 @@ button.negative {
     border: 0.05rem solid #2f6890;
 }
 
+#char-available {
+    display: inline-block;
+    margin-right: 1em;
+    color: #aaa;
+}
+
+#char-available.invalid {
+    color: red;
+}
 
 /** Chat */
 

@@ -1,3 +1,5 @@
+import {conf} from "../conf";
+
 import {Utils} from "./Utils";
 
 import {EventBox, EventBoxCallback} from "./EventBox";
@@ -206,21 +208,22 @@ export class TaskSection {
         }
 
         // Only update every 200ms
-        if (!this.lastUpdate || ms - this.lastUpdate > 200) {
+        const timerUpdateIntervalMs = 200;
+        if (!this.lastUpdate || ms - this.lastUpdate > timerUpdateIntervalMs) {
             this.updateTimerText();
             this.lastUpdate = ms;
 
             // Last 60 seconds = out of time state
-            if (!this.outOfTime && this.timeRemaining < 60 * 1000) {
+            if (!this.outOfTime && this.timeRemaining < conf.taskTimer.outOfTimeRemainingMs) {
                 this.setOutOfTime();
             }
 
             // Halt updating timer when completed
-            if (this.timeRemaining <= 200) {
+            if (this.timeRemaining <= timerUpdateIntervalMs) {
                 this.runTimerCompletionCallbacks();
                 
                 // Clear all timer callbacks (as timers are intended to be run once only)
-                this.detachTimerCompleted();
+                this.clearTimer();
 
                 return;     // This halts the update loop
             }

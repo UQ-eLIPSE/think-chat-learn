@@ -1,3 +1,5 @@
+import {conf} from "../conf";
+
 import * as $ from "jquery";
 
 import {IPageFunc} from "../classes/IPageFunc";
@@ -9,10 +11,11 @@ import {WebsocketEvents} from "../classes/Websockets";
 export let RevisedAnswerPageFunc: IPageFunc<STATE> =
     (session) => {
         let section = session.sectionManager.getSection("revised-answer");
+        let maxJustificationLength = conf.answers.justification.maxLength;
 
         function submitRevisedAnswer(answer: number, justification: string) {
             session.answers.revised.answer = answer;
-            session.answers.revised.justification = justification;
+            session.answers.initial.justification = justification.substr(0, maxJustificationLength);
 
             session.socket.emit(WebsocketEvents.OUTBOUND.REVISED_ANSWER_SUBMISSION, {
                 sessionId: session.sessionId,
@@ -34,7 +37,12 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
                     section.setActive();
                     section.startTimer();
 
+                    let $answers = page$("#answers");
+                    let $answersUL = page$("#answers > ul");
                     let $justification = page$("#answer-justification");
+                    let $submitAnswer = page$("#submit-answer");
+                    let $charAvailable = page$("#char-available");
+
 
                     // Force answer when timer runs out
                     section.attachTimerCompleted(() => {
@@ -53,7 +61,7 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
                         submitRevisedAnswer(answer, justification);
                     });
 
-                    page$("#submit-answer").on("click", () => {
+                    $submitAnswer.on("click", () => {
                         let justification = $.trim($justification.val());
                         let answer = page$("#answers > ul > li.selected").index();
 
@@ -62,11 +70,13 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
                             return;
                         }
 
+                        if (justification.length > maxJustificationLength) {
+                            alert("Justification is too long. Reduce your justification length.");
+                            return;
+                        }
+
                         submitRevisedAnswer(answer, justification);
                     });
-
-
-                    let $answers = page$("#answers");
 
                     $answers.on("click", "li", function(e) {
                         e.preventDefault();
@@ -76,15 +86,24 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
                         $(this).addClass("selected");
                     });
 
+                    $justification.on("change input", () => {
+                        let charRemaining = maxJustificationLength - $justification.val().length;
 
-                    let $answersUL = page$("#answers > ul");
+                        $charAvailable.text(charRemaining);
 
-                    let answerDOMs: JQuery[] = [];
+                        if (charRemaining < 0) {
+                            $charAvailable.addClass("invalid");
+                        } else {
+                            $charAvailable.removeClass("invalid");
+                        }
+                    }).trigger("input");
+
 
                     // Render question, choices
                     page$("#question-reading").html(session.quiz.questionReading);
                     page$("#question-statement").html(session.quiz.questionStatement);
 
+                    let answerDOMs: JQuery[] = [];
                     session.quiz.questionChoices.forEach((choice) => {
                         answerDOMs.push($("<li>").text(choice));
                     });
