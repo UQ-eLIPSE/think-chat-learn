@@ -515,6 +515,12 @@ button.negative {
     position: relative;
 }
 
+#answers.locked li,
+#answers.locked button {
+    background: #ddd;
+    color: inherit;
+}
+
 #answers li:hover,
 #answers button:hover {
     background: #eee;

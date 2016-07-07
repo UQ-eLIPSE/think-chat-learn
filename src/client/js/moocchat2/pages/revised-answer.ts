@@ -93,6 +93,7 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
                     $enableRevision.on("click", () => {
                         page$(".pre-edit-enable").hide();
                         page$(".post-edit-enable").show();
+                        $answers.removeClass("locked");
                         $justification.prop("disabled", false);
 
                         $answers.on("click", "button", function(e) {
@@ -125,6 +126,7 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
                     // Set pre-/post-edit-enable elements
                     $justification.prop("disabled", true);
                     page$(".post-edit-enable").hide();
+                    $answers.addClass("locked");
                 });
             },
             onLeave: () => {
