@@ -32,10 +32,15 @@ Code must now be compiled prior to running the server or serving the client.
 
 Where a clean of compiled code is needed, run `npm run clean`.
 
+## Logging in & bypassing LTI verification on dev/test machines
+Since MOOCchat now uses LTI for log ins, the LTI requests must be faked to initiate a MOOCchat session.
+To do this, LTI test mode must be enabled. This will enable a manual launch page and disables LTI verification checks (e.g. signatures).
+
+* Change `config/conf.json` -> `lti.testMode` to `true`.
+* Go to the URL `/lti-launch`. By default, you should submit via. "lti.php" which emulates what Blackboard would do, but you are also able to force trigger the standard or backup queue clients.
+
 ## Running tests
 To run the database tests, run `npm run db_test`, if the tests don't run make sure to run `npm install` to pull down the test runner dependencies.
 
 ## Important notes
-* PHP must be on your system path
 * Mongodb must be running before starting `npm start`
-* If the 'There are no sessions available' message is displayed, change the quiz times within `views/session_config.php` to the current time
