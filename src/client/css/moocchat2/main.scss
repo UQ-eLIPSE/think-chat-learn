@@ -582,6 +582,11 @@ button.negative {
     overflow: auto;
     background: #fff;
     border: 0.05rem solid #2f6890;
+
+    &:disabled {
+        background: #ddd;
+        color: inherit;
+    }
 }
 
 #char-available {
@@ -843,7 +848,8 @@ button.negative {
 /*** Narrower width ***/
 @media (max-width: 70rem) {
     #answers,
-    #justification {
+    #justification,
+    #chat-ui-wrapper > * {
         display: block;
         width: auto;
     }
