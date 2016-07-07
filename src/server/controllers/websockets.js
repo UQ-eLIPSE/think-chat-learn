@@ -332,34 +332,30 @@ function afterDbLoad() {
             hasElevatedPermissions = true;
         }
 
+        if (hasElevatedPermissions) {
+            session.setElevatedPermissions(true);
+        }
+
 
         function notifyClientOfLogin() {
             // Complete login by notifying client
             socket.emit('loginSuccess', {
                 sessionId: session.id,
                 username: user_id,
-                hasElevatedPermissions: hasElevatedPermissions,
+                hasElevatedPermissions: session.hasElevatedPermissions,
                 quiz: quizBeingUsed,
             });
         }
 
 
-        if (hasElevatedPermissions) {
-            // Sign in and notify immediately - no need to write log in to DB
-            session.setElevatedPermissions(true);
-            notifyClientOfLogin();
-            return;
-        }
-
-
-        // If not elevated permissions, then we assume to be student who needs to be tracked
-
         // Documents to be stored into DB
         var userLoginEntry = {
             username: client.username,
             password: "",
-            questionGroup: conf.activeQuestionGroup
-            // browserInformation: browserInformation
+            questionGroup: conf.activeQuestionGroup,
+            browserInformation: "",
+            timestamp: new Date().toISOString(),
+            hasElevatedPermissions: session.hasElevatedPermissions
         };
 
         var userQuizEntry = {
@@ -381,7 +377,8 @@ function afterDbLoad() {
             studentGeneratedQuestionTimestamps: [""],
             qnaSet: [new Array()],
             qnaSetTimestamps: [""],
-            quizIndex: 0
+            quizIndex: 0,
+            hasElevatedPermissions: session.hasElevatedPermissions
         };
 
         // Write to DB for sign in (creating both login and userquiz entries)
