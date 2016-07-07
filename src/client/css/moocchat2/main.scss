@@ -613,7 +613,13 @@ button.negative {
 #answers > h3:first-child,
 #justification > h1:first-child,
 #justification > h2:first-child,
-#justification > h3:first-child {
+#justification > h3:first-child,
+#chat-question > h1:first-child,
+#chat-question > h2:first-child,
+#chat-question > h3:first-child,
+#chat-answers > h1:first-child,
+#chat-answers > h2:first-child,
+#chat-answers > h3:first-child {
     margin-top: 0;
     border-bottom: 1px solid #ccc;
     padding-bottom: 0.5em;

@@ -96,15 +96,48 @@ export let DiscussionPageFunc: IPageFunc<STATE> =
                     page$("#question-reading").html(session.quiz.questionReading);
                     page$("#question-statement").html(session.quiz.questionStatement);
 
-                    session.quiz.questionChoices.forEach((choice) => {
-                        answerDOMs.push($("<li>").text(choice));
+                    // Go through each client's answers and add them into the answer choices
+                    let answerJustificationMap: { [id: number]: { clientIndex: number; justification: string; }[] } = {};
+
+                    data.groupAnswers.forEach((clientAnswer) => {
+                        let answer = clientAnswer.answer;
+                        let clientIndex = clientAnswer.clientIndex;
+                        let justification = clientAnswer.justification;
+
+                        if (!answerJustificationMap[answer]) {
+                            answerJustificationMap[answer] = [];
+                        }
+
+                        answerJustificationMap[answer].push({
+                            clientIndex: clientIndex,
+                            justification: justification
+                        });
+                    });
+
+                    session.quiz.questionChoices.forEach((choice, i) => {
+                        let $answerLI = $("<li>").text(choice);
+
+                        if (answerJustificationMap[i]) {
+                            let $clientAnswerBlockUL = $("<ul>");
+
+                            answerJustificationMap[i].forEach((clientJustification) => {
+                                $("<li>")
+                                    .attr("data-client-id", clientJustification.clientIndex + 1)
+                                    .text(clientJustification.justification)
+                                    .appendTo($clientAnswerBlockUL);
+                            });
+
+                            $clientAnswerBlockUL.appendTo($answerLI);
+                        }
+
+                        answerDOMs.push($answerLI);
                     });
 
                     $answersUL.append(answerDOMs);
 
                 });
             },
-            onLeave: () => {                
+            onLeave: () => {
                 section.unsetActive();
                 section.clearTimer();
                 section.hideTimer();
