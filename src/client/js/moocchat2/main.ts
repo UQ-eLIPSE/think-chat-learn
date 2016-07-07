@@ -1,6 +1,6 @@
-import * as $ from "jquery";
+import {conf} from "./conf";
 
-import {Utils} from "./classes/Utils";
+import * as $ from "jquery";
 
 import {TaskSectionDefinition} from "./classes/TaskSectionManager";
 import {WebsocketEvents, WebsocketManager} from "./classes/Websockets";
@@ -58,10 +58,10 @@ $(() => {
     let sectionDefinitions: TaskSectionDefinition[] = [
         // [id, name, milliseconds]
         ["welcome", "Welcome"],
-        ["initial-answer", "Initial Answer", Utils.DateTime.secToMs(15 * 60)],
+        ["initial-answer", "Initial Answer", conf.timings.initialAnswerMs],
         ["await-group-formation", "Forming Group"],
-        ["discussion", "Discussion", Utils.DateTime.secToMs(15 * 60)],
-        ["revised-answer", "Revised Answer", Utils.DateTime.secToMs(6 * 60)],
+        ["discussion", "Discussion", conf.timings.discussionMs],
+        ["revised-answer", "Revised Answer", conf.timings.revisedAnswerMs],
         ["survey", "Survey"],
         ["finish", "Finish"]
     ];

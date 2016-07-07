@@ -1,3 +1,5 @@
+import {conf} from "../conf";
+
 import * as $ from "jquery";
 
 import {IPageFunc} from "../classes/IPageFunc";
@@ -9,13 +11,17 @@ import {WebsocketEvents} from "../classes/Websockets";
 export let RevisedAnswerPageFunc: IPageFunc<STATE> =
     (session) => {
         let section = session.sectionManager.getSection("revised-answer");
+        let maxJustificationLength = conf.answers.justification.maxLength;
 
         function submitRevisedAnswer(answer: number, justification: string) {
+            session.answers.revised.answer = answer;
+            session.answers.initial.justification = justification.substr(0, maxJustificationLength);
+
             session.socket.emit(WebsocketEvents.OUTBOUND.REVISED_ANSWER_SUBMISSION, {
                 sessionId: session.sessionId,
                 questionNumber: session.quiz.questionNumber,
-                answer: answer,
-                justification: justification,
+                answer: session.answers.revised.answer,
+                justification: session.answers.revised.justification,
 
                 screenName: "",         // Not used
                 quizRoomID: -1,         // Not used
@@ -25,32 +31,52 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
             session.stateMachine.goTo(STATE.SURVEY);
         }
 
-        // Force answer when timer runs out
-        section.attachTimerCompleted(() => {
-            // TODO: Use whatever is on the page rather than fixed values
-            submitRevisedAnswer(0, "Did not answer");
-        });
-
         return {
             onEnter: () => {
                 session.pageManager.loadPage("revised-answer", (page$) => {
                     section.setActive();
                     section.startTimer();
 
-                    page$("#submit-answer").on("click", () => {
-                        let justification = $.trim(page$("#answer-justification").val());
+                    let $answers = page$("#answers");
+                    let $answersUL = page$("#answers > ul");
+                    let $justification = page$("#answer-justification");
+                    let $submitAnswer = page$("#submit-answer");
+                    let $charAvailable = page$("#char-available");
+
+
+                    // Force answer when timer runs out
+                    section.attachTimerCompleted(() => {
+                        let justification = $.trim($justification.val());
                         let answer = page$("#answers > ul > li.selected").index();
 
-                        if (justification.length === 0 || answer < 0) {
-                            alert("You must provide an answer.");
-                            return;
+                        if (justification.length === 0) {
+                            justification = "[NO JUSTIFICATION]";
+                        }
+
+                        if (answer < 0) {
+                            justification = "[DID NOT ANSWER]";
+                            answer = 0;
                         }
 
                         submitRevisedAnswer(answer, justification);
                     });
 
+                    $submitAnswer.on("click", () => {
+                        let justification = $.trim($justification.val());
+                        let answer = page$("#answers > ul > li.selected").index();
 
-                    let $answers = page$("#answers");
+                        if (justification.length === 0 || answer < 0) {
+                            alert("You must provide an answer and justification.");
+                            return;
+                        }
+
+                        if (justification.length > maxJustificationLength) {
+                            alert("Justification is too long. Reduce your justification length.");
+                            return;
+                        }
+
+                        submitRevisedAnswer(answer, justification);
+                    });
 
                     $answers.on("click", "li", function(e) {
                         e.preventDefault();
@@ -60,15 +86,24 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
                         $(this).addClass("selected");
                     });
 
+                    $justification.on("change input", () => {
+                        let charRemaining = maxJustificationLength - $justification.val().length;
 
-                    let $answersUL = page$("#answers > ul");
+                        $charAvailable.text(charRemaining);
 
-                    let answerDOMs: JQuery[] = [];
+                        if (charRemaining < 0) {
+                            $charAvailable.addClass("invalid");
+                        } else {
+                            $charAvailable.removeClass("invalid");
+                        }
+                    }).trigger("input");
+
 
                     // Render question, choices
                     page$("#question-reading").html(session.quiz.questionReading);
                     page$("#question-statement").html(session.quiz.questionStatement);
 
+                    let answerDOMs: JQuery[] = [];
                     session.quiz.questionChoices.forEach((choice) => {
                         answerDOMs.push($("<li>").text(choice));
                     });
