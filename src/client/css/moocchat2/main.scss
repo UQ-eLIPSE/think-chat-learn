@@ -22,6 +22,12 @@ $button-def-colour: $mc-colour-1;  // Default
 $button-pos-colour: $pos-colour;
 $button-neg-colour: $neg-colour; 
 
+$answer-option-heading-colour: $mc-colour-1;
+
+$client-1-colour: #000066;
+$client-2-colour: #993366;
+$client-3-colour: #669900;
+
 // Dimensions
 $mc-sidebar-width: 18rem;
 
@@ -501,19 +507,34 @@ button.negative {
     list-style: none;
 }
 
-#answers li, #chat-answers li {
+#answers li, #chat-answers li,
+#answers button, #chat-answers button {
+    display: list-item;
+    color: inherit;
+    text-align: inherit;
+
     padding: 1rem 1.5rem 1rem 3.5rem;
     background: #fff;
     border: 0.05rem solid #2f6890;
+    border-radius: 0;
+    
     position: relative;
 }
 
-#answers li:hover {
+#answers.locked li,
+#answers.locked button {
+    background: #ddd;
+    color: inherit;
+}
+
+#answers li:hover,
+#answers button:hover {
     background: #eee;
     cursor: pointer;
 }
 
-#answers li::before, #chat-answers li::before {
+#answers li::before, #chat-answers li::before,
+#answers button::before, #chat-answers button::before {
     list-style-type: upper-alpha;
     content: counter(answer-counter, upper-alpha);
 	counter-increment: answer-counter;
@@ -548,11 +569,13 @@ button.negative {
 //     background: purple;
 // }
 
-#answers li + li, #chat-answers li + li {
+#answers li + li, #chat-answers li + li,
+#answers button + button, #chat-answers button + button {
     border-top: 0;
 }
 
-#answers li.selected, #chat-answers li.selected {
+#answers li.selected, #chat-answers li.selected,
+#answers button.selected, #chat-answers button.selected {
     background: $uq-colour-B5;
     color: fg-on-bg($uq-colour-B5);
 }
@@ -571,6 +594,11 @@ button.negative {
     overflow: auto;
     background: #fff;
     border: 0.05rem solid #2f6890;
+
+    &:disabled {
+        background: #ddd;
+        color: inherit;
+    }
 }
 
 #char-available {
@@ -583,181 +611,110 @@ button.negative {
     color: red;
 }
 
+#question-content > h1:first-child,
+#question-content > h2:first-child,
+#question-content > h3:first-child,
+#answers > h1:first-child,
+#answers > h2:first-child,
+#answers > h3:first-child,
+#justification > h1:first-child,
+#justification > h2:first-child,
+#justification > h3:first-child,
+#chat-question > h1:first-child,
+#chat-question > h2:first-child,
+#chat-question > h3:first-child,
+#chat-answers > h1:first-child,
+#chat-answers > h2:first-child,
+#chat-answers > h3:first-child {
+    margin-top: 0;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 0.5em;
+}
+
 /** Chat */
 
-#chat-question-answers-wrapper {
-    width: 100%;
-}
-
-#chat-question-answers-block {
-    width: 100%;
-}
-
 #chat-box {
-    clear: both;
-    border: 0.05rem solid #326d98;
-    min-height: 5em;
+    border: 0.05rem solid $mc-colour-1;
     overflow-y: scroll;
-
     height: 35em;
+
+    & > blockquote {
+        margin: 0;
+        clear: both;
+        position: relative;
+        text-align: right;
+        line-height: 1;
+        
+        margin: 1em 0.5rem;
+        border-bottom: 0.2rem solid;
+        border-image: linear-gradient(to right, currentColor, currentColor 3rem, transparent 60%, transparent) 1;
+
+        &::after {
+            content: attr(data-client-id);
+            display: inline-block;
+
+            position: absolute;
+            bottom: 0;
+            left: 0;
+
+            background: #000;
+            color: #fff;
+            
+            text-align: center;
+            line-height: 1;
+
+            width: 2rem;
+            height: 2rem;
+            font-size: 1.6em;
+            padding-top: 0.15em;
+        }
+
+        // Message coming from system
+        &[data-client-id="-1"]::after {
+            content: "";
+        }
+
+        p {
+            display: block;
+
+            border: 0;
+            margin: 0.2rem 0 0.2rem 2rem;
+            padding: 0.2rem 0.7rem;
+            
+            text-align: left;
+            line-height: 1.2;
+
+            & + p {
+                margin-top: -0.2rem;
+                border-top: 0;
+            }
+        }
+
+        &[data-client-id="1"] {
+            color: $client-1-colour;
+
+            &::after {
+                background: $client-1-colour;
+            }
+        }
+
+        &[data-client-id="2"] {
+            color: $client-2-colour;
+            
+            &::after {
+                background: $client-2-colour;
+            }
+        }
+
+        &[data-client-id="3"] {
+            color: $client-3-colour;
+            
+            &::after {
+                background: $client-3-colour;
+            }
+        }
+    }
 }
-
-#chat-box > .system-message {
-    display: block;
-    text-align: center;
-    font-weight: bold;
-    font-style: italic;
-    color: #555;
-}
-
-#chat-box > blockquote {
-    margin: 0;
-    clear: both;
-    position: relative;
-    text-align: right;
-    line-height: 1;
-    
-    // float: left;
-    // width: 70%;
-
-
-    margin: 1em 0;
-    margin: 1em 0.5rem;
-    border-bottom: 0.2rem solid;
-    border-image: linear-gradient(to right, currentColor, currentColor 3rem, transparent 60%, transparent) 1;
-}
-
-#chat-box > blockquote::after {
-    content: attr(data-client-id);
-    display: inline-block;
-
-    position: absolute;
-    left: 0.5rem;
-    bottom: 0.5rem;
-    width: 1.4em;
-    height: 1.4em;
-    padding-top: 0.2em;
-    background: #000;
-    color: #fff;
-    // border-radius: 0.7em;
-    
-    text-align: center;
-    line-height: 1;
-    font-size: 1.8em;
-
-
-
-    width: 2rem;
-    height: 2rem;
-    font-size: 1.6em;
-    padding-top: 0.15em;
-    bottom: 0;
-    left: 0;
-}
-
-#chat-box > blockquote[data-client-id="-1"]::after {
-    content: "";
-}
-
-#chat-box > blockquote p {
-    // background: #ddd;
-    border: 0.05rem solid #888;
-    padding: 1rem;
-    margin: 0.2rem 0 0.2rem 3.8rem;
-    display: block;
-    text-align: left;
-
-    line-height: 1.2;
-    
-
-
-    border: 0;
-    // border-left: 0.2rem solid;
-    padding: 0.2rem 0.7rem;
-    margin-left: 2.3rem;
-
-    margin-left: 2rem;
-}
-
-
-
-// #chat-box[data-self-client-id="1"] > blockquote[data-client-id="1"],
-// #chat-box[data-self-client-id="2"] > blockquote[data-client-id="2"],
-// #chat-box[data-self-client-id="3"] > blockquote[data-client-id="3"] {
-//     float: right;
-// }
-
-// #chat-box[data-self-client-id="1"] > blockquote[data-client-id="1"]::after,
-// #chat-box[data-self-client-id="2"] > blockquote[data-client-id="2"]::after,
-// #chat-box[data-self-client-id="3"] > blockquote[data-client-id="3"]::after {
-//     right: 0.5rem;
-//     left: auto;
-// }
-
-// #chat-box[data-self-client-id="1"] > blockquote[data-client-id="1"] p,
-// #chat-box[data-self-client-id="2"] > blockquote[data-client-id="2"] p,
-// #chat-box[data-self-client-id="3"] > blockquote[data-client-id="3"] p {
-//     margin: 0.2rem 3.8rem 0.2rem 0;
-// }
-
-
-
-
-#chat-box > blockquote p + p,
-#chat-box[data-self-client-id="1"] > blockquote[data-client-id="1"] p + p,
-#chat-box[data-self-client-id="2"] > blockquote[data-client-id="2"] p + p,
-#chat-box[data-self-client-id="3"] > blockquote[data-client-id="3"] p + p {
-    margin-top: -0.2rem;
-    border-top: 0;
-}
-
-
-
-#chat-box > blockquote[data-client-id="1"]::after {
-    background: #000066;
-}
-
-#chat-box > blockquote[data-client-id="2"]::after {
-    background: #993366;
-}
-
-#chat-box > blockquote[data-client-id="3"]::after {
-    background: #669900;
-}
-
-// #chat-box > blockquote[data-client-id="1"] p {
-//     // background: #bebee8;
-//     // border-color: #9090ad
-//     border-color: #000066;
-//     color: #000066;
-// }
-
-// #chat-box > blockquote[data-client-id="2"] p {
-//     // background: #e2b6cc;
-//     // border-color: #ab8a9a;
-//     border-color: #993366;
-//     color: #993366;
-// }
-
-// #chat-box > blockquote[data-client-id="3"] p {
-//     // background: #c8daa4;
-//     // border-color: #a0ab8c;
-//     border-color: #669900;
-//     color: #669900;
-// }
-
-#chat-box > blockquote[data-client-id="1"] {
-    color: #000066;
-}
-
-#chat-box > blockquote[data-client-id="2"] {
-    color: #993366;
-}
-
-#chat-box > blockquote[data-client-id="3"] {
-    color: #669900;
-}
-
 
 
 #chat-input-wrapper {
@@ -818,7 +775,8 @@ button.negative {
 /*** Narrower width ***/
 @media (max-width: 70rem) {
     #answers,
-    #justification {
+    #justification,
+    #chat-ui-wrapper > * {
         display: block;
         width: auto;
     }

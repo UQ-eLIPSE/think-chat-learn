@@ -18,7 +18,7 @@ export let AwaitGroupFormationPageFunc: IPageFunc<STATE> =
 
                     session.socket.once(WebsocketEvents.INBOUND.CHAT_GROUP_FORMED, (data: IEventData_ChatGroupFormed) => {
                         let playTone = page$("#play-group-formation-tone").is(":checked");
-                        sessionStorage.setItem("play-notification-tone", playTone ? "true" : "false");
+                        session.storage.setItem("play-notification-tone", playTone ? "true" : "false");
 
                         // Grouping events
                         let waitEndTime = new Date().getTime();

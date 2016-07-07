@@ -15,7 +15,7 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
 
         function submitRevisedAnswer(answer: number, justification: string) {
             session.answers.revised.answer = answer;
-            session.answers.initial.justification = justification.substr(0, maxJustificationLength);
+            session.answers.revised.justification = justification.substr(0, maxJustificationLength);
 
             session.socket.emit(WebsocketEvents.OUTBOUND.REVISED_ANSWER_SUBMISSION, {
                 sessionId: session.sessionId,
@@ -40,14 +40,14 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
                     let $answers = page$("#answers");
                     let $answersUL = page$("#answers > ul");
                     let $justification = page$("#answer-justification");
-                    let $submitAnswer = page$("#submit-answer");
+                    let $submitAnswer = page$(".submit-answer-button");
                     let $charAvailable = page$("#char-available");
-
+                    let $enableRevision = page$("#enable-revision");
 
                     // Force answer when timer runs out
                     section.attachTimerCompleted(() => {
                         let justification = $.trim($justification.val());
-                        let answer = page$("#answers > ul > li.selected").index();
+                        let answer = page$("#answers > ul > .selected").index();
 
                         if (justification.length === 0) {
                             justification = "[NO JUSTIFICATION]";
@@ -63,7 +63,7 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
 
                     $submitAnswer.on("click", () => {
                         let justification = $.trim($justification.val());
-                        let answer = page$("#answers > ul > li.selected").index();
+                        let answer = page$("#answers > ul > .selected").index();
 
                         if (justification.length === 0 || answer < 0) {
                             alert("You must provide an answer and justification.");
@@ -78,16 +78,8 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
                         submitRevisedAnswer(answer, justification);
                     });
 
-                    $answers.on("click", "li", function(e) {
-                        e.preventDefault();
-
-                        $("li", $answers).removeClass("selected");
-
-                        $(this).addClass("selected");
-                    });
-
                     $justification.on("change input", () => {
-                        let charRemaining = maxJustificationLength - $justification.val().length;
+                        let charRemaining = maxJustificationLength - $.trim($justification.val()).length;
 
                         $charAvailable.text(charRemaining);
 
@@ -98,6 +90,21 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
                         }
                     }).trigger("input");
 
+                    $enableRevision.on("click", () => {
+                        page$(".pre-edit-enable").hide();
+                        page$(".post-edit-enable").show();
+                        $answers.removeClass("locked");
+                        $justification.prop("disabled", false);
+
+                        $answers.on("click", "button", function(e) {
+                            e.preventDefault();
+
+                            $("button", $answers).removeClass("selected");
+
+                            $(this).addClass("selected");
+                        });
+                    });
+
 
                     // Render question, choices
                     page$("#question-reading").html(session.quiz.questionReading);
@@ -105,10 +112,21 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
 
                     let answerDOMs: JQuery[] = [];
                     session.quiz.questionChoices.forEach((choice) => {
-                        answerDOMs.push($("<li>").text(choice));
+                        answerDOMs.push($("<button>").text(choice));
                     });
 
                     $answersUL.append(answerDOMs);
+
+
+                    // Populate previous answer
+                    $justification.val(session.answers.initial.justification);
+                    $("button", $answers).eq(session.answers.initial.answer).addClass("selected");
+
+
+                    // Set pre-/post-edit-enable elements
+                    $justification.prop("disabled", true);
+                    page$(".post-edit-enable").hide();
+                    $answers.addClass("locked");
                 });
             },
             onLeave: () => {

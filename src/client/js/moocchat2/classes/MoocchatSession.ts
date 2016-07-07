@@ -3,6 +3,7 @@ import {StateFlow} from "./StateFlow";
 import {PageManager} from "./PageManager";
 import {TaskSectionManager} from "./TaskSectionManager";
 import {WebsocketManager} from "./Websockets";
+import {SessionStorage} from "./SessionStorage";
 
 import {MoocchatAnalytics, MoocchatAnalyticsCore} from "./MoocchatAnalytics";
 import {MoocchatUser} from "./MoocchatUser";
@@ -29,6 +30,8 @@ export class MoocchatSession<StateTypeEnum> {
     public socket: WebsocketManager;
     public answers: MoocchatAnswerContainer;
 
+    public storage: SessionStorage;
+
     public sessionId: string;
 
     constructor(turnOnAnalytics: boolean = true, $content: JQuery, $taskSections: JQuery) {
@@ -38,6 +41,7 @@ export class MoocchatSession<StateTypeEnum> {
         this._stateMachine = new StateFlow<StateTypeEnum>();
         
         this.answers = new MoocchatAnswerContainer();
+        this.storage = new SessionStorage();
 
         if (turnOnAnalytics) {
             this._analytics = new MoocchatAnalytics(this);
