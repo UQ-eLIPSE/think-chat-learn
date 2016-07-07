@@ -41,14 +41,14 @@ export let DiscussionPageFunc: IPageFunc<STATE> =
 
 
 
-                    let playTone = sessionStorage.getItem("play-notification-tone") === "true";
+                    let playTone = session.storage.getItem("play-notification-tone") === "true";
 
                     if (playTone) {
                         let notificationTone = new Audio("./mp3/here-i-am.mp3");
                         notificationTone.play();
                     }
 
-                    sessionStorage.removeItem("play-notification-tone");
+                    session.storage.removeItem("play-notification-tone");
 
 
 
