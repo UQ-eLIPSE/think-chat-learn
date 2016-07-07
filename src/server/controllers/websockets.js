@@ -6,8 +6,7 @@ var sessionData = require('../../config/sessions.json');
 
 var db_wrapper = require('./database.js');
 
-var _LTI = require("./LTI");
-var LTIProcessor = _LTI.LTIProcessor;
+var LTIProcessor = require("../models/LTIProcessor").LTIProcessor;
 
 var Client = require('../models/client');
 
@@ -292,13 +291,13 @@ function afterDbLoad() {
         var ltiObject;
 
         try {
-            ltiObject = ltiProcessor.verifyAndCreateLTIObj(data);
+            ltiObject = ltiProcessor.verifyAndReturnLTIObj(data);
         } catch (e) {
             socket.emit('loginFailure', e.message);
             return;
         }
 
-        var user_id = ltiObject.data.user_id;
+        var user_id = ltiObject.user_id;
 
         if (!user_id) {
             socket.emit('loginFailure', 'No user ID received.');
@@ -324,7 +323,7 @@ function afterDbLoad() {
 
         // Determine if person has elevated permissions
         var hasElevatedPermissions = false;
-        var roles = ltiObject.data.roles.toLowerCase().split(",");
+        var roles = ltiObject.roles.toLowerCase().split(",");
 
         if (roles.indexOf("instructor") > -1 ||
             roles.indexOf("mentor") > -1 ||
