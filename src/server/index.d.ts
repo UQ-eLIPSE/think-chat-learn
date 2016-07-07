@@ -1,6 +1,4 @@
-/// Type definitions
-
-/// <reference path="./typings/index.d.ts" />
+/// Type definitions for external modules
 
 // oauth-signature
 declare module "oauth-signature" {
