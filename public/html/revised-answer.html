@@ -1,6 +1,8 @@
 <!-- All pages must specify <section data-name="..." /> as root element -->
 <section data-name="revised-answer">
-    <h1>Check over your previous answer and provide your revised answer and justification if necessary.</h1>
+    <h1>Check over your answer.</h1>
+    <p>You can edit your answer, and submit your answer when you're happy with it.</p>
+    <p style="text-align: right;" class="pre-edit-enable"><button id="enable-revision" class="positive">Edit my answer</button> <button id="submit-answer">Submit my answer as is</button></p>
 
     <div id="question-content">
         <h3>Question</h3>
@@ -9,13 +11,13 @@
     </div>
     <div id="answer-block">
         <div id="answers">
-            <h3>Select an answer</h3>
+            <h3>Answer</h3>
             <ul></ul>
         </div>
         <div id="justification">
-            <h3>Provide your justification</h3>
-            <textarea id="answer-justification"></textarea>
-            <p style="text-align: right;"><span id="char-available"></span> <button id="submit-answer">Submit your revised answer</button></p>
+            <h3>Justification</h3>
+            <textarea id="answer-justification" placeholder="Provide a justification for your answer..."></textarea>
+            <p style="text-align: right;" class="post-edit-enable"><span id="char-available"></span> <button id="submit-answer">Submit your revised answer</button></p>
         </div>
     </div>
 </section>

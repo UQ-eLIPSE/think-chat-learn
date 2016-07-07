@@ -162,7 +162,7 @@ $(() => {
 
                     $submitAnswer.on("click", () => {
                         let justification = $.trim($justification.val());
-                        let answer = page$("#answers > ul > li.selected").index();
+                        let answer = page$("#answers > ul > .selected").index();
 
                         if (justification.length === 0 || answer < 0) {
                             alert("You must provide an answer and justification.");
@@ -177,16 +177,16 @@ $(() => {
                         submitAnswerAndJoinQueue(answer, justification);
                     });
 
-                    $answers.on("click", "li", function(e) {
+                    $answers.on("click", "button", function(e) {
                         e.preventDefault();
 
-                        $("li", $answers).removeClass("selected");
+                        $("button", $answers).removeClass("selected");
 
                         $(this).addClass("selected");
                     });
 
                     $justification.on("change input", () => {
-                        let charRemaining = maxJustificationLength - $justification.val().length;
+                        let charRemaining = maxJustificationLength - $.trim($justification.val()).length;
 
                         $charAvailable.text(charRemaining);
 
@@ -204,7 +204,7 @@ $(() => {
 
                     let answerDOMs: JQuery[] = [];
                     session.quiz.questionChoices.forEach((choice) => {
-                        answerDOMs.push($("<li>").text(choice));
+                        answerDOMs.push($("<button>").text(choice));
                     });
 
                     $answersUL.append(answerDOMs);

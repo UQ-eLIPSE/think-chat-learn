@@ -501,19 +501,28 @@ button.negative {
     list-style: none;
 }
 
-#answers li, #chat-answers li {
+#answers li, #chat-answers li,
+#answers button, #chat-answers button {
+    display: list-item;
+    color: inherit;
+    text-align: inherit;
+
     padding: 1rem 1.5rem 1rem 3.5rem;
     background: #fff;
     border: 0.05rem solid #2f6890;
+    border-radius: 0;
+    
     position: relative;
 }
 
-#answers li:hover {
+#answers li:hover,
+#answers button:hover {
     background: #eee;
     cursor: pointer;
 }
 
-#answers li::before, #chat-answers li::before {
+#answers li::before, #chat-answers li::before,
+#answers button::before, #chat-answers button::before {
     list-style-type: upper-alpha;
     content: counter(answer-counter, upper-alpha);
 	counter-increment: answer-counter;
@@ -548,11 +557,13 @@ button.negative {
 //     background: purple;
 // }
 
-#answers li + li, #chat-answers li + li {
+#answers li + li, #chat-answers li + li,
+#answers button + button, #chat-answers button + button {
     border-top: 0;
 }
 
-#answers li.selected, #chat-answers li.selected {
+#answers li.selected, #chat-answers li.selected,
+#answers button.selected, #chat-answers button.selected {
     background: $uq-colour-B5;
     color: fg-on-bg($uq-colour-B5);
 }
