@@ -40,7 +40,7 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
                     let $answers = page$("#answers");
                     let $answersUL = page$("#answers > ul");
                     let $justification = page$("#answer-justification");
-                    let $submitAnswer = page$("#submit-answer");
+                    let $submitAnswer = page$(".submit-answer-button");
                     let $charAvailable = page$("#char-available");
                     let $enableRevision = page$("#enable-revision");
 
