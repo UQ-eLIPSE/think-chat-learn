@@ -28,7 +28,9 @@ Code must now be compiled prior to running the server or serving the client.
 
 * `npm run build_client` builds client code;
 * `npm run build_server` builds server code;
-* `npm run build` runs both.
+* `npm run build` runs a clean before building both above.
+
+Where a clean of compiled code is needed, run `npm run clean`.
 
 ## Running tests
 To run the database tests, run `npm run db_test`, if the tests don't run make sure to run `npm install` to pull down the test runner dependencies.
