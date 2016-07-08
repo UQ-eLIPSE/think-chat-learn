@@ -13,6 +13,10 @@ export let SurveyPageFunc: IPageFunc<STATE> =
 
                     session.analytics.trackEvent("SURVEY", "START");
 
+                    page$("#survey-form").on("submit", (e) => {
+                        e.preventDefault();
+                        session.stateMachine.goTo(STATE.COMPLETION);
+                    });
                 });
             },
             onLeave: () => {

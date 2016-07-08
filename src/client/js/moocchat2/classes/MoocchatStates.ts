@@ -18,7 +18,7 @@ export enum MoocchatState {
     DISCUSSION,
     REVISED_ANSWER,
     SURVEY,
-    CONFIRMATION,
+    COMPLETION,
 
     BACKUP_CLIENT_ANSWER,
     BACKUP_CLIENT_WAIT,

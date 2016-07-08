@@ -1,23 +1,34 @@
 <!-- All pages must specify <section data-name="..." /> as root element -->
 <section data-name="revised-answer">
-    <h1>Check over your answer.</h1>
-    <p>You can edit your answer, and submit your answer when you're happy with it.</p>
-    
-    <div id="question-content">
-        <h3>Question</h3>
-        <p id="question-reading"></p>
-        <p id="question-statement"></p>
-    </div>
-    <div id="answer-block">
-        <div id="answers">
-            <h3>Answer</h3>
-            <ul></ul>
+    <h1>Check and submit your revised answer</h1>
+    <p>A copy of the original question and your chat session is available below on the page.</p>
+
+    <div class="table narrow-block mc-tint color-inherit p-block">
+        <div class="row">
+            <div class="width-half mc-box-pad pad-thick">
+                <h3 class="margin-top-0 bottom-rule">Answer</h3>
+                <div id="answers"></div>
+            </div>
+            <div class="width-half mc-box-pad pad-thick">
+                <h3 class="margin-top-0 bottom-rule">Justification</h3>
+                <textarea id="justification" class="mc-box-pad pad-equal pad-thin" placeholder="Provide a justification for your answer..."></textarea>
+                <p class="right pre-edit-enable"><button id="enable-revision" class="positive">Edit answer</button> <button class="submit-answer-button">Submit answer as is</button></p>
+                <p class="right post-edit-enable"><span id="char-available"></span> <button class="submit-answer-button">Submit answer</button></p>
+            </div>
         </div>
-        <div id="justification">
-            <h3>Justification</h3>
-            <textarea id="answer-justification" placeholder="Provide a justification for your answer..."></textarea>
-            <p style="text-align: right;" class="pre-edit-enable"><button id="enable-revision" class="positive">Edit answer</button> <button class="submit-answer-button">Submit answer as is</button></p>
-            <p style="text-align: right;" class="post-edit-enable"><span id="char-available"></span> <button class="submit-answer-button">Submit revised answer</button></p>
+    </div>
+
+    <div class="table narrow-block mc-tint color-inherit p-block">
+        <div class="row">
+            <div class="width-half mc-box-pad pad-thick">
+                <h3 class="margin-top-0 bottom-rule">Question</h3>
+                <p id="question-reading"></p>
+                <p id="question-statement"></p>
+            </div>
+            <div class="width-half mc-box-pad pad-thick">
+                <h3 class="margin-top-0 bottom-rule">Chat</h3>
+                <div id="chat-clone"></div>
+            </div>
         </div>
     </div>
 </section>

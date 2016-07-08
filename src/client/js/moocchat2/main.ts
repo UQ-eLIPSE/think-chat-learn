@@ -182,10 +182,22 @@ $(() => {
             onEnter: surveyPage.onEnter,
             onLeave: surveyPage.onLeave
         },
-        {   // Confirmation/receipt
-            state: STATE.CONFIRMATION,
+        {   // Completion
+            state: STATE.COMPLETION,
             onEnter: () => {
                 session.analytics.trackEvent("MOOCCHAT", "FINISH");
+                
+                let section = session.sectionManager.getSection("finish");
+                session.pageManager.loadPage("completion", (page$) => {
+                    section.setActive();
+                    
+                    // TODO: Actual receipt IDs
+                    page$("#receipt-id").text("*****" + ((Math.random() * 2147483647) | 0).toString(16));
+                    
+                    page$("#go-to-return-url").on("click", () => {
+                        window.top.location.href = _LTI_BASIC_LAUNCH_DATA.launch_presentation_return_url;
+                    });
+                });
             }
         }
     ]);

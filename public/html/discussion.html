@@ -1,31 +1,36 @@
 <!-- All pages must specify <section data-name="..." /> as root element -->
 <section data-name="discussion">
-    <h1>Discuss your group's answers to the question.</h1>
-    <p>When you're ready to move on, click "End chat and revise answer".</p>
-    <p style="text-align: right;"><button id="end-chat" class="negative">End chat and revise answer</button></p>
+    <h1>Discuss your group's answers to the question</h1>
+    <p>When your group has finished discussions and you're ready to move on, click "End chat and revise answer".</p>
+    <p class="right"><button id="end-chat" class="negative">End chat and revise answer</button></p>
 
-    <div id="chat-ui-wrapper">
-        <div id="chat-question-answers-block">
-            <div id="chat-question">
-                <h3>Question</h3>
+    <div id="chat-ui-wrapper" class="table narrow-block mc-tint color-inherit">
+        <div class="row">
+            <div id="chat-question-answers-block" class="width-half mc-box-pad pad-thick pad-equal">
+                <h3 class="margin-top-0 bottom-rule">Question</h3>
                 <p id="question-reading"></p>
                 <p id="question-statement"></p>
-            </div>
-            <div id="chat-answers">
-                <h3>Answers</h3>
-                <ul></ul>
-            </div>
-        </div>
-
-        <div id="chat-box-wrapper">
-            <div id="chat-box">
+                
+                <h3 class="margin-top-0 bottom-rule">Answers</h3>
+                <div id="answers"></div>
             </div>
 
-            <form id="chat-input-wrapper">
-                <div id="chat-input-field-wrapper"><input type="text" id="chat-input"></input>
+            <div id="chat-box-wrapper" class="width-half mc-box-pad pad-thick pad-equal">
+                <div id="chat-box">
                 </div>
-                <div id="chat-input-button-wrapper"><button id="chat-send" class="positive">Send</button></div>
-            </form>
+
+                <form id="chat-input-wrapper">
+                    <div id="chat-input-field-wrapper"><input type="text" id="chat-input" class="mc-box-pad pad-equal pad-thin"></input>
+                    </div>
+                    <div id="chat-input-button-wrapper"><button id="chat-send" class="positive">Send</button></div>
+                </form>
+            </div>
         </div>
+    </div>
+
+    <div id="end-chat-confirmation" class="dialog warning hidden mc-box-pad pad-thick">
+        <h2>End your chat session now?</h2>
+        <p>Please note that your participation in this chat session is marked.</p>
+        <p class="right"><button id="cancel-end-chat" class="positive">Return to chat</button> <button id="confirm-end-chat">End chat and revise answer</button></p>
     </div>
 </section>

@@ -17,7 +17,9 @@ export type ChatGroupData = IEventData_ChatGroupFormed;
 export class MoocchatChat {
     private session: MoocchatSession<any>
     private groupData: ChatGroupData;
+
     private $chatWindow: JQuery;
+	private $clonedChatWindow: JQuery;
 
     private receiveMessageCallback: Function;
     private receiveQuitStatusChangeCallback: Function;
@@ -136,5 +138,9 @@ export class MoocchatChat {
     private detachReceiveMessageHandler() {
         this.session.socket.off(WebsocketEvents.INBOUND.CHAT_GROUP_RECEIVE_MESSAGE, this.receiveMessageCallback);
         this.session.socket.off(WebsocketEvents.INBOUND.CHAT_GROUP_QUIT_STATUS_CHANGE, this.receiveQuitStatusChangeCallback);
+    }
+
+    public get chatWindow() {
+        return this.$chatWindow;
     }
 }

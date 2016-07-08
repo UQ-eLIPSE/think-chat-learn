@@ -1,75 +1,23 @@
 <!-- All pages must specify <section data-name="..." /> as root element -->
 <section data-name="backup-client-wait">
-    <style>
-        .hidden {
-            display: none;
-        }
-        
-        #backup-client-wait-management-area {
-            display: table;
-            width: 100%;
-            max-width: 50em;
-        }
-        
-        #backup-client-wait-management-area > div {
-            display: table-cell;
-            padding: 0 1em;
-        }
-        
-        #backup-client-wait-management-area > div + div {
-            border-left: 1px solid #ddd;
-        }
-        
-        #number-of-clients-in-pool {
-            display: block;
-            font-size: 5em;
-        }
-        
-        #transfer-confirmation {
-            border: 0.2em solid red;
-            background: #ffebeb;
-            padding: 1em 2em;
-            position: absolute;
-            top: 0;
-            width: 94%;
-            left: 0;
-            margin-left: 3%;
-            margin-top: 3%;
-            box-shadow: 0px 5px 20px #000;
-        }
-        
-        #transfer-remaining-seconds {
-            color: red;
-            font-weight: bold;
-            font-size: 1.8em;
-        }
-    </style>
-
     <div id="backup-client-wait-management-area">
-        <div style="width: 50%;">
-            <h2 style="margin-top: 0;">Backup Queue Clients</h2>
+        <div class="width-half">
+            <h2 class="margin-top-0">Backup Queue Clients</h2>
             <ul id="backup-client-queue"></ul>
             <button id="logout" class="negative">Log out</button>
         </div>
-        <div style="width: 50%;">
-            <h2 style="margin-top: 0;">Pool Status</h2>
+        <div class="width-half">
+            <h2 class="margin-top-0">Pool Status</h2>
             <p style="text-align: center;">There are currently <span id="number-of-clients-in-pool">...</span> client(s) waiting in the group formation
                 pool.
             </p>
         </div>
     </div>
 
-    <div id="transfer-confirmation" class="hidden">
+    <div id="transfer-confirmation" class="dialog warning hidden mc-box-pad pad-thick">
         <h2>You are being called for a discussion group</h2>
         <p>Please confirm that you are present.</p>
         <p>You have <span id="transfer-remaining-seconds">0</span> seconds remaining.</p>
         <p><button id="confirm-transfer" class="positive">Confirm</button></p>
     </div>
-
-    <!--<div id="ejected-dialog" class="hidden">
-        <h2>You have been removed from the backup client queue</h2>
-        <p>You were ejected as you did not respond to a request to join a discussion group.</p>
-        <p><button id="login-again">Login again</button></p>
-    </div>-->
-
 </section>

@@ -4,23 +4,24 @@
  * MOOCchat
  */
 
-// Colours
-$mc-colour-1: #256;     // eLIPSE colour
-// $mc-colour-2: $uq-colour-B5;
+/********** Colours **********/
+$body-bg-colour: #fdfdfd;
+$body-std-font-size: 16px;
 
+$mc-colour-1: #256;     // eLIPSE colour
 $mc-colour-1-backup-client: $uq-colour-B5;
 
 $pos-colour: $uq-colour-B5;     // Positive action (e.g. submit)
 $neg-colour: $uq-colour-B6;     // Negative action (e.g. cancel)
+$ntl-colour: #ccc;
 
 $warning-colour: $uq-colour-B6; // General warnings
 $danger-colour: $uq-colour-B1;  // Absolute warnings, errors etc.
 
-$body-bg-colour: #fdfdfd;
-
 $button-def-colour: $mc-colour-1;  // Default
 $button-pos-colour: $pos-colour;
 $button-neg-colour: $neg-colour; 
+$button-ntl-colour: $ntl-colour; 
 
 $answer-option-heading-colour: $mc-colour-1;
 
@@ -28,14 +29,23 @@ $client-1-colour: #000066;
 $client-2-colour: #993366;
 $client-3-colour: #669900;
 
-// Dimensions
+$input-bg-colour: #fff;
+$input-disabled-bg-colour: #ccc;
+
+$message-border-colour: #bbb;
+$message-default-bg-colour: #ddd;
+
+/********** Dimensions **********/
 $mc-sidebar-width: 18rem;
 
 $mc-sidebar-padding-tb: 1rem;
 $mc-sidebar-padding-lr: 2rem;
 
+$thin-border-width: 0.05rem;
 
-// Mixins
+
+
+/********** Mixins **********/
 
 @function fg-on-bg($bg-color) {
   @if (lightness($bg-color) > 60) {
@@ -75,7 +85,11 @@ $mc-sidebar-padding-lr: 2rem;
     outline: none;
 }
 
-/** General **/
+
+
+
+
+/********** General **********/
 
 html, body {
     box-sizing: border-box;
@@ -83,15 +97,47 @@ html, body {
     background: $body-bg-colour;
     
     font-family: "Roboto", sans-serif;
-    font-size: 16px;
+    font-size: $body-std-font-size;
 }
 
 *, *::before, *::after {
     box-sizing: inherit;
 }
 
+
+.hidden {
+    display: none;
+}
+
+.width-full {
+    width: 100%;
+}
+
+.width-half {
+    width: 50%;
+}
+
+.right {
+    text-align: right;
+}
+
+.margin-top-0 {
+    margin-top: 0;
+}
+
+.bottom-rule {
+    border-bottom: $thin-border-width solid;
+}
+
+.thin-border {
+    border: $thin-border-width solid;
+}
+
+
 button {
     @include button($button-def-colour);
+    
+    vertical-align: middle;
 
     &:hover {
         @include button-hover($button-def-colour);
@@ -126,7 +172,143 @@ button.negative {
     }
 }
 
-/** Core **/
+button.neutral {
+    @include button($button-ntl-colour);
+
+    &:hover {
+        @include button-hover($button-ntl-colour);
+    }
+
+    &:active {
+        @include button-active($button-ntl-colour);
+    }
+}
+
+button.thin {
+    padding: 0.2em 1em;
+}
+
+.table {
+    @extend .width-full;
+
+    display: table;
+
+    & > .row {
+        display: table-row;
+
+        & > * {
+            display: table-cell;
+            vertical-align: top;
+        }
+    }
+}
+
+.list-item {
+    display: list-item;
+    width: 100%;
+}
+
+.monospace {
+    font-family: monospace;
+}
+
+.pre {
+    white-space: pre;
+}
+
+.pre-wrap {
+    white-space: pre-wrap;
+}
+
+.dialog {
+    border: 0.2em solid;
+    background: $message-default-bg-colour;
+    position: absolute;
+    top: 0;
+    width: 94%;
+    left: 0;
+    margin-left: 3%;
+    margin-top: 3%;
+    box-shadow: 0px 5px 20px #000; 
+    
+    z-index: 100;
+
+    &.warning {
+        border-color: $warning-colour;
+    }
+}
+
+.p-block {
+    margin: 1em 0;
+}
+
+p {
+    @extend .p-block;
+}
+
+
+
+/********** Core UI structure **********/
+
+.mc-inline-message {
+    @extend .thin-border;
+    border-color: $message-border-colour;
+    background: $message-default-bg-colour;
+    padding: 1em;
+}
+
+.mc-tint {
+    @extend .thin-border;
+
+    background: transparentize($mc-colour-1, 0.9);
+    color: $mc-colour-1;
+
+    &.gold-10 {
+        background: transparentize($uq-colour-A1, 0.9);
+        color: $uq-colour-A1;
+    }
+
+    &.purple-6 {
+        background: transparentize($uq-colour-A2, 0.94);
+        color: $uq-colour-A2;
+    }
+
+    &.green-10 {
+        background: transparentize($uq-colour-A3, 0.9);
+        color: $uq-colour-A3;
+    }
+
+    &.color-inherit {
+        color: inherit;
+    }
+}
+
+.mc-box-pad {
+    padding: 1rem 1.5rem;
+
+    &.pad-thick {
+        padding: 1.5rem 2rem;
+    }
+
+    &.pad-thin {
+        padding: 0.6rem 1rem;
+    }
+
+    &.pad-equal {
+        padding: 1rem;
+
+        &.pad-thick {
+            padding: 1.5rem;
+        }
+
+        &.pad-thin {
+            padding: 0.6rem;
+        }
+    }
+}
+
+
+/********** Core UI structure **********/
 
 #header {
     background: $mc-colour-1;
@@ -170,7 +352,11 @@ button.negative {
     }
 }
 
-/** Header/sidebar **/
+
+
+
+
+/********** Header/sidebar **********/
 
 #moocchat-name {
     line-height: 1;
@@ -196,7 +382,10 @@ button.negative {
 }
 
 
-/** Task sections **/
+
+
+
+/********** Task sections **********/
 
 #task-sections {
     list-style: none;
@@ -466,138 +655,156 @@ button.negative {
 // Carried over
 
 
-/** Q&A sections **/
-
-#question-content {
-    background: #eee;
-    
-    padding: 1.2rem 2rem;
-
-    border: 0.05rem solid #2f6890;
-
-    width: 100%;
-}
+/********** Q&A sections **********/
 
 #question-statement {
     font-weight: bold;
 }
 
-#answer-block {
-    margin-top: 1rem;
-
-    background: #eee;
-    border: 0.05rem solid #2f6890;
-
-    display: table;
-    position: relative;
-
-    width: 100%;
-}
-
 #answers {
-    display: table-cell;
-    width: 50%;
-    padding: 1.5rem 2rem;
-}
-
-#answers ul, #chat-answers ul {
-    margin: 0;
-    padding: 0;
     counter-reset: answer-counter;
-    list-style: none;
 }
 
-#answers li, #chat-answers li,
-#answers button, #chat-answers button {
-    display: list-item;
+#answers > * {
+    @extend .mc-box-pad;
+    @extend .thin-border;
+    
+    padding-left: 3.5rem;
+    
+    display: block;
+    width: 100%;
+
     color: inherit;
     text-align: inherit;
 
-    padding: 1rem 1.5rem 1rem 3.5rem;
-    background: #fff;
-    border: 0.05rem solid #2f6890;
+    background: $input-bg-colour;
+    border-color: #000;
     border-radius: 0;
     
     position: relative;
+
+    &::before {
+        list-style-type: upper-alpha;
+        content: counter(answer-counter, upper-alpha);
+        counter-increment: answer-counter;
+        padding: 0.2rem 0.4rem;
+        line-height: 1;
+        background: $mc-colour-1;
+        color: fg-on-bg($mc-colour-1);
+        
+        display: inline-block;
+        position: absolute;
+        left: 0.8rem;
+        top: 50%;
+        margin-top: -1rem;
+
+        font-weight: bold;
+        font-size: 1.7rem;
+    }
+
+    &:hover {
+        background: #eee;
+        cursor: pointer;
+    }
+
+    & + * {
+        border-top: 0;
+    }
+
+    &.selected {
+        background: $uq-colour-B5;
+        color: fg-on-bg($uq-colour-B5);
+    }
 }
 
-#answers.locked li,
-#answers.locked button {
-    background: #ddd;
+#answers.locked > * {
+    background: $input-disabled-bg-colour;
     color: inherit;
+
+    &.selected {
+        background: $uq-colour-B5;
+        color: fg-on-bg($uq-colour-B5);
+    }
 }
 
-#answers li:hover,
-#answers button:hover {
-    background: #eee;
-    cursor: pointer;
-}
-
-#answers li::before, #chat-answers li::before,
-#answers button::before, #chat-answers button::before {
-    list-style-type: upper-alpha;
-    content: counter(answer-counter, upper-alpha);
-	counter-increment: answer-counter;
-    padding: 0.2rem 0.4rem;
-    line-height: 1;
-    background: $mc-colour-1;
-    color: fg-on-bg($mc-colour-1);
+#client-justifications {
+    padding: 0;
+    margin: 1em 0 0 0;
+    background: transparentize($mc-colour-1, 0.9);
     
-    display: inline-block;
-    position: absolute;
-    left: 1rem;
-    top: 50%;
-    margin-top: -0.8rem;
+    list-style: none;
 
-    font-weight: bold;
-    font-size: 1.2rem;
-}
+    li {
+        position: relative;
 
-// #answers li.counter-red::before, #chat-answers li.counter-red::before {
-//     background: red;
-// }
+        white-space: pre-wrap;
+        padding: 0.5rem 1rem 0.5rem 2.5rem;
 
-// #answers li.counter-green::before, #chat-answers li.counter-green::before {
-//     background: green;
-// }
+        & + li {
+            border-top: $thin-border-width solid;
+        }
 
-// #answers li.counter-blue::before, #chat-answers li.counter-blue::before {
-//     background: blue;
-// }
+        &::before {
+            content: attr(data-client-id);
+            display: inline-block;
 
-// #answers li.counter-purple::before, #chat-answers li.counter-purple::before {
-//     background: purple;
-// }
+            position: absolute;
+            top: 50%;
+            left: 0.6rem;
 
-#answers li + li, #chat-answers li + li,
-#answers button + button, #chat-answers button + button {
-    border-top: 0;
-}
+            background: #000;
+            color: #fff;
+            
+            text-align: center;
+            line-height: 1;
 
-#answers li.selected, #chat-answers li.selected,
-#answers button.selected, #chat-answers button.selected {
-    background: $uq-colour-B5;
-    color: fg-on-bg($uq-colour-B5);
+            width: 1.4rem;
+            height: 1.4rem;
+            font-size: 1.2rem;
+            padding-top: 0.1rem;
+            margin-top: -0.7rem;
+        }
+
+        &[data-client-id="1"] {
+            color: $client-1-colour;
+
+            &::before {
+                background: $client-1-colour;
+            }
+        }
+
+        &[data-client-id="2"] {
+            color: $client-2-colour;
+            
+            &::before {
+                background: $client-2-colour;
+            }
+        }
+
+        &[data-client-id="3"] {
+            color: $client-3-colour;
+            
+            &::before {
+                background: $client-3-colour;
+            }
+        }
+    }
 }
 
 #justification {
-    display: table-cell;
-    width: 50%;
-    padding: 1.5rem 2rem;
-}
+    @extend .thin-border;
 
-#justification textarea {
+    display: block;
     width: 100%;
     height: 10em;
-    display: block;
     resize: vertical;
     overflow: auto;
-    background: #fff;
-    border: 0.05rem solid #2f6890;
+
+    background: $input-bg-colour;
+    color: inherit;
 
     &:disabled {
-        background: #ddd;
-        color: inherit;
+        background: $input-disabled-bg-colour;
     }
 }
 
@@ -611,32 +818,15 @@ button.negative {
     color: red;
 }
 
-#question-content > h1:first-child,
-#question-content > h2:first-child,
-#question-content > h3:first-child,
-#answers > h1:first-child,
-#answers > h2:first-child,
-#answers > h3:first-child,
-#justification > h1:first-child,
-#justification > h2:first-child,
-#justification > h3:first-child,
-#chat-question > h1:first-child,
-#chat-question > h2:first-child,
-#chat-question > h3:first-child,
-#chat-answers > h1:first-child,
-#chat-answers > h2:first-child,
-#chat-answers > h3:first-child {
-    margin-top: 0;
-    border-bottom: 1px solid #ccc;
-    padding-bottom: 0.5em;
-}
-
 /** Chat */
 
 #chat-box {
-    border: 0.05rem solid $mc-colour-1;
+    background: $input-bg-colour;
+
+    border: 0.05rem solid;
     overflow-y: scroll;
     height: 35em;
+    width: 100%;
 
     & > blockquote {
         margin: 0;
@@ -645,7 +835,7 @@ button.negative {
         text-align: right;
         line-height: 1;
         
-        margin: 1em 0.5rem;
+        margin: 1rem 0.5rem;
         border-bottom: 0.2rem solid;
         border-image: linear-gradient(to right, currentColor, currentColor 3rem, transparent 60%, transparent) 1;
 
@@ -665,8 +855,8 @@ button.negative {
 
             width: 2rem;
             height: 2rem;
-            font-size: 1.6em;
-            padding-top: 0.15em;
+            font-size: 1.6rem;
+            padding-top: 0.3rem;
         }
 
         // Message coming from system
@@ -716,6 +906,11 @@ button.negative {
     }
 }
 
+#chat-clone {
+    #chat-box {
+        height: 20em;
+    }
+}
 
 #chat-input-wrapper {
     display: table;
@@ -728,8 +923,10 @@ button.negative {
 }
 
 #chat-input {
+    @extend .thin-border;
+
     width: 100%;
-    padding: 0.65rem 0.4rem;
+    background: $input-bg-colour;
 }
 
 #chat-input-button-wrapper {
@@ -743,22 +940,38 @@ button.negative {
 
 
 
-#chat-ui-wrapper {
+
+
+
+
+
+
+/********** Backup client **********/
+
+#backup-client-wait-management-area {
     display: table;
     width: 100%;
+    max-width: 50em;
 }
 
-#chat-ui-wrapper > * {
+#backup-client-wait-management-area > div {
     display: table-cell;
-    width: 50%;
-    vertical-align: top;
-    padding: 0 0.3em;
+    padding: 0 1em;
 }
 
-#chat-question-answers-block {
-    background: #eee;
-    border: 0.05rem solid #2f6890;
-    padding: 1.5rem 2rem;
+#backup-client-wait-management-area > div + div {
+    border-left: 1px solid #ddd;
+}
+
+#number-of-clients-in-pool {
+    display: block;
+    font-size: 5em;
+}
+
+#transfer-remaining-seconds {
+    color: red;
+    font-weight: bold;
+    font-size: 1.8em;
 }
 
 
@@ -772,12 +985,22 @@ button.negative {
 
 
 
-/*** Narrower width ***/
+
+
+/********** Media queries **********/
+
+// Narrower devices (~1100px)
 @media (max-width: 70rem) {
-    #answers,
-    #justification,
-    #chat-ui-wrapper > * {
-        display: block;
-        width: auto;
+    html, body {
+        font-size: $body-std-font-size * 0.9;
+    }
+    
+    .table {
+        &.narrow-block,
+        &.narrow-block > .row,
+        &.narrow-block > .row > * {
+            display: block;
+            width: 100%;
+        }
     }
 }
