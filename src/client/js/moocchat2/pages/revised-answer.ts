@@ -38,8 +38,8 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
                     section.startTimer();
 
                     let $answers = page$("#answers");
-                    let $answersUL = page$("#answers > ul");
-                    let $justification = page$("#answer-justification");
+                    // let $answersUL = page$("#answers > ul");
+                    let $justification = page$("#justification");
                     let $submitAnswer = page$(".submit-answer-button");
                     let $charAvailable = page$("#char-available");
                     let $enableRevision = page$("#enable-revision");
@@ -47,7 +47,7 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
                     // Force answer when timer runs out
                     section.attachTimerCompleted(() => {
                         let justification = $.trim($justification.val());
-                        let answer = page$("#answers > ul > .selected").index();
+                        let answer = page$("#answers > .selected").index();
 
                         if (justification.length === 0) {
                             justification = "[NO JUSTIFICATION]";
@@ -63,7 +63,7 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
 
                     $submitAnswer.on("click", () => {
                         let justification = $.trim($justification.val());
-                        let answer = page$("#answers > ul > .selected").index();
+                        let answer = page$("#answers > .selected").index();
 
                         if (justification.length === 0 || answer < 0) {
                             alert("You must provide an answer and justification.");
@@ -115,7 +115,7 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
                         answerDOMs.push($("<button>").text(choice));
                     });
 
-                    $answersUL.append(answerDOMs);
+                    $answers.append(answerDOMs);
 
 
                     // Populate previous answer

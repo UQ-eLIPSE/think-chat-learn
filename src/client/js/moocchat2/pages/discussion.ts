@@ -96,7 +96,7 @@ export let DiscussionPageFunc: IPageFunc<STATE> =
 
 
 
-                    let $answersUL = page$("#chat-answers > ul");
+                    let $answers = page$("#answers");
 
                     let answerDOMs: JQuery[] = [];
 
@@ -123,7 +123,7 @@ export let DiscussionPageFunc: IPageFunc<STATE> =
                     });
 
                     session.quiz.questionChoices.forEach((choice, i) => {
-                        let $answerLI = $("<li>").text(choice);
+                        let $answer = $("<div>").text(choice);
 
                         if (answerJustificationMap[i]) {
                             let $clientAnswerBlockUL = $("<ul>");
@@ -135,13 +135,13 @@ export let DiscussionPageFunc: IPageFunc<STATE> =
                                     .appendTo($clientAnswerBlockUL);
                             });
 
-                            $clientAnswerBlockUL.appendTo($answerLI);
+                            $clientAnswerBlockUL.appendTo($answer);
                         }
 
-                        answerDOMs.push($answerLI);
+                        answerDOMs.push($answer);
                     });
 
-                    $answersUL.append(answerDOMs);
+                    $answers.append(answerDOMs);
 
                 });
             },

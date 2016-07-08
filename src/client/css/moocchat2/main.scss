@@ -121,10 +121,23 @@ html, body {
     text-align: right;
 }
 
+.margin-top-0 {
+    margin-top: 0;
+}
+
+.bottom-rule {
+    border-bottom: $thin-border-width solid;
+}
+
+.thin-border {
+    border: $thin-border-width solid;
+}
 
 
 button {
     @include button($button-def-colour);
+    
+    vertical-align: middle;
 
     &:hover {
         @include button-hover($button-def-colour);
@@ -210,7 +223,6 @@ button.thin {
 .dialog {
     border: 0.2em solid;
     background: $message-default-bg-colour;
-    padding: 1em 2em;
     position: absolute;
     top: 0;
     width: 94%;
@@ -226,18 +238,75 @@ button.thin {
     }
 }
 
+.p-block {
+    display: block;
+    margin: 1em 0;
+}
 
-
-/********** Core UI structure **********/
-
-.mc-inline-message-block {
-    border: $thin-border-width solid $message-border-colour;
-    background: $message-default-bg-colour;
-    padding: 1em;
+p {
+    @extend .p-block;
 }
 
 
 
+/********** Core UI structure **********/
+
+.mc-inline-message {
+    @extend .thin-border;
+    border-color: $message-border-colour;
+    background: $message-default-bg-colour;
+    padding: 1em;
+}
+
+.mc-tint {
+    @extend .thin-border;
+
+    background: transparentize($mc-colour-1, 0.9);
+    color: $mc-colour-1;
+
+    &.gold-10 {
+        background: transparentize($uq-colour-A1, 0.9);
+        color: $uq-colour-A1;
+    }
+
+    &.purple-6 {
+        background: transparentize($uq-colour-A2, 0.94);
+        color: $uq-colour-A2;
+    }
+
+    &.green-10 {
+        background: transparentize($uq-colour-A3, 0.9);
+        color: $uq-colour-A3;
+    }
+
+    &.color-inherit {
+        color: inherit;
+    }
+}
+
+.mc-box-pad {
+    padding: 1rem 1.5rem;
+
+    &.pad-thick {
+        padding: 1.5rem 2rem;
+    }
+
+    &.pad-thin {
+        padding: 0.6rem 1rem;
+    }
+
+    &.pad-equal {
+        padding: 1rem;
+
+        &.pad-thick {
+            padding: 1.5rem;
+        }
+
+        &.pad-thin {
+            padding: 0.6rem;
+        }
+    }
+}
 
 
 /********** Core UI structure **********/
@@ -587,117 +656,92 @@ button.thin {
 // Carried over
 
 
-/** Q&A sections **/
-
-#question-content {
-    background: #eee;
-    
-    padding: 1.2rem 2rem;
-
-    border: 0.05rem solid #2f6890;
-
-    width: 100%;
-}
+/********** Q&A sections **********/
 
 #question-statement {
     font-weight: bold;
 }
 
-#answer-block {
-    margin-top: 1rem;
-
-    background: #eee;
-    border: 0.05rem solid #2f6890;
-}
-
 #answers {
-    display: table-cell;
-    width: 50%;
-    padding: 1.5rem 2rem;
-}
-
-#answers ul, #chat-answers ul {
-    margin: 0;
-    padding: 0;
     counter-reset: answer-counter;
-    list-style: none;
 }
 
-#answers li, #chat-answers li,
-#answers button, #chat-answers button {
-    display: list-item;
+#answers > * {
+    @extend .mc-box-pad;
+    @extend .thin-border;
+    
+    padding-left: 3.5rem;
+    
+    display: block;
+    width: 100%;
+
     color: inherit;
     text-align: inherit;
 
-    padding: 1rem 1.5rem 1rem 3.5rem;
-    background: #fff;
-    border: 0.05rem solid #2f6890;
+    background: $input-bg-colour;
+    border-color: #000;
     border-radius: 0;
     
     position: relative;
+
+    &::before {
+        list-style-type: upper-alpha;
+        content: counter(answer-counter, upper-alpha);
+        counter-increment: answer-counter;
+        padding: 0.2rem 0.4rem;
+        line-height: 1;
+        background: $mc-colour-1;
+        color: fg-on-bg($mc-colour-1);
+        
+        display: inline-block;
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        margin-top: -0.8rem;
+
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+
+    &:hover {
+        background: #eee;
+        cursor: pointer;
+    }
+
+    & + * {
+        border-top: 0;
+    }
+
+    &.selected {
+        background: $uq-colour-B5;
+        color: fg-on-bg($uq-colour-B5);
+    }
 }
 
-#answers.locked li,
-#answers.locked button {
-    background: #ddd;
+#answers.locked > * {
+    background: $input-disabled-bg-colour;
     color: inherit;
-}
 
-#answers li:hover,
-#answers button:hover {
-    background: #eee;
-    cursor: pointer;
-}
-
-#answers li::before, #chat-answers li::before,
-#answers button::before, #chat-answers button::before {
-    list-style-type: upper-alpha;
-    content: counter(answer-counter, upper-alpha);
-	counter-increment: answer-counter;
-    padding: 0.2rem 0.4rem;
-    line-height: 1;
-    background: $mc-colour-1;
-    color: fg-on-bg($mc-colour-1);
-    
-    display: inline-block;
-    position: absolute;
-    left: 1rem;
-    top: 50%;
-    margin-top: -0.8rem;
-
-    font-weight: bold;
-    font-size: 1.2rem;
-}
-
-#answers li + li, #chat-answers li + li,
-#answers button + button, #chat-answers button + button {
-    border-top: 0;
-}
-
-#answers li.selected, #chat-answers li.selected,
-#answers button.selected, #chat-answers button.selected {
-    background: $uq-colour-B5;
-    color: fg-on-bg($uq-colour-B5);
+    &.selected {
+        background: $uq-colour-B5;
+        color: fg-on-bg($uq-colour-B5);
+    }
 }
 
 #justification {
-    display: table-cell;
-    width: 50%;
-    padding: 1.5rem 2rem;
-}
+    @extend .thin-border;
 
-#justification textarea {
+    display: block;
     width: 100%;
     height: 10em;
-    display: block;
     resize: vertical;
     overflow: auto;
-    background: #fff;
-    border: 0.05rem solid #2f6890;
+
+    background: $input-bg-colour;
+    color: inherit;
 
     &:disabled {
-        background: #ddd;
-        color: inherit;
+        background: $input-disabled-bg-colour;
     }
 }
 
@@ -711,30 +755,12 @@ button.thin {
     color: red;
 }
 
-#question-content > h1:first-child,
-#question-content > h2:first-child,
-#question-content > h3:first-child,
-#answers > h1:first-child,
-#answers > h2:first-child,
-#answers > h3:first-child,
-#justification > h1:first-child,
-#justification > h2:first-child,
-#justification > h3:first-child,
-#chat-question > h1:first-child,
-#chat-question > h2:first-child,
-#chat-question > h3:first-child,
-#chat-answers > h1:first-child,
-#chat-answers > h2:first-child,
-#chat-answers > h3:first-child {
-    margin-top: 0;
-    border-bottom: 1px solid #ccc;
-    padding-bottom: 0.5em;
-}
-
 /** Chat */
 
 #chat-box {
-    border: 0.05rem solid $mc-colour-1;
+    background: $input-bg-colour;
+
+    border: 0.05rem solid;
     overflow-y: scroll;
     height: 35em;
 
@@ -828,8 +854,10 @@ button.thin {
 }
 
 #chat-input {
+    @extend .thin-border;
+
     width: 100%;
-    padding: 0.65rem 0.4rem;
+    background: $input-bg-colour;
 }
 
 #chat-input-button-wrapper {
@@ -843,23 +871,50 @@ button.thin {
 
 
 
-#chat-ui-wrapper {
+
+
+
+
+
+
+/********** Backup client **********/
+
+#backup-client-wait-management-area {
     display: table;
     width: 100%;
+    max-width: 50em;
 }
 
-#chat-ui-wrapper > * {
+#backup-client-wait-management-area > div {
     display: table-cell;
-    width: 50%;
-    vertical-align: top;
-    padding: 0 0.3em;
+    padding: 0 1em;
 }
 
-#chat-question-answers-block {
-    background: #eee;
-    border: 0.05rem solid #2f6890;
-    padding: 1.5rem 2rem;
+#backup-client-wait-management-area > div + div {
+    border-left: 1px solid #ddd;
 }
+
+#number-of-clients-in-pool {
+    display: block;
+    font-size: 5em;
+}
+
+#transfer-remaining-seconds {
+    color: red;
+    font-weight: bold;
+    font-size: 1.8em;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -876,13 +931,7 @@ button.thin {
         &.narrow-block > .row,
         &.narrow-block > .row > * {
             display: block;
+            width: 100%;
         }
-    }
-
-    #answers,
-    #justification,
-    #chat-ui-wrapper > * {
-        display: block;
-        width: auto;
     }
 }
