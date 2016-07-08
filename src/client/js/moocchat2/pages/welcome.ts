@@ -24,7 +24,7 @@ export let WelcomePageFunc: IPageFunc<STATE> =
                         page$("#not-you-help").toggle();
                     }).trigger("click");
 
-                    page$("button").on("click", () => {
+                    page$("#start-session").on("click", () => {
                         let nextState: STATE;
 
                         if (data && data.nextState) {

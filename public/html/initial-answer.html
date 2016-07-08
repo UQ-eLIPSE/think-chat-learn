@@ -1,21 +1,23 @@
 <!-- All pages must specify <section data-name="..." /> as root element -->
 <section data-name="initial-answer">
-    <h1>Answer the question below and provide a justification.</h1>
+    <h1>Answer the question below and provide a justification</h1>
 
     <div id="question-content">
         <h3>Question</h3>
         <p id="question-reading"></p>
         <p id="question-statement"></p>
     </div>
-    <div id="answer-block">
-        <div id="answers">
-            <h3>Answer</h3>
-            <ul></ul>
-        </div>
-        <div id="justification">
-            <h3>Justification</h3>
-            <textarea id="answer-justification" placeholder="Provide a justification for your answer..."></textarea>
-            <p style="text-align: right;"><span id="char-available"></span> <button class="submit-answer-button">Submit answer</button></p>
+    <div id="answer-block" class="table narrow-block">
+        <div class="row">
+            <div id="answers">
+                <h3>Answer</h3>
+                <ul></ul>
+            </div>
+            <div id="justification">
+                <h3>Justification</h3>
+                <textarea id="answer-justification" placeholder="Provide a justification for your answer..."></textarea>
+                <p class="right"><span id="char-available"></span> <button class="submit-answer-button">Submit answer</button></p>
+            </div>
         </div>
     </div>
 </section>

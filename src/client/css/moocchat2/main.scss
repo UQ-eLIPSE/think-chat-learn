@@ -4,23 +4,24 @@
  * MOOCchat
  */
 
-// Colours
-$mc-colour-1: #256;     // eLIPSE colour
-// $mc-colour-2: $uq-colour-B5;
+/********** Colours **********/
+$body-bg-colour: #fdfdfd;
+$body-std-font-size: 16px;
 
+$mc-colour-1: #256;     // eLIPSE colour
 $mc-colour-1-backup-client: $uq-colour-B5;
 
 $pos-colour: $uq-colour-B5;     // Positive action (e.g. submit)
 $neg-colour: $uq-colour-B6;     // Negative action (e.g. cancel)
+$ntl-colour: #ccc;
 
 $warning-colour: $uq-colour-B6; // General warnings
 $danger-colour: $uq-colour-B1;  // Absolute warnings, errors etc.
 
-$body-bg-colour: #fdfdfd;
-
 $button-def-colour: $mc-colour-1;  // Default
 $button-pos-colour: $pos-colour;
 $button-neg-colour: $neg-colour; 
+$button-ntl-colour: $ntl-colour; 
 
 $answer-option-heading-colour: $mc-colour-1;
 
@@ -28,14 +29,23 @@ $client-1-colour: #000066;
 $client-2-colour: #993366;
 $client-3-colour: #669900;
 
-// Dimensions
+$input-bg-colour: #fff;
+$input-disabled-bg-colour: #ccc;
+
+$message-border-colour: #bbb;
+$message-default-bg-colour: #ddd;
+
+/********** Dimensions **********/
 $mc-sidebar-width: 18rem;
 
 $mc-sidebar-padding-tb: 1rem;
 $mc-sidebar-padding-lr: 2rem;
 
+$thin-border-width: 0.05rem;
 
-// Mixins
+
+
+/********** Mixins **********/
 
 @function fg-on-bg($bg-color) {
   @if (lightness($bg-color) > 60) {
@@ -75,7 +85,11 @@ $mc-sidebar-padding-lr: 2rem;
     outline: none;
 }
 
-/** General **/
+
+
+
+
+/********** General **********/
 
 html, body {
     box-sizing: border-box;
@@ -83,12 +97,28 @@ html, body {
     background: $body-bg-colour;
     
     font-family: "Roboto", sans-serif;
-    font-size: 16px;
+    font-size: $body-std-font-size;
 }
 
 *, *::before, *::after {
     box-sizing: inherit;
 }
+
+
+
+.width-full {
+    width: 100%;
+}
+
+.width-half {
+    width: 50%;
+}
+
+.right {
+    text-align: right;
+}
+
+
 
 button {
     @include button($button-def-colour);
@@ -126,7 +156,71 @@ button.negative {
     }
 }
 
-/** Core **/
+button.neutral {
+    @include button($button-ntl-colour);
+
+    &:hover {
+        @include button-hover($button-ntl-colour);
+    }
+
+    &:active {
+        @include button-active($button-ntl-colour);
+    }
+}
+
+button.thin {
+    padding: 0.2em 1em;
+}
+
+.table {
+    @extend .width-full;
+
+    display: table;
+
+    & > .row {
+        display: table-row;
+
+        & > * {
+            display: table-cell;
+            vertical-align: top;
+        }
+    }
+}
+
+.list-item {
+    display: list-item;
+    width: 100%;
+}
+
+.monospace {
+    font-family: monospace;
+}
+
+.pre {
+    white-space: pre;
+}
+
+.pre-wrap {
+    white-space: pre-wrap;
+}
+
+
+
+
+
+/********** Core UI structure **********/
+
+.mc-inline-message-block {
+    border: $thin-border-width solid $message-border-colour;
+    background: $message-default-bg-colour;
+    padding: 1em;
+}
+
+
+
+
+
+/********** Core UI structure **********/
 
 #header {
     background: $mc-colour-1;
@@ -170,7 +264,11 @@ button.negative {
     }
 }
 
-/** Header/sidebar **/
+
+
+
+
+/********** Header/sidebar **********/
 
 #moocchat-name {
     line-height: 1;
@@ -196,7 +294,10 @@ button.negative {
 }
 
 
-/** Task sections **/
+
+
+
+/********** Task sections **********/
 
 #task-sections {
     list-style: none;
@@ -487,11 +588,6 @@ button.negative {
 
     background: #eee;
     border: 0.05rem solid #2f6890;
-
-    display: table;
-    position: relative;
-
-    width: 100%;
 }
 
 #answers {
@@ -552,22 +648,6 @@ button.negative {
     font-weight: bold;
     font-size: 1.2rem;
 }
-
-// #answers li.counter-red::before, #chat-answers li.counter-red::before {
-//     background: red;
-// }
-
-// #answers li.counter-green::before, #chat-answers li.counter-green::before {
-//     background: green;
-// }
-
-// #answers li.counter-blue::before, #chat-answers li.counter-blue::before {
-//     background: blue;
-// }
-
-// #answers li.counter-purple::before, #chat-answers li.counter-purple::before {
-//     background: purple;
-// }
 
 #answers li + li, #chat-answers li + li,
 #answers button + button, #chat-answers button + button {
@@ -763,17 +843,22 @@ button.negative {
 
 
 
+/********** Media queries **********/
 
-
-
-
-
-
-
-
-
-/*** Narrower width ***/
+// Narrower devices (~1100px)
 @media (max-width: 70rem) {
+    html, body {
+        font-size: $body-std-font-size * 0.9;
+    }
+    
+    .table {
+        &.narrow-block,
+        &.narrow-block > .row,
+        &.narrow-block > .row > * {
+            display: block;
+        }
+    }
+
     #answers,
     #justification,
     #chat-ui-wrapper > * {

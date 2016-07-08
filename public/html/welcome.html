@@ -1,9 +1,9 @@
 <!-- All pages must specify <section data-name="..." /> as root element -->
 <section data-name="welcome">
     <h1>Welcome, <span id="name">{{name}}</span></h1>
-    <a id="not-you-help-link" href="#">Not you?</a>
-    <p id="not-you-help" style="border: 1px solid #ccc; background: #ddd; padding: 1em;">
-        MOOCchat uses data from Blackboard. If you would like to log in as someone else, please close MOOCchat, log out of Blackboard and try again.
+    <button id="not-you-help-link" class="neutral thin">Not you?</button>
+    <p id="not-you-help" class="mc-inline-message-block">
+        MOOCchat uses user data from Blackboard. If you would like to log in as someone else, please close MOOCchat, log out of Blackboard and try again.
     </p>
 
     <h2>Steps on using MoocChat:</h2>
@@ -20,5 +20,5 @@
         <li>Fill out a brief questionnaire about your MoocChat experience.</li>
     </ol>
 
-    <button>Start your session</button>
+    <button id="start-session">Start your session</button>
 </section>

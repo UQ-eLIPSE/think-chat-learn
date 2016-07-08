@@ -46,12 +46,12 @@
     </style>
 
     <div id="backup-client-wait-management-area">
-        <div style="width: 50%;">
+        <div class="width-half">
             <h2 style="margin-top: 0;">Backup Queue Clients</h2>
             <ul id="backup-client-queue"></ul>
             <button id="logout" class="negative">Log out</button>
         </div>
-        <div style="width: 50%;">
+        <div class="width-half">
             <h2 style="margin-top: 0;">Pool Status</h2>
             <p style="text-align: center;">There are currently <span id="number-of-clients-in-pool">...</span> client(s) waiting in the group formation
                 pool.
@@ -65,11 +65,4 @@
         <p>You have <span id="transfer-remaining-seconds">0</span> seconds remaining.</p>
         <p><button id="confirm-transfer" class="positive">Confirm</button></p>
     </div>
-
-    <!--<div id="ejected-dialog" class="hidden">
-        <h2>You have been removed from the backup client queue</h2>
-        <p>You were ejected as you did not respond to a request to join a discussion group.</p>
-        <p><button id="login-again">Login again</button></p>
-    </div>-->
-
 </section>
