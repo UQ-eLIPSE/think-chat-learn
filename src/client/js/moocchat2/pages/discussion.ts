@@ -31,6 +31,14 @@ export let DiscussionPageFunc: IPageFunc<STATE> =
                     }
 
                     page$("#end-chat").on("click", () => {
+                        page$("#end-chat-confirmation").removeClass("hidden");
+                    });
+
+                    page$("#cancel-end-chat").on("click", () => {
+                        page$("#end-chat-confirmation").addClass("hidden");
+                    });
+
+                    page$("#confirm-end-chat").on("click", () => {
                         endChat();
                     });
 

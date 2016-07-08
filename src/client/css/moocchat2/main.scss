@@ -105,6 +105,9 @@ html, body {
 }
 
 
+.hidden {
+    display: none;
+}
 
 .width-full {
     width: 100%;
@@ -204,7 +207,24 @@ button.thin {
     white-space: pre-wrap;
 }
 
+.dialog {
+    border: 0.2em solid;
+    background: $message-default-bg-colour;
+    padding: 1em 2em;
+    position: absolute;
+    top: 0;
+    width: 94%;
+    left: 0;
+    margin-left: 3%;
+    margin-top: 3%;
+    box-shadow: 0px 5px 20px #000; 
+    
+    z-index: 100;
 
+    &.warning {
+        border-color: $warning-colour;
+    }
+}
 
 
 

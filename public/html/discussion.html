@@ -1,7 +1,7 @@
 <!-- All pages must specify <section data-name="..." /> as root element -->
 <section data-name="discussion">
     <h1>Discuss your group's answers to the question</h1>
-    <p>When you're ready to move on, click "End chat and revise answer".</p>
+    <p>When your group has finished discussions and you're ready to move on, click "End chat and revise answer".</p>
     <p class="right"><button id="end-chat" class="negative">End chat and revise answer</button></p>
 
     <div id="chat-ui-wrapper">
@@ -27,5 +27,11 @@
                 <div id="chat-input-button-wrapper"><button id="chat-send" class="positive">Send</button></div>
             </form>
         </div>
+    </div>
+
+    <div id="end-chat-confirmation" class="dialog warning hidden">
+        <h2>End your chat session now?</h2>
+        <p>Please note that your participation in this chat session is marked.</p>
+        <p class="right"><button id="cancel-end-chat" class="positive">Return to chat</button> <button id="confirm-end-chat">End chat and revise answer</button></p>
     </div>
 </section>
