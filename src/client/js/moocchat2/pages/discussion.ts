@@ -89,9 +89,9 @@ export let DiscussionPageFunc: IPageFunc<STATE> =
                     chat.displaySystemMessage(`Your discussion group has ${data.groupSize} member${(data.groupSize !== 1) ? "s" : " only"}`);
                     chat.displaySystemMessage(`You are Person #${data.clientIndex + 1}`);
 
-                    data.groupAnswers.forEach((answerData) => {
-                        chat.displayMessage(answerData.clientIndex + 1, `Answer = ${String.fromCharCode(65 + answerData.answer)}; Justification = ${answerData.justification}`)
-                    });
+                    // data.groupAnswers.forEach((answerData) => {
+                    //     chat.displayMessage(answerData.clientIndex + 1, `Answer = ${String.fromCharCode(65 + answerData.answer)}; Justification = ${answerData.justification}`)
+                    // });
 
 
 
@@ -126,7 +126,7 @@ export let DiscussionPageFunc: IPageFunc<STATE> =
                         let $answer = $("<div>").text(choice);
 
                         if (answerJustificationMap[i]) {
-                            let $clientAnswerBlockUL = $("<ul>");
+                            let $clientAnswerBlockUL = $("<ul>").prop("id", "client-justifications");
 
                             answerJustificationMap[i].forEach((clientJustification) => {
                                 $("<li>")
@@ -143,6 +143,8 @@ export let DiscussionPageFunc: IPageFunc<STATE> =
 
                     $answers.append(answerDOMs);
 
+
+                    page$("#chat-input").focus();
                 });
             },
             onLeave: () => {

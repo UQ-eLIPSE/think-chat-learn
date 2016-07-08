@@ -239,7 +239,6 @@ button.thin {
 }
 
 .p-block {
-    display: block;
     margin: 1em 0;
 }
 
@@ -695,12 +694,12 @@ p {
         
         display: inline-block;
         position: absolute;
-        left: 1rem;
+        left: 0.8rem;
         top: 50%;
-        margin-top: -0.8rem;
+        margin-top: -1rem;
 
         font-weight: bold;
-        font-size: 1.2rem;
+        font-size: 1.7rem;
     }
 
     &:hover {
@@ -725,6 +724,70 @@ p {
     &.selected {
         background: $uq-colour-B5;
         color: fg-on-bg($uq-colour-B5);
+    }
+}
+
+#client-justifications {
+    padding: 0;
+    margin: 1em 0 0 0;
+    background: transparentize($mc-colour-1, 0.9);
+    
+    list-style: none;
+
+    li {
+        position: relative;
+
+        white-space: pre-wrap;
+        padding: 0.5rem 1rem 0.5rem 2.5rem;
+
+        & + li {
+            border-top: $thin-border-width solid;
+        }
+
+        &::before {
+            content: attr(data-client-id);
+            display: inline-block;
+
+            position: absolute;
+            top: 50%;
+            left: 0.6rem;
+
+            background: #000;
+            color: #fff;
+            
+            text-align: center;
+            line-height: 1;
+
+            width: 1.4rem;
+            height: 1.4rem;
+            font-size: 1.2rem;
+            padding-top: 0.1rem;
+            margin-top: -0.7rem;
+        }
+
+        &[data-client-id="1"] {
+            color: $client-1-colour;
+
+            &::before {
+                background: $client-1-colour;
+            }
+        }
+
+        &[data-client-id="2"] {
+            color: $client-2-colour;
+            
+            &::before {
+                background: $client-2-colour;
+            }
+        }
+
+        &[data-client-id="3"] {
+            color: $client-3-colour;
+            
+            &::before {
+                background: $client-3-colour;
+            }
+        }
     }
 }
 
@@ -771,7 +834,7 @@ p {
         text-align: right;
         line-height: 1;
         
-        margin: 1em 0.5rem;
+        margin: 1rem 0.5rem;
         border-bottom: 0.2rem solid;
         border-image: linear-gradient(to right, currentColor, currentColor 3rem, transparent 60%, transparent) 1;
 
@@ -791,8 +854,8 @@ p {
 
             width: 2rem;
             height: 2rem;
-            font-size: 1.6em;
-            padding-top: 0.15em;
+            font-size: 1.6rem;
+            padding-top: 0.3rem;
         }
 
         // Message coming from system
