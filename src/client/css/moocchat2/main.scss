@@ -826,6 +826,7 @@ p {
     border: 0.05rem solid;
     overflow-y: scroll;
     height: 35em;
+    width: 100%;
 
     & > blockquote {
         margin: 0;
@@ -905,6 +906,11 @@ p {
     }
 }
 
+#chat-clone {
+    #chat-box {
+        height: 20em;
+    }
+}
 
 #chat-input-wrapper {
     display: table;

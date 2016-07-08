@@ -27,7 +27,7 @@ export let DiscussionPageFunc: IPageFunc<STATE> =
                     function endChat() {
                         chat.terminate();
                         session.analytics.trackEvent("CHAT", "END");
-                        session.stateMachine.goTo(STATE.REVISED_ANSWER);
+                        session.stateMachine.goTo(STATE.REVISED_ANSWER, chat);
                     }
 
                     page$("#end-chat").on("click", () => {

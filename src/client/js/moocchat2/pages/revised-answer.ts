@@ -6,6 +6,8 @@ import {IPageFunc} from "../classes/IPageFunc";
 
 import {MoocchatState as STATE} from "../classes/MoocchatStates";
 
+import {MoocchatChat} from "../classes/MoocchatChat";
+
 import {WebsocketEvents} from "../classes/Websockets";
 
 export let RevisedAnswerPageFunc: IPageFunc<STATE> =
@@ -32,7 +34,7 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
         }
 
         return {
-            onEnter: () => {
+            onEnter: (data) => {
                 session.pageManager.loadPage("revised-answer", (page$) => {
                     section.setActive();
                     section.startTimer();
@@ -127,6 +129,13 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
                     $justification.prop("disabled", true);
                     page$(".post-edit-enable").hide();
                     $answers.addClass("locked");
+
+                    // If passed chat object, clone window into expected chat area
+                    if (data instanceof MoocchatChat) {
+                        let chat = data as MoocchatChat;       
+
+                        page$("#chat-clone").append(chat.chatWindow);
+                    }
                 });
             },
             onLeave: () => {
