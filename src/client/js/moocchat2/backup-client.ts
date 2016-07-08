@@ -91,6 +91,11 @@ $(() => {
                 let user = new MoocchatUser(session.eventManager, _LTI_BASIC_LAUNCH_DATA);
 
                 user.onLoginSuccess = (data) => {
+                    if (!data.hasElevatedPermissions) {
+                        session.stateMachine.goTo(STATE.INVALID_LOGIN, { reason: "No elevated permissions for backup client session" });
+                        return;
+                    }
+
                     session.setQuiz(new MoocchatQuiz(data.quiz));
                     session.setUser(user);
                     session.sessionId = data.sessionId;
