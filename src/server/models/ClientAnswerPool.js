@@ -42,16 +42,14 @@ ClientAnswerWrapper.prototype.timeAlive = function() {
  * Handles queues of clients and attempts to distribute them
  * into groups with diverse answers where possible
  * 
- * @param {Quiz} quiz
+ * @param {number} numberOfAnswers
  */
-var ClientAnswerPool = function(quiz) {
+var ClientAnswerPool = function(numberOfAnswers) {
     this.desiredGroupSize = conf.chat.groups.desiredSize;
     this.desiredMaxWaitTime = conf.chat.groups.formationTimeoutMs;
-
-    this.quiz = quiz;
-
+    
     // Determine how many answers are available
-    this.numberOfAnswers = this.quiz.probingQuestionChoices.length;
+    this.numberOfAnswers = numberOfAnswers;
 
     // Set up answer queues as a map between an answer number => ClientAnswerWrapper[] 
     this.answerQueues = {};

@@ -1,8 +1,6 @@
 {
     "portNum": 8080,
-    "activeQuestionGroup": 0,
     "database": "localhost/moocchatDB",
-    "collectionPrefix": "uq_",
     "ssl": 0,
     "key": "/etc/pki/tls/private/persimmon.key",
     "cert": "/etc/pki/tls/certs/persimmon.pem",

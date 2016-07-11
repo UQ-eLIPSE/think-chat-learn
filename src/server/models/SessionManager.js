@@ -73,6 +73,23 @@ SessionManager.prototype.getSessionBySocket = function(socket) {
 }
 
 /**
+ * @param {Client} client
+ */
+SessionManager.prototype.getSessionByClient = function(client) {
+    var sessionIds = Object.keys(this.activeSessions);
+
+    for (var i = 0; i < sessionIds.length; ++i) {
+        var sessionId = sessionIds[i];
+
+        var session = this.activeSessions[sessionId].session;
+
+        if (session.client === client) {
+            return session;
+        }
+    }
+}
+
+/**
  * @param {string} sessionId
  * 
  * @return {boolean}

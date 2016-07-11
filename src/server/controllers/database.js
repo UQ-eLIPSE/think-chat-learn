@@ -4,65 +4,45 @@
  */
 var conf = require('../../config/conf.json');
 
-// The new way to get table names
-var tables = require('../../config/db_tables.json');
-
-var collection_suffixes = [
-  "userLogin",
-  "userQuiz",
-  "quizRoom",
-  "discussionRoom",
-  "survey",
-  "bonusRecipient",
-  "question",
-  "userConsent",
-  "postSurvey",
-  "usernames",
-	"userFlow"
-];
-
-// The old way of doing it (kept in for existing code)
 var collections = [];
+var tables = require("../models/database/Tables").tables;
 
-for (var suffix in collection_suffixes) {
-  collections.push(conf.collectionPrefix + collection_suffixes[suffix]);
+for (var key in tables) {
+	collections.push(tables[key]);
 }
 
 // Set to an object
 var mongojs = require("mongojs");
 var db = mongojs(conf.database, collections);
 
-
 // Import the database models
-var question = require('../models/database/question');
-question.init(db);
+var Question = require("../models/database/Question").Question;
+var QuestionOption = require("../models/database/QuestionOption").QuestionOption;
+var QuestionResponse = require("../models/database/QuestionResponse").QuestionResponse;
 
-var userquiz = require('../models/database/userquiz');
-userquiz.init(db);
+var QuizSchedule = require("../models/database/QuizSchedule").QuizSchedule;
 
-var userflow = require('../models/database/userflow');
-userflow.init(db);
+var ChatMessage = require("../models/database/ChatMessage").ChatMessage;
 
-var user = require('../models/database/user');
-user.init(db);
+var User = require("../models/database/User").User;
+var UserSession = require("../models/database/UserSession").UserSession;
 
-var userlogin = require('../models/database/userlogin');
-userlogin.init(db);
-
-var quizroom = require('../models/database/quizroom');
-quizroom.init(db);
+var Survey = require("../models/database/Survey").Survey;
+var SurveyResponse = require("../models/database/SurveyResponse").SurveyResponse;
 
 module.exports = {
-  collections: collections,
-  db: db,
+	// ORM objects
+	question: new Question(db),
+	questionOption: new QuestionOption(db),
+	questionResponse: new QuestionResponse(db),
 
-  // ORM objects
-  question: question,
-  userflow: userflow,
-  userquiz: userquiz,
-  userlogin: userlogin,
-  user: user,
-  quizroom: quizroom,
+	quizSchedule: new QuizSchedule(db),
 
-  tables: tables
+	chatMessage: new ChatMessage(db),
+
+	user: new User(db),
+	userSession: new UserSession(db),
+
+	survey: new Survey(db),
+	surveyResponse: new SurveyResponse(db)
 };
