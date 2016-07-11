@@ -717,6 +717,13 @@ p {
     }
 }
 
+#answers.no-hover > * {
+    &:hover {
+        background: $input-bg-colour;
+        cursor: inherit;
+    }
+}
+
 #answers.locked > * {
     background: $input-disabled-bg-colour;
     color: inherit;

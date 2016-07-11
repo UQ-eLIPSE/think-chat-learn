@@ -45,6 +45,7 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
                     let $submitAnswer = page$(".submit-answer-button");
                     let $charAvailable = page$("#char-available");
                     let $enableRevision = page$("#enable-revision");
+                    let $showQuestionChat = page$("#show-hide-question-chat");
 
                     // Force answer when timer runs out
                     section.attachTimerCompleted(() => {
@@ -96,7 +97,7 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
                         page$(".pre-edit-enable").hide();
                         page$(".post-edit-enable").show();
                         $answers.removeClass("locked");
-                        $justification.prop("disabled", false);
+                        $justification.prop("disabled", false).trigger("input");
 
                         $answers.on("click", "button", function(e) {
                             e.preventDefault();
@@ -104,9 +105,14 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
                             $("button", $answers).removeClass("selected");
 
                             $(this).addClass("selected");
+
                         });
                     });
 
+                    $showQuestionChat.on("click", () => {
+                        page$("#question-chat-container").toggle();
+                    });
+                    page$("#question-chat-container").hide();
 
                     // Render question, choices
                     page$("#question-reading").html(session.quiz.questionReading);
