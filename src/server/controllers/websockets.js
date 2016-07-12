@@ -75,7 +75,7 @@ function removeClientFromEverything(client) {
     }
 
     if (clientAnswerPool.removeClient(client)) {
-        broadcastPoolCountToBackupQueue();
+        broadcastPoolCountToBackupQueue(clientAnswerPool);
     }
 
     var chatGroupIds = Object.keys(chatGroups);
@@ -146,7 +146,18 @@ function formChatGroup(clientAnswerPool) {
     if (newChatGroup) {
         chatGroups[newChatGroup.id] = newChatGroup;
 
-        broadcastPoolCountToBackupQueue();
+        newChatGroup.clients.forEach(function(client) {
+            db_wrapper.userSession.update({
+                _id: mongojs.ObjectId(client.getSession().getId())
+            },
+            {
+                $set: {
+                    chatGroupId: newChatGroup.id
+                }
+            });
+        });
+
+        broadcastPoolCountToBackupQueue(clientAnswerPool);
 
         return newChatGroup;
     }
@@ -156,7 +167,7 @@ function formChatGroup(clientAnswerPool) {
 // TODO: Have a library/package handle this task in a different thread?    
 var chatGroupFormationLoop = (function() {
     var timeBetweenChecks = conf.chat.groups.formationIntervalMs;
-    var timeoutHandle;
+    var timeoutHandles = {};
 
 
 
@@ -164,14 +175,14 @@ var chatGroupFormationLoop = (function() {
      * Runs another round of the loop, or starts the loop if not already active.
      */
     function run(clientAnswerPool) {
-        clearTimeout(timeoutHandle);
+        clearTimeout(timeoutHandles[clientAnswerPool.id]);
 
         var newChatGroup = formChatGroup(clientAnswerPool);
 
         if (newChatGroup) {
             setImmediate(run, clientAnswerPool);   // Process next group at next available timeslot
         } else {
-            timeoutHandle = setTimeout(run, timeBetweenChecks, clientAnswerPool);
+            timeoutHandles[clientAnswerPool.id] = setTimeout(run, timeBetweenChecks, clientAnswerPool);
         }
     }
 
@@ -188,11 +199,12 @@ var chatGroupFormationLoop = (function() {
  * @param {any} data
  */
 function handleChatGroupJoinRequest(data) {
-    var client = getClientFromSessionId(data.sessionId);
     var session = allSessions.getSessionById(data.sessionId);
+    var client = session.client;
+    var answerOptionId = session.responseInitial.optionId;
     var clientAnswerPool = getClientAnswerPoolFromSession(session);
 
-    clientAnswerPool.addClient(client);
+    clientAnswerPool.addClient(client, answerOptionId);
 
     broadcastPoolCountToBackupQueue(clientAnswerPool);
 
@@ -234,8 +246,19 @@ function handleChatGroupQuitStatusChange(data) {
  * @param {any} data
  */
 function handleChatGroupMessage(data) {
-    var client = getClientFromSessionId(data.sessionId);
+    var session = allSessions.getSessionById(data.sessionId);
+
+    var client = session.client;
     var chatGroup = chatGroups[data.groupId];
+    
+    db_wrapper.chatMessage.create({
+        content: data.message,
+        sessionId: mongojs.ObjectId(session.getId()),
+        timestamp: new Date()
+    }, function(err, result) {
+        // TODO: 
+    });
+    
     chatGroup.broadcastMessage(client, data.message);
 }
 
@@ -325,10 +348,10 @@ function handleLoginLti(data, socket) {
     var ltiObject;
 
     /** {string} */
-    var user_id;
+    var ltiUsername;
 
     /** {string} */
-    var uuid;
+    var userId;
 
     /** {Object(QuizSchedule)} */
     var quizSchedule;
@@ -351,13 +374,13 @@ function handleLoginLti(data, socket) {
     }
 
     function checkUserId(throwErr, next) {
-        user_id = ltiObject.user_id;
+        ltiUsername = ltiObject.user_id;
 
-        if (!user_id) {
+        if (!ltiUsername) {
             return throwErr(new Error('No user ID received.'));
         }
 
-        if (allSessions.hasSessionWithUsername(user_id)) {
+        if (allSessions.hasSessionWithUsername(ltiUsername)) {
             return throwErr(new Error('The username is being used.'));
         }
 
@@ -365,7 +388,7 @@ function handleLoginLti(data, socket) {
     }
 
     function retrieveUuid(throwErr, next) {
-        db_wrapper.user.read({ username: user_id }, function(err, result) {
+        db_wrapper.user.read({ username: ltiUsername }, function(err, result) {
             if (err) {
                 return notifyClientOnError(err);
             }
@@ -376,16 +399,14 @@ function handleLoginLti(data, socket) {
 
             // New user
             if (result.length === 0) {
-                uuid = require('crypto').randomBytes(16).toString('hex');
-
                 db_wrapper.user.create({
-                    uuid: uuid,
-                    username: user_id
+                    username: ltiUsername
                 }, function(err, result) {
                     if (err) {
                         return notifyClientOnError(err);
                     }
 
+                    userId = result._id.toString();
                     next();
                 });
 
@@ -393,7 +414,7 @@ function handleLoginLti(data, socket) {
             }
 
             // Existing user
-            uuid = result[0].uuid;
+            userId = result[0]._id.toString();
             next();
         });
     }
@@ -458,7 +479,7 @@ function handleLoginLti(data, socket) {
         var quizScheduleId = quizSchedule._id;
 
         if (!quizSchedule_ClientAnswerPools[quizScheduleId]) {
-            var newClientAnswerPool = new ClientAnswerPool(questionOptions.length);
+            var newClientAnswerPool = new ClientAnswerPool(questionOptions);
             quizSchedule_ClientAnswerPools[quizScheduleId] = newClientAnswerPool;
             chatGroupFormationLoop.run(newClientAnswerPool);
         }
@@ -468,8 +489,8 @@ function handleLoginLti(data, socket) {
 
     function setupClient(throwErr, next) {
         client = new Client();
-        client.uuid = uuid;
-        client.username = user_id;
+        client.userId = userId;
+        client.username = ltiUsername;
         client.setSocket(socket);
 
         next();
@@ -477,7 +498,7 @@ function handleLoginLti(data, socket) {
 
     function writeSessionToDb(throwErr, next) {
         db_wrapper.userSession.create({
-            userUuid: uuid,
+            userId: mongojs.ObjectId(userId),
 
             timestampStart: new Date(),
             timestampEnd: null,
@@ -636,6 +657,10 @@ function handleAnswerSubmissionInitial(data) {
 
         var questionResponseObjectId = result._id;
 
+        session.responseInitial._id = questionResponseObjectId.toString();
+        session.responseInitial.optionId = optionIdString;
+        session.responseInitial.justification = justification;
+
         db_wrapper.userSession.update(
             {
                 _id: mongojs.ObjectId(session.getId())
@@ -727,6 +752,8 @@ function handleBackupClientStatusRequest(data) {
 
     broadcastBackupClientQueueStatus();
     broadcastPoolCountToBackupQueue();
+    // TODO:
+    console.log("[!!] TODO: FIX handleBackupClientStatusRequest: broadcastPoolCountToBackupQueue requires 1st parameter");
 }
 
 /**

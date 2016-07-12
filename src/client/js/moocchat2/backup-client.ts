@@ -208,8 +208,8 @@ $(() => {
                     // page$("#question-statement").html(session.quiz.questionStatement);
 
                     let answerDOMs: JQuery[] = [];
-                    session.quiz.questionChoices.forEach((choice) => {
-                        answerDOMs.push($("<button>").html(choice.content));
+                    session.quiz.questionOptions.forEach((option) => {
+                        answerDOMs.push($("<button>").html(option.content));
                     });
 
                     $answers.append(answerDOMs);

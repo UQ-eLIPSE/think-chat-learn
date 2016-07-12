@@ -102,8 +102,8 @@ export let InitialAnswerPageFunc: IPageFunc<STATE> =
                     // page$("#question-statement").html(session.quiz.questionStatement);
 
                     let answerDOMs: JQuery[] = [];
-                    session.quiz.questionChoices.forEach((choice) => {
-                        answerDOMs.push($("<button>").html(choice.content).data("optionId", choice._id));
+                    session.quiz.questionOptions.forEach((option) => {
+                        answerDOMs.push($("<button>").html(option.content).data("optionId", option._id));
                     });
 
                     $answers.append(answerDOMs);

@@ -105,30 +105,31 @@ export let DiscussionPageFunc: IPageFunc<STATE> =
                     // page$("#question-statement").html(session.quiz.questionStatement);
 
                     // Go through each client's answers and add them into the answer choices
-                    let answerJustificationMap: { [id: number]: { clientIndex: number; justification: string; }[] } = {};
+                    let answerJustificationMap: { [optionId: string]: { clientIndex: number; justification: string; }[] } = {};
 
                     data.groupAnswers.forEach((clientAnswer) => {
-                        let answer = clientAnswer.answer;
                         let clientIndex = clientAnswer.clientIndex;
-                        let justification = clientAnswer.justification;
 
-                        if (!answerJustificationMap[answer]) {
-                            answerJustificationMap[answer] = [];
+                        let justification = clientAnswer.answer.justification;
+                        let optionId = clientAnswer.answer.optionId;
+
+                        if (!answerJustificationMap[optionId]) {
+                            answerJustificationMap[optionId] = [];
                         }
 
-                        answerJustificationMap[answer].push({
+                        answerJustificationMap[optionId].push({
                             clientIndex: clientIndex,
                             justification: justification
                         });
                     });
 
-                    session.quiz.questionChoices.forEach((choice, i) => {
-                        let $answer = $("<div>").html(choice.content);
+                    session.quiz.questionOptions.forEach((option) => {
+                        let $answer = $("<div>").html(option.content);
 
-                        if (answerJustificationMap[i]) {
+                        if (answerJustificationMap[option._id]) {
                             let $clientAnswerBlockUL = $("<ul>").prop("id", "client-justifications");
 
-                            answerJustificationMap[i].forEach((clientJustification) => {
+                            answerJustificationMap[option._id].forEach((clientJustification) => {
                                 $("<li>")
                                     .attr("data-client-id", clientJustification.clientIndex + 1)
                                     .text(clientJustification.justification)

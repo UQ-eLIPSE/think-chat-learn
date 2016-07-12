@@ -33,10 +33,12 @@ export interface IEventData_LoginExistingUser {
 
 /** A person's answer to the quiz in the initial answer stage */
 export interface IEventData_ChatGroupAnswer {
-    screenName: string;
     clientIndex: number;
-    answer: number;
-    justification: string;
+    answer: {
+        _id?: string;
+        justification: string;
+        optionId: string;
+    }
 }
 
 /** chatGroupFormed */

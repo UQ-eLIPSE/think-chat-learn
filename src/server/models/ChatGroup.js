@@ -125,22 +125,22 @@ ChatGroup.prototype.getScreenName = function(client) {
     return "Student " + (this.getClientIndex(client) + 1);
 }
 
-/**
- * Backwards compatibility
- * Returns object array that previously was used with probAnswers.
- * 
- * @return {Object[]}
- */
-ChatGroup.prototype.getGroupProbAnswerObjArray = function() {
-    return this.clients.map(function(client) {
-        return {
-            screenName: this.getScreenName(client),
-            clientIndex: this.getClientIndex(client),
-            answer: client.probingQuestionAnswer,
-            justification: client.probJustification
-        }
-    }, this);
-}
+// /**
+//  * Backwards compatibility
+//  * Returns object array that previously was used with probAnswers.
+//  * 
+//  * @return {Object[]}
+//  */
+// ChatGroup.prototype.getGroupProbAnswerObjArray = function() {
+//     return this.clients.map(function(client) {
+//         return {
+//             screenName: this.getScreenName(client),
+//             clientIndex: this.getClientIndex(client),
+//             answer: client.probingQuestionAnswer,
+//             justification: client.probJustification
+//         }
+//     }, this);
+// }
 
 /**
  * Notifies all members of a chat group formation.
@@ -151,7 +151,12 @@ ChatGroup.prototype.notifyEveryoneOnJoin = function() {
         this.emitEvent(client, "chatGroupFormed", {
             groupId: this.id,
             groupSize: this.numberOfClients(),
-            groupAnswers: this.getGroupProbAnswerObjArray(),
+            groupAnswers: this.clients.map(function(client){
+                return {
+                    clientIndex: this.getClientIndex(client),
+                    answer: client.getSession().responseInitial
+                };
+            }, this),
             screenName: this.getScreenName(client),
             clientIndex: this.getClientIndex(client)
         });

@@ -36,7 +36,7 @@ export class MoocchatQuiz {
         return this.data.question.content;
     }
 
-    public get questionChoices() {
+    public get questionOptions() {
         // Sort choices by sequence number
         return this.data.questionOptions.sort((a, b) => {
             if (a.sequence === b.sequence) {

@@ -12,12 +12,28 @@ var Client = require("./client");
  */
 var Session = function(client, quizScheduleSession) {
     this.id = null;     // {String}
-    this.client = client;
+
     // this.hasElevatedPermissions = false;
 
     this.quizSession = quizScheduleSession;
     this.quizQuestion;
     this.quizQuestionOptions;
+
+    this.responseInitial = {
+        _id: null,
+        optionId: null,
+        justification: null
+    };
+
+    this.responseFinal = {
+        _id: null,
+        optionId: null,
+        justification: null
+    };
+    
+    // Set back reference to session in Client
+    this.client = client;
+    client.setSession(this);
 }
 
 /**
