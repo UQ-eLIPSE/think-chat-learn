@@ -19,7 +19,8 @@ export let InitialAnswerPageFunc: IPageFunc<STATE> =
 
             session.socket.emit(WebsocketEvents.OUTBOUND.INITIAL_ANSWER_SUBMISSION, {
                 sessionId: session.sessionId,
-                questionId: session.quiz.questionNumber,
+                // questionId: session.quiz.questionNumber,
+                questionId: session.quiz.questionId,
                 answer: session.answers.initial.answer,
                 justification: session.answers.initial.justification
             });
@@ -99,12 +100,12 @@ export let InitialAnswerPageFunc: IPageFunc<STATE> =
 
 
                     // Render question, choices
-                    page$("#question-reading").html(session.quiz.questionReading);
-                    page$("#question-statement").html(session.quiz.questionStatement);
+                    page$("#question-reading").html(session.quiz.questionContent);
+                    // page$("#question-statement").html(session.quiz.questionStatement);
 
                     let answerDOMs: JQuery[] = [];
                     session.quiz.questionChoices.forEach((choice) => {
-                        answerDOMs.push($("<button>").text(choice));
+                        answerDOMs.push($("<button>").html(choice.content));
                     });
 
                     $answers.append(answerDOMs);

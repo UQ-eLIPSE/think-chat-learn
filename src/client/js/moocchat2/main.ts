@@ -20,7 +20,7 @@ import {RevisedAnswerPageFunc} from "./pages/revised-answer";
 import {SurveyPageFunc} from "./pages/survey";
 
 import {ILTIBasicLaunchData} from "./classes/ILTIBasicLaunchData";
-import {IEventData_SessionAvailableStatus} from "./classes/IEventData";
+// import {IEventData_SessionAvailableStatus} from "./classes/IEventData";
 
 declare const _LTI_BASIC_LAUNCH_DATA: ILTIBasicLaunchData;
 
@@ -85,17 +85,17 @@ $(() => {
                     session.stateMachine.goTo(STATE.NO_LTI_DATA);
                     session.analytics.trackEvent("MOOCCHAT", "NO_LTI_DATA");
                 } else {
-                    session.socket.emit(WebsocketEvents.OUTBOUND.SESSION_AVAILABLE_CHECK);
-                    session.socket.once(WebsocketEvents.INBOUND.SESSION_AVAILABLE_STATUS, (data: IEventData_SessionAvailableStatus) => {
-                        if (data.available) {
+                    // session.socket.emit(WebsocketEvents.OUTBOUND.SESSION_AVAILABLE_CHECK);
+                    // session.socket.once(WebsocketEvents.INBOUND.SESSION_AVAILABLE_STATUS, (data: IEventData_SessionAvailableStatus) => {
+                    //     if (data.available) {
                             // $courseName.text(_LTI_BASIC_LAUNCH_DATA.lis_course_section_sourcedid.split("_")[0]);
                             $courseName.text("ENGG1200");
                             session.stateMachine.goTo(STATE.LOGIN);
                             session.analytics.trackEvent("MOOCCHAT", "START");
-                        } else {
-                            session.stateMachine.goTo(STATE.SESSION_NOT_AVAILABLE);
-                        }
-                    });
+                    //     } else {
+                    //         session.stateMachine.goTo(STATE.SESSION_NOT_AVAILABLE);
+                    //     }
+                    // });
                 }
             }
         },

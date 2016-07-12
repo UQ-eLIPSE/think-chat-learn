@@ -21,7 +21,8 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
 
             session.socket.emit(WebsocketEvents.OUTBOUND.REVISED_ANSWER_SUBMISSION, {
                 sessionId: session.sessionId,
-                questionNumber: session.quiz.questionNumber,
+                // questionNumber: session.quiz.questionNumber,
+                questionNumber: session.quiz.questionId,
                 answer: session.answers.revised.answer,
                 justification: session.answers.revised.justification,
 
@@ -115,12 +116,12 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
                     page$("#question-chat-container").hide();
 
                     // Render question, choices
-                    page$("#question-reading").html(session.quiz.questionReading);
-                    page$("#question-statement").html(session.quiz.questionStatement);
+                    page$("#question-reading").html(session.quiz.questionContent);
+                    // page$("#question-statement").html(session.quiz.questionStatement);
 
                     let answerDOMs: JQuery[] = [];
                     session.quiz.questionChoices.forEach((choice) => {
-                        answerDOMs.push($("<button>").text(choice));
+                        answerDOMs.push($("<button>").html(choice.content));
                     });
 
                     $answers.append(answerDOMs);

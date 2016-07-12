@@ -101,8 +101,8 @@ export let DiscussionPageFunc: IPageFunc<STATE> =
                     let answerDOMs: JQuery[] = [];
 
                     // Render question, choices
-                    page$("#question-reading").html(session.quiz.questionReading);
-                    page$("#question-statement").html(session.quiz.questionStatement);
+                    page$("#question-reading").html(session.quiz.questionContent);
+                    // page$("#question-statement").html(session.quiz.questionStatement);
 
                     // Go through each client's answers and add them into the answer choices
                     let answerJustificationMap: { [id: number]: { clientIndex: number; justification: string; }[] } = {};
@@ -123,7 +123,7 @@ export let DiscussionPageFunc: IPageFunc<STATE> =
                     });
 
                     session.quiz.questionChoices.forEach((choice, i) => {
-                        let $answer = $("<div>").text(choice);
+                        let $answer = $("<div>").html(choice.content);
 
                         if (answerJustificationMap[i]) {
                             let $clientAnswerBlockUL = $("<ul>").prop("id", "client-justifications");

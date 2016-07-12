@@ -80,6 +80,6 @@ export interface IEventData_BackupClientQueueUpdate {
     }[];
 }
 
-export interface IEventData_SessionAvailableStatus {
-    available: boolean;
-}
+// export interface IEventData_SessionAvailableStatus {
+//     available: boolean;
+// }

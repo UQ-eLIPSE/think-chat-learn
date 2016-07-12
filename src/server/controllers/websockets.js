@@ -2,7 +2,7 @@
 var conf = global.conf;
 var io = global.io;
 
-var sessionData = require('../../config/sessions.json');
+// var sessionData = require('../../config/sessions.json');
 
 var db_wrapper = require("./database");
 
@@ -102,37 +102,37 @@ function removeClientFromEverything(client) {
 /**
  * @return {boolean}
  */
-function isSessionAvailable() {
-    var timezone = sessionData.timezone;
-    var sessions = sessionData.sessions;
+// function isSessionAvailable() {
+//     var timezone = sessionData.timezone;
+//     var sessions = sessionData.sessions;
 
-    var now = new Date();
+//     var now = new Date();
 
-    for (var i = 0; i < sessions.length; ++i) {
-        var session = sessions[i];
+//     for (var i = 0; i < sessions.length; ++i) {
+//         var session = sessions[i];
 
-        var endDate = new Date(session.end.date + "T" + session.end.time + timezone);
+//         var endDate = new Date(session.end.date + "T" + session.end.time + timezone);
 
-        // Skip this one if this session already concluded
-        if (endDate < now) {
-            continue;
-        }
+//         // Skip this one if this session already concluded
+//         if (endDate < now) {
+//             continue;
+//         }
 
-        var startDate = new Date(session.start.date + "T" + session.start.time + timezone);
+//         var startDate = new Date(session.start.date + "T" + session.start.time + timezone);
 
-        if (startDate <= now && endDate >= now) {
-            return true;
-        }
-    }
+//         if (startDate <= now && endDate >= now) {
+//             return true;
+//         }
+//     }
 
-    return false;
-}
+//     return false;
+// }
 
-function handleSessionAvailableCheck(data, socket) {
-    socket.emit("sessionAvailableStatus", {
-        available: isSessionAvailable()
-    });
-}
+// function handleSessionAvailableCheck(data, socket) {
+//     socket.emit("sessionAvailableStatus", {
+//         available: isSessionAvailable()
+//     });
+// }
 
 // ===== Chat group =====
 
@@ -263,13 +263,46 @@ function handleChatGroupMessage(data) {
  * }
  */
 function handleLoginLti(data, socket) {
-    function runCallbackChain(chain) {
+    function notifyClientOnError(err) {
+        socket.emit("loginFailure", (err && err.message) ? err.message : "Unexpected error");
+    }
+
+    // Callback chain
+    // try {
+    runCallbackChain(
+        notifyClientOnError,
+        [
+            processLtiObject,
+            checkUserId,
+            retrieveUuid,
+            findScheduledQuiz,
+            setupClientAnswerPool,
+            setupClient,
+            writeSessionToDb,
+            notifyClientOfLogin
+        ]);
+    // } catch (e) {
+    //     socket.emit("loginFailure", e.message);
+    //     return;
+    // }
+
+
+    // Callback chain and synchronisation
+    function runCallbackChain(errorThrowFunc, callbackChain) {
         var chainIndex = -1;
+        var errorThrown = false;
+
+        var throwErr = function(err) {
+            errorThrown = true;
+            errorThrowFunc(err);
+            return;
+        }
 
         var callbackChainer = function() {
-            var nextCallback = chain[++chainIndex];
-            if (!nextCallback) { return; }
-            nextCallback(callbackChainer);
+            var nextCallback = callbackChain[++chainIndex];
+            if (errorThrown || !nextCallback) { return; }
+
+            nextCallback(throwErr, callbackChainer);
         };
 
         callbackChainer();
@@ -283,22 +316,8 @@ function handleLoginLti(data, socket) {
         }
     }
 
-    // Callback chain
-    try {
-        runCallbackChain([
-            processLtiObject,
-            checkUserId,
-            retrieveUuid,
-            findScheduledQuiz,
-            setupClientAnswerPool,
-            setupClient,
-            writeSessionToDb,
-            notifyClientOfLogin
-        ]);
-    } catch (e) {
-        socket.emit("loginFailure", e.message);
-        return;
-    }
+
+
 
     // Variables in serialised callback chain
 
@@ -326,33 +345,33 @@ function handleLoginLti(data, socket) {
     /** {Session} */
     var session;
 
-    function processLtiObject(nextFunc) {
+    function processLtiObject(throwErr, next) {
         ltiObject = ltiProcessor.verifyAndReturnLTIObj(data);
-        nextFunc();
+        next();
     }
 
-    function checkUserId(nextFunc) {
+    function checkUserId(throwErr, next) {
         user_id = ltiObject.user_id;
 
         if (!user_id) {
-            throw new Error('No user ID received.');
+            return throwErr(new Error('No user ID received.'));
         }
 
         if (allSessions.hasSessionWithUsername(user_id)) {
-            throw new Error('The username is being used.');
+            return throwErr(new Error('The username is being used.'));
         }
 
-        nextFunc();
+        next();
     }
 
-    function retrieveUuid(nextFunc) {
+    function retrieveUuid(throwErr, next) {
         db_wrapper.user.read({ username: user_id }, function(err, result) {
             if (err) {
-                throw err;
+                return notifyClientOnError(err);
             }
 
             if (result.length > 1) {
-                throw new Error("More than one user with same username detected.");
+                return notifyClientOnError(new Error("More than one user with same username detected."));
             }
 
             // New user
@@ -364,19 +383,22 @@ function handleLoginLti(data, socket) {
                     username: user_id
                 }, function(err, result) {
                     if (err) {
-                        throw err;
+                        return notifyClientOnError(err);
                     }
 
-                    nextFunc();
+                    next();
                 });
+
+                return;
             }
 
+            // Existing user
             uuid = result[0].uuid;
-            nextFunc();
+            next();
         });
     }
 
-    function findScheduledQuiz(nextFunc) {
+    function findScheduledQuiz(throwErr, next) {
         var now = new Date();
 
         db_wrapper.quizSchedule.read({
@@ -384,12 +406,12 @@ function handleLoginLti(data, socket) {
             "availableEnd": { "$gte": now }
         }, function(err, result) {
             if (err) {
-                throw err;
+                return notifyClientOnError(err);
             }
 
             // Find first available scheduled quiz session
             if (result.length === 0) {
-                throw new Error("No scheduled quizzes");
+                return notifyClientOnError(new Error("No scheduled quizzes"));
             }
 
             quizSchedule = result[0];
@@ -398,20 +420,20 @@ function handleLoginLti(data, socket) {
 
 
             // Sync on n = 2 (question + question options)
-            var callbackSync = nCallbackSyncGenerator(2, nextFunc);
+            var callbackSync = nCallbackSyncGenerator(2, next);
 
             db_wrapper.question.read({
                 "_id": quizSchedule.questionId
             }, function(err, result) {
                 if (err) {
-                    throw err;
+                    return notifyClientOnError(err);
                 }
 
                 if (result.length === 0) {
-                    throw new Error("No question with _id = " + quizSchedule.questionId);
+                    return notifyClientOnError(new Error("No question with _id = " + quizSchedule.questionId));
                 }
 
-                question = result[0].content;
+                question = result[0];
                 callbackSync();
             });
 
@@ -419,11 +441,11 @@ function handleLoginLti(data, socket) {
                 "questionId": quizSchedule.questionId
             }, function(err, result) {
                 if (err) {
-                    throw err;
+                    return notifyClientOnError(err);
                 }
 
                 if (result.length === 0) {
-                    throw new Error("No question options for " + quizSchedule.questionId);
+                    return notifyClientOnError(new Error("No question options for " + quizSchedule.questionId));
                 }
 
                 questionOptions = result;
@@ -432,7 +454,7 @@ function handleLoginLti(data, socket) {
         });
     }
 
-    function setupClientAnswerPool(nextFunc) {
+    function setupClientAnswerPool(throwErr, next) {
         var quizScheduleId = quizSchedule._id;
 
         if (!quizSchedule_ClientAnswerPools[quizScheduleId]) {
@@ -441,10 +463,10 @@ function handleLoginLti(data, socket) {
             chatGroupFormationLoop.run(newClientAnswerPool);
         }
 
-        nextFunc();
+        next();
     }
 
-    function setupClient(nextFunc) {
+    function setupClient(throwErr, next) {
         client = new Client();
         client.uuid = uuid;
         client.username = user_id;
@@ -471,23 +493,31 @@ function handleLoginLti(data, socket) {
             session.setElevatedPermissions(true);
         }
 
-        nextFunc();
+        next();
     }
 
-    function writeSessionToDb(nextFunc) {
+    function writeSessionToDb(throwErr, next) {
         db_wrapper.userSession.create({
             userUuid: uuid,
-            timestampStart: new Date()
+
+            timestampStart: new Date(),
+            timestampEnd: null,
+
+            chatGroupId: null,
+            quizScheduleId: null,
+
+            responseInitialId: null,
+            responseFinalId: null,
         }, function(err, result) {
             if (err) {
-                throw err;
+                return notifyClientOnError(err);
             }
 
-            nextFunc();
+            next();
         });
     }
 
-    function notifyClientOfLogin() {
+    function notifyClientOfLogin(throwErr, next) {
         // Complete login by notifying client
         socket.emit('loginSuccess', {
             sessionId: session.id,
@@ -499,6 +529,8 @@ function handleLoginLti(data, socket) {
                 questionOptions: questionOptions
             },
         });
+
+        next();
     }
 }
 
@@ -747,7 +779,7 @@ io.sockets.on('connection', function(socket) {
     socket.on('submitSurvey', saveSurvey);
 
     /* Sessions */
-    socket.on("sessionAvailableCheck", function(data) { handleSessionAvailableCheck(data, socket) });
+    // socket.on("sessionAvailableCheck", function(data) { handleSessionAvailableCheck(data, socket) });
 
     /* Log ins */
     socket.on("loginLti", function(data) { handleLoginLti(data, socket); });
