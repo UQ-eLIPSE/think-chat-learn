@@ -14,6 +14,5 @@ export interface IDB_QuestionResponse {
     _id?: string,
     optionId?: string,
     justification?: string,
-    timestampStart?: Date,
-    timestampEnd?: Date
+    timestamp?: Date
 }

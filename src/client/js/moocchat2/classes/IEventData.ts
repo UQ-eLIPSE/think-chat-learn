@@ -19,7 +19,7 @@ export interface IEventData_GenericSuccessState {
 export interface IEventData_LoginSuccess {
     sessionId: string;
     username: string;
-    hasElevatedPermissions: boolean;
+    // hasElevatedPermissions: boolean;
     quiz: IQuiz;
 }
 

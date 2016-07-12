@@ -37,6 +37,13 @@ export class MoocchatQuiz {
     }
 
     public get questionChoices() {
-        return this.data.questionOptions;
+        // Sort choices by sequence number
+        return this.data.questionOptions.sort((a, b) => {
+            if (a.sequence === b.sequence) {
+                return 0;
+            }
+
+            return (a.sequence < b.sequence) ? -1 : 1;
+        });
     }
 }

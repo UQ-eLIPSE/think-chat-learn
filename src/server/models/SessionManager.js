@@ -26,6 +26,10 @@ var SessionManager = function(timeout) {
  * @param {Session} session
  */
 SessionManager.prototype.addSession = function(session) {
+    if (!session.id) {
+        throw new Error("No session ID");
+    }
+
     // Wrap session with last time info
     this.activeSessions[session.id] = {
         session: session,

@@ -13,15 +13,13 @@ export let InitialAnswerPageFunc: IPageFunc<STATE> =
         let section = session.sectionManager.getSection("initial-answer");
         let maxJustificationLength = conf.answers.justification.maxLength;
 
-        function submitInitialAnswer(answer: number, justification: string) {
-            session.answers.initial.answer = answer;
+        function submitInitialAnswer(optionId: string, justification: string) {
+            session.answers.initial.optionId = optionId;
             session.answers.initial.justification = justification.substr(0, maxJustificationLength);
 
             session.socket.emit(WebsocketEvents.OUTBOUND.INITIAL_ANSWER_SUBMISSION, {
                 sessionId: session.sessionId,
-                // questionId: session.quiz.questionNumber,
-                questionId: session.quiz.questionId,
-                answer: session.answers.initial.answer,
+                optionId: session.answers.initial.optionId,
                 justification: session.answers.initial.justification
             });
         }
@@ -47,25 +45,25 @@ export let InitialAnswerPageFunc: IPageFunc<STATE> =
                     // Force answer when timer runs out
                     section.attachTimerCompleted(() => {
                         let justification = $.trim($justification.val());
-                        let answer = page$("#answers > .selected").index();
+                        let optionId: string = page$("#answers > .selected").data("optionId");
 
                         if (justification.length === 0) {
                             justification = "[NO JUSTIFICATION]";
                         }
 
-                        if (answer < 0) {
+                        if (!optionId) {
                             justification = "[DID NOT ANSWER]";
-                            answer = 0;
+                            optionId = null;
                         }
 
-                        submitInitialAnswer(answer, justification);
+                        submitInitialAnswer(optionId, justification);
                     });
 
                     $submitAnswer.on("click", () => {
                         let justification = $.trim($justification.val());
-                        let answer = page$("#answers > .selected").index();
+                        let optionId = page$("#answers > .selected").data("optionId");
 
-                        if (justification.length === 0 || answer < 0) {
+                        if (justification.length === 0 || !optionId) {
                             alert("You must provide an answer and justification.");
                             return;
                         }
@@ -75,7 +73,7 @@ export let InitialAnswerPageFunc: IPageFunc<STATE> =
                             return;
                         }
 
-                        submitInitialAnswer(answer, justification);
+                        submitInitialAnswer(optionId, justification);
                     });
 
                     $answers.on("click", "button", function(e) {
@@ -105,7 +103,7 @@ export let InitialAnswerPageFunc: IPageFunc<STATE> =
 
                     let answerDOMs: JQuery[] = [];
                     session.quiz.questionChoices.forEach((choice) => {
-                        answerDOMs.push($("<button>").html(choice.content));
+                        answerDOMs.push($("<button>").html(choice.content).data("optionId", choice._id));
                     });
 
                     $answers.append(answerDOMs);

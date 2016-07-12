@@ -3,7 +3,7 @@ var conf = global.conf;
 var io = global.io;
 
 // var sessionData = require('../../config/sessions.json');
-
+var mongojs = require("mongojs");
 var db_wrapper = require("./database");
 
 var LTIProcessor = require("../models/LTIProcessor").LTIProcessor;
@@ -411,7 +411,7 @@ function handleLoginLti(data, socket) {
 
             // Find first available scheduled quiz session
             if (result.length === 0) {
-                return notifyClientOnError(new Error("No scheduled quizzes"));
+                return notifyClientOnError(new Error("No scheduled quizzes right now. Try again during a scheduled time."));
             }
 
             quizSchedule = result[0];
@@ -472,27 +472,6 @@ function handleLoginLti(data, socket) {
         client.username = user_id;
         client.setSocket(socket);
 
-        session = new Session(client, quizSchedule);
-        session.setQuizQuestion(question);
-        session.setQuizQuestionOptions(questionOptions);
-
-        allSessions.addSession(session);
-
-        // Determine if person has elevated permissions
-        var hasElevatedPermissions = false;
-        var roles = ltiObject.roles.toLowerCase().split(",");
-
-        if (roles.indexOf("instructor") > -1 ||
-            roles.indexOf("mentor") > -1 ||
-            roles.indexOf("teachingassistant") > -1 ||
-            roles.indexOf("administrator") > -1) {
-            hasElevatedPermissions = true;
-        }
-
-        if (hasElevatedPermissions) {
-            session.setElevatedPermissions(true);
-        }
-
         next();
     }
 
@@ -507,11 +486,21 @@ function handleLoginLti(data, socket) {
             quizScheduleId: null,
 
             responseInitialId: null,
-            responseFinalId: null,
+            responseFinalId: null
         }, function(err, result) {
             if (err) {
                 return notifyClientOnError(err);
             }
+
+            var sessionIdString = result._id.toString();
+
+            // Set up session
+            session = new Session(client, quizSchedule);
+            session.setId(sessionIdString);
+            session.setQuizQuestion(question);
+            session.setQuizQuestionOptions(questionOptions);
+
+            allSessions.addSession(session);
 
             next();
         });
@@ -520,9 +509,9 @@ function handleLoginLti(data, socket) {
     function notifyClientOfLogin(throwErr, next) {
         // Complete login by notifying client
         socket.emit('loginSuccess', {
-            sessionId: session.id,
+            sessionId: session.getId(),
             username: client.username,
-            hasElevatedPermissions: session.hasElevatedPermissions,
+            // hasElevatedPermissions: session.hasElevatedPermissions,
             quiz: {
                 quizSchedule: quizSchedule,
                 question: question,
@@ -611,60 +600,59 @@ function broadcastPoolCountToBackupQueue(clientAnswerPool) {
 /**
  * data = {
  *      sessionId {string}
- *      questionId {number|string?}     // Not used, hard coded question number presently
- *      answer {number|string?}
+ *      optionId {string}
  *      justification {string}
  * }
  */
 function handleAnswerSubmissionInitial(data) {
-    var client = getClientFromSessionId(data.sessionId);
-    var username = client.username;
-    var answer = data.answer;
-    var justification = data.justification;
+    var session = allSessions.getSessionById(data.sessionId);
 
+    var client = session.client;
+
+    var username = client.username;
     var socket = client.getSocket();
 
-    // For some reason the last known answer is stored with the client...
-    // Carried over from saveProbingQuestionAnswerHelper()
-    client.probingQuestionAnswer = answer;
-    client.probingQuestionAnswerTime = new Date().toISOString();
-    client.probJustification = justification;
+    var optionIdString = data.optionId;
+    var justification = data.justification;
 
-    var update_criteria = {
-        socketID: socket.id,
-        username: client.username,
-        questionGroup: conf.activeQuestionGroup
-    };
+    // Check that option ID is valid for session
+    if (optionIdString &&
+        session.quizQuestionOptions
+            .map(function(option) { return option._id.toString(); })
+            .indexOf(optionIdString) < 0) {
+        // TODO: Return error to client?
+        return;
+    }
 
-    var update_data = {
-        $set: {
-            probingQuestionAnswer: client.probingQuestionAnswer,
-            probingQuestionAnswerTime: client.probingQuestionAnswerTime,
-            probJustification: justification
+    db_wrapper.questionResponse.create({
+        optionId: (optionIdString ? mongojs.ObjectId(optionIdString) : null),
+        justification: justification,
+        timestamp: new Date()
+    }, function(err, result) {
+        if (err) {
+            // TODO: Return error to client?
+            return;
         }
-    };
 
-    db_wrapper.userquiz.update(update_criteria, update_data, function(err, dbResults) {
+        var questionResponseObjectId = result._id;
 
-        console.log(new Date().toISOString(), username, update_criteria, update_data);
+        db_wrapper.userSession.update(
+            {
+                _id: mongojs.ObjectId(session.getId())
+            },
+            {
+                $set: {
+                    responseInitialId: questionResponseObjectId
+                }
+            },
+            function(err, result) {
+                if (err) {
+                    // TODO: Return error to client?
+                    return;
+                }
 
-        if ((typeof testHooks !== 'undefined') && (testHooks.location == 'afterUpdate')) {
-            testHooks.callback();
-        }
-        if (err || typeof dbResults === 'undefined' || dbResults.length == 0) {
-            console.log("#handleAnswerSubmissionInitial() ERROR - " +
-                "username: %s", username);
-            if (err) console.log(err);
-            socket.emit('db_failure', 'handleAnswerSubmissionInitial()');
-        }
-        else {
-            console.log("#handleAnswerSubmissionInitial() - " +
-                "probing question answer and timestamps " +
-                "saved in database");
-            console.log(new Date().toISOString(), username, dbResults);
-
-            socket.emit("answerSubmissionInitialSaved");
-        }
+                socket.emit("answerSubmissionInitialSaved");
+            });
     });
 }
 
@@ -1040,3 +1028,5 @@ io.sockets.on('connection', function(socket) {
     }
 
 });
+
+console.log("All websocket events registered.");
