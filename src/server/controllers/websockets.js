@@ -353,13 +353,13 @@ function handleLoginLti(data, socket) {
     /** {string} */
     var userId;
 
-    /** {Object(QuizSchedule)} */
+    /** {IDB_QuizSchedule} */
     var quizSchedule;
 
-    /** {Object(Question)} */
+    /** {IDB_Question} */
     var question;
 
-    /** {Object(QuestionOption)[]} */
+    /** {IDB_QuestionOption[]} */
     var questionOptions;
 
     /** {Client} */
@@ -506,7 +506,7 @@ function handleLoginLti(data, socket) {
             timestampEnd: null,
 
             chatGroupId: null,
-            quizScheduleId: null,
+            quizScheduleId: quizSchedule._id,
 
             responseInitialId: null,
             responseFinalId: null
