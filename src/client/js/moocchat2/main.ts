@@ -191,8 +191,9 @@ $(() => {
                 session.pageManager.loadPage("completion", (page$) => {
                     section.setActive();
                     
-                    // TODO: Actual receipt IDs
-                    page$("#receipt-id").text("*****" + ((Math.random() * 2147483647) | 0).toString(16));
+                    // Session ID is split every 4th character to make it easier to read
+                    page$("#session-id").text(session.sessionId.match(/.{1,4}/g).join(" "));
+                    page$("#time-now").text(new Date().toISOString());
                     
                     page$("#go-to-return-url").on("click", () => {
                         window.top.location.href = _LTI_BASIC_LAUNCH_DATA.launch_presentation_return_url;

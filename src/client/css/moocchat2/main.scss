@@ -942,8 +942,13 @@ p {
 }
 
 
+/********** Receipts **********/
 
+#session-id {
+    @extend .monospace;
 
+    font-size: 1.3em;
+}
 
 
 
@@ -1008,6 +1013,48 @@ p {
         &.narrow-block > .row > * {
             display: block;
             width: 100%;
+        }
+    }
+}
+
+
+// Printers
+@media print {
+    html,
+    body {
+        background: none;
+        color: #000;
+    }
+
+    #header,
+    #content {
+        position: static;
+        display: block;
+        width: auto;
+        background: none;
+        color: #000;
+        text-shadow: none;
+    }
+
+    #header {
+        border-bottom: 1px solid #000;
+    }
+
+    #logo {
+        display: none;
+    }
+
+    #task-sections {
+        margin: $mc-sidebar-padding-lr;
+
+        li {
+            display: none;
+            background: none;
+            padding: 0;
+        }
+
+        li.active {
+            display: block;
         }
     }
 }
