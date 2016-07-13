@@ -35,7 +35,7 @@ export const WebsocketEvents = {
         CHAT_GROUP_SEND_MESSAGE: "chatGroupMessage",
         CHAT_GROUP_QUIT_STATUS_CHANGE: "chatGroupQuitStatusChange", 
 
-        REVISED_ANSWER_SUBMISSION: "probingQuestionFinalAnswerSubmission",
+        REVISED_ANSWER_SUBMISSION: "answerSubmissionFinal",
 
         BACKUP_CLIENT_ANSWER_AND_JOIN_QUEUE: "backupClientEnterQueue",
         BACKUP_CLIENT_RETURN_TO_QUEUE: "backupClientReturnToQueue",

@@ -144,13 +144,13 @@ $(() => {
                     }
                 });
 
-                function submitAnswerAndJoinQueue(answer: number, justification: string) {
-                    session.answers.initial.answer = answer;
+                function submitAnswerAndJoinQueue(optionId: string, justification: string) {
+                    session.answers.initial.optionId = optionId;
                     session.answers.initial.justification = justification.substr(0, maxJustificationLength);
 
                     session.socket.emit(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_ANSWER_AND_JOIN_QUEUE, {
                         sessionId: session.sessionId,
-                        answer: session.answers.initial.answer,
+                        optionId: session.answers.initial.optionId,
                         justification: session.answers.initial.justification
                     });
                 }
@@ -167,9 +167,9 @@ $(() => {
 
                     $submitAnswer.on("click", () => {
                         let justification = $.trim($justification.val());
-                        let answer = page$("#answers > .selected").index();
+                        let optionId: string = page$("#answers > .selected").data("optionId");
 
-                        if (justification.length === 0 || answer < 0) {
+                        if (justification.length === 0 || !optionId) {
                             alert("You must provide an answer and justification.");
                             return;
                         }
@@ -179,7 +179,7 @@ $(() => {
                             return;
                         }
 
-                        submitAnswerAndJoinQueue(answer, justification);
+                        submitAnswerAndJoinQueue(optionId, justification);
                     });
 
                     $answers.on("click", "button", function(e) {
@@ -209,7 +209,7 @@ $(() => {
 
                     let answerDOMs: JQuery[] = [];
                     session.quiz.questionOptions.forEach((option) => {
-                        answerDOMs.push($("<button>").html(option.content));
+                        answerDOMs.push($("<button>").html(option.content).data("optionId", option._id));
                     });
 
                     $answers.append(answerDOMs);

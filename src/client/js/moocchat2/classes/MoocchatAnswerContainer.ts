@@ -1,6 +1,6 @@
 interface IAnswer {
     /** TO BE REMOVED */
-    answer?: number;
+    // answer?: number;
 
 
     optionId?: string;

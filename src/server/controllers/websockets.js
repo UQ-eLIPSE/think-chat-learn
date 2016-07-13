@@ -681,6 +681,69 @@ function handleAnswerSubmissionInitial(data) {
     });
 }
 
+/**
+ * data = {
+ *      sessionId {string}
+ *      optionId {string}
+ *      justification {string}
+ * }
+ */
+function handleAnswerSubmissionFinal(data) {
+    var session = allSessions.getSessionById(data.sessionId);
+
+    var client = session.client;
+
+    var username = client.username;
+    var socket = client.getSocket();
+
+    var optionIdString = data.optionId;
+    var justification = data.justification;
+
+    // Check that option ID is valid for session
+    if (optionIdString &&
+        session.quizQuestionOptions
+            .map(function(option) { return option._id.toString(); })
+            .indexOf(optionIdString) < 0) {
+        // TODO: Return error to client?
+        return;
+    }
+
+    db_wrapper.questionResponse.create({
+        optionId: (optionIdString ? mongojs.ObjectId(optionIdString) : null),
+        justification: justification,
+        timestamp: new Date()
+    }, function(err, result) {
+        if (err) {
+            // TODO: Return error to client?
+            return;
+        }
+
+        var questionResponseObjectId = result._id;
+
+        session.responseFinal._id = questionResponseObjectId.toString();
+        session.responseFinal.optionId = optionIdString;
+        session.responseFinal.justification = justification;
+
+        db_wrapper.userSession.update(
+            {
+                _id: mongojs.ObjectId(session.getId())
+            },
+            {
+                $set: {
+                    responseFinalId: questionResponseObjectId
+                }
+            },
+            function(err, result) {
+                if (err) {
+                    // TODO: Return error to client?
+                    return;
+                }
+
+                socket.emit("answerSubmissionFinalSaved");
+            });
+    });
+}
+
 
 
 // ===== Backup client =====
@@ -789,8 +852,9 @@ io.sockets.on('connection', function(socket) {
 
     /* Submission of answers and surveys */
     // socket.on("probingQuestionAnswerSubmission", saveProbingQuestionAnswer);
+    // socket.on("probingQuestionFinalAnswerSubmission", saveProbingQuestionFinalAnswer);
     socket.on("answerSubmissionInitial", handleAnswerSubmissionInitial);
-    socket.on("probingQuestionFinalAnswerSubmission", saveProbingQuestionFinalAnswer);
+    socket.on("answerSubmissionFinal", handleAnswerSubmissionFinal);
     socket.on('submitSurvey', saveSurvey);
 
     /* Sessions */
