@@ -150,11 +150,11 @@ function formChatGroup(clientAnswerPool) {
             db_wrapper.userSession.update({
                 _id: mongojs.ObjectId(client.getSession().getId())
             },
-            {
-                $set: {
-                    chatGroupId: newChatGroup.id
-                }
-            });
+                {
+                    $set: {
+                        chatGroupId: newChatGroup.id
+                    }
+                });
         });
 
         broadcastPoolCountToBackupQueue(clientAnswerPool);
@@ -250,7 +250,7 @@ function handleChatGroupMessage(data) {
 
     var client = session.client;
     var chatGroup = chatGroups[data.groupId];
-    
+
     db_wrapper.chatMessage.create({
         content: data.message,
         sessionId: mongojs.ObjectId(session.getId()),
@@ -258,7 +258,7 @@ function handleChatGroupMessage(data) {
     }, function(err, result) {
         // TODO: 
     });
-    
+
     chatGroup.broadcastMessage(client, data.message);
 }
 
@@ -297,7 +297,7 @@ function handleLoginLti(data, socket) {
         [
             processLtiObject,
             checkUserId,
-            retrieveUuid,
+            retrieveUserId,
             findScheduledQuiz,
             setupClientAnswerPool,
             setupClient,
@@ -387,7 +387,7 @@ function handleLoginLti(data, socket) {
         next();
     }
 
-    function retrieveUuid(throwErr, next) {
+    function retrieveUserId(throwErr, next) {
         db_wrapper.user.read({ username: ltiUsername }, function(err, result) {
             if (err) {
                 return notifyClientOnError(err);
@@ -400,6 +400,7 @@ function handleLoginLti(data, socket) {
             // New user
             if (result.length === 0) {
                 db_wrapper.user.create({
+                    _id: mongojs.ObjectId(require('crypto').randomBytes(12).toString('hex')),
                     username: ltiUsername
                 }, function(err, result) {
                     if (err) {
@@ -498,6 +499,7 @@ function handleLoginLti(data, socket) {
 
     function writeSessionToDb(throwErr, next) {
         db_wrapper.userSession.create({
+            _id: mongojs.ObjectId(require('crypto').randomBytes(12).toString('hex')),
             userId: mongojs.ObjectId(userId),
 
             timestampStart: new Date(),
