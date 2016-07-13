@@ -9,6 +9,7 @@ import {MoocchatSession} from "./classes/MoocchatSession";
 import {MoocchatAnalytics} from "./classes/MoocchatAnalytics";
 import {MoocchatUser} from "./classes/MoocchatUser";
 import {MoocchatQuiz} from "./classes/MoocchatQuiz";
+import {MoocchatSurvey} from "./classes/MoocchatSurvey";
 
 import {MoocchatState as STATE} from "./classes/MoocchatStates";
 
@@ -88,10 +89,10 @@ $(() => {
                     // session.socket.emit(WebsocketEvents.OUTBOUND.SESSION_AVAILABLE_CHECK);
                     // session.socket.once(WebsocketEvents.INBOUND.SESSION_AVAILABLE_STATUS, (data: IEventData_SessionAvailableStatus) => {
                     //     if (data.available) {
-                            // $courseName.text(_LTI_BASIC_LAUNCH_DATA.lis_course_section_sourcedid.split("_")[0]);
-                            $courseName.text("ENGG1200");
-                            session.stateMachine.goTo(STATE.LOGIN);
-                            session.analytics.trackEvent("MOOCCHAT", "START");
+                    // $courseName.text(_LTI_BASIC_LAUNCH_DATA.lis_course_section_sourcedid.split("_")[0]);
+                    $courseName.text("ENGG1200");
+                    session.stateMachine.goTo(STATE.LOGIN);
+                    session.analytics.trackEvent("MOOCCHAT", "START");
                     //     } else {
                     //         session.stateMachine.goTo(STATE.SESSION_NOT_AVAILABLE);
                     //     }
@@ -111,9 +112,12 @@ $(() => {
                 let user = new MoocchatUser(session.eventManager, _LTI_BASIC_LAUNCH_DATA);
 
                 user.onLoginSuccess = (data) => {
-                    session.setQuiz(new MoocchatQuiz(data.quiz));
-                    session.setUser(user);
-                    session.sessionId = data.sessionId;
+                    session
+                        .setId(data.sessionId)
+                        .setQuiz(new MoocchatQuiz(data.quiz))
+                        .setSurvey(new MoocchatSurvey(data.survey))
+                        .setUser(user);
+                        
                     session.stateMachine.goTo(STATE.WELCOME);
                 }
 
@@ -186,15 +190,15 @@ $(() => {
             state: STATE.COMPLETION,
             onEnter: () => {
                 session.analytics.trackEvent("MOOCCHAT", "FINISH");
-                
+
                 let section = session.sectionManager.getSection("finish");
                 session.pageManager.loadPage("completion", (page$) => {
                     section.setActive();
-                    
+
                     // Session ID is split every 4th character to make it easier to read
-                    page$("#session-id").text(session.sessionId.match(/.{1,4}/g).join(" "));
+                    page$("#session-id").text(session.id.match(/.{1,4}/g).join(" "));
                     page$("#time-now").text(new Date().toISOString());
-                    
+
                     page$("#go-to-return-url").on("click", () => {
                         window.top.location.href = _LTI_BASIC_LAUNCH_DATA.launch_presentation_return_url;
                     });

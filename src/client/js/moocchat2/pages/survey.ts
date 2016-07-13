@@ -11,12 +11,41 @@ export let SurveyPageFunc: IPageFunc<STATE> =
                 session.pageManager.loadPage("survey", (page$) => {
                     section.setActive();
 
+                    const $surveyForm = page$("#survey-form");
+
                     session.analytics.trackEvent("SURVEY", "START");
 
-                    page$("#survey-form").on("submit", (e) => {
+                    $surveyForm.on("submit", (e) => {
                         e.preventDefault();
+                        
+                        $("#form-validation-failure", $surveyForm).remove();
+
+                        let formValid = session.survey.validateForm($surveyForm);
+
+                        if (!formValid) {
+                            let $submitButton = $("*[type='submit']", $surveyForm);
+
+                            $("<p>")
+                                .prop("id", "form-validation-failure")
+                                .addClass("mc-inline-message")
+                                .text("Please check your survey form again.")
+                                .insertBefore($submitButton);
+
+                            // Force scroll to bottom to reveal the form validation failure message
+                            page$().scrollTop(page$().get(0).scrollHeight);
+
+                            return;
+                        }
+
+                        // TODO: Send survey
+
+                        // Once survey submitted, continue
                         session.stateMachine.goTo(STATE.COMPLETION);
                     });
+
+                    // Construct survey form
+                    page$("#survey-content").append(session.survey.generateHTML());
+
                 });
             },
             onLeave: () => {

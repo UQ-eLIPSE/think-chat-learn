@@ -8,6 +8,7 @@ import {SessionStorage} from "./SessionStorage";
 import {MoocchatAnalytics, MoocchatAnalyticsCore} from "./MoocchatAnalytics";
 import {MoocchatUser} from "./MoocchatUser";
 import {MoocchatQuiz} from "./MoocchatQuiz";
+import {MoocchatSurvey} from "./MoocchatSurvey";
 import {MoocchatAnswerContainer} from "./MoocchatAnswerContainer";
 
 /**
@@ -17,6 +18,8 @@ import {MoocchatAnswerContainer} from "./MoocchatAnswerContainer";
  * Intended to act as a managed "global" across the session
  */
 export class MoocchatSession<StateTypeEnum> {
+    private _id: string;
+
     private _stateMachine: StateFlow<StateTypeEnum>;
     private _pageManager: PageManager;
     private _sectionManager: TaskSectionManager;
@@ -25,6 +28,7 @@ export class MoocchatSession<StateTypeEnum> {
     private _analytics: MoocchatAnalytics;
 
     private _quiz: MoocchatQuiz;
+    private _survey: MoocchatSurvey;
 
     public user: MoocchatUser;
     public socket: WebsocketManager;
@@ -32,20 +36,35 @@ export class MoocchatSession<StateTypeEnum> {
 
     public storage: SessionStorage;
 
-    public sessionId: string;
 
     constructor(turnOnAnalytics: boolean = true, $content: JQuery, $taskSections: JQuery) {
         this._eventManager = new EventBox();
         this._pageManager = new PageManager(this._eventManager, $content);
         this._sectionManager = new TaskSectionManager(this._eventManager, $taskSections);
         this._stateMachine = new StateFlow<StateTypeEnum>();
-        
+
         this.answers = new MoocchatAnswerContainer();
         this.storage = new SessionStorage();
 
         if (turnOnAnalytics) {
             this._analytics = new MoocchatAnalytics(this);
         }
+    }
+
+    /**
+     * Sets the session ID.
+     * Only settable once; further sets are ignored.
+     * 
+     * @param {string} id
+     * 
+     * @return {this}
+     */
+    public setId(id: string) {
+        if (!this._id) {
+            this._id = id;
+        }
+
+        return this;
     }
 
     /**
@@ -81,6 +100,18 @@ export class MoocchatSession<StateTypeEnum> {
      */
     public setQuiz(quiz: MoocchatQuiz) {
         this._quiz = quiz;
+        return this;
+    }
+
+    /**
+     * Sets the session survey.
+     * 
+     * @param {MoocchatSurvey} survey
+     * 
+     * @return {this}
+     */
+    public setSurvey(survey: MoocchatSurvey) {
+        this._survey = survey;
         return this;
     }
 
@@ -155,8 +186,16 @@ export class MoocchatSession<StateTypeEnum> {
         this.answers.reset();
     }
 
+    public get id() {
+        return this._id;
+    }
+
     public get quiz() {
         return this._quiz;
+    }
+
+    public get survey() {
+        return this._survey;
     }
 
     public get stateMachine() {

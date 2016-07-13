@@ -96,9 +96,11 @@ $(() => {
                     //     return;
                     // }
 
-                    session.setQuiz(new MoocchatQuiz(data.quiz));
-                    session.setUser(user);
-                    session.sessionId = data.sessionId;
+                    session
+                        .setId(data.sessionId)
+                        .setQuiz(new MoocchatQuiz(data.quiz))
+                        .setUser(user);
+
                     session.stateMachine.goTo(STATE.WELCOME, { nextState: STATE.BACKUP_CLIENT_ANSWER });
                 }
 
@@ -149,7 +151,7 @@ $(() => {
                     session.answers.initial.justification = justification.substr(0, maxJustificationLength);
 
                     session.socket.emit(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_ANSWER_AND_JOIN_QUEUE, {
-                        sessionId: session.sessionId,
+                        sessionId: session.id,
                         optionId: session.answers.initial.optionId,
                         justification: session.answers.initial.justification
                     });
@@ -275,7 +277,7 @@ $(() => {
                         $transferConfirmBox.one("click", "#confirm-transfer", function() {
                             $transferConfirmBox.addClass("hidden");
                             clearInterval(countdownIntervalHandle);
-                            session.socket.emit(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_TRANSFER_CONFIRM, { sessionId: session.sessionId });
+                            session.socket.emit(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_TRANSFER_CONFIRM, { sessionId: session.id });
 
                             session.socket.once(WebsocketEvents.INBOUND.CHAT_GROUP_FORMED, function(data: IEventData_ChatGroupFormed) {
                                 session.stateMachine.goTo(STATE.DISCUSSION, data);
@@ -294,7 +296,7 @@ $(() => {
                     session.socket.on(WebsocketEvents.INBOUND.BACKUP_CLIENT_EJECTED, () => { session.stateMachine.goTo(STATE.BACKUP_CLIENT_EJECTED); });
 
                     // Request information now (once only)
-                    session.socket.emit(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_STATUS_REQUEST, { sessionId: session.sessionId });
+                    session.socket.emit(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_STATUS_REQUEST, { sessionId: session.id });
 
                     page$("#logout").on("click", () => {
                         session.stateMachine.goTo(STATE.BACKUP_CLIENT_LOGOUT);
@@ -328,7 +330,7 @@ $(() => {
                     }
                 });
 
-                session.socket.emit(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_RETURN_TO_QUEUE, { sessionId: session.sessionId });
+                session.socket.emit(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_RETURN_TO_QUEUE, { sessionId: session.id });
             }
         },
         {   // Ejected

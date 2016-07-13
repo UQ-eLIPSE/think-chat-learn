@@ -6,6 +6,7 @@
  */
 
 import {IQuiz} from "./IQuiz";
+import {ISurvey} from "./ISurvey";
 
 
 
@@ -21,6 +22,7 @@ export interface IEventData_LoginSuccess {
     username: string;
     // hasElevatedPermissions: boolean;
     quiz: IQuiz;
+    survey: ISurvey;
 }
 
 /** loginFailure */

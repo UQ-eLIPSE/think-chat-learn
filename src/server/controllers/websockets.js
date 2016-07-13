@@ -299,6 +299,7 @@ function handleLoginLti(data, socket) {
             checkUserId,
             retrieveUserId,
             findScheduledQuiz,
+            findSurvey,
             setupClientAnswerPool,
             setupClient,
             writeSessionToDb,
@@ -361,6 +362,9 @@ function handleLoginLti(data, socket) {
 
     /** {IDB_QuestionOption[]} */
     var questionOptions;
+
+    /** {IDB_Survey} */
+    var survey;
 
     /** {Client} */
     var client;
@@ -476,6 +480,27 @@ function handleLoginLti(data, socket) {
         });
     }
 
+    function findSurvey(throwErr, next) {
+        var now = new Date();
+
+        db_wrapper.survey.read({
+            "availableStart": { "$lte": now }
+        }, function(err, result) {
+            if (err) {
+                return notifyClientOnError(err);
+            }
+
+            // Find first available survey at this time session
+            if (result.length === 0) {
+                return notifyClientOnError(new Error("No survey available at this time. Survey required."));
+            }
+
+            survey = result[0];
+
+            next();
+        });
+    }
+
     function setupClientAnswerPool(throwErr, next) {
         var quizScheduleId = quizSchedule._id;
 
@@ -540,6 +565,7 @@ function handleLoginLti(data, socket) {
                 question: question,
                 questionOptions: questionOptions
             },
+            survey: survey
         });
 
         next();

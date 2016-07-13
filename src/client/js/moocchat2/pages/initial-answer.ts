@@ -18,7 +18,7 @@ export let InitialAnswerPageFunc: IPageFunc<STATE> =
             session.answers.initial.justification = justification.substr(0, maxJustificationLength);
 
             session.socket.emit(WebsocketEvents.OUTBOUND.INITIAL_ANSWER_SUBMISSION, {
-                sessionId: session.sessionId,
+                sessionId: session.id,
                 optionId: session.answers.initial.optionId,
                 justification: session.answers.initial.justification
             });
