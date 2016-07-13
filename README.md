@@ -2,8 +2,6 @@
 
 ## Setting up
 
-See `Notes for build on zones` below as well if you're running MOOCchat on zones (e.g. webproject/2.0.4).
-
 1. Clone repo
 2. Install Nodejs and MongoDB
 3. Start Mongodb, usually the command to run is `mongod`
@@ -12,16 +10,6 @@ See `Notes for build on zones` below as well if you're running MOOCchat on zones
 6. Build source: `npm run build`
 7. Ensure `/config/conf.json` file has correct configuration
 8. Run `npm start`
-
-## Notes for build on zones
-
-Because our zones run Solaris/SunOS/SmartOS which has limited support by some packages, you will need to do the following:
-
-* Install Sass on the system instead of using the "node-sass" package:
-  * `sudo pkgin install ruby212-sass-3.2.15`
-* When building, use the `~_on_zone` suffixed npm scripts. For example:
-  * `npm run build` becomes `npm run build_on_zone`
-  * `npm run build_client` becomes `npm run build_client_on_zone`
 
 ## Compiling code
 Code must now be compiled prior to running the server or serving the client.

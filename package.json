@@ -11,11 +11,8 @@
     "clean_server": "rimraf build",
     "clean": "npm run clean_client && npm run clean_server",
     "build_client": "tsc --project ./src/client/js && node-sass -q ./src/client/css/moocchat2/main.scss ./public/css/moocchat2/main.css",
-    "build_client_on_zone": "tsc --project ./src/client/js && sass ./src/client/css/moocchat2/main.scss ./public/css/moocchat2/main.css",
     "build_server": "tsc --project ./src/server",
-    "build_server_on_zone": "tsc --project ./src/server",
-    "build": "npm run clean && npm run build_client && npm run build_server",
-    "build_on_zone": "npm run clean && npm run build_client_on_zone && npm run build_server_on_zone"
+    "build": "npm run clean && npm run build_client && npm run build_server"
   },
   "author": "eLIPSE",
   "license": "MIT",

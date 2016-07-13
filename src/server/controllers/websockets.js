@@ -373,7 +373,12 @@ function handleLoginLti(data, socket) {
     var session;
 
     function processLtiObject(throwErr, next) {
-        ltiObject = ltiProcessor.verifyAndReturnLTIObj(data);
+        try {
+            ltiObject = ltiProcessor.verifyAndReturnLTIObj(data);
+        } catch (e) {
+            return throwErr(e);
+        }
+
         next();
     }
 
