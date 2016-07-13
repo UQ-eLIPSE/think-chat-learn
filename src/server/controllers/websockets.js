@@ -403,9 +403,14 @@ function handleLoginLti(data, socket) {
 
             // New user
             if (result.length === 0) {
+                var ltiFirstName = ltiObject.lis_person_name_given || "";
+                var ltiLastName = ltiObject.lis_person_name_family || "";
+
                 db_wrapper.user.create({
                     _id: mongojs.ObjectId(require('crypto').randomBytes(12).toString('hex')),
-                    username: ltiUsername
+                    username: ltiUsername,
+                    firstName: ltiFirstName,
+                    lastName: ltiLastName
                 }, function(err, result) {
                     if (err) {
                         return notifyClientOnError(err);

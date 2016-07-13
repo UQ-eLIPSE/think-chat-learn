@@ -11,6 +11,8 @@ export class User extends DatabaseWrapper<IDB_User> {
 }
 
 export interface IDB_User {
-    uuid?: string,
-    username?: string
+    uuid?: string;
+    username?: string;
+    firstName?: string;
+    lastName?: string;
 }
