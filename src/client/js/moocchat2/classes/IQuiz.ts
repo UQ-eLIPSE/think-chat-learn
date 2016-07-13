@@ -5,27 +5,27 @@
  * Encodes the expected quiz data from the server.
  */
 export interface IQuiz {
-    questionGroup: number;
-    questionNumber: number;
-    probingQuestionOldNumber: number;
+    question: IQuizQuestion;
+    questionOptions:IQuizQuestionOption[];
+    quizSchedule: IQuizSchedule;
+}
 
-    reading: string;
+export interface IQuizQuestion {
+    _id?: string;
+    content: string;
+}
 
-    probingQuestion: string;
-    probingQuestionChoices: string[];
-    probingQuestionAnswer: number;
-    explanation: string;
+export interface IQuizQuestionOption {
+    _id?: string;
+    questionId: string;
+    content: string;
+    sequence: number;
+}
 
-    evaluationOldNumber: number;
-    evaluationReading: string;
-    evaluationQuestion: string;
-    evaluationChoices: string[];
-    evaluationAnswer: number;
-    evalExplanation: string;
-
-    stageDurations: number[];
-
-    maxChoiceForStudentGenerateQuestion: number;
-
-    crCategory: string;
+export interface IQuizSchedule {
+    _id?: string;
+    questionId: string;
+    availableStart: string;
+    availableEnd: string;
+    course: string;
 }

@@ -47,7 +47,7 @@ export class MoocchatChat {
 
         this.session.socket.emit(WebsocketEvents.OUTBOUND.CHAT_GROUP_QUIT_STATUS_CHANGE, {
             groupId: this.groupData.groupId,
-            sessionId: this.session.sessionId,
+            sessionId: this.session.id,
             quitStatus: true    // Indicate we are quitting
         });
     }
@@ -60,7 +60,7 @@ export class MoocchatChat {
     public sendMessage(message: string) {
         this.session.socket.emit(WebsocketEvents.OUTBOUND.CHAT_GROUP_SEND_MESSAGE, {
             groupId: this.groupData.groupId,
-            sessionId: this.session.sessionId,
+            sessionId: this.session.id,
             message: message
         });
     }

@@ -16,19 +16,34 @@ export class MoocchatQuiz {
         this.data = data;
     }
 
-    public get questionNumber() {
-        return this.data.questionNumber;
+    // public get questionNumber() {
+    //     return this.data.questionNumber;
+    // }
+
+    // public get questionReading() {
+    //     return this.data.reading;
+    // }
+
+    // public get questionStatement() {
+    //     return this.data.probingQuestion;
+    // }
+
+    public get questionId() {
+        return this.data.question._id;
     }
 
-    public get questionReading() {
-        return this.data.reading;
+    public get questionContent() {
+        return this.data.question.content;
     }
 
-    public get questionStatement() {
-        return this.data.probingQuestion;
-    }
+    public get questionOptions() {
+        // Sort choices by sequence number
+        return this.data.questionOptions.sort((a, b) => {
+            if (a.sequence === b.sequence) {
+                return 0;
+            }
 
-    public get questionChoices() {
-        return this.data.probingQuestionChoices;
+            return (a.sequence < b.sequence) ? -1 : 1;
+        });
     }
 }

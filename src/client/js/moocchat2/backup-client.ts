@@ -91,14 +91,16 @@ $(() => {
                 let user = new MoocchatUser(session.eventManager, _LTI_BASIC_LAUNCH_DATA);
 
                 user.onLoginSuccess = (data) => {
-                    if (!data.hasElevatedPermissions) {
-                        session.stateMachine.goTo(STATE.INVALID_LOGIN, { reason: "No elevated permissions for backup client session" });
-                        return;
-                    }
+                    // if (!data.hasElevatedPermissions) {
+                    //     session.stateMachine.goTo(STATE.INVALID_LOGIN, { reason: "No elevated permissions for backup client session" });
+                    //     return;
+                    // }
 
-                    session.setQuiz(new MoocchatQuiz(data.quiz));
-                    session.setUser(user);
-                    session.sessionId = data.sessionId;
+                    session
+                        .setId(data.sessionId)
+                        .setQuiz(new MoocchatQuiz(data.quiz))
+                        .setUser(user);
+
                     session.stateMachine.goTo(STATE.WELCOME, { nextState: STATE.BACKUP_CLIENT_ANSWER });
                 }
 
@@ -144,13 +146,13 @@ $(() => {
                     }
                 });
 
-                function submitAnswerAndJoinQueue(answer: number, justification: string) {
-                    session.answers.initial.answer = answer;
+                function submitAnswerAndJoinQueue(optionId: string, justification: string) {
+                    session.answers.initial.optionId = optionId;
                     session.answers.initial.justification = justification.substr(0, maxJustificationLength);
 
                     session.socket.emit(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_ANSWER_AND_JOIN_QUEUE, {
-                        sessionId: session.sessionId,
-                        answer: session.answers.initial.answer,
+                        sessionId: session.id,
+                        optionId: session.answers.initial.optionId,
                         justification: session.answers.initial.justification
                     });
                 }
@@ -167,9 +169,9 @@ $(() => {
 
                     $submitAnswer.on("click", () => {
                         let justification = $.trim($justification.val());
-                        let answer = page$("#answers > .selected").index();
+                        let optionId: string = page$("#answers > .selected").data("optionId");
 
-                        if (justification.length === 0 || answer < 0) {
+                        if (justification.length === 0 || !optionId) {
                             alert("You must provide an answer and justification.");
                             return;
                         }
@@ -179,7 +181,7 @@ $(() => {
                             return;
                         }
 
-                        submitAnswerAndJoinQueue(answer, justification);
+                        submitAnswerAndJoinQueue(optionId, justification);
                     });
 
                     $answers.on("click", "button", function(e) {
@@ -204,12 +206,12 @@ $(() => {
 
 
                     // Render question, choices
-                    page$("#question-reading").html(session.quiz.questionReading);
-                    page$("#question-statement").html(session.quiz.questionStatement);
+                    page$("#question-reading").html(session.quiz.questionContent);
+                    // page$("#question-statement").html(session.quiz.questionStatement);
 
                     let answerDOMs: JQuery[] = [];
-                    session.quiz.questionChoices.forEach((choice) => {
-                        answerDOMs.push($("<button>").text(choice));
+                    session.quiz.questionOptions.forEach((option) => {
+                        answerDOMs.push($("<button>").html(option.content).data("optionId", option._id));
                     });
 
                     $answers.append(answerDOMs);
@@ -275,7 +277,7 @@ $(() => {
                         $transferConfirmBox.one("click", "#confirm-transfer", function() {
                             $transferConfirmBox.addClass("hidden");
                             clearInterval(countdownIntervalHandle);
-                            session.socket.emit(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_TRANSFER_CONFIRM, { sessionId: session.sessionId });
+                            session.socket.emit(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_TRANSFER_CONFIRM, { sessionId: session.id });
 
                             session.socket.once(WebsocketEvents.INBOUND.CHAT_GROUP_FORMED, function(data: IEventData_ChatGroupFormed) {
                                 session.stateMachine.goTo(STATE.DISCUSSION, data);
@@ -294,7 +296,7 @@ $(() => {
                     session.socket.on(WebsocketEvents.INBOUND.BACKUP_CLIENT_EJECTED, () => { session.stateMachine.goTo(STATE.BACKUP_CLIENT_EJECTED); });
 
                     // Request information now (once only)
-                    session.socket.emit(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_STATUS_REQUEST, { sessionId: session.sessionId });
+                    session.socket.emit(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_STATUS_REQUEST, { sessionId: session.id });
 
                     page$("#logout").on("click", () => {
                         session.stateMachine.goTo(STATE.BACKUP_CLIENT_LOGOUT);
@@ -328,7 +330,7 @@ $(() => {
                     }
                 });
 
-                session.socket.emit(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_RETURN_TO_QUEUE, { sessionId: session.sessionId });
+                session.socket.emit(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_RETURN_TO_QUEUE, { sessionId: session.id });
             }
         },
         {   // Ejected

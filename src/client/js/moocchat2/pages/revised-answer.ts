@@ -15,19 +15,14 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
         let section = session.sectionManager.getSection("revised-answer");
         let maxJustificationLength = conf.answers.justification.maxLength;
 
-        function submitRevisedAnswer(answer: number, justification: string) {
-            session.answers.revised.answer = answer;
+        function submitRevisedAnswer(optionId: string, justification: string) {
+            session.answers.revised.optionId = optionId;
             session.answers.revised.justification = justification.substr(0, maxJustificationLength);
 
             session.socket.emit(WebsocketEvents.OUTBOUND.REVISED_ANSWER_SUBMISSION, {
-                sessionId: session.sessionId,
-                questionNumber: session.quiz.questionNumber,
-                answer: session.answers.revised.answer,
-                justification: session.answers.revised.justification,
-
-                screenName: "",         // Not used
-                quizRoomID: -1,         // Not used
-                timestamp: new Date().toISOString()
+                sessionId: session.id,
+                optionId: session.answers.revised.optionId,
+                justification: session.answers.revised.justification
             });
 
             session.stateMachine.goTo(STATE.SURVEY);
@@ -50,25 +45,25 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
                     // Force answer when timer runs out
                     section.attachTimerCompleted(() => {
                         let justification = $.trim($justification.val());
-                        let answer = page$("#answers > .selected").index();
+                        let optionId: string = page$("#answers > .selected").data("optionId");
 
                         if (justification.length === 0) {
                             justification = "[NO JUSTIFICATION]";
                         }
 
-                        if (answer < 0) {
+                        if (!optionId) {
                             justification = "[DID NOT ANSWER]";
-                            answer = 0;
+                            optionId = null;
                         }
 
-                        submitRevisedAnswer(answer, justification);
+                        submitRevisedAnswer(optionId, justification);
                     });
 
                     $submitAnswer.on("click", () => {
                         let justification = $.trim($justification.val());
-                        let answer = page$("#answers > .selected").index();
+                        let optionId = page$("#answers > .selected").data("optionId");
 
-                        if (justification.length === 0 || answer < 0) {
+                        if (justification.length === 0 || !optionId) {
                             alert("You must provide an answer and justification.");
                             return;
                         }
@@ -78,7 +73,7 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
                             return;
                         }
 
-                        submitRevisedAnswer(answer, justification);
+                        submitRevisedAnswer(optionId, justification);
                     });
 
                     $justification.on("change input", () => {
@@ -115,12 +110,12 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
                     page$("#question-chat-container").hide();
 
                     // Render question, choices
-                    page$("#question-reading").html(session.quiz.questionReading);
-                    page$("#question-statement").html(session.quiz.questionStatement);
+                    page$("#question-reading").html(session.quiz.questionContent);
+                    // page$("#question-statement").html(session.quiz.questionStatement);
 
                     let answerDOMs: JQuery[] = [];
-                    session.quiz.questionChoices.forEach((choice) => {
-                        answerDOMs.push($("<button>").text(choice));
+                    session.quiz.questionOptions.forEach((option) => {
+                        answerDOMs.push($("<button>").html(option.content).data("optionId", option._id));
                     });
 
                     $answers.append(answerDOMs);
@@ -128,7 +123,12 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
 
                     // Populate previous answer
                     $justification.val(session.answers.initial.justification);
-                    $("button", $answers).eq(session.answers.initial.answer).addClass("selected");
+                    $("button", $answers).each((i, e) => {
+                        if ($(e).data("optionId") === session.answers.initial.optionId) {
+                            $(e).addClass("selected");
+                            return false;
+                        }
+                    });
 
 
                     // Set pre-/post-edit-enable elements
@@ -138,7 +138,7 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
 
                     // If passed chat object, clone window into expected chat area
                     if (data instanceof MoocchatChat) {
-                        let chat = data as MoocchatChat;       
+                        let chat = data as MoocchatChat;
 
                         page$("#chat-clone").append(chat.chatWindow);
                     }

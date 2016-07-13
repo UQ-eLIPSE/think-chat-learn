@@ -2,7 +2,7 @@ import * as socket from "socket.io-client";
 
 export const WebsocketEvents = {
     INBOUND: {
-        SESSION_AVAILABLE_STATUS: "sessionAvailableStatus",
+        // SESSION_AVAILABLE_STATUS: "sessionAvailableStatus",
 
         LOGIN_SUCCESS: "loginSuccess",
         LOGIN_FAILURE: "loginFailure",
@@ -24,9 +24,9 @@ export const WebsocketEvents = {
     },
 
     OUTBOUND: {
-        SESSION_AVAILABLE_CHECK: "sessionAvailableCheck",
+        // SESSION_AVAILABLE_CHECK: "sessionAvailableCheck",
 
-        LOGIN_REQUEST: "login_req",
+        // LOGIN_REQUEST: "login_req",
         LOGIN_LTI_REQUEST: "loginLti",
         
         INITIAL_ANSWER_SUBMISSION: "answerSubmissionInitial",
@@ -35,13 +35,14 @@ export const WebsocketEvents = {
         CHAT_GROUP_SEND_MESSAGE: "chatGroupMessage",
         CHAT_GROUP_QUIT_STATUS_CHANGE: "chatGroupQuitStatusChange", 
 
-        REVISED_ANSWER_SUBMISSION: "probingQuestionFinalAnswerSubmission",
+        REVISED_ANSWER_SUBMISSION: "answerSubmissionFinal",
 
         BACKUP_CLIENT_ANSWER_AND_JOIN_QUEUE: "backupClientEnterQueue",
         BACKUP_CLIENT_RETURN_TO_QUEUE: "backupClientReturnToQueue",
         BACKUP_CLIENT_STATUS_REQUEST: "backupClientStatusRequest",
         BACKUP_CLIENT_TRANSFER_CONFIRM: "backupClientTransferConfirm",
 
+        SURVEY_SUBMISSION: "submitSurvey"
     }
 }
 

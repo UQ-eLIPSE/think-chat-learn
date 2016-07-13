@@ -26,6 +26,10 @@ var SessionManager = function(timeout) {
  * @param {Session} session
  */
 SessionManager.prototype.addSession = function(session) {
+    if (!session.id) {
+        throw new Error("No session ID");
+    }
+
     // Wrap session with last time info
     this.activeSessions[session.id] = {
         session: session,
@@ -67,6 +71,23 @@ SessionManager.prototype.getSessionBySocket = function(socket) {
         var session = this.activeSessions[sessionId].session;
 
         if (session.client && session.client.socket === socket) {
+            return session;
+        }
+    }
+}
+
+/**
+ * @param {Client} client
+ */
+SessionManager.prototype.getSessionByClient = function(client) {
+    var sessionIds = Object.keys(this.activeSessions);
+
+    for (var i = 0; i < sessionIds.length; ++i) {
+        var sessionId = sessionIds[i];
+
+        var session = this.activeSessions[sessionId].session;
+
+        if (session.client === client) {
             return session;
         }
     }

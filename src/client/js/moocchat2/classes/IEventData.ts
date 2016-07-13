@@ -6,6 +6,7 @@
  */
 
 import {IQuiz} from "./IQuiz";
+import {ISurvey} from "./ISurvey";
 
 
 
@@ -19,8 +20,9 @@ export interface IEventData_GenericSuccessState {
 export interface IEventData_LoginSuccess {
     sessionId: string;
     username: string;
-    hasElevatedPermissions: boolean;
+    // hasElevatedPermissions: boolean;
     quiz: IQuiz;
+    survey: ISurvey;
 }
 
 /** loginFailure */
@@ -33,10 +35,12 @@ export interface IEventData_LoginExistingUser {
 
 /** A person's answer to the quiz in the initial answer stage */
 export interface IEventData_ChatGroupAnswer {
-    screenName: string;
     clientIndex: number;
-    answer: number;
-    justification: string;
+    answer: {
+        _id?: string;
+        justification: string;
+        optionId: string;
+    }
 }
 
 /** chatGroupFormed */
@@ -80,6 +84,6 @@ export interface IEventData_BackupClientQueueUpdate {
     }[];
 }
 
-export interface IEventData_SessionAvailableStatus {
-    available: boolean;
-}
+// export interface IEventData_SessionAvailableStatus {
+//     available: boolean;
+// }

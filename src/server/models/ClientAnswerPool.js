@@ -9,75 +9,39 @@ var conf = global.conf;
 
 var ChatGroup = require("./ChatGroup");
 
-/**
- * Shuffles array in place.
- * http://stackoverflow.com/a/6274381
- * 
- * @param {any[]} a items The array containing the items.
- */
-function shuffle(a) {
-    var j, x, i;
-    for (var i = a.length; i; i -= 1) {
-        j = Math.floor(Math.random() * i);
-        x = a[i - 1];
-        a[i - 1] = a[j];
-        a[j] = x;
-    }
-}
-
-/**
- * Internal class for wrapping clients with their entry timestamp
- */
-var ClientAnswerWrapper = function(client) {
-    this.client = client;
-    this.timestamp = Date.now();
-}
-
-ClientAnswerWrapper.prototype.timeAlive = function() {
-    return Date.now() - this.timestamp;
-}
-
+var id = 0;
 
 /**
  * Handles queues of clients and attempts to distribute them
  * into groups with diverse answers where possible
  * 
- * @param {Quiz} quiz
+ * @param {IDB_QuestionOption[]} questionOptions
  */
-var ClientAnswerPool = function(quiz) {
+var ClientAnswerPool = function(questionOptions) {
+    this.id = id++;
+    
     this.desiredGroupSize = conf.chat.groups.desiredSize;
     this.desiredMaxWaitTime = conf.chat.groups.formationTimeoutMs;
 
-    this.quiz = quiz;
-
-    // Determine how many answers are available
-    this.numberOfAnswers = this.quiz.probingQuestionChoices.length;
-
-    // Set up answer queues as a map between an answer number => ClientAnswerWrapper[] 
+    // Set up answer queues as a map between an question answer option ID => ClientAnswerWrapper[] 
     this.answerQueues = {};
 
-    for (var i = 0; i < this.numberOfAnswers; ++i) {
-        this.answerQueues[i] = [];   // {ClientAnswerWrapper[]}
-    }
+    questionOptions.forEach(function(questionOption) {
+        this.answerQueues[questionOption._id.toString()] = [];
+    }, this);
 }
 
 
 /**
  * @param {Client} client
  */
-ClientAnswerPool.prototype.addClient = function(client) {
-    if (!client.isProbingQuestionAnswerValid()) {
-        throw new Error("Client answer not valid; Cannot assign to answer queue");
-    }
-
-    var clientAnswer = client.probingQuestionAnswer;
-
+ClientAnswerPool.prototype.addClient = function(client, optionId) {
     // Answer is either not in range expected or some weird answer
-    if (!this.answerQueues.hasOwnProperty(clientAnswer)) {
+    if (!this.answerQueues.hasOwnProperty(optionId)) {
         throw new Error("Client answer not recognised; Cannot assign to answer queue");
     }
 
-    var answerQueue = this.answerQueues[clientAnswer];
+    var answerQueue = this.answerQueues[optionId];
 
     // If the client is already in the queue, don't do anything.
     if (answerQueue.indexOf(client) > -1) {
@@ -380,3 +344,31 @@ ClientAnswerPool.prototype.removeClients = function(clients) {
 }
 
 module.exports = ClientAnswerPool;
+
+/******************************************************************************
+ * Shuffles array in place.
+ * http://stackoverflow.com/a/6274381
+ * 
+ * @param {any[]} a items The array containing the items.
+ */
+function shuffle(a) {
+    var j, x, i;
+    for (var i = a.length; i; i -= 1) {
+        j = Math.floor(Math.random() * i);
+        x = a[i - 1];
+        a[i - 1] = a[j];
+        a[j] = x;
+    }
+}
+
+/******************************************************************************
+ * Internal class for wrapping clients with their entry timestamp
+ */
+var ClientAnswerWrapper = function(client) {
+    this.client = client;
+    this.timestamp = Date.now();
+}
+
+ClientAnswerWrapper.prototype.timeAlive = function() {
+    return Date.now() - this.timestamp;
+}

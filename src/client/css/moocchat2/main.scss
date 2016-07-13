@@ -323,6 +323,8 @@ p {
     width: $mc-sidebar-width;
 
     font-size: 1.2rem;
+
+    overflow-y: hidden;
 }
 
 .backup-client #header {
@@ -944,6 +946,84 @@ p {
 
 
 
+/********** Survey **********/
+
+#survey-form {
+    max-width: 50em;
+}
+
+#survey-content {
+    .survey-question {
+        margin: 3em 0;
+
+        &.response-required::before {
+            content: "A response is required for this question:";
+            display: block;
+            padding: 0.5em 1em;
+            border: 3px double fg-on-bg($warning-colour);
+            
+            background: $warning-colour;
+            color: fg-on-bg($warning-colour);
+        }
+
+        &.survey-question-text-short {
+            input {
+                width: 100%;
+            }
+        }
+
+        &.survey-question-multiple-choice-inline {
+            label {
+                display: inline-block;
+                padding: 0.5em 1em;
+
+                &:nth-child(even) {
+                    background: rgba(0,0,0,0.05);
+                }
+            }
+
+            input {
+                margin: 0.3em 0.8em 0.3em 0;
+                vertical-align: middle;
+            }
+        }
+
+        &.survey-question-multiple-choice-list {
+            label {
+                display: block;
+                padding: 0.5em 1em;
+
+                &:nth-child(even) {
+                    background: rgba(0,0,0,0.05);
+                }
+            }
+
+            input {
+                margin: 0.3em 0.8em 0.3em 0;
+                vertical-align: middle;
+            }
+        }
+    }
+
+    h2 + .survey-question {
+        margin-top: 0;
+    }
+}
+
+
+
+
+
+
+
+
+/********** Receipts **********/
+
+#session-id {
+    @extend .monospace;
+
+    font-size: 1.3em;
+}
 
 
 
@@ -1008,6 +1088,48 @@ p {
         &.narrow-block > .row > * {
             display: block;
             width: 100%;
+        }
+    }
+}
+
+
+// Printers
+@media print {
+    html,
+    body {
+        background: none;
+        color: #000;
+    }
+
+    #header,
+    #content {
+        position: static;
+        display: block;
+        width: auto;
+        background: none;
+        color: #000;
+        text-shadow: none;
+    }
+
+    #header {
+        border-bottom: 1px solid #000;
+    }
+
+    #logo {
+        display: none;
+    }
+
+    #task-sections {
+        margin: $mc-sidebar-padding-lr;
+
+        li {
+            display: none;
+            background: none;
+            padding: 0;
+        }
+
+        li.active {
+            display: block;
         }
     }
 }
