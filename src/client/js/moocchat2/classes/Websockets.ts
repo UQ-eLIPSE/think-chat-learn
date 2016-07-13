@@ -26,7 +26,7 @@ export const WebsocketEvents = {
     OUTBOUND: {
         // SESSION_AVAILABLE_CHECK: "sessionAvailableCheck",
 
-        LOGIN_REQUEST: "login_req",
+        // LOGIN_REQUEST: "login_req",
         LOGIN_LTI_REQUEST: "loginLti",
         
         INITIAL_ANSWER_SUBMISSION: "answerSubmissionInitial",
@@ -42,6 +42,7 @@ export const WebsocketEvents = {
         BACKUP_CLIENT_STATUS_REQUEST: "backupClientStatusRequest",
         BACKUP_CLIENT_TRANSFER_CONFIRM: "backupClientTransferConfirm",
 
+        SURVEY_SUBMISSION: "submitSurvey"
     }
 }
 

@@ -19,6 +19,8 @@ var Session = function(client, quizScheduleSession) {
     this.quizQuestion;
     this.quizQuestionOptions;
 
+    this.survey;
+
     this.responseInitial = {
         _id: null,
         optionId: null,
@@ -55,6 +57,13 @@ Session.prototype.setQuizQuestion = function(question) {
  */
 Session.prototype.setQuizQuestionOptions = function(questionOptions) {
     this.quizQuestionOptions = questionOptions;
+}
+
+/**
+ * @param {IDB_Survey} survey
+ */
+Session.prototype.setSurvey = function(survey) {
+    this.survey = survey;
 }
 
 /**

@@ -24,3 +24,14 @@ export interface ISurveyContent {
     /** For Headings only */
     headingContent?: string;
 }
+
+export interface ISurveyResponseContent {
+    index?: number;
+    
+    /**
+     * Types:
+     * => string = text
+     * => number = multiple choice index (0-based) 
+     */
+    value?: string | number;
+}

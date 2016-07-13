@@ -2,6 +2,8 @@ import {IPageFunc} from "../classes/IPageFunc";
 
 import {MoocchatState as STATE} from "../classes/MoocchatStates";
 
+import {WebsocketManager, WebsocketEvents} from "../classes/Websockets";
+
 export let SurveyPageFunc: IPageFunc<STATE> =
     (session) => {
         let section = session.sectionManager.getSection("survey");
@@ -17,7 +19,8 @@ export let SurveyPageFunc: IPageFunc<STATE> =
 
                     $surveyForm.on("submit", (e) => {
                         e.preventDefault();
-                        
+
+                        // Validate                        
                         $("#form-validation-failure", $surveyForm).remove();
 
                         let formValid = session.survey.validateForm($surveyForm);
@@ -37,9 +40,13 @@ export let SurveyPageFunc: IPageFunc<STATE> =
                             return;
                         }
 
-                        // TODO: Send survey
+                        // Send survey
+                        let surveyResponseContent = session.survey.generateResponseContent($surveyForm);
+                        session.socket.emit(WebsocketEvents.OUTBOUND.SURVEY_SUBMISSION, {
+                            sessionId: session.id,
+                            content: surveyResponseContent
+                        });
 
-                        // Once survey submitted, continue
                         session.stateMachine.goTo(STATE.COMPLETION);
                     });
 

@@ -1,6 +1,6 @@
 import * as $ from "jquery";
 
-import {ISurvey, ISurveyContent} from "./ISurvey";
+import {ISurvey, ISurveyContent, ISurveyResponseContent} from "./ISurvey";
 
 /**
  * MOOCchat
@@ -129,8 +129,55 @@ export class MoocchatSurvey {
         return validationPass;
     }
 
-    public generateServerReturnObj() {
-        
+    public generateResponseContent($form: JQuery) {
+        let content: ISurveyResponseContent[] = [];
+
+        this.data.content.forEach((partContent, i) => {
+            // Ignore headings
+            if (partContent.type === "HEADING") {
+                return;
+            }
+
+            let $inputFields = $(`input[name=${i}]`, $form);
+
+            if ($inputFields.length === 0) {
+                throw new Error("Missing input elements");
+            }
+
+            switch (partContent.type) {
+                case "TEXT_SHORT": {
+                    let $inputField = $inputFields;
+                    let value = $.trim($inputField.val());
+
+                    content.push({
+                        index: i,
+                        value: value
+                    });
+
+                    return;
+                }
+
+                case "MULTIPLECHOICE_INLINE":
+                case "MULTIPLECHOICE_LIST": {
+                    let $selectedRadioField = $inputFields.filter(":checked");
+
+                    // Values are indicies of the question option value encoded as string
+                    let value = parseInt($selectedRadioField.val());
+
+                    content.push({
+                        index: i,
+                        value: value
+                    });
+
+                    return;
+                }
+
+                default:
+                    throw new Error("Unexpected survey question content type.");
+            }
+        });
+
+        return content;
     }
 
 }

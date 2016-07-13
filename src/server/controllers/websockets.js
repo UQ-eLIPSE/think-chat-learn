@@ -545,6 +545,7 @@ function handleLoginLti(data, socket) {
             // Set up session
             session = new Session(client, quizSchedule);
             session.setId(sessionIdString);
+            session.setSurvey(survey);
             session.setQuizQuestion(question);
             session.setQuizQuestionOptions(questionOptions);
 
@@ -774,6 +775,30 @@ function handleAnswerSubmissionFinal(data) {
 
 
 
+
+/**
+ * data = {
+ *      sessionId {string}
+ *      content {IDB_SurveyResponse_Content[]}
+ * }
+ */
+function saveSurvey(data) {
+    var session = allSessions.getSessionById(data.sessionId);
+
+    db_wrapper.surveyResponse.create({
+        sessionId: mongojs.ObjectId(session.getId()),
+        surveyId: session.survey._id,
+        timestamp: new Date(),
+        content: data.content
+    }, function(err, result) {
+        // TODO:
+    });
+}
+
+
+
+
+
 // ===== Backup client =====
 
 /**
@@ -875,15 +900,10 @@ io.sockets.on('connection', function(socket) {
     /* On websocket disconnect */
     socket.on('disconnect', disconnect);
 
-    /* Tracking */
-    socket.on("user_flow", user_flow);
-
     /* Submission of answers and surveys */
-    // socket.on("probingQuestionAnswerSubmission", saveProbingQuestionAnswer);
-    // socket.on("probingQuestionFinalAnswerSubmission", saveProbingQuestionFinalAnswer);
     socket.on("answerSubmissionInitial", handleAnswerSubmissionInitial);
     socket.on("answerSubmissionFinal", handleAnswerSubmissionFinal);
-    socket.on('submitSurvey', saveSurvey);
+    socket.on("submitSurvey", saveSurvey);
 
     /* Sessions */
     // socket.on("sessionAvailableCheck", function(data) { handleSessionAvailableCheck(data, socket) });
@@ -913,145 +933,8 @@ io.sockets.on('connection', function(socket) {
     // For unit test framework to know when to begin
     socket.emit('connected');
 
-    // Makes sure all names in argNames are in data
-    function checkArgs(eventName, data, argNames) {
-        for (var i = 0; i < argNames.length; i++) {
-            if (!(argNames[i] in data)) {
-                console.log('ERROR: Missing argument: ' + argNames[i] +
-                    ' in event ' + eventName);
-                socket.emit('illegalMessage', 'Missing argument: ' + argNames[i] +
-                    ' in event ' + eventName);
-                return false;
-            }
-        }
-        return true;
-    }
 
-    function handleException(err) {
-        console.log('Unexpected exception: ' + err.message + "\n" + err.stack);
-        socket.emit('illegalMessage',
-            'Unexpected exception: ' + err.message + "\n" + err.stack);
-    }
 
-    // function saveProbingQuestionAnswer(data, testHooks) {
-    //   saveProbingQuestionAnswerHelper(data, false, testHooks);
-    // }
-
-    function saveProbingQuestionFinalAnswer(data, testHooks) {
-        saveProbingQuestionAnswerHelper(data, true, testHooks);
-    }
-
-    /**
-     * data = {
-     *      sessionId {string}
-     *      screenName {string}
-     *      quizRoomID {string}
-     *      questionNumber {number}
-     *      answer {number}
-     *      justification {string}
-     *      timestamp {string}
-     * }
-     */
-    function saveProbingQuestionAnswerHelper(data, finalAnswer, testHooks) {
-        try {
-            if (!checkArgs("saveProbingQuestionAnswer", data,
-                [
-                    //  "username", 
-                    "screenName", "questionNumber", "answer", "justification"])) return;
-            var client = getClientFromSessionId(data.sessionId);
-            var username = client.username;
-            if (!client) return;
-            var questionNumber = client.questionNumber;
-            var answer = data.answer;
-            var probJustification = data.justification;
-            var quizRoomID = data.quizRoomID;
-
-            client.probingQuestionAnswer = answer;
-            client.probingQuestionAnswerTime = new Date().toISOString();
-
-            var update_criteria = {
-                socketID: client.getSocket().id,
-                username: client.username,
-                questionGroup: conf.activeQuestionGroup
-            };
-
-            // There are different document portions to update when there is a final answer 
-            var update_data;
-            var function_name;
-
-            if (finalAnswer) {
-
-                update_data = {
-                    $set: {
-                        probingQuestionFinalAnswer: client.probingQuestionAnswer,
-                        probingQuestionFinalAnswerTime: client.probingQuestionAnswerTime,
-                        probFinalJustification: probJustification
-                    }
-                };
-
-                function_name = "saveProbingQuestionFinalAnswer()";
-
-            } else {
-
-                update_data = {
-                    $set: {
-                        probingQuestionAnswer: client.probingQuestionAnswer,
-                        probingQuestionAnswerTime: client.probingQuestionAnswerTime,
-                        probJustification: probJustification
-                    }
-                };
-
-                function_name = "saveProbingQuestionAnswer()";
-
-            }
-
-            // Update the database 
-            db_wrapper.userquiz.update(update_criteria, update_data, function(err, dbResults) {
-                console.log(new Date().toISOString(), username, update_criteria, update_data);
-
-                if ((typeof testHooks !== 'undefined') && (testHooks.location == 'afterUpdate')) {
-                    testHooks.callback();
-                }
-                if (err || typeof dbResults === 'undefined' || dbResults.length == 0) {
-                    console.log("#" + function_name + " ERROR - " +
-                        "username: %s", username);
-                    if (err) console.log(err);
-                    socket.emit('db_failure', function_name);
-                }
-                else {
-                    console.log("#" + function_name + " - " +
-                        "probing question answer and timestamps " +
-                        "saved in database");
-                    console.log(new Date().toISOString(), username, dbResults);
-                }
-            });
-        }
-        catch (err) {
-            handleException(err);
-        }
-    }
-
-    function saveSurvey(data) {
-        try {
-            if (!checkArgs('saveSurvey', data, [
-                // 'username',
-                'general', 'discussion'])) return;
-
-            db[collections[POST_SURVEY_COLLECTION]].insert(data, function(err, dbResults) {
-                if (err || typeof dbResults === 'undefined' || dbResults.length == 0) {
-                    console.log("#saveSurvey() ERROR");
-                    if (err) console.log(err);
-                    socket.emit('db_failure', 'saveSurvey()');
-                }
-                else {
-                    console.log("#saveSurvey() - survey response saved in database");
-                }
-            });
-        }
-        catch (err) {
-            handleException(err);
-        }
-    }
 
     // function loadTest(data) {  //  SPECIAL EVENT HANDLER FOR LOAD TEST
     //     db_wrapper.question.read({ questionGroup: conf.activeQuestionGroup },
@@ -1091,61 +974,26 @@ io.sockets.on('connection', function(socket) {
         }
 
         allSessions.removeSession(session);
-    }
 
-    //This records User's flow during the session
-    function user_flow(data) {
-        var username = data.username;
-        db_wrapper.userflow.read({ 'username': data.username }, function(err, dbResults) {
-            //console.log(dbResults);
-            if (err || typeof dbResults === 'undefined' || dbResults.length == 0) {
-                console.log("#UserFlow Table ERROR doesnt exist - " +
-                    "username: %s", username);
-                if (err) console.log(err);
-            }
-            if (!err && dbResults == 0) {
-                db_wrapper.userflow.create(
-                    {
-                        username: data.username,
-                        events: [
-                            {
-                                timestamp: data.timestamp,
-                                page: data.page,
-                                event: data.event,
-                                data: data.data
-                            }
-                        ]
-                    }, function(err, res) {
+        db_wrapper.userSession.update(
+            {
+                _id: mongojs.ObjectId(session.getId())
+            },
+            {
+                $set: {
+                    timestampEnd: new Date()
+                }
+            },
+            function(err, result) {
+                // TODO:
+            });
 
-                    });
-            }
 
-            else {
-                db_wrapper.userflow.update(
-                    { username: data.username },
-                    {
-                        $addToSet: {
-                            events: {
-                                $each: [
-                                    {
-                                        timestamp: data.timestamp,
-                                        event: data.event,
-                                        page: data.page,
-                                        data: data.data
-                                    }
-                                ]
-                            }
-                        }
-                    }
-                )
 
-            }
-
-        });
+        // TODO: Need to clean up client answer pools as they become vacant
 
 
     }
-
 });
 
 console.log("All websocket events registered.");

@@ -1,8 +1,6 @@
 import {tables} from "./Tables";
 import {DatabaseWrapper} from "../DatabaseWrapper";
 
-import {IDB_Survey_ContentType} from "./Survey";
-
 let tableName = tables.SURVEY_RESPONSE;
 
 export class SurveyResponse extends DatabaseWrapper<IDB_SurveyResponse> {
@@ -20,12 +18,12 @@ export interface IDB_SurveyResponse {
 }
 
 export interface IDB_SurveyResponse_Content {
-    type?: IDB_Survey_ContentType,
+    index?: number;
     
     /**
      * Types:
      * => string = text
      * => number = multiple choice index (0-based) 
      */
-    value?: string | number,
+    value?: string | number;
 }
