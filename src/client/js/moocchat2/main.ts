@@ -197,7 +197,7 @@ $(() => {
 
                     // Session ID is split every 4th character to make it easier to read
                     page$("#session-id").text(session.id.match(/.{1,4}/g).join(" "));
-                    // page$("#time-now").text(new Date().toISOString());
+                    page$("#time-now").text(new Date().toISOString());
 
                     page$("#print-receipt").on("click", () => {
                         window.print();

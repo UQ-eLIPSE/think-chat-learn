@@ -241,7 +241,7 @@ button.thin {
 }
 
 .p-block {
-    margin: 1em 0;
+    margin: 1.2em 0;
 }
 
 p {
@@ -1152,21 +1152,16 @@ button.link:active {
         display: none !important;
     }
 
+    #moocchat-name,
+    #course-name {
+        display: inline-block;
+    }
+
     #logo {
         display: none;
     }
 
     #task-sections {
-        margin: $mc-sidebar-padding-lr;
-
-        li {
-            display: none;
-            background: none;
-            padding: 0;
-        }
-
-        li.active {
-            display: block;
-        }
+        display: none;
     }
 }
