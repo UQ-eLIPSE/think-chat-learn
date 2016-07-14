@@ -35,6 +35,8 @@ $input-disabled-bg-colour: #ccc;
 $message-border-colour: #bbb;
 $message-default-bg-colour: #ddd;
 
+$link-colour: $uq-colour-B4;
+
 /********** Dimensions **********/
 $mc-sidebar-width: 18rem;
 
@@ -246,7 +248,35 @@ p {
     @extend .p-block;
 }
 
+.link,
+.link:focus,
+.link:active,
+button.link,
+button.link:focus,
+button.link:active {
+    background: none;
+    border: 0;
+    display: inline;
 
+    font: inherit;
+
+    margin: 0;
+    padding: 0;
+    outline: none;
+
+    color: $link-colour;
+    cursor: pointer;
+    text-decoration: none;
+
+    box-shadow: 0;
+    text-shadow: 0;
+
+    &:hover {
+        background: none;
+        text-decoration: underline;
+    }
+
+}
 
 /********** Core UI structure **********/
 
