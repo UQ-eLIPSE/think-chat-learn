@@ -37,7 +37,7 @@ var ltiProcessor = new LTIProcessor(conf.lti.signingInfo);
 ltiProcessor.setTestMode(conf.lti.testMode);
 
 // Queue for instructors/tutors on standby
-var backupClientQueue = new BackupClientQueue();
+// var backupClientQueue = new BackupClientQueue();
 
 // Create a new pool with reference to the quiz
 // being used (the question number is always fixed)
@@ -46,21 +46,27 @@ var backupClientQueue = new BackupClientQueue();
 // Object(ChatGroupId{string} => ChatGroup)
 var chatGroups = {};
 
-// Object(QuizScheduleId{number} => ClientAnswerPool)
-var quizSchedule_ClientAnswerPools = {};
+// Object(QuizScheduleId{string} => BackupClientQueue)
+var quizSchedule_BackupClientQueue = {};
 
+// Object(QuizScheduleId{string} => ClientAnswerPool)
+var quizSchedule_ClientAnswerPools = {};
 
 // ===== Utils =====
 
 /**
  * @param {string} sessionId
  */
-function getClientFromSessionId(sessionId) {
-    return allSessions.getSessionById(sessionId).client;
+function getSessionFromId(sessionId) {
+    return allSessions.getSessionById(sessionId);
 }
 
 function getClientAnswerPoolFromSession(session) {
-    return quizSchedule_ClientAnswerPools[session.quizSession._id];
+    return quizSchedule_ClientAnswerPools[session.quizSession._id.toString()];
+}
+
+function getBackupClientQueueFromSession(session) {
+    return quizSchedule_BackupClientQueue[session.quizSession._id.toString()];
 }
 
 /**
@@ -69,9 +75,10 @@ function getClientAnswerPoolFromSession(session) {
 function removeClientFromEverything(client) {
     var session = allSessions.getSessionByClient(client);
     var clientAnswerPool = getClientAnswerPoolFromSession(session);
+    var backupClientQueue = getBackupClientQueueFromSession(session);
 
     if (backupClientQueue.removeClient(client)) {
-        broadcastBackupClientQueueStatus();
+        backupClientQueue.broadcastUpdate();
     }
 
     if (clientAnswerPool.removeClient(client)) {
@@ -97,50 +104,13 @@ function removeClientFromEverything(client) {
 
 
 
-// ===== Sessions =====
-
-/**
- * @return {boolean}
- */
-// function isSessionAvailable() {
-//     var timezone = sessionData.timezone;
-//     var sessions = sessionData.sessions;
-
-//     var now = new Date();
-
-//     for (var i = 0; i < sessions.length; ++i) {
-//         var session = sessions[i];
-
-//         var endDate = new Date(session.end.date + "T" + session.end.time + timezone);
-
-//         // Skip this one if this session already concluded
-//         if (endDate < now) {
-//             continue;
-//         }
-
-//         var startDate = new Date(session.start.date + "T" + session.start.time + timezone);
-
-//         if (startDate <= now && endDate >= now) {
-//             return true;
-//         }
-//     }
-
-//     return false;
-// }
-
-// function handleSessionAvailableCheck(data, socket) {
-//     socket.emit("sessionAvailableStatus", {
-//         available: isSessionAvailable()
-//     });
-// }
-
 // ===== Chat group =====
 
 /**
  * @return {ChatGroup | undefined}
  */
 function formChatGroup(clientAnswerPool) {
-    var newChatGroup = clientAnswerPool.tryMakeChatGroup(backupClientQueue);
+    var newChatGroup = clientAnswerPool.tryMakeChatGroup();
 
     // Store reference to chat group if formed
     if (newChatGroup) {
@@ -199,7 +169,7 @@ var chatGroupFormationLoop = (function() {
  * @param {any} data
  */
 function handleChatGroupJoinRequest(data) {
-    var session = allSessions.getSessionById(data.sessionId);
+    var session = getSessionFromId(data.sessionId);
     var client = session.client;
     var answerOptionId = session.responseInitial.optionId;
     var clientAnswerPool = getClientAnswerPoolFromSession(session);
@@ -221,7 +191,8 @@ function handleChatGroupJoinRequest(data) {
  * @param {any} data
  */
 function handleChatGroupQuitStatusChange(data) {
-    var client = getClientFromSessionId(data.sessionId);
+    var session = getSessionFromId(data.sessionId);
+    var client = session.client;
     var chatGroup = chatGroups[data.groupId];
 
     if (data.quitStatus) {
@@ -246,7 +217,7 @@ function handleChatGroupQuitStatusChange(data) {
  * @param {any} data
  */
 function handleChatGroupMessage(data) {
-    var session = allSessions.getSessionById(data.sessionId);
+    var session = getSessionFromId(data.sessionId);
 
     var client = session.client;
     var chatGroup = chatGroups[data.groupId];
@@ -291,7 +262,6 @@ function handleLoginLti(data, socket) {
     }
 
     // Callback chain
-    // try {
     runCallbackChain(
         notifyClientOnError,
         [
@@ -305,10 +275,6 @@ function handleLoginLti(data, socket) {
             writeSessionToDb,
             notifyClientOfLogin
         ]);
-    // } catch (e) {
-    //     socket.emit("loginFailure", e.message);
-    //     return;
-    // }
 
 
     // Callback chain and synchronisation
@@ -399,11 +365,11 @@ function handleLoginLti(data, socket) {
     function retrieveUserId(throwErr, next) {
         db_wrapper.user.read({ username: ltiUsername }, function(err, result) {
             if (err) {
-                return notifyClientOnError(err);
+                return throwErr(err);
             }
 
             if (result.length > 1) {
-                return notifyClientOnError(new Error("More than one user with same username detected."));
+                return throwErr(new Error("More than one user with same username detected."));
             }
 
             // New user
@@ -418,7 +384,7 @@ function handleLoginLti(data, socket) {
                     lastName: ltiLastName
                 }, function(err, result) {
                     if (err) {
-                        return notifyClientOnError(err);
+                        return throwErr(err);
                     }
 
                     userId = result._id.toString();
@@ -442,12 +408,12 @@ function handleLoginLti(data, socket) {
             "availableEnd": { "$gte": now }
         }, function(err, result) {
             if (err) {
-                return notifyClientOnError(err);
+                return throwErr(err);
             }
 
             // Find first available scheduled quiz session
             if (result.length === 0) {
-                return notifyClientOnError(new Error("No scheduled quizzes right now. Try again during a scheduled time."));
+                return throwErr(new Error("No scheduled quizzes right now. Try again during a scheduled time."));
             }
 
             quizSchedule = result[0];
@@ -462,11 +428,11 @@ function handleLoginLti(data, socket) {
                 "_id": quizSchedule.questionId
             }, function(err, result) {
                 if (err) {
-                    return notifyClientOnError(err);
+                    return throwErr(err);
                 }
 
                 if (result.length === 0) {
-                    return notifyClientOnError(new Error("No question with _id = " + quizSchedule.questionId));
+                    return throwErr(new Error("No question with _id = " + quizSchedule.questionId));
                 }
 
                 question = result[0];
@@ -477,11 +443,11 @@ function handleLoginLti(data, socket) {
                 "questionId": quizSchedule.questionId
             }, function(err, result) {
                 if (err) {
-                    return notifyClientOnError(err);
+                    return throwErr(err);
                 }
 
                 if (result.length === 0) {
-                    return notifyClientOnError(new Error("No question options for " + quizSchedule.questionId));
+                    return throwErr(new Error("No question options for " + quizSchedule.questionId));
                 }
 
                 questionOptions = result;
@@ -497,12 +463,12 @@ function handleLoginLti(data, socket) {
             "availableStart": { "$lte": now }
         }, function(err, result) {
             if (err) {
-                return notifyClientOnError(err);
+                return throwErr(err);
             }
 
             // Find first available survey at this time session
             if (result.length === 0) {
-                return notifyClientOnError(new Error("No survey available at this time. Survey required."));
+                return throwErr(new Error("No survey available at this time. Survey required."));
             }
 
             survey = result[0];
@@ -512,11 +478,15 @@ function handleLoginLti(data, socket) {
     }
 
     function setupClientAnswerPool(throwErr, next) {
-        var quizScheduleId = quizSchedule._id;
+        var quizScheduleIdString = quizSchedule._id.toString();
 
-        if (!quizSchedule_ClientAnswerPools[quizScheduleId]) {
-            var newClientAnswerPool = new ClientAnswerPool(questionOptions);
-            quizSchedule_ClientAnswerPools[quizScheduleId] = newClientAnswerPool;
+        if (!quizSchedule_ClientAnswerPools[quizScheduleIdString]) {
+            var newBackupClientQueue = new BackupClientQueue();
+            var newClientAnswerPool = new ClientAnswerPool(questionOptions, newBackupClientQueue);
+
+            quizSchedule_BackupClientQueue[quizScheduleIdString] = newBackupClientQueue;
+            quizSchedule_ClientAnswerPools[quizScheduleIdString] = newClientAnswerPool;
+
             chatGroupFormationLoop.run(newClientAnswerPool);
         }
 
@@ -547,7 +517,7 @@ function handleLoginLti(data, socket) {
             responseFinalId: null
         }, function(err, result) {
             if (err) {
-                return notifyClientOnError(err);
+                return throwErr(err);
             }
 
             var sessionIdString = result._id.toString();
@@ -635,7 +605,7 @@ function handleLoginLti(data, socket) {
 // ===== Student client pool =====
 
 function broadcastPoolCountToBackupQueue(clientAnswerPool) {
-    backupClientQueue.broadcastEvent("clientPoolCountUpdate", {
+    clientAnswerPool.backupClientQueue.broadcastEvent("clientPoolCountUpdate", {
         numberOfClients: clientAnswerPool.totalPoolSize()
     });
 }
@@ -665,7 +635,7 @@ function broadcastPoolCountToBackupQueue(clientAnswerPool) {
  * }
  */
 function handleAnswerSubmissionInitial(data) {
-    var session = allSessions.getSessionById(data.sessionId);
+    var session = getSessionFromId(data.sessionId);
 
     var client = session.client;
 
@@ -728,7 +698,7 @@ function handleAnswerSubmissionInitial(data) {
  * }
  */
 function handleAnswerSubmissionFinal(data) {
-    var session = allSessions.getSessionById(data.sessionId);
+    var session = getSessionFromId(data.sessionId);
 
     var client = session.client;
 
@@ -793,7 +763,7 @@ function handleAnswerSubmissionFinal(data) {
  * }
  */
 function saveSurvey(data) {
-    var session = allSessions.getSessionById(data.sessionId);
+    var session = getSessionFromId(data.sessionId);
 
     db_wrapper.surveyResponse.create({
         sessionId: mongojs.ObjectId(session.getId()),
@@ -817,24 +787,28 @@ function saveSurvey(data) {
  * }
  */
 function handleBackupClientLogout(data) {
-    var client = getClientFromSessionId(data.sessionId);
+    var session = getSessionFromId(data.sessionId);
+    var client = session.client;
+
     removeClientFromEverything(client);
 }
 
 /**
  * data = {
  *      sessionId {string}
- *      answer {number}
+ *      optionId {string}
  *      justification {string}
  * }
  */
 function handleBackupClientEnterQueue(data) {
-    var client = getClientFromSessionId(data.sessionId);
+    var session = getSessionFromId(data.sessionId);
 
-    // Index of the answer (0-based)
-    client.probingQuestionAnswer = data.answer;
-    client.probingQuestionAnswerTime = new Date().toISOString();
-    client.probJustification = data.justification;
+    var backupClientQueue = getBackupClientQueueFromSession(session);
+    var client = session.client;
+
+    // TODO: Consider combining with answerInitial + answerFinal handlers?
+    session.responseInitial.optionId = data.optionId;
+    session.responseInitial.justification = data.justification;
 
     // Add the client to the backup queue here, only *after* we
     // have all the information for question/answer
@@ -851,12 +825,14 @@ function handleBackupClientEnterQueue(data) {
  * }
  */
 function handleBackupClientReturnToQueue(data) {
-    var client = getClientFromSessionId(data.sessionId);
+    var session = getSessionFromId(data.sessionId);
 
-    // If 
-    if (client.probingQuestionAnswer > -1 &&
-        client.probingQuestionAnswerTime &&
-        client.probJustification) {
+    var backupClientQueue = getBackupClientQueueFromSession(session);
+    var client = session.client;
+
+    // If session already has answer then return to queue
+    if (session.responseInitial.optionId &&
+        session.responseInitial.justification) {
 
         backupClientQueue.addClient(client);
 
@@ -872,14 +848,13 @@ function handleBackupClientReturnToQueue(data) {
  * }
  */
 function handleBackupClientStatusRequest(data) {
-    if (!allSessions.hasSessionId(data.sessionId)) {
-        return;
-    }
+    var session = getSessionFromId(data.sessionId);
 
-    broadcastBackupClientQueueStatus();
-    broadcastPoolCountToBackupQueue();
-    // TODO:
-    console.log("[!!] TODO: FIX handleBackupClientStatusRequest: broadcastPoolCountToBackupQueue requires 1st parameter");
+    var backupClientQueue = getBackupClientQueueFromSession(session);
+    var clientAnswerPool = getClientAnswerPoolFromSession(session);
+
+    backupClientQueue.broadcastUpdate();
+    broadcastPoolCountToBackupQueue(clientAnswerPool);
 }
 
 /**
@@ -888,9 +863,11 @@ function handleBackupClientStatusRequest(data) {
  * }
  */
 function handleBackupClientTransferConfirm(data) {
-    var client = getClientFromSessionId(data.sessionId);
-    var session = allSessions.getSessionById(data.sessionId);
+    var session = getSessionFromId(data.sessionId);
+
+    var backupClientQueue = getBackupClientQueueFromSession(session);
     var clientAnswerPool = getClientAnswerPoolFromSession(session);
+    var client = session.client;
 
     if (backupClientQueue.clientOutTray && backupClientQueue.clientOutTray.client === client) {
         backupClientQueue.moveOutTrayClientToClientPool();
@@ -898,9 +875,15 @@ function handleBackupClientTransferConfirm(data) {
     }
 }
 
-function broadcastBackupClientQueueStatus() {
-    backupClientQueue.broadcastUpdate();
-}
+
+
+
+
+
+
+
+
+
 
 
 
@@ -915,12 +898,8 @@ io.sockets.on('connection', function(socket) {
     socket.on("answerSubmissionFinal", handleAnswerSubmissionFinal);
     socket.on("submitSurvey", saveSurvey);
 
-    /* Sessions */
-    // socket.on("sessionAvailableCheck", function(data) { handleSessionAvailableCheck(data, socket) });
-
     /* Log ins */
     socket.on("loginLti", function(data) { handleLoginLti(data, socket); });
-    // socket.on("backupClientLogin", function(data) { handleBackupClientLogin(data, socket); });
 
     /* Chat group discussion */
     socket.on("chatGroupJoinRequest", handleChatGroupJoinRequest);
@@ -933,8 +912,6 @@ io.sockets.on('connection', function(socket) {
     socket.on("backupClientReturnToQueue", handleBackupClientReturnToQueue);
     socket.on("backupClientStatusRequest", handleBackupClientStatusRequest);
     socket.on("backupClientTransferConfirm", handleBackupClientTransferConfirm);
-
-    // socket.on("questionContentRequest", handleQuestionContentRequest);
 
     /* Testing */
     // socket.on('loadTestReq', loadTest);

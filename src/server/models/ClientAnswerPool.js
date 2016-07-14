@@ -16,12 +16,15 @@ var id = 0;
  * into groups with diverse answers where possible
  * 
  * @param {IDB_QuestionOption[]} questionOptions
+ * @param {BackupClientQueue} backupClientQueue
  */
-var ClientAnswerPool = function(questionOptions) {
+var ClientAnswerPool = function(questionOptions, backupClientQueue) {
     this.id = id++;
-    
+
     this.desiredGroupSize = conf.chat.groups.desiredSize;
     this.desiredMaxWaitTime = conf.chat.groups.formationTimeoutMs;
+
+    this.backupClientQueue = backupClientQueue;
 
     // Set up answer queues as a map between an question answer option ID => ClientAnswerWrapper[] 
     this.answerQueues = {};
@@ -208,20 +211,21 @@ ClientAnswerPool.prototype.getQueueSortedByTime = function() {
  * 
  * @return {ChatGroup | undefined}
  */
-ClientAnswerPool.prototype.tryMakeChatGroup = function(backupClientQueue) {
+ClientAnswerPool.prototype.tryMakeChatGroup = function() {
     var viableAnswerQueueKeys = this.getViableQueueKeys();
 
-    // If there is enough diversity, create group now
-    if (viableAnswerQueueKeys.length >= this.desiredGroupSize) {
+    // Determine if there are not enough clients to form a group of the desired size
+    var totalPoolSize = this.totalPoolSize();
+
+    // If there is enough diversity and the number of clients != desiredGroupSize + 1, create group now
+    // The size check for (n+1) is done to prevent loner groups from appearing
+    if (viableAnswerQueueKeys.length >= this.desiredGroupSize &&
+        totalPoolSize !== (this.desiredGroupSize + 1)) {
         return this.createChatGroupOfSize(this.desiredGroupSize);
     }
 
     // If someone is waiting too long, then create groups now
     if (this.areClientsWaitingTooLong()) {
-
-        // Determine if there are not enough clients to form a group of the desired size
-        var totalPoolSize = this.totalPoolSize();
-
         // If pool size = desiredGroupSize + 1, attempt to create a group of size 2
         // now to attempt to prevent loners from appearing?
         if (totalPoolSize === (this.desiredGroupSize + 1)) {
@@ -230,7 +234,7 @@ ClientAnswerPool.prototype.tryMakeChatGroup = function(backupClientQueue) {
 
         if (totalPoolSize < this.desiredGroupSize) {
             if (totalPoolSize === 1 &&
-                backupClientQueue.attemptTransferBackupClientToClientPool(this)) {
+                this.backupClientQueue.attemptTransferBackupClientToClientPool(this)) {
                 // Don't do anything if there is a backup client to be placed into the pool
                 // (happens when #attemptTransferBackupClientToClientPool returns TRUE)
                 return;
@@ -290,7 +294,7 @@ ClientAnswerPool.prototype.createChatGroupOfSize = function(size) {
 
             intendedQueueKeys.push(queueKey);
             --queueSizes[queueKey];
-            
+
             if (intendedQueueKeys.length === size) {
                 break queueKeyCompilationLoop;
             }

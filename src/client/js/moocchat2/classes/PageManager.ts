@@ -65,6 +65,10 @@ export class PageManager {
             let loadEndTime = new Date().getTime();
 
             this.$contentElem.html(html);
+
+            // Scroll to top to ensure clean start at top on every page load
+            this.$contentElem.scrollTop(0);
+
             this.dispatchOnPageLoad({
                 name: name,
                 loadTimeMs: (loadEndTime - loadStartTime)

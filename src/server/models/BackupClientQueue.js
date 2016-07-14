@@ -171,8 +171,10 @@ BackupClientQueue.prototype.moveOutTrayClientToClientPool = function() {
     var client = this.clientOutTray.client;
     var pool = this.clientOutTray.pool;
 
+    var answerOptionId = client.session.responseInitial.optionId;
+
     this.removeClient(client);
-    pool.addClient(client);
+    pool.addClient(client, answerOptionId);
 
     // Moved clients leave the queue (and join back in after chat if necessary)
     client.getSocket().leave(this.id);
