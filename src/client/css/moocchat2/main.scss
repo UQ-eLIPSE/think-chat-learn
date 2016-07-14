@@ -248,6 +248,9 @@ p {
     @extend .p-block;
 }
 
+a,
+a:focus,
+a:active,
 .link,
 .link:focus,
 .link:active,
@@ -262,7 +265,7 @@ button.link:active {
 
     margin: 0;
     padding: 0;
-    outline: none;
+    // outline: none;
 
     color: $link-colour;
     cursor: pointer;
@@ -1143,6 +1146,10 @@ button.link:active {
 
     #header {
         border-bottom: 1px solid #000;
+    }
+
+    .print-hide {
+        display: none !important;
     }
 
     #logo {
