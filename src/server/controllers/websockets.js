@@ -27,21 +27,11 @@ var SessionManager = require("../models/SessionManager");
 
 
 
-// We only use one quiz ("question") at any one time
-// var quizBeingUsed = quizSet[conf.fixedQuestionNumber];
-
 var allSessions = new SessionManager();
 
 // LTI processor for incoming logins
 var ltiProcessor = new LTIProcessor(conf.lti.signingInfo);
 ltiProcessor.setTestMode(conf.lti.testMode);
-
-// Queue for instructors/tutors on standby
-// var backupClientQueue = new BackupClientQueue();
-
-// Create a new pool with reference to the quiz
-// being used (the question number is always fixed)
-// var clientAnswerPool = new ClientAnswerPool(quizBeingUsed);
 
 // Object(ChatGroupId{string} => ChatGroup)
 var chatGroups = {};

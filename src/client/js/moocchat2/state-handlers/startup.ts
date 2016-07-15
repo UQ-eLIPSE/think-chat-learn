@@ -14,13 +14,13 @@ export const StartupStateHandler: IStateHandler<STATE> =
     (session: MoocchatSession<STATE>, $courseNameElem: JQuery, isBackupClient: boolean = false) => {
         return {
             onEnter: () => {
-                let courseName = _LTI_BASIC_LAUNCH_DATA.context_id.split("_")[0];
-
                 if (typeof _LTI_BASIC_LAUNCH_DATA === "undefined") {
                     // No LTI data detected
                     session.stateMachine.goTo(STATE.NO_LTI_DATA);
                     session.analytics.trackEvent("MOOCCHAT", "NO_LTI_DATA");
                 } else {
+                    let courseName = _LTI_BASIC_LAUNCH_DATA.context_id.split("_")[0];
+
                     $courseNameElem.text(courseName + ((isBackupClient) ? " Backup Queue" : ""));
                     session.stateMachine.goTo(STATE.LOGIN);
                     session.analytics.trackEvent("MOOCCHAT", "START");

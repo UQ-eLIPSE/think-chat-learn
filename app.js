@@ -80,9 +80,9 @@ app.get("/backup-client", function(req, res) {
 
 // MOOCchat index page with POST data should pass POST along
 app.post("/", function(req, res) {
-    res.render("index.ejs", { postData: req.body });
+    res.render("index.ejs", { conf: conf, postData: req.body });
 });
 
 app.get("/", function(req, res) {
-    res.render("index.ejs");
+    res.render("index.ejs", { conf: conf });
 });

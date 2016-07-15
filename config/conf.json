@@ -4,7 +4,6 @@
     "ssl": 0,
     "key": "/etc/pki/tls/private/persimmon.key",
     "cert": "/etc/pki/tls/certs/persimmon.pem",
-    "fixedQuestionNumber": 1,
     "lti": {
         "testMode": false,
         "signingInfo": {
@@ -15,6 +14,10 @@
                 "secret": "q3npRzgGi7yQRbcK73lw"
             }
         }
+    },
+    "piwik": {
+        "url": "/piwik",
+        "siteId": 1
     },
     "chat": {
         "groups": {

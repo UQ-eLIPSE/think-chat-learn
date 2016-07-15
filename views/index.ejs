@@ -12,18 +12,7 @@
     <link rel="stylesheet" href="./css/moocchat2/main.css" />
     
     <!-- Piwik code must sit BEFORE require.js loads in main code -->
-    <script>
-        var _paq = _paq || [];
-        (function() {
-            var u="//localhost:8081/piwik/";
-            _paq.push(['setTrackerUrl', u+'piwik.php']);
-            _paq.push(['setSiteId', 1]);
-            var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-            g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js'; s.parentNode.insertBefore(g,s);
-        })();
-    </script>
-    <noscript><p><img src="//localhost:8081/piwik/piwik.php?idsite=1" style="border:0;" alt="" /></p></noscript>
-    <!-- End Piwik Code -->
+    <%- include("./piwik", { url: conf.piwik.url, siteId: conf.piwik.siteId }); %>
 
     <% if (typeof postData !== "undefined" && postData.lti_message_type === "basic-lti-launch-request") { %>
     <!-- LTI Basic Launch data -->
