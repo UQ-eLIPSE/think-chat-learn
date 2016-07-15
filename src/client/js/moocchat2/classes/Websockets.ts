@@ -13,7 +13,7 @@ export const WebsocketEvents = {
         CHAT_GROUP_FORMED: "chatGroupFormed",
         CHAT_GROUP_RECEIVE_MESSAGE: "chatGroupMessage",
         CHAT_GROUP_QUIT_STATUS_CHANGE: "chatGroupQuitChange",
-        
+
         BACKUP_CLIENT_ENTER_QUEUE_STATE: "backupClientEnterQueueState",
         BACKUP_CLIENT_QUEUE_UPDATE: "backupClientQueueUpdate",
         BACKUP_CLIENT_TRANSFER_CALL: "backupClientTransferCall",
@@ -28,12 +28,12 @@ export const WebsocketEvents = {
 
         // LOGIN_REQUEST: "login_req",
         LOGIN_LTI_REQUEST: "loginLti",
-        
+
         INITIAL_ANSWER_SUBMISSION: "answerSubmissionInitial",
 
         CHAT_GROUP_JOIN_REQUEST: "chatGroupJoinRequest",
         CHAT_GROUP_SEND_MESSAGE: "chatGroupMessage",
-        CHAT_GROUP_QUIT_STATUS_CHANGE: "chatGroupQuitStatusChange", 
+        CHAT_GROUP_QUIT_STATUS_CHANGE: "chatGroupQuitStatusChange",
 
         REVISED_ANSWER_SUBMISSION: "answerSubmissionFinal",
 
@@ -62,8 +62,12 @@ export class WebsocketManager {
         });
 
         this.on("error", () => {
-            alert("The server for this task is currently unavailable. It may be currently offline for maintenance. Please try again later.");
-        })
+            alert("An error occurred with the websocket connection.\n\nA restart of MOOCchat is strongly recommended.");
+        });
+
+        this.on("disconnect", () => {
+            alert("You or the server has disconnected the websocket connection.\n\nYour MOOCchat session has been terminated and will require restarting.");
+        });
     }
 
     public close() {
