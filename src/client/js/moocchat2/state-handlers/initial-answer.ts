@@ -2,35 +2,36 @@ import {conf} from "../conf";
 
 import * as $ from "jquery";
 
-import {IPageFunc} from "../classes/IPageFunc";
+import {IStateHandler} from "../classes/IStateHandler";
 
 import {MoocchatState as STATE} from "../classes/MoocchatStates";
 
-import {MoocchatChat} from "../classes/MoocchatChat";
-
 import {WebsocketEvents} from "../classes/Websockets";
 
-export let RevisedAnswerPageFunc: IPageFunc<STATE> =
+export const InitialAnswerStateHandler: IStateHandler<STATE> =
     (session) => {
-        let section = session.sectionManager.getSection("revised-answer");
-        let maxJustificationLength = conf.answers.justification.maxLength;
+        const section = session.sectionManager.getSection("initial-answer");
+        const maxJustificationLength = conf.answers.justification.maxLength;
 
-        function submitRevisedAnswer(optionId: string, justification: string) {
-            session.answers.revised.optionId = optionId;
-            session.answers.revised.justification = justification.substr(0, maxJustificationLength);
+        function submitInitialAnswer(optionId: string, justification: string) {
+            session.answers.initial.optionId = optionId;
+            session.answers.initial.justification = justification.substr(0, maxJustificationLength);
 
-            session.socket.emit(WebsocketEvents.OUTBOUND.REVISED_ANSWER_SUBMISSION, {
+            session.socket.emit(WebsocketEvents.OUTBOUND.INITIAL_ANSWER_SUBMISSION, {
                 sessionId: session.id,
-                optionId: session.answers.revised.optionId,
-                justification: session.answers.revised.justification
+                optionId: session.answers.initial.optionId,
+                justification: session.answers.initial.justification
             });
-
-            session.stateMachine.goTo(STATE.SURVEY);
         }
 
+        // Successful initial answer save
+        session.socket.once(WebsocketEvents.INBOUND.INITIAL_ANSWER_SUBMISSION_SAVED, () => {
+            session.stateMachine.goTo(STATE.AWAIT_GROUP_FORMATION);
+        });
+
         return {
-            onEnter: (data) => {
-                session.pageManager.loadPage("revised-answer", (page$) => {
+            onEnter: () => {
+                session.pageManager.loadPage("initial-answer", (page$) => {
                     section.setActive();
                     section.startTimer();
 
@@ -39,8 +40,7 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
                     let $justification = page$("#justification");
                     let $submitAnswer = page$(".submit-answer-button");
                     let $charAvailable = page$("#char-available");
-                    let $enableRevision = page$("#enable-revision");
-                    let $showQuestionChat = page$("#show-hide-question-chat");
+                    
 
                     // Force answer when timer runs out
                     section.attachTimerCompleted(() => {
@@ -56,7 +56,7 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
                             optionId = null;
                         }
 
-                        submitRevisedAnswer(optionId, justification);
+                        submitInitialAnswer(optionId, justification);
                     });
 
                     $submitAnswer.on("click", () => {
@@ -73,7 +73,15 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
                             return;
                         }
 
-                        submitRevisedAnswer(optionId, justification);
+                        submitInitialAnswer(optionId, justification);
+                    });
+
+                    $answers.on("click", "button", function(e) {
+                        e.preventDefault();
+
+                        $("button", $answers).removeClass("selected");
+
+                        $(this).addClass("selected");
                     });
 
                     $justification.on("change input", () => {
@@ -88,26 +96,6 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
                         }
                     }).trigger("input");
 
-                    $enableRevision.on("click", () => {
-                        page$(".pre-edit-enable").hide();
-                        page$(".post-edit-enable").show();
-                        $answers.removeClass("locked");
-                        $justification.prop("disabled", false).trigger("input");
-
-                        $answers.on("click", "button", function(e) {
-                            e.preventDefault();
-
-                            $("button", $answers).removeClass("selected");
-
-                            $(this).addClass("selected");
-
-                        });
-                    });
-
-                    $showQuestionChat.on("click", () => {
-                        page$("#question-chat-container").toggle();
-                    });
-                    page$("#question-chat-container").hide();
 
                     // Render question, choices
                     page$("#question-reading").html(session.quiz.questionContent);
@@ -119,29 +107,6 @@ export let RevisedAnswerPageFunc: IPageFunc<STATE> =
                     });
 
                     $answers.append(answerDOMs);
-
-
-                    // Populate previous answer
-                    $justification.val(session.answers.initial.justification);
-                    $("button", $answers).each((i, e) => {
-                        if ($(e).data("optionId") === session.answers.initial.optionId) {
-                            $(e).addClass("selected");
-                            return false;
-                        }
-                    });
-
-
-                    // Set pre-/post-edit-enable elements
-                    $justification.prop("disabled", true);
-                    page$(".post-edit-enable").hide();
-                    $answers.addClass("locked");
-
-                    // If passed chat object, clone window into expected chat area
-                    if (data instanceof MoocchatChat) {
-                        let chat = data as MoocchatChat;
-
-                        page$("#chat-clone").append(chat.chatWindow);
-                    }
                 });
             },
             onLeave: () => {

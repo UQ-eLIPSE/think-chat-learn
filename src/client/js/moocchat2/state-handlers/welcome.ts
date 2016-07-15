@@ -1,4 +1,6 @@
-import {IPageFunc} from "../classes/IPageFunc";
+import {IStateHandler} from "../classes/IStateHandler";
+
+import {MoocchatSession} from "../classes/MoocchatSession";
 
 import {MoocchatState as STATE} from "../classes/MoocchatStates";
 
@@ -6,12 +8,12 @@ import {ILTIBasicLaunchData} from "../classes/ILTIBasicLaunchData";
 
 declare const _LTI_BASIC_LAUNCH_DATA: ILTIBasicLaunchData;
 
-export let WelcomePageFunc: IPageFunc<STATE> =
-    (session) => {
-        let section = session.sectionManager.getSection("welcome");
+export const WelcomeStateHandler: IStateHandler<STATE> =
+    (session: MoocchatSession<STATE>, nextState: STATE = STATE.INITIAL_ANSWER) => {
+        const section = session.sectionManager.getSection("welcome");
 
         return {
-            onEnter: (data) => {
+            onEnter: () => {
                 session.pageManager.loadPage("welcome", (page$) => {
                     section.setActive();
 
@@ -25,14 +27,6 @@ export let WelcomePageFunc: IPageFunc<STATE> =
                     }).trigger("click");
 
                     page$("#start-session").on("click", () => {
-                        let nextState: STATE;
-
-                        if (data && data.nextState) {
-                            nextState = data.nextState;
-                        } else {
-                            nextState = STATE.INITIAL_ANSWER;
-                        }
-
                         session.stateMachine.goTo(nextState);
                     });
                 });

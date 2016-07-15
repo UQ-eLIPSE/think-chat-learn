@@ -79,14 +79,16 @@ export class MoocchatChat {
      * 
      * @param {number} clientId Client identification number (generally `clientIndex + 1`)
      * @param {string} message 
+     * @param {boolean} forceNewBlock
      */
-    public displayMessage(clientId: number, message: string) {
+    public displayMessage(clientId: number, message: string, forceNewBlock: boolean = false) {
         var $message = $("<p>").text(message);
 
         var $lastPersonBlock = $("blockquote:last-child", this.$chatWindow);
         var lastPersonClientId = $lastPersonBlock.data("client-id");
 
-        if (lastPersonClientId &&
+        if (!forceNewBlock &&
+            lastPersonClientId &&
             lastPersonClientId.toString() === clientId.toString()) {
             $message.appendTo($lastPersonBlock);
         } else {
@@ -104,9 +106,10 @@ export class MoocchatChat {
      * Displays a message from a user purporting to be the system (`clientId = -1`)
      * 
      * @param {string} message 
+     * @param {boolean} forceNewBlock
      */
-    public displaySystemMessage(message: string) {
-        this.displayMessage(-1, message);
+    public displaySystemMessage(message: string, forceNewBlock: boolean = false) {
+        this.displayMessage(-1, message, forceNewBlock);
     }
 
     /**
@@ -117,7 +120,7 @@ export class MoocchatChat {
     private receiveQuitStatusChange(data: IEventData_ChatGroupQuitChange) {
         if (data.quitStatus) {
             let clientId = data.clientIndex + 1;
-            this.displaySystemMessage(`Person #${clientId} has quit this chat session.`)
+            this.displaySystemMessage(`Person #${clientId} has quit this chat session.`, true);
         }
     }
 

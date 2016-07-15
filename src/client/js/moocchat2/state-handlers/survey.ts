@@ -1,12 +1,12 @@
-import {IPageFunc} from "../classes/IPageFunc";
+import {IStateHandler} from "../classes/IStateHandler";
 
 import {MoocchatState as STATE} from "../classes/MoocchatStates";
 
 import {WebsocketManager, WebsocketEvents} from "../classes/Websockets";
 
-export let SurveyPageFunc: IPageFunc<STATE> =
+export const SurveyStateHandler: IStateHandler<STATE> =
     (session) => {
-        let section = session.sectionManager.getSection("survey");
+        const section = session.sectionManager.getSection("survey");
 
         return {
             onEnter: () => {

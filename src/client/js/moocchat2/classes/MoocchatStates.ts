@@ -10,7 +10,6 @@ export enum MoocchatState {
 
     NO_LTI_DATA,
     INVALID_LOGIN,
-    SESSION_NOT_AVAILABLE,
 
     WELCOME,
     INITIAL_ANSWER,
@@ -22,6 +21,7 @@ export enum MoocchatState {
 
     BACKUP_CLIENT_ANSWER,
     BACKUP_CLIENT_WAIT,
+    BACKUP_CLIENT_RETURN_TO_WAIT,
     BACKUP_CLIENT_EJECTED,
     BACKUP_CLIENT_LOGOUT
 }

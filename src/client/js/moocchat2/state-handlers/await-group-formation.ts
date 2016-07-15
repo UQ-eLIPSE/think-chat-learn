@@ -1,13 +1,13 @@
-import {IPageFunc} from "../classes/IPageFunc";
+import {IStateHandler} from "../classes/IStateHandler";
 
 import {MoocchatState as STATE} from "../classes/MoocchatStates";
 import {IEventData_ChatGroupFormed} from "../classes/IEventData";
 
 import {WebsocketEvents} from "../classes/Websockets";
 
-export let AwaitGroupFormationPageFunc: IPageFunc<STATE> =
+export const AwaitGroupFormationStateHandler: IStateHandler<STATE> =
     (session) => {
-        let section = session.sectionManager.getSection("await-group-formation");
+        const section = session.sectionManager.getSection("await-group-formation");
 
         return {
             onEnter: () => {

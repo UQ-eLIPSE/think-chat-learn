@@ -4,10 +4,10 @@ import {MoocchatSession} from "./MoocchatSession";
 
 /**
  * MOOCchat
- * PageFunc interface
+ * StateHandler interface
  * 
  * Encodes the structure expected for the returned function for each page handler.
  */
-export interface IPageFunc<StateEnumType> {
-    (session: MoocchatSession<StateEnumType>): IStateTransition<StateEnumType>
+export interface IStateHandler<StateEnumType> {
+    (session: MoocchatSession<StateEnumType>, ...args: any[]): IStateTransition<StateEnumType>;
 }
