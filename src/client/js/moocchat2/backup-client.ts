@@ -2,7 +2,8 @@ import {conf} from "./conf";
 
 import * as $ from "jquery";
 
-import {WebsocketManager, WebsocketEvents} from "./classes/Websockets";
+import {WebsocketManager} from "./classes/WebsocketManager";
+import {WebsocketEvents} from "./classes/WebsocketEvents";
 
 import {MoocchatSession} from "./classes/MoocchatSession";
 

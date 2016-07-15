@@ -45,7 +45,7 @@ export class StateFlow<StateEnumType> {
      */
     public goTo(newState: StateEnumType, goToData?: any) {
         let oldStateHistoryData = this.getCurrentStateHistoryData();
-        var newStateData = this.getStateData(newState);
+        let newStateData = this.getStateData(newState);
 
         let onLeaveData: any;
 

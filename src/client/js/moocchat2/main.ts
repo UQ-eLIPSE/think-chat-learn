@@ -2,7 +2,7 @@ import {conf} from "./conf";
 
 import * as $ from "jquery";
 
-import {WebsocketManager} from "./classes/Websockets";
+import {WebsocketManager} from "./classes/WebsocketManager";
 
 import {MoocchatSession} from "./classes/MoocchatSession";
 

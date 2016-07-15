@@ -5,7 +5,7 @@ import {IStateHandler} from "../classes/IStateHandler";
 import {MoocchatSession} from "../classes/MoocchatSession";
 
 import {MoocchatState as STATE} from "../classes/MoocchatStates";
-import {IEventData_ChatGroupFormed} from "../classes/IEventData";
+import * as IInboundData from "../classes/IInboundData";
 
 import {MoocchatChat} from "../classes/MoocchatChat";
 
@@ -14,7 +14,7 @@ export const DiscussionStateHandler: IStateHandler<STATE> =
         const section = session.sectionManager.getSection("discussion");
 
         return {
-            onEnter: (data: IEventData_ChatGroupFormed) => {
+            onEnter: (data: IInboundData.ChatGroupFormed) => {
                 session.pageManager.loadPage("discussion", (page$) => {
                     section.setActive();
                     section.startTimer();
@@ -65,19 +65,11 @@ export const DiscussionStateHandler: IStateHandler<STATE> =
 
 
 
-                    // page$("#toggle-chat-qa-block").click(function() {
-                    //     $("#chat-question-answers-block").toggle();
-                    // }).click();
 
-
-
-
-
-
-                    page$("#chat-input-wrapper").on("submit", function(e) {
+                    page$("#chat-input-wrapper").on("submit", (e) => {
                         e.preventDefault();
 
-                        var message = $.trim(page$("#chat-input").val());
+                        let message = $.trim(page$("#chat-input").val());
 
                         if (message.length === 0) {
                             return;

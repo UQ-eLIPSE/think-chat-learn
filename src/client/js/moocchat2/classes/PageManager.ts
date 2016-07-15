@@ -53,7 +53,7 @@ export class PageManager {
      * @return {JQueryXHR} Object from the AJAX page fetch  
      */
     public loadPage(name: string, onDone?: (page$?: (selector?: string) => JQuery) => void) {
-        var pageFetchXHR = $.ajax({
+        let pageFetchXHR = $.ajax({
             url: `./html/${name}.html`,
             dataType: "html",
             method: "GET"

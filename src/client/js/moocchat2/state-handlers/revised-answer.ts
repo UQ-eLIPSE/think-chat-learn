@@ -8,7 +8,8 @@ import {MoocchatState as STATE} from "../classes/MoocchatStates";
 
 import {MoocchatChat} from "../classes/MoocchatChat";
 
-import {WebsocketEvents} from "../classes/Websockets";
+import {WebsocketEvents} from "../classes/WebsocketEvents";
+import * as IOutboundData from "../classes/IOutboundData";
 
 export const RevisedAnswerStateHandler: IStateHandler<STATE> =
     (session) => {
@@ -19,7 +20,7 @@ export const RevisedAnswerStateHandler: IStateHandler<STATE> =
             session.answers.revised.optionId = optionId;
             session.answers.revised.justification = justification.substr(0, maxJustificationLength);
 
-            session.socket.emit(WebsocketEvents.OUTBOUND.REVISED_ANSWER_SUBMISSION, {
+            session.socket.emitData<IOutboundData.RevisedAnswer>(WebsocketEvents.OUTBOUND.REVISED_ANSWER_SUBMISSION, {
                 sessionId: session.id,
                 optionId: session.answers.revised.optionId,
                 justification: session.answers.revised.justification
@@ -94,7 +95,7 @@ export const RevisedAnswerStateHandler: IStateHandler<STATE> =
                         $answers.removeClass("locked");
                         $justification.prop("disabled", false).trigger("input");
 
-                        $answers.on("click", "button", function(e) {
+                        $answers.on("click", "button", (e) => {
                             e.preventDefault();
 
                             $("button", $answers).removeClass("selected");

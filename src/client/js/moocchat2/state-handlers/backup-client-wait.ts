@@ -4,9 +4,10 @@ import {IStateHandler} from "../classes/IStateHandler";
 
 import {MoocchatState as STATE} from "../classes/MoocchatStates";
 
-import {WebsocketEvents} from "../classes/Websockets";
+import {WebsocketEvents} from "../classes/WebsocketEvents";
 
-import {IEventData_BackupClientEnterQueueState, IEventData_ClientPoolCountUpdate, IEventData_BackupClientQueueUpdate, IEventData_ChatGroupFormed} from "../classes/IEventData";
+import * as IInboundData from "../classes/IInboundData";
+import * as IOutboundData from "../classes/IOutboundData";
 
 export const BackupClientWaitStateHandler: IStateHandler<STATE> =
     (session) => {
@@ -17,14 +18,14 @@ export const BackupClientWaitStateHandler: IStateHandler<STATE> =
                 session.pageManager.loadPage("backup-client-wait", (page$) => {
                     section.setActive();
 
-                    var $backupClientQueue = page$("ul#backup-client-queue");
-                    var $numOfClientsInPool = page$("span#number-of-clients-in-pool");
+                    let $backupClientQueue = page$("ul#backup-client-queue");
+                    let $numOfClientsInPool = page$("span#number-of-clients-in-pool");
 
-                    function onBackupClientQueueUpdate(data: IEventData_BackupClientQueueUpdate) {
+                    function onBackupClientQueueUpdate(data: IInboundData.BackupClientQueueUpdate) {
                         $backupClientQueue.empty();
 
-                        data.clients.forEach(function(client) {
-                            var $backupClientLI = $("<li>").text(client.username);
+                        data.clients.forEach((client) => {
+                            let $backupClientLI = $("<li>").text(client.username);
 
                             if (client.username === session.user.username) {
                                 $backupClientLI.css("font-weight", "bold");
@@ -34,13 +35,13 @@ export const BackupClientWaitStateHandler: IStateHandler<STATE> =
                         });
                     }
 
-                    function onClientPoolCountUpdate(data: IEventData_ClientPoolCountUpdate) {
+                    function onClientPoolCountUpdate(data: IInboundData.ClientPoolCountUpdate) {
                         $numOfClientsInPool.text(data.numberOfClients);
 
                         // Play tone if fewer than 2 remain to get people's attention
                         if (data.numberOfClients < 2) {
                             // https://notificationsounds.com/message-tones/mission-accomplished-252
-                            var notificationTone = new Audio("./mp3/mission-accomplished.mp3");
+                            let notificationTone = new Audio("./mp3/mission-accomplished.mp3");
                             notificationTone.play();
                         }
                     }
@@ -48,12 +49,12 @@ export const BackupClientWaitStateHandler: IStateHandler<STATE> =
                     let countdownIntervalHandle: number;
 
                     function onBackupClientTransferCall() {
-                        var $transferConfirmBox = page$("#transfer-confirmation");
-                        var $transferCountdown = page$("#transfer-remaining-seconds");
+                        let $transferConfirmBox = page$("#transfer-confirmation");
+                        let $transferCountdown = page$("#transfer-remaining-seconds");
 
                         $transferConfirmBox.removeClass("hidden");
 
-                        var value = 15;
+                        let value = 15;
 
                         function countdown() {
                             $transferCountdown.text(value--);
@@ -62,29 +63,29 @@ export const BackupClientWaitStateHandler: IStateHandler<STATE> =
                         countdownIntervalHandle = setInterval(countdown, 1000);
                         countdown();
 
-                        $transferConfirmBox.one("click", "#confirm-transfer", function() {
+                        $transferConfirmBox.one("click", "#confirm-transfer", () => {
                             $transferConfirmBox.addClass("hidden");
                             clearInterval(countdownIntervalHandle);
-                            session.socket.emit(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_TRANSFER_CONFIRM, { sessionId: session.id });
+                            session.socket.emitData<IOutboundData.BackupClientTransferConfirm>(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_TRANSFER_CONFIRM, { sessionId: session.id });
 
-                            session.socket.once(WebsocketEvents.INBOUND.CHAT_GROUP_FORMED, function(data: IEventData_ChatGroupFormed) {
+                            session.socket.once<IInboundData.ChatGroupFormed>(WebsocketEvents.INBOUND.CHAT_GROUP_FORMED, (data) => {
                                 session.stateMachine.goTo(STATE.DISCUSSION, data);
                             });
                         });
 
                         // https://notificationsounds.com/message-tones/mission-accomplished-252
-                        var notificationTone = new Audio("./mp3/mission-accomplished.mp3");
+                        let notificationTone = new Audio("./mp3/mission-accomplished.mp3");
                         notificationTone.play();
                     }
 
                     // Attach socket listeners to queue and pool status
-                    session.socket.on(WebsocketEvents.INBOUND.BACKUP_CLIENT_QUEUE_UPDATE, onBackupClientQueueUpdate);
-                    session.socket.on(WebsocketEvents.INBOUND.BACKUP_CLIENT_STANDARD_CLIENT_POOL_COUNT_UPDATE, onClientPoolCountUpdate);
+                    session.socket.on<IInboundData.BackupClientQueueUpdate>(WebsocketEvents.INBOUND.BACKUP_CLIENT_QUEUE_UPDATE, onBackupClientQueueUpdate);
+                    session.socket.on<IInboundData.ClientPoolCountUpdate>(WebsocketEvents.INBOUND.BACKUP_CLIENT_STANDARD_CLIENT_POOL_COUNT_UPDATE, onClientPoolCountUpdate);
                     session.socket.on(WebsocketEvents.INBOUND.BACKUP_CLIENT_TRANSFER_CALL, onBackupClientTransferCall);
                     session.socket.on(WebsocketEvents.INBOUND.BACKUP_CLIENT_EJECTED, () => { session.stateMachine.goTo(STATE.BACKUP_CLIENT_EJECTED); });
 
                     // Request information now (once only)
-                    session.socket.emit(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_STATUS_REQUEST, { sessionId: session.id });
+                    session.socket.emitData<IOutboundData.BackupClientStatusRequest>(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_STATUS_REQUEST, { sessionId: session.id });
 
                     page$("#logout").on("click", () => {
                         session.stateMachine.goTo(STATE.BACKUP_CLIENT_LOGOUT);

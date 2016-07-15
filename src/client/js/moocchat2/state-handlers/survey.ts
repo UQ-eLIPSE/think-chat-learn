@@ -2,7 +2,10 @@ import {IStateHandler} from "../classes/IStateHandler";
 
 import {MoocchatState as STATE} from "../classes/MoocchatStates";
 
-import {WebsocketManager, WebsocketEvents} from "../classes/Websockets";
+import {WebsocketManager} from "../classes/WebsocketManager";
+
+import {WebsocketEvents} from "../classes/WebsocketEvents";
+import * as IOutboundData from "../classes/IOutboundData";
 
 export const SurveyStateHandler: IStateHandler<STATE> =
     (session) => {
@@ -42,7 +45,7 @@ export const SurveyStateHandler: IStateHandler<STATE> =
 
                         // Send survey
                         let surveyResponseContent = session.survey.generateResponseContent($surveyForm);
-                        session.socket.emit(WebsocketEvents.OUTBOUND.SURVEY_SUBMISSION, {
+                        session.socket.emitData<IOutboundData.SurveyResponse>(WebsocketEvents.OUTBOUND.SURVEY_SUBMISSION, {
                             sessionId: session.id,
                             content: surveyResponseContent
                         });

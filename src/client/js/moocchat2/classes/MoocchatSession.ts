@@ -2,7 +2,7 @@ import {EventBox} from "./EventBox";
 import {StateFlow} from "./StateFlow";
 import {PageManager} from "./PageManager";
 import {TaskSectionManager} from "./TaskSectionManager";
-import {WebsocketManager} from "./Websockets";
+import {WebsocketManager} from "./WebsocketManager";
 import {SessionStorage} from "./SessionStorage";
 
 import {MoocchatAnalytics, MoocchatAnalyticsCore} from "./MoocchatAnalytics";

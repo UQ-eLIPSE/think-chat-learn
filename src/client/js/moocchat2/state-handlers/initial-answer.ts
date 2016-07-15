@@ -6,7 +6,8 @@ import {IStateHandler} from "../classes/IStateHandler";
 
 import {MoocchatState as STATE} from "../classes/MoocchatStates";
 
-import {WebsocketEvents} from "../classes/Websockets";
+import {WebsocketEvents} from "../classes/WebsocketEvents";
+import * as IOutboundData from "../classes/IOutboundData";
 
 export const InitialAnswerStateHandler: IStateHandler<STATE> =
     (session) => {
@@ -17,7 +18,7 @@ export const InitialAnswerStateHandler: IStateHandler<STATE> =
             session.answers.initial.optionId = optionId;
             session.answers.initial.justification = justification.substr(0, maxJustificationLength);
 
-            session.socket.emit(WebsocketEvents.OUTBOUND.INITIAL_ANSWER_SUBMISSION, {
+            session.socket.emitData<IOutboundData.InitialAnswer>(WebsocketEvents.OUTBOUND.INITIAL_ANSWER_SUBMISSION, {
                 sessionId: session.id,
                 optionId: session.answers.initial.optionId,
                 justification: session.answers.initial.justification
@@ -76,7 +77,7 @@ export const InitialAnswerStateHandler: IStateHandler<STATE> =
                         submitInitialAnswer(optionId, justification);
                     });
 
-                    $answers.on("click", "button", function(e) {
+                    $answers.on("click", "button", (e) => {
                         e.preventDefault();
 
                         $("button", $answers).removeClass("selected");

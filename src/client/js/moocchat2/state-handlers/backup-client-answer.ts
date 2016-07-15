@@ -6,8 +6,9 @@ import {IStateHandler} from "../classes/IStateHandler";
 
 import {MoocchatState as STATE} from "../classes/MoocchatStates";
 
-import {WebsocketEvents} from "../classes/Websockets";
-import {IEventData_BackupClientEnterQueueState} from "./classes/IEventData";
+import {WebsocketEvents} from "../classes/WebsocketEvents";
+import * as IInboundData from "../classes/IInboundData";
+import * as IOutboundData from "../classes/IOutboundData";
 
 export const BackupClientAnswerStateHandler: IStateHandler<STATE> =
     (session) => {
@@ -18,7 +19,7 @@ export const BackupClientAnswerStateHandler: IStateHandler<STATE> =
             session.answers.initial.optionId = optionId;
             session.answers.initial.justification = justification.substr(0, maxJustificationLength);
 
-            session.socket.emit(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_ANSWER_AND_JOIN_QUEUE, {
+            session.socket.emitData<IOutboundData.BackupClientAnswer>(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_ANSWER_AND_JOIN_QUEUE, {
                 sessionId: session.id,
                 optionId: session.answers.initial.optionId,
                 justification: session.answers.initial.justification
@@ -26,7 +27,7 @@ export const BackupClientAnswerStateHandler: IStateHandler<STATE> =
         }
 
         // Successful backup client answer save
-        session.socket.once(WebsocketEvents.INBOUND.BACKUP_CLIENT_ENTER_QUEUE_STATE, (data: IEventData_BackupClientEnterQueueState) => {
+        session.socket.once<IInboundData.BackupClientEnterQueueState>(WebsocketEvents.INBOUND.BACKUP_CLIENT_ENTER_QUEUE_STATE, (data) => {
             if (data.success) {
                 session.stateMachine.goTo(STATE.BACKUP_CLIENT_WAIT);
             }
@@ -61,7 +62,7 @@ export const BackupClientAnswerStateHandler: IStateHandler<STATE> =
                         submitAnswerAndJoinQueue(optionId, justification);
                     });
 
-                    $answers.on("click", "button", function(e) {
+                    $answers.on("click", "button", (e) => {
                         e.preventDefault();
 
                         $("button", $answers).removeClass("selected");

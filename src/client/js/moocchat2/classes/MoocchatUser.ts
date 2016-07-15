@@ -1,8 +1,11 @@
 import * as socket from "socket.io-client";
 
 import {EventBox, EventBoxCallback} from "./EventBox";
-import {WebsocketManager, WebsocketEvents} from "./Websockets";
-import {IEventData_LoginSuccess, IEventData_LoginFailure, IEventData_LoginExistingUser} from "./IEventData";
+import {WebsocketManager} from "./WebsocketManager";
+
+import {WebsocketEvents} from "./WebsocketEvents";
+import * as IInboundData from "./IInboundData";
+import * as IOutboundData from "./IOutboundData";
 import {ILTIBasicLaunchData} from "./ILTIBasicLaunchData";
 
 export const MoocchatUser_Events = {
@@ -10,7 +13,7 @@ export const MoocchatUser_Events = {
     LOGIN_FAIL: "MCUSER_LOGIN_FAIL"
 }
 
-export type IMoocchatUser_LoginSuccess = IEventData_LoginSuccess;
+export type IMoocchatUser_LoginSuccess = IInboundData.LoginSuccess;
 
 /**
  * MOOCchat
@@ -42,7 +45,7 @@ export class MoocchatUser {
      * 
      * @param {Function} callback
      */
-    public set onLoginSuccess(callback: (data?: IEventData_LoginSuccess) => void) {
+    public set onLoginSuccess(callback: (data?: IInboundData.LoginSuccess) => void) {
         this.eventBox.on(MoocchatUser_Events.LOGIN_SUCCESS, callback);
     }
 
@@ -51,7 +54,7 @@ export class MoocchatUser {
      * 
      * @param {Function} callback
      */
-    public set onLoginFail(callback: (data?: IEventData_LoginFailure | IEventData_LoginExistingUser) => void) {
+    public set onLoginFail(callback: (data?: IInboundData.LoginFailure | IInboundData.LoginExistingUser) => void) {
         this.eventBox.on(MoocchatUser_Events.LOGIN_FAIL, callback);
     }
 
@@ -70,7 +73,7 @@ export class MoocchatUser {
     public login(socket: WebsocketManager) {
         this.attachLoginReturnHandlers(socket);
 
-        socket.emit(WebsocketEvents.OUTBOUND.LOGIN_LTI_REQUEST, this.ltiData);
+        socket.emitData<IOutboundData.LoginLti>(WebsocketEvents.OUTBOUND.LOGIN_LTI_REQUEST, this.ltiData);
     }
 
     /**
@@ -79,16 +82,17 @@ export class MoocchatUser {
      * @param {WebsocketManager} socket Websocket to communicate over
      */
     private attachLoginReturnHandlers(socket: WebsocketManager) {
-        socket.once(WebsocketEvents.INBOUND.LOGIN_SUCCESS, (data: IEventData_LoginSuccess) => {
+        socket.once<IInboundData.LoginSuccess>(WebsocketEvents.INBOUND.LOGIN_SUCCESS, (data) => {
             this.eventBox.dispatch(MoocchatUser_Events.LOGIN_SUCCESS, data);
             this.detachLoginReturnHandlers(socket);
         });
 
-        socket.once(WebsocketEvents.INBOUND.LOGIN_FAILURE, (data: IEventData_LoginFailure) => {
+        socket.once<IInboundData.LoginFailure>(WebsocketEvents.INBOUND.LOGIN_FAILURE, (data) => {
             this.eventBox.dispatch(MoocchatUser_Events.LOGIN_FAIL, data);
             this.detachLoginReturnHandlers(socket);
         });
-        socket.once(WebsocketEvents.INBOUND.LOGIN_USER_ALREADY_EXISTS, (data: IEventData_LoginExistingUser) => {
+
+        socket.once<IInboundData.LoginExistingUser>(WebsocketEvents.INBOUND.LOGIN_USER_ALREADY_EXISTS, (data) => {
             this.eventBox.dispatch(MoocchatUser_Events.LOGIN_FAIL, data);
             this.detachLoginReturnHandlers(socket);
         });
