@@ -100,7 +100,7 @@ export const RevisedAnswerStateHandler: IStateHandler<STATE> =
 
                             $("button", $answers).removeClass("selected");
 
-                            $(this).addClass("selected");
+                            $(e.currentTarget).addClass("selected");
 
                         });
                     });

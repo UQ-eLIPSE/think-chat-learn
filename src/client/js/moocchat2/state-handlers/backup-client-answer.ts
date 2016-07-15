@@ -67,7 +67,7 @@ export const BackupClientAnswerStateHandler: IStateHandler<STATE> =
 
                         $("button", $answers).removeClass("selected");
 
-                        $(this).addClass("selected");
+                        $(e.currentTarget).addClass("selected");
                     });
 
                     $justification.on("change input", () => {

@@ -1,16 +1,12 @@
 var conf = global.conf;
 var io = global.io;
 
-// var sessionData = require('../../config/sessions.json');
 var mongojs = require("mongojs");
 var db_wrapper = require("./database");
 
 var LTIProcessor = require("../models/LTIProcessor").LTIProcessor;
 
 var Client = require('../models/client');
-
-var DiscussionRoom = require('../models/discussionRoom');
-var QuizRoom = require('../models/quizRoom');
 
 var ClientAnswerPool = require("../models/ClientAnswerPool");
 var ChatGroup = require("../models/ChatGroup");
@@ -542,53 +538,6 @@ function handleLoginLti(data, socket) {
     }
 }
 
-/**
- * data = {
- *      username {string}
- * }
- * 
- * @param {Object} data
- * @param {Socket} socket
- */
-// function handleBackupClientLogin(data, socket) {
-//     // TODO: Consolidate this login method with LTI login.
-
-
-//     // TODO: Validate user
-//     var username = data.username;
-
-//     var loginState = {
-//         success: true,
-//         message: ""
-//     };
-
-//     if (allSessions.hasSessionWithUsername(username)) {
-//         loginState.success = false;
-//         loginState.message = "Already logged in";
-//     }
-
-//     if (!loginState.success) {
-//         socket.emit("backupClientLoginState", loginState);
-//         return;
-//     }
-
-//     var client = new Client();
-//     client.username = username;
-//     client.setSocket(socket);
-
-//     var session = new Session(client);
-
-//     allSessions.addSession(session);
-
-//     // TODO: This bit of code below is only a temporary patch to support session IDs.
-//     // Add session ID to loginState object
-
-//     loginState.sessionId = session.id;
-
-//     socket.emit("backupClientLoginState", loginState);
-// }
-
-
 
 
 // ===== Student client pool =====
@@ -602,19 +551,6 @@ function broadcastPoolCountToBackupQueue(clientAnswerPool) {
 
 
 // ===== Question + answer =====
-
-/**
- * data = {
- *      sessionId {string}
- * }
- */
-// function handleQuestionContentRequest(data) {
-//     var client = getClientFromSessionId(data.sessionId);
-
-//     client.getSocket().emit("questionContent", {
-//         quiz: quizBeingUsed
-//     });
-// }
 
 /**
  * data = {
