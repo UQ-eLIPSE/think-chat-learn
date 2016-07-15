@@ -50,9 +50,6 @@ export class StateFlow<StateEnumType> {
         let onLeaveData: any;
 
         if (oldStateHistoryData) {
-            // TODO: Time spent needs to be sent out as event?
-            let timeSpent = Date.now() - oldStateHistoryData.entryTimestamp;
-
             let onLeave = oldStateHistoryData.stateData.onLeave;
 
             if (onLeave) {

@@ -152,8 +152,6 @@ var chatGroupFormationLoop = (function() {
     var timeBetweenChecks = conf.chat.groups.formationIntervalMs;
     var timeoutHandles = {};
 
-
-
     /**
      * Runs another round of the loop, or starts the loop if not already active.
      */
@@ -239,8 +237,6 @@ function handleChatGroupMessage(data) {
         content: data.message,
         sessionId: mongojs.ObjectId(session.getId()),
         timestamp: new Date()
-    }, function(err, result) {
-        // TODO: 
     });
 
     chatGroup.broadcastMessage(client, data.message);
@@ -724,8 +720,6 @@ function saveSurvey(data) {
         surveyId: session.survey._id,
         timestamp: new Date(),
         content: data.content
-    }, function(err, result) {
-        // TODO:
     });
 }
 
@@ -760,7 +754,6 @@ function handleBackupClientEnterQueue(data) {
     var backupClientQueue = getBackupClientQueueFromSession(session);
     var client = session.client;
 
-    // TODO: Consider combining with answerInitial + answerFinal handlers?
     session.responseInitial.optionId = data.optionId;
     session.responseInitial.justification = data.justification;
 
@@ -937,9 +930,6 @@ io.sockets.on('connection', function(socket) {
                 $set: {
                     timestampEnd: new Date()
                 }
-            },
-            function(err, result) {
-                // TODO:
             });
     }
 });

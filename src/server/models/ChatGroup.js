@@ -164,24 +164,6 @@ ChatGroup.prototype.notifyEveryoneOnJoin = function() {
 }
 
 /**
- * Adds a new client to the chat group.
- * Intended for MOOCchat parties that are not present at
- * the time of the initial formation, such as an instructor.
- * 
- * @param {Client} client
- */
-ChatGroup.prototype.addClient = function(client) {
-    Group.prototype.addClient.call(this, client);
-
-    // TODO: Broadcast chatGroupClientJoined socket event
-    // this.broadcastEvent("chatGroupClientJoined", {
-    //     groupId: this.id,
-    //     groupSize: this.numberOfClients()
-    //     // ???
-    // });
-}
-
-/**
  * @param {Client} client
  */
 ChatGroup.prototype.removeClient = function(client) {

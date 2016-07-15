@@ -13,8 +13,6 @@ var Client = require("./client");
 var Session = function(client, quizScheduleSession) {
     this.id = null;     // {String}
 
-    // this.hasElevatedPermissions = false;
-
     this.quizSchedule = quizScheduleSession;
     this.quizQuestion;
     this.quizQuestionOptions;
@@ -37,13 +35,6 @@ var Session = function(client, quizScheduleSession) {
     this.client = client;
     client.setSession(this);
 }
-
-/**
- * @param {boolean} value
- */
-// Session.prototype.setElevatedPermissions = function(value) {
-//     this.hasElevatedPermissions = value;
-// }
 
 /**
  * @param {IDB_Question} question

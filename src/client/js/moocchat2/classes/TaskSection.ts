@@ -17,7 +17,6 @@ const TaskSection_InternalLoginEvents = {
 export class TaskSection {
     private id: string;
 
-    // TODO: Probably should move timer related stuff to a timer class
     private milliseconds: number;
     private timerStart: number;
     private timerActive: boolean = false;
@@ -186,7 +185,7 @@ export class TaskSection {
     public clearTimer() {
         this.stopTimer();
         this.detachTimerCompleted();
-        
+
         this.timerStart = undefined;
         this.updateTimerText();
     }
