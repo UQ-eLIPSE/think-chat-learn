@@ -1,4 +1,3 @@
-// var app = global.app;
 var conf = global.conf;
 var io = global.io;
 

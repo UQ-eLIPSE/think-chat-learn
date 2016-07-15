@@ -1,48 +1,25 @@
+var conf = require('./config/conf.json');
+
 var express = require('express');
 var app = express();
-
-global.app = app;
-
-var conf;
-if (process.argv.length >= 2 + 1) {
-    conf = require(process.argv[2]);
-} else {
-    conf = require('./config/conf.json');
-}
-
-global.conf = conf;
-
-if (conf.ssl) {
-    var options = {
-        key: fs.readFileSync(conf.key),
-        cert: fs.readFileSync(conf.cert)
-    };
-    server = https.createServer(options, app).listen(conf.portNum);
-} else {
-    server = require('http').createServer(app).listen(conf.portNum);
-    console.log('Socket.io server listening on port ' + conf.portNum);
-}
-
+var server = require('http').createServer(app).listen(conf.portNum);
 var io = require('socket.io')(server, { serveClient: false });
 
-global.io = io;
+global.conf = conf;
 global.server = server;
+global.io = io;
 
-// Load the database module
+console.log('Socket.io server listening on port ' + conf.portNum);
+
 var database = require('./build/controllers/database');
-global.db = database.db;
-global.collections = database.collections;
-
-// Load the websocket
 var websockets = require('./build/controllers/websockets');
-
 
 
 // Use ejs for templating on pages
 app.set("view engine", "ejs");
 
 
-// POST body parsing
+// POST body parsing (required for LTI incoming data)
 var bodyParser = require('body-parser')
 app.use(bodyParser.urlencoded({
     extended: true
@@ -78,7 +55,7 @@ app.get("/backup-client", function(req, res) {
     res.render("backup-client.ejs");
 });
 
-// MOOCchat index page with POST data should pass POST along
+// MOOCchat standard client
 app.post("/", function(req, res) {
     res.render("index.ejs", { conf: conf, postData: req.body });
 });

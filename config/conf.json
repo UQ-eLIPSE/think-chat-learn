@@ -1,9 +1,6 @@
 {
     "portNum": 8080,
     "database": "localhost/moocchatDB",
-    "ssl": 0,
-    "key": "/etc/pki/tls/private/persimmon.key",
-    "cert": "/etc/pki/tls/certs/persimmon.pem",
     "lti": {
         "testMode": false,
         "signingInfo": {
