@@ -28,14 +28,20 @@ var allSessions = new SessionManager();
 var ltiProcessor = new LTIProcessor(conf.lti.signingInfo);
 ltiProcessor.setTestMode(conf.lti.testMode);
 
-// Object(ChatGroupId{string} => ChatGroup)
-var chatGroups = {};
 
-// Object(QuizScheduleId{string} => BackupClientQueue)
+// Mappings between quiz schedule ID and the different groups and queues used
+
+/** Object(QuizScheduleId{string} => BackupClientQueue) */
 var quizSchedule_BackupClientQueue = {};
 
-// Object(QuizScheduleId{string} => ClientAnswerPool)
-var quizSchedule_ClientAnswerPools = {};
+/** Object(QuizScheduleId{string} => ClientAnswerPool) */
+var quizSchedule_ClientAnswerPool = {};
+
+/** Object(QuizScheduleId{string} => ChatGroup[]) */
+var quizSchedule_ChatGroupArray = {};
+
+
+
 
 // ===== Utils =====
 
@@ -47,11 +53,38 @@ function getSessionFromId(sessionId) {
 }
 
 function getClientAnswerPoolFromSession(session) {
-    return quizSchedule_ClientAnswerPools[session.quizSession._id.toString()];
+    return quizSchedule_ClientAnswerPool[session.getQuizScheduleIdString()];
 }
 
 function getBackupClientQueueFromSession(session) {
-    return quizSchedule_BackupClientQueue[session.quizSession._id.toString()];
+    return quizSchedule_BackupClientQueue[session.getQuizScheduleIdString()];
+}
+
+function getChatGroupsFromSession(session) {
+    return quizSchedule_ChatGroupArray[session.getQuizScheduleIdString()];
+}
+
+function getChatGroupFromSession(session) {
+    var chatGroups = getChatGroupsFromSession(session);
+    var client = session.client;
+
+    for (var i = 0; i < chatGroups.length; ++i) {
+        var chatGroup = chatGroups[i];
+
+        if (chatGroup.getClientIndex(client) > -1) {
+            return chatGroup;
+        }
+    }
+}
+
+function deleteChatGroupUsingSession(session) {
+    var chatGroupToDelete = getChatGroupFromSession(session);
+    var allChatGroupsInQuiz = getChatGroupsFromSession(session);
+    var chatGroupIndex = allChatGroupsInQuiz.indexOf(chatGroupToDelete);
+
+    if (chatGroupIndex > -1) {
+        return allChatGroupsInQuiz.splice(chatGroupIndex, 1);
+    }
 }
 
 /**
@@ -59,30 +92,23 @@ function getBackupClientQueueFromSession(session) {
  */
 function removeClientFromEverything(client) {
     var session = allSessions.getSessionByClient(client);
+
     var clientAnswerPool = getClientAnswerPoolFromSession(session);
     var backupClientQueue = getBackupClientQueueFromSession(session);
+    var chatGroup = getChatGroupFromSession(session);
 
-    if (backupClientQueue.removeClient(client)) {
+    if (backupClientQueue && backupClientQueue.removeClient(client)) {
         backupClientQueue.broadcastUpdate();
     }
 
-    if (clientAnswerPool.removeClient(client)) {
+    if (clientAnswerPool && clientAnswerPool.removeClient(client)) {
         broadcastPoolCountToBackupQueue(clientAnswerPool);
     }
 
-    var chatGroupIds = Object.keys(chatGroups);
-    for (var i = 0; i < chatGroupIds.length; ++i) {
-        var chatGroupId = chatGroupIds[i];
-        var chatGroup = chatGroups[chatGroupId];
-        if (chatGroup.getClientIndex(client) > -1) {
-            chatGroup.removeClient(client);
-
-            // If the chat group terminates, then remove the chat group reference
-            if (chatGroup.terminationCheck()) {
-                delete chatGroups[chatGroupId];
-            }
-
-            break;
+    if (chatGroup && chatGroup.removeClient(client)) {
+        // If the chat group terminates, then remove the chat group from array
+        if (chatGroup.terminationCheck()) {
+            deleteChatGroupUsingSession(session);
         }
     }
 }
@@ -99,7 +125,9 @@ function formChatGroup(clientAnswerPool) {
 
     // Store reference to chat group if formed
     if (newChatGroup) {
-        chatGroups[newChatGroup.id] = newChatGroup;
+        var quizScheduleIdString = newChatGroup.clients[0].getSession().getQuizScheduleIdString();
+
+        quizSchedule_ChatGroupArray[quizScheduleIdString].push(newChatGroup);
 
         newChatGroup.clients.forEach(function(client) {
             db_wrapper.userSession.update({
@@ -178,7 +206,7 @@ function handleChatGroupJoinRequest(data) {
 function handleChatGroupQuitStatusChange(data) {
     var session = getSessionFromId(data.sessionId);
     var client = session.client;
-    var chatGroup = chatGroups[data.groupId];
+    var chatGroup = getChatGroupFromSession(session);
 
     if (data.quitStatus) {
         chatGroup.queueClientToQuit(client);
@@ -188,7 +216,7 @@ function handleChatGroupQuitStatusChange(data) {
 
     // If the chat group terminates, then remove the chat group reference
     if (chatGroup.terminationCheck()) {
-        delete chatGroups[data.groupId];
+        deleteChatGroupUsingSession(session);
     }
 }
 
@@ -205,7 +233,7 @@ function handleChatGroupMessage(data) {
     var session = getSessionFromId(data.sessionId);
 
     var client = session.client;
-    var chatGroup = chatGroups[data.groupId];
+    var chatGroup = getChatGroupFromSession(session);
 
     db_wrapper.chatMessage.create({
         content: data.message,
@@ -465,12 +493,13 @@ function handleLoginLti(data, socket) {
     function setupClientAnswerPool(throwErr, next) {
         var quizScheduleIdString = quizSchedule._id.toString();
 
-        if (!quizSchedule_ClientAnswerPools[quizScheduleIdString]) {
+        if (!quizSchedule_ClientAnswerPool[quizScheduleIdString]) {
             var newBackupClientQueue = new BackupClientQueue();
             var newClientAnswerPool = new ClientAnswerPool(questionOptions, newBackupClientQueue);
 
             quizSchedule_BackupClientQueue[quizScheduleIdString] = newBackupClientQueue;
-            quizSchedule_ClientAnswerPools[quizScheduleIdString] = newClientAnswerPool;
+            quizSchedule_ClientAnswerPool[quizScheduleIdString] = newClientAnswerPool;
+            quizSchedule_ChatGroupArray[quizScheduleIdString] = [];     // Empty array to be filled in when chat groups form later down the track
 
             chatGroupFormationLoop.run(newClientAnswerPool);
         }
@@ -879,10 +908,23 @@ io.sockets.on('connection', function(socket) {
             return;
         }
 
+        // Clean up sessions, pools, queues, chats
         var client = session.client;
 
         if (client) {
             removeClientFromEverything(client);
+        }
+
+        var clientAnswerPool = getClientAnswerPoolFromSession(session);
+        var backupClientQueue = getBackupClientQueueFromSession(session);
+        var chatGroups = getChatGroupsFromSession(session);
+
+        if (clientAnswerPool.totalPoolSize() === 0 &&
+            backupClientQueue.getQueueSize() === 0 &&
+            chatGroups.length === 0) {
+            delete quizSchedule_ClientAnswerPool[session.getQuizScheduleIdString()];
+            delete quizSchedule_BackupClientQueue[session.getQuizScheduleIdString()];
+            delete quizSchedule_ChatGroupArray[session.getQuizScheduleIdString()];
         }
 
         allSessions.removeSession(session);
@@ -899,12 +941,6 @@ io.sockets.on('connection', function(socket) {
             function(err, result) {
                 // TODO:
             });
-
-
-
-        // TODO: Need to clean up client answer pools as they become vacant
-
-
     }
 });
 

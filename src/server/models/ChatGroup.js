@@ -192,7 +192,7 @@ ChatGroup.prototype.removeClient = function(client) {
     // Need to remove the client out of the queue to quit because it shouldn't exist anymore
     var clientIndex = this.clientsQueuedToQuit.indexOf(client);
     if (clientIndex > -1){
-        this.clientsQueuedToQuit.splice(clientIndex, 1);
+        return this.clientsQueuedToQuit.splice(clientIndex, 1);
     }
 }
 

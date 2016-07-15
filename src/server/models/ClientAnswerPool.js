@@ -217,9 +217,13 @@ ClientAnswerPool.prototype.tryMakeChatGroup = function() {
     // Determine if there are not enough clients to form a group of the desired size
     var totalPoolSize = this.totalPoolSize();
 
-    // If there is enough diversity and the number of clients != desiredGroupSize + 1, create group now
-    // The size check for (n+1) is done to prevent loner groups from appearing
+    // If there is enough diversity and the number of clients passes below checks, create group now
+    //
+    // Below pool size checks:
+    //  n       prevents premature creation of groups now when (n+1) size groups may need to be considered in the future
+    //  n+1     prevents loner groups from appearing (when groups: {n, 1} may form)
     if (viableAnswerQueueKeys.length >= this.desiredGroupSize &&
+        totalPoolSize !== this.desiredGroupSize &&
         totalPoolSize !== (this.desiredGroupSize + 1)) {
         return this.createChatGroupOfSize(this.desiredGroupSize);
     }

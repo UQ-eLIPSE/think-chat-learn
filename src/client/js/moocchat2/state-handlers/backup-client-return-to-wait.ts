@@ -15,6 +15,7 @@ export const BackupClientReturnToWaitStateHandler: IStateHandler<STATE> =
                 // Must re-register to return to the queue
                 session.socket.once<IInboundData.BackupClientEnterQueueState>(WebsocketEvents.INBOUND.BACKUP_CLIENT_ENTER_QUEUE_STATE, (data) => {
                     if (data.success) {
+                        session.sectionManager.getSection("discussion").showTimer();
                         session.stateMachine.goTo(STATE.BACKUP_CLIENT_WAIT);
                     }
                 });

@@ -171,6 +171,12 @@ BackupClientQueue.prototype.moveOutTrayClientToClientPool = function() {
     var client = this.clientOutTray.client;
     var pool = this.clientOutTray.pool;
 
+    // If the pool size is no longer 1 then the backup client is no longer required
+    if (pool.totalPoolSize() !== 1) {
+        this.wipeClientOutTray();
+        return;
+    }
+
     var answerOptionId = client.session.responseInitial.optionId;
 
     this.removeClient(client);

@@ -27,7 +27,7 @@ export class LTIUtil {
         let dataCopy = LTIUtil.copyKVObject(data);
         delete dataCopy["oauth_signature"];
 
-        let calculatedSignature = oauthSignature.generate(info.method, info.url, dataCopy, info.consumer.secret, void 0, { encodeSignature: false });
+        let calculatedSignature = oauthSignature.generate(info.method, info.url, dataCopy, info.consumer.secret, undefined, { encodeSignature: false });
 
         return data.oauth_signature === calculatedSignature;
     }

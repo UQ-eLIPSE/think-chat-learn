@@ -69,7 +69,7 @@ export class StateFlow<StateEnumType> {
         let onEnter = newStateData.onEnter;
 
         if (onEnter) {
-            onEnter(goToData, onLeaveData, ((oldStateHistoryData) ? oldStateHistoryData.stateData.state : void 0));
+            onEnter(goToData, onLeaveData, ((oldStateHistoryData) ? oldStateHistoryData.stateData.state : undefined));
         }
     }
 

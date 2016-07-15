@@ -15,7 +15,7 @@ var Session = function(client, quizScheduleSession) {
 
     // this.hasElevatedPermissions = false;
 
-    this.quizSession = quizScheduleSession;
+    this.quizSchedule = quizScheduleSession;
     this.quizQuestion;
     this.quizQuestionOptions;
 
@@ -81,6 +81,10 @@ Session.prototype.setId = function(id) {
 
 Session.prototype.getId = function() {
     return this.id;
+}
+
+Session.prototype.getQuizScheduleIdString = function() {
+    return this.quizSchedule._id.toString();
 }
 
 module.exports = Session;

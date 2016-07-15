@@ -8,6 +8,7 @@ import * as socket from "socket.io-client";
  */
 export class WebsocketManager {
     private socket: SocketIOClient.Socket;
+    private silentClose: boolean = false;
 
     public open() {
         this.socket = socket.connect({
@@ -20,11 +21,16 @@ export class WebsocketManager {
         });
 
         this.on("disconnect", () => {
+            if (this.silentClose) {
+                return;
+            }
+            
             alert("You or the server has disconnected the websocket connection.\n\nYour MOOCchat session has been terminated and will require restarting.");
         });
     }
 
-    public close() {
+    public close(silentClose: boolean = false) {
+        this.silentClose = silentClose;
         this.socket.close();
     }
 
