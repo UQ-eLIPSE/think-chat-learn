@@ -29,7 +29,7 @@ function doneFactory(count, callback) {
 
 
 // Done counter function for all tables
-var done = doneFactory(10, function() {
+var done = doneFactory(5, function() {
     console.log("==========\nDatabase seed finished");
 
     // Process exit occurs only after a short while so that queued stdout appear
@@ -40,7 +40,11 @@ var done = doneFactory(10, function() {
 
 
 // Clear collections/tables then insert
-db.question.delete({}, function() {
+db.database.dropDatabase(function() {
+    console.log("Dropped database\n==========");
+
+
+
     var createdQuestion = doneFactory(questionData.length, function() {
         console.log("Questions inserted");
         done();
@@ -51,9 +55,9 @@ db.question.delete({}, function() {
             createdQuestion();
         });
     });
-});
 
-db.questionOption.delete({}, function() {
+
+
     var createdQuestionOption = doneFactory(questionOptionData.length, function() {
         console.log("Question options inserted");
         done();
@@ -64,9 +68,9 @@ db.questionOption.delete({}, function() {
             createdQuestionOption();
         });
     });
-});
 
-db.questionOptionCorrect.delete({}, function() {
+
+
     var createdQuestionOptionCorrect = doneFactory(questionOptionCorrectData.length, function() {
         console.log("Question option correct justifications inserted");
         done();
@@ -77,14 +81,9 @@ db.questionOptionCorrect.delete({}, function() {
             createdQuestionOptionCorrect();
         });
     });
-});
 
-db.questionResponse.delete({}, function() {
-    console.log("Deleted question responses");
-    done();
-});
 
-db.quizSchedule.delete({}, function() {
+
     var createdQuizSchedule = doneFactory(quizScheduleData.length, function() {
         console.log("Quiz schedules inserted");
         done();
@@ -95,24 +94,9 @@ db.quizSchedule.delete({}, function() {
             createdQuizSchedule();
         });
     });
-});
 
-db.chatMessage.delete({}, function() {
-    console.log("Deleted chat messages");
-    done();
-});
 
-db.user.delete({}, function() {
-    console.log("Deleted users");
-    done();
-});
 
-db.userSession.delete({}, function() {
-    console.log("Deleted user sessions");
-    done();
-});
-
-db.survey.delete({}, function() {
     var createdSurvey = doneFactory(surveyData.length, function() {
         console.log("Surveys inserted");
         done();
@@ -123,9 +107,4 @@ db.survey.delete({}, function() {
             createdSurvey();
         });
     });
-});
-
-db.surveyResponse.delete({}, function() {
-    console.log("Deleted survey responses");
-    done();
 });

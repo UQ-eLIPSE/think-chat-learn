@@ -32,6 +32,8 @@ var Survey = require("../models/database/Survey").Survey;
 var SurveyResponse = require("../models/database/SurveyResponse").SurveyResponse;
 
 module.exports = {
+	database: db,
+
 	// ORM objects
 	question: new Question(db),
 	questionOption: new QuestionOption(db),
