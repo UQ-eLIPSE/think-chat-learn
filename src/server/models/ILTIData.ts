@@ -1,6 +1,6 @@
 export interface ILTIData {
     // Generic
-    [key: string]: any; // Generally should be string, but specified as any for safety
+    [key: string]: any; // Value generally should be string, but specified as any for safety
 
     // Required
     lti_message_type: string;

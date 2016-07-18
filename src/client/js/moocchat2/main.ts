@@ -33,6 +33,8 @@ import {InvalidLoginStateHandler} from "./state-handlers/invalid-login";
 
 
 // Warn when someone is about to leave MOOCchat (maybe accidentally...)
+// Unfortunately most browsers now ignore the text and give a generic message instead,
+// but a non-void return is still required to trigger the warning dialog.
 const windowUnloadWarning = (event: BeforeUnloadEvent) => {
     const dialogText = `Your MOOCchat session will end prematurely if you leave now.`;
     event.returnValue = dialogText;
