@@ -315,7 +315,7 @@ function handleLoginLti(data, socket) {
             retrieveUserId,
             findScheduledQuiz,
             findSurvey,
-            setupClientAnswerPool,
+            setupPoolsAndQueues,
             setupClient,
             writeSessionToDb,
             notifyClientOfLogin
@@ -522,10 +522,12 @@ function handleLoginLti(data, socket) {
         });
     }
 
-    function setupClientAnswerPool(throwErr, next) {
+    function setupPoolsAndQueues(throwErr, next) {
         var quizScheduleIdString = quizSchedule._id.toString();
 
-        if (!quizSchedule_ClientAnswerPool[quizScheduleIdString]) {
+        if (!quizSchedule_BackupClientQueue[quizScheduleIdString] &&
+            !quizSchedule_ClientAnswerPool[quizScheduleIdString] &&
+            !quizSchedule_ChatGroupArray[quizScheduleIdString]) {
             var newBackupClientQueue = new BackupClientQueue();
             var newClientAnswerPool = new ClientAnswerPool(questionOptions, newBackupClientQueue);
 
