@@ -38,5 +38,13 @@ Ensure mongo is running; then build; then run `npm run test`.
 
 Those marked [^] are tests written before the MOOCchat rewrite for older code. Failures are to be expected.
 
+## Database dumps and restores
+`mongodump` is the command to use to dump the entirety of the database as BSON. The default directory is `./dump`, configurable by the `out` flag.
+
+To restore, run `mongorestore`, with the `dir` flag if dump folder name was supplied. The `drop` flag will drop collections that already exist before inserting the restore data. 
+
+    $ mongodump -o dump-folder-name
+    $ mongorestore --drop --dir dump-folder-name
+
 ## Important notes
 * Mongodb must be running before starting `npm start`
