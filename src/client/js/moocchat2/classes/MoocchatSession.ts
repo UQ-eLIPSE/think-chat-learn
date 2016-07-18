@@ -38,7 +38,7 @@ export class MoocchatSession<StateTypeEnum> {
     public storage: SessionStorage;
 
 
-    constructor(turnOnAnalytics: boolean = true, $content: JQuery, $taskSections: JQuery) {
+    constructor($content: JQuery, $taskSections: JQuery, turnOnAnalytics: boolean = true) {
         this._eventManager = new EventBox();
         this._pageManager = new PageManager(this._eventManager, $content);
         this._sectionManager = new TaskSectionManager(this._eventManager, $taskSections);

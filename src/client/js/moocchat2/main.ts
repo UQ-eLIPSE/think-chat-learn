@@ -56,7 +56,7 @@ $(() => {
     const $taskSections = $("#task-sections");
     const $content = $("#content");
 
-    const session = new MoocchatSession<STATE>(true, $content, $taskSections).setSocket(socket);
+    const session = new MoocchatSession<STATE>($content, $taskSections).setSocket(socket);
 
 
     // Send event on any button click

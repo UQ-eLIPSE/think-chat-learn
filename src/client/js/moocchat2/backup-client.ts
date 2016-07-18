@@ -44,7 +44,7 @@ $(() => {
     const $taskSections = $("#task-sections");
     const $content = $("#content");
 
-    const session = new MoocchatSession<STATE>(false, $content, $taskSections).setSocket(socket);
+    const session = new MoocchatSession<STATE>($content, $taskSections, false).setSocket(socket);
 
 
     // Sections must be defined now before other resources use them
@@ -57,7 +57,7 @@ $(() => {
         ["backup-client-logout", "Log Out"]
     ]);
 
-    // Individual page handling code
+    // Individual state handlers
     const startupState = StartupStateHandler(session, $courseName, true);
     const loginState = LoginStateHandler(session);
     const welcomeState = WelcomeStateHandler(session, STATE.BACKUP_CLIENT_ANSWER);
