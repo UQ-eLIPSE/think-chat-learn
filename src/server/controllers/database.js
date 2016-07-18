@@ -18,6 +18,7 @@ var db = mongojs(conf.database, collections);
 // Import the database models
 var Question = require("../models/database/Question").Question;
 var QuestionOption = require("../models/database/QuestionOption").QuestionOption;
+var QuestionOptionCorrect = require("../models/database/QuestionOptionCorrect").QuestionOptionCorrect;
 var QuestionResponse = require("../models/database/QuestionResponse").QuestionResponse;
 
 var QuizSchedule = require("../models/database/QuizSchedule").QuizSchedule;
@@ -34,6 +35,7 @@ module.exports = {
 	// ORM objects
 	question: new Question(db),
 	questionOption: new QuestionOption(db),
+	questionOptionCorrect: new QuestionOptionCorrect(db),
 	questionResponse: new QuestionResponse(db),
 
 	quizSchedule: new QuizSchedule(db),

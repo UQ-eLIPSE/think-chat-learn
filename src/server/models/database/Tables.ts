@@ -2,6 +2,7 @@ export const tables = {
 	// Questions
 	"QUESTION": "uq_question",
 	"QUESTION_OPTION": "uq_questionOption",
+	"QUESTION_OPTION_CORRECT": "uq_questionOptionCorrect",
 	"QUESTION_RESPONSE": "uq_questionResponse",
 
 	// Quiz scheduling

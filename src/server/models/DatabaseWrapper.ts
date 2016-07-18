@@ -19,54 +19,12 @@ export class DatabaseWrapper<IData> {
      * @param {Object} data
      * @param {Function} callback
      */
-    public create(data: IData, callback: Function) {
+    public create(data: IData, callback?: Function) {
         this.table.insert(data, function(err: any, res: any) {
             if (err) {
                 console.log("Failed to save data: " + err);
             }
-            callback(err, res);
-        });
-    }
 
-    /**
-     * @param {Object} data
-     * @param {Function} callback
-     */
-    public read(query: Object, callback: Function) {
-        this.table.find(query, function(err: any, res: any) {
-            if (err) {
-                console.log("Failed to read data: " + err);
-            }
-            callback(err, res);
-        });
-    }
-
-    /**
-     * @param {Object} data
-     * @param {Function} callback
-     */
-    public readEach(query: Object, callback: Function) {
-        this.table.find(query, function(err: any, res: any) {
-            if (err) {
-                console.log("Failed to read data: " + err);
-            }
-
-            for (var i = 0; i < res.length; i++) {
-                callback(err, res[i]);
-            }
-        });
-    }
-
-    /**
-     * @param {Object} query
-     * @param {Object} data
-     * @param {Function} callback
-     */
-    public update(query: Object, data: IData, callback: Function) {
-        this.table.update(query, data, function(err: any, res: any) {
-            if (err) {
-                console.log("Failed to update data: " + err);
-            }
             if (callback) {
                 callback(err, res);
             }
@@ -77,12 +35,66 @@ export class DatabaseWrapper<IData> {
      * @param {Object} data
      * @param {Function} callback
      */
-    public delete(query: Object, callback: Function) {
+    public read(query: Object, callback?: Function) {
+        this.table.find(query, function(err: any, res: any) {
+            if (err) {
+                console.log("Failed to read data: " + err);
+            }
+
+            if (callback) {
+                callback(err, res);
+            }
+        });
+    }
+
+    /**
+     * @param {Object} data
+     * @param {Function} callback
+     */
+    public readEach(query: Object, callback?: Function) {
+        this.table.find(query, function(err: any, res: any) {
+            if (err) {
+                console.log("Failed to read data: " + err);
+            }
+
+            if (callback) {
+                for (var i = 0; i < res.length; i++) {
+                    callback(err, res[i]);
+                }
+            }
+        });
+    }
+
+    /**
+     * @param {Object} query
+     * @param {Object} data
+     * @param {Function} callback
+     */
+    public update(query: Object, data: IData, callback?: Function) {
+        this.table.update(query, data, function(err: any, res: any) {
+            if (err) {
+                console.log("Failed to update data: " + err);
+            }
+
+            if (callback) {
+                callback(err, res);
+            }
+        });
+    }
+
+    /**
+     * @param {Object} data
+     * @param {Function} callback
+     */
+    public delete(query: Object, callback?: Function) {
         this.table.remove(query, function(err: any, res: any) {
             if (err) {
                 console.log("Failed to delete data: " + err);
             }
-            callback(err, res);
+            
+            if (callback) {
+                callback(err, res);
+            }
         });
     }
 
