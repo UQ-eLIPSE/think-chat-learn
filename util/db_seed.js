@@ -29,7 +29,7 @@ function doneFactory(count, callback) {
 
 
 // Done counter function for all tables
-var done = doneFactory(5, function() {
+var done = doneFactory(10, function() {
     console.log("==========\nDatabase seed finished");
 
     // Process exit occurs only after a short while so that queued stdout appear
@@ -79,6 +79,11 @@ db.questionOptionCorrect.delete({}, function() {
     });
 });
 
+db.questionResponse.delete({}, function() {
+    console.log("Deleted question responses");
+    done();
+});
+
 db.quizSchedule.delete({}, function() {
     var createdQuizSchedule = doneFactory(quizScheduleData.length, function() {
         console.log("Quiz schedules inserted");
@@ -92,6 +97,21 @@ db.quizSchedule.delete({}, function() {
     });
 });
 
+db.chatMessage.delete({}, function() {
+    console.log("Deleted chat messages");
+    done();
+});
+
+db.user.delete({}, function() {
+    console.log("Deleted users");
+    done();
+});
+
+db.userSession.delete({}, function() {
+    console.log("Deleted user sessions");
+    done();
+});
+
 db.survey.delete({}, function() {
     var createdSurvey = doneFactory(surveyData.length, function() {
         console.log("Surveys inserted");
@@ -103,4 +123,9 @@ db.survey.delete({}, function() {
             createdSurvey();
         });
     });
+});
+
+db.surveyResponse.delete({}, function() {
+    console.log("Deleted survey responses");
+    done();
 });
