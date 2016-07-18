@@ -1,19 +1,12 @@
 import * as socket from "socket.io-client";
 
-import {EventBox, EventBoxCallback} from "./EventBox";
+import {EventBox, EventBox_Callback} from "./EventBox";
 import {WebsocketManager} from "./WebsocketManager";
 
 import {WebsocketEvents} from "./WebsocketEvents";
 import * as IInboundData from "./IInboundData";
 import * as IOutboundData from "./IOutboundData";
 import {ILTIBasicLaunchData} from "./ILTIBasicLaunchData";
-
-export const MoocchatUser_Events = {
-    LOGIN_SUCCESS: "MCUSER_LOGIN_SUCCESS",
-    LOGIN_FAIL: "MCUSER_LOGIN_FAIL"
-}
-
-export type IMoocchatUser_LoginSuccess = IInboundData.LoginSuccess;
 
 /**
  * MOOCchat
@@ -26,13 +19,13 @@ export class MoocchatUser {
 
     private ltiData: ILTIBasicLaunchData;
 
-    private eventBox: EventBox;
+    private sharedEventManager: EventBox;
 
     /**
      * @param {string} username
      */
-    constructor(eventBox: EventBox, ltiData: ILTIBasicLaunchData) {
-        this.eventBox = eventBox;
+    constructor(sharedEventManager: EventBox, ltiData: ILTIBasicLaunchData) {
+        this.sharedEventManager = sharedEventManager;
         this.ltiData = ltiData;
     }
 
@@ -46,7 +39,7 @@ export class MoocchatUser {
      * @param {Function} callback
      */
     public set onLoginSuccess(callback: (data?: IInboundData.LoginSuccess) => void) {
-        this.eventBox.on(MoocchatUser_Events.LOGIN_SUCCESS, callback);
+        this.sharedEventManager.on(MoocchatUser_Events.LOGIN_SUCCESS, callback);
     }
 
     /**
@@ -55,14 +48,14 @@ export class MoocchatUser {
      * @param {Function} callback
      */
     public set onLoginFail(callback: (data?: IInboundData.LoginFailure | IInboundData.LoginExistingUser) => void) {
-        this.eventBox.on(MoocchatUser_Events.LOGIN_FAIL, callback);
+        this.sharedEventManager.on(MoocchatUser_Events.LOGIN_FAIL, callback);
     }
 
     /**
      * Clears all callbacks.
      */
     public clearLoginCallbacks() {
-        this.eventBox.destroy();
+        this.sharedEventManager.destroy();
     }
 
     /**
@@ -83,17 +76,17 @@ export class MoocchatUser {
      */
     private attachLoginReturnHandlers(socket: WebsocketManager) {
         socket.once<IInboundData.LoginSuccess>(WebsocketEvents.INBOUND.LOGIN_SUCCESS, (data) => {
-            this.eventBox.dispatch(MoocchatUser_Events.LOGIN_SUCCESS, data);
+            this.sharedEventManager.dispatch(MoocchatUser_Events.LOGIN_SUCCESS, data);
             this.detachLoginReturnHandlers(socket);
         });
 
         socket.once<IInboundData.LoginFailure>(WebsocketEvents.INBOUND.LOGIN_FAILURE, (data) => {
-            this.eventBox.dispatch(MoocchatUser_Events.LOGIN_FAIL, data);
+            this.sharedEventManager.dispatch(MoocchatUser_Events.LOGIN_FAIL, data);
             this.detachLoginReturnHandlers(socket);
         });
 
         socket.once<IInboundData.LoginExistingUser>(WebsocketEvents.INBOUND.LOGIN_USER_ALREADY_EXISTS, (data) => {
-            this.eventBox.dispatch(MoocchatUser_Events.LOGIN_FAIL, data);
+            this.sharedEventManager.dispatch(MoocchatUser_Events.LOGIN_FAIL, data);
             this.detachLoginReturnHandlers(socket);
         });
     }
@@ -108,4 +101,9 @@ export class MoocchatUser {
         socket.off(WebsocketEvents.INBOUND.LOGIN_FAILURE);
         socket.off(WebsocketEvents.INBOUND.LOGIN_USER_ALREADY_EXISTS);
     }
+}
+
+export const MoocchatUser_Events = {
+    LOGIN_SUCCESS: "MCUSER_LOGIN_SUCCESS",
+    LOGIN_FAIL: "MCUSER_LOGIN_FAIL"
 }

@@ -5,7 +5,8 @@ import {TaskSectionManager} from "./TaskSectionManager";
 import {WebsocketManager} from "./WebsocketManager";
 import {SessionStorage} from "./SessionStorage";
 
-import {MoocchatAnalytics, MoocchatAnalyticsCore} from "./MoocchatAnalytics";
+import {MoocchatAnalytics} from "./MoocchatAnalytics";
+import {MoocchatAnalyticsCore} from "./MoocchatAnalyticsCore";
 import {MoocchatUser} from "./MoocchatUser";
 import {MoocchatQuiz} from "./MoocchatQuiz";
 import {MoocchatSurvey} from "./MoocchatSurvey";
@@ -49,6 +50,38 @@ export class MoocchatSession<StateTypeEnum> {
         if (turnOnAnalytics) {
             this._analytics = new MoocchatAnalytics(this);
         }
+    }
+
+    public get id() {
+        return this._id;
+    }
+
+    public get quiz() {
+        return this._quiz;
+    }
+
+    public get survey() {
+        return this._survey;
+    }
+
+    public get stateMachine() {
+        return this._stateMachine;
+    }
+
+    public get pageManager() {
+        return this._pageManager;
+    }
+
+    public get sectionManager() {
+        return this._sectionManager;
+    }
+
+    public get eventManager() {
+        return this._eventManager;
+    }
+
+    public get analytics() {
+        return this._analytics || new MoocchatAnalyticsCore();
     }
 
     /**
@@ -185,37 +218,4 @@ export class MoocchatSession<StateTypeEnum> {
     public resetAnswers() {
         this.answers.reset();
     }
-
-    public get id() {
-        return this._id;
-    }
-
-    public get quiz() {
-        return this._quiz;
-    }
-
-    public get survey() {
-        return this._survey;
-    }
-
-    public get stateMachine() {
-        return this._stateMachine;
-    }
-
-    public get pageManager() {
-        return this._pageManager;
-    }
-
-    public get sectionManager() {
-        return this._sectionManager;
-    }
-
-    public get eventManager() {
-        return this._eventManager;
-    }
-
-    public get analytics() {
-        return this._analytics || new MoocchatAnalyticsCore();
-    }
-
 }

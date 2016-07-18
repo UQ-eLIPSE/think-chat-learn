@@ -6,9 +6,6 @@ import * as IOutboundData from "./IOutboundData";
 
 import {WebsocketEvents} from "./WebsocketEvents";
 
-/** Alias for the interface for data that was originally received when chat group was first formed */
-export type ChatGroupData = IInboundData.ChatGroupFormed;
-
 /**
  * MOOCchat
  * Chat class module
@@ -20,7 +17,6 @@ export class MoocchatChat {
     private groupData: ChatGroupData;
 
     private $chatWindow: JQuery;
-    private $clonedChatWindow: JQuery;
 
     private receiveMessageCallback: (data: IInboundData.ChatGroupMessage) => void;
     private receiveQuitStatusChangeCallback: (data: IInboundData.ChatGroupQuitStatusChange) => void;
@@ -38,6 +34,10 @@ export class MoocchatChat {
         this.attachReceiveMessageHandler();
 
         this.$chatWindow.attr("data-self-client-id", (this.groupData.clientIndex + 1).toString());
+    }
+
+    public get chatWindow() {
+        return this.$chatWindow;
     }
 
     /**
@@ -144,10 +144,12 @@ export class MoocchatChat {
         this.session.socket.off(WebsocketEvents.INBOUND.CHAT_GROUP_QUIT_STATUS_CHANGE, this.receiveQuitStatusChangeCallback);
     }
 
-    public get chatWindow() {
-        return this.$chatWindow;
-    }
-
+    /**
+     * Fires chat group join request for a given session.
+     * 
+     * @param {MoocchatSession} session
+     * @param {Function} callback Callback to fire when group formed
+     */
     public static EmitJoinRequest<StateTypeEnum>(session: MoocchatSession<StateTypeEnum>, callback: (data: IInboundData.ChatGroupFormed) => void) {
         session.socket.once<IInboundData.ChatGroupFormed>(WebsocketEvents.INBOUND.CHAT_GROUP_FORMED, callback);
         session.socket.emitData<IOutboundData.ChatGroupJoin>(WebsocketEvents.OUTBOUND.CHAT_GROUP_JOIN_REQUEST, {
@@ -155,3 +157,6 @@ export class MoocchatChat {
         });
     }
 }
+
+/** Alias for the interface for data that was originally received when chat group was first formed */
+export type ChatGroupData = IInboundData.ChatGroupFormed;

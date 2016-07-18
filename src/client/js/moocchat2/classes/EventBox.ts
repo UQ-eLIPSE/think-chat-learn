@@ -1,16 +1,11 @@
 /**
- * Callback type expected for EventBox events
- */
-export type EventBoxCallback = (data: any) => void;
-
-/**
  * MOOCchat
  * EventBox class module
  * 
  * Provides a basic event system that doesn't rely on DOM events
  */
 export class EventBox {
-    private eventCallbacks: { [eventName: string]: EventBoxCallback[] } = {};
+    private eventCallbacks: { [eventName: string]: EventBox_Callback[] } = {};
     private dispatchedEvents: { [eventName: string]: any } = {};
 
     /**
@@ -20,7 +15,7 @@ export class EventBox {
      * @param {EventBoxCallback} callback
      * @param {boolean} runCallbackOnBindIfDispatched Run callback when bound to an event, if event has already previously occurred. Default: `true`.
      */
-    public on(eventName: string, callback: EventBoxCallback, runCallbackOnBindIfDispatched: boolean = true) {
+    public on(eventName: string, callback: EventBox_Callback, runCallbackOnBindIfDispatched: boolean = true) {
         const registeredCallbacks = this.eventCallbacks[eventName];
 
         if (!registeredCallbacks) {
@@ -32,7 +27,7 @@ export class EventBox {
         if (runCallbackOnBindIfDispatched && this.hasEventBeenDispatched(eventName)) {
             // This must be in a traditional function(){} block
             // so that scope is limited to global/window
-            (function(callback: EventBoxCallback, data: any) {
+            (function(callback: EventBox_Callback, data: any) {
                 callback(data);
             })(callback, this.dispatchedEvents[eventName]);
         }
@@ -44,7 +39,7 @@ export class EventBox {
      * @param {string} eventName
      * @param {EventBoxCallback} callback
      */
-    public off(eventName: string, callback?: EventBoxCallback) {
+    public off(eventName: string, callback?: EventBox_Callback) {
         const registeredCallbacks = this.eventCallbacks[eventName];
 
         if (!registeredCallbacks) {
@@ -114,3 +109,8 @@ export class EventBox {
         return (Object.keys(this.dispatchedEvents).indexOf(eventName) > -1);
     }
 }
+
+/**
+ * Callback type expected for EventBox events
+ */
+export type EventBox_Callback = (data: any) => void;

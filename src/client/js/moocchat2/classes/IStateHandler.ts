@@ -6,7 +6,7 @@ import {MoocchatSession} from "./MoocchatSession";
  * MOOCchat
  * StateHandler interface
  * 
- * Encodes the structure expected for the returned function for each page handler.
+ * Encodes the structure expected for the returned function for each state handler.
  */
 export interface IStateHandler<StateEnumType> {
     (session: MoocchatSession<StateEnumType>, ...args: any[]): IStateTransition<StateEnumType>;

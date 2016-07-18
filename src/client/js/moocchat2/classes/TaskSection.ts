@@ -2,11 +2,7 @@ import {conf} from "../conf";
 
 import {Utils} from "./Utils";
 
-import {EventBox, EventBoxCallback} from "./EventBox";
-
-const TaskSection_InternalLoginEvents = {
-    TIMER_COMPLETED: "MCTS_TIMER_COMPLETED"
-}
+import {EventBox, EventBox_Callback} from "./EventBox";
 
 /**
  * MOOCchat
@@ -19,16 +15,16 @@ export class TaskSection {
 
     private milliseconds: number;
     private timerStart: number;
-    private timerActive: boolean = false;
+    private timerActive: boolean;
     private lastUpdate: number;
     private rafHandle: number;
 
     private $elem: JQuery;
 
-    private outOfTime: boolean = false;
+    private outOfTime: boolean;
     private outOfTimeAlternationIntervalHandle: number;
 
-    private eventBox: EventBox = new EventBox();
+    private internalEventManager: EventBox = new EventBox();
 
     /**
      * @param {string} id
@@ -38,6 +34,9 @@ export class TaskSection {
     constructor(id: string, text: string, ms?: number) {
         this.id = id;
         this.milliseconds = ms;
+
+        this.timerActive = false;
+        this.outOfTime = false;
 
         this.$elem = this.generateElement(text);
 
@@ -212,7 +211,7 @@ export class TaskSection {
             this.updateTimerText();
             this.lastUpdate = ms;
 
-            // Last 60 seconds = out of time state
+            // Last seconds = out of time state
             if (!this.outOfTime && this.timeRemaining < conf.taskTimer.outOfTimeRemainingMs) {
                 this.setOutOfTime();
             }
@@ -245,8 +244,8 @@ export class TaskSection {
      * @param {EventBoxCallback} callback
      * @param {boolean} runCallbackOnBindIfFired Run callback when bound, if event has already previously occurred.
      */
-    public attachTimerCompleted(callback: EventBoxCallback, runCallbackOnBindIfFired?: boolean) {
-        this.eventBox.on(TaskSection_InternalLoginEvents.TIMER_COMPLETED, callback, runCallbackOnBindIfFired);
+    public attachTimerCompleted(callback: EventBox_Callback, runCallbackOnBindIfFired?: boolean) {
+        this.internalEventManager.on(TaskSection_InternalLoginEvents.TIMER_COMPLETED, callback, runCallbackOnBindIfFired);
     }
 
     /**
@@ -254,15 +253,19 @@ export class TaskSection {
      * 
      * @param {EventBoxCallback} callback
      */
-    public detachTimerCompleted(callback?: EventBoxCallback) {
-        this.eventBox.off(TaskSection_InternalLoginEvents.TIMER_COMPLETED, callback);
+    public detachTimerCompleted(callback?: EventBox_Callback) {
+        this.internalEventManager.off(TaskSection_InternalLoginEvents.TIMER_COMPLETED, callback);
     }
 
     /**
      * Run all callbacks for timer completed event.
      */
     private runTimerCompletionCallbacks() {
-        this.eventBox.dispatch(TaskSection_InternalLoginEvents.TIMER_COMPLETED);
+        this.internalEventManager.dispatch(TaskSection_InternalLoginEvents.TIMER_COMPLETED);
     }
 
+}
+
+const TaskSection_InternalLoginEvents = {
+    TIMER_COMPLETED: "MCTS_TIMER_COMPLETED"
 }

@@ -9,6 +9,7 @@ var Client = require("./client");
 
 /**
  * @param {Client} client
+ * @param {IDB_QuizSchedule} quizScheduleSession
  */
 var Session = function(client, quizScheduleSession) {
     this.id = null;     // {String}
@@ -19,6 +20,7 @@ var Session = function(client, quizScheduleSession) {
 
     this.survey;
 
+    // `responseInitial` and `responseFinal` hold the answers as received from client
     this.responseInitial = {
         _id: null,
         optionId: null,
@@ -70,10 +72,20 @@ Session.prototype.setId = function(id) {
     this.id = id;
 }
 
+/**
+ * Gets session ID.
+ * 
+ * @return {string}
+ */
 Session.prototype.getId = function() {
     return this.id;
 }
 
+/**
+ * Gets the quiz schedule ID, as a string.
+ * 
+ * @return {string}
+ */
 Session.prototype.getQuizScheduleIdString = function() {
     return this.quizSchedule._id.toString();
 }

@@ -627,7 +627,6 @@ function answerSubmissionHandlerFactory(answerType) {
             session.quizQuestionOptions
                 .map(function(option) { return option._id.toString(); })
                 .indexOf(optionIdString) < 0) {
-            // TODO: Return error to client?
             return;
         }
 
@@ -637,7 +636,6 @@ function answerSubmissionHandlerFactory(answerType) {
             timestamp: new Date()
         }, function(err, result) {
             if (err) {
-                // TODO: Return error to client?
                 return;
             }
 
@@ -656,7 +654,6 @@ function answerSubmissionHandlerFactory(answerType) {
                 },
                 function(err, result) {
                     if (err) {
-                        // TODO: Return error to client?
                         return;
                     }
 
@@ -881,7 +878,7 @@ io.sockets.on('connection', function(socket) {
             return;
         }
 
-        // Clean up sessions, pools, queues, chats
+        // Clean up pools, queues, chats
         var client = session.client;
 
         if (client) {
@@ -900,6 +897,7 @@ io.sockets.on('connection', function(socket) {
             delete quizSchedule_ChatGroupArray[session.getQuizScheduleIdString()];
         }
 
+        // Remove session and update session entry in DB
         allSessions.removeSession(session);
 
         db_wrapper.userSession.update(

@@ -1,7 +1,3 @@
-/**
- * ClientAnswerPool
- */
-
 "use strict";
 
 // Configuration from /config/conf.json
@@ -12,6 +8,8 @@ var ChatGroup = require("./ChatGroup");
 var id = 0;
 
 /**
+ * ClientAnswerPool
+ * 
  * Handles queues of clients and attempts to distribute them
  * into groups with diverse answers where possible
  * 

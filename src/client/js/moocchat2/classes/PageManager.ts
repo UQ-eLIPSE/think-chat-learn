@@ -1,15 +1,8 @@
 import * as $ from "jquery";
 
+import {IPageManager_PageLoad} from "./IPageManager";
+
 import {EventBox} from "./EventBox";
-
-export const PageManager_Events = {
-    PAGE_LOAD: "PM_PAGE_LOAD"
-}
-
-export interface IPageManager_PageLoad {
-    name: string;
-    loadTimeMs: number;
-}
 
 /**
  * MOOCchat
@@ -19,14 +12,14 @@ export interface IPageManager_PageLoad {
  */
 export class PageManager {
     private $contentElem: JQuery;
-    private eventBox: EventBox;
+    private sharedEventManager: EventBox;
 
     /**
      * @param {JQuery} $contentElem JQuery wrapped element serving as the container for page content where pages are to be swapped in/out
      */
-    constructor(eventBox: EventBox, $contentElem: JQuery) {
+    constructor(sharedEventManager: EventBox, $contentElem: JQuery) {
         this.$contentElem = $contentElem;
-        this.eventBox = eventBox;
+        this.sharedEventManager = sharedEventManager;
     }
 
     /**
@@ -82,15 +75,14 @@ export class PageManager {
         return pageFetchXHR;
     }
 
-    // public attachOnPageLoad(callback: (data: IPageManager_PageLoad) => void) {
-    //     this.eventBox.on(PageManager_Events.PAGE_LOAD, callback);
-    // }
-
-    // public detachOnPageLoad(callback: (data: IPageManager_PageLoad) => void) {
-    //     this.eventBox.off(PageManager_Events.PAGE_LOAD, callback);
-    // }
-
+    /**
+     * Fires page load event to the shared event manager for others to catch.
+     */
     public dispatchOnPageLoad(data: IPageManager_PageLoad) {
-        this.eventBox.dispatch(PageManager_Events.PAGE_LOAD, data);
+        this.sharedEventManager.dispatch(PageManager_Events.PAGE_LOAD, data);
     }
+}
+
+export const PageManager_Events = {
+    PAGE_LOAD: "PM_PAGE_LOAD"
 }

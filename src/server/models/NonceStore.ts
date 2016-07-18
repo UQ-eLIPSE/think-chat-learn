@@ -1,6 +1,10 @@
+/**
+ * MOOCchat
+ * Nonce store class
+ */
+
 export class NonceStore {
     private nonceToTimestamp: { [nonce: string]: number } = {};
-    private lastSaveTimestamp: number;
     private noncePeriodSeconds: number;
 
     private lastCleanTime: number = 0;
@@ -56,6 +60,5 @@ export class NonceStore {
     private store(nonce: string) {
         const timestamp = Date.now();
         this.nonceToTimestamp[nonce] = timestamp;
-        this.lastSaveTimestamp = timestamp;
     }
 }

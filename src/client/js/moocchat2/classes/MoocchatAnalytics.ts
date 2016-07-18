@@ -1,28 +1,13 @@
 import {MoocchatSession} from "./MoocchatSession";
-import {PageManager_Events, IPageManager_PageLoad} from "./PageManager";
-import {MoocchatUser_Events, IMoocchatUser_LoginSuccess} from "./MoocchatUser";
+import {PageManager_Events} from "./PageManager";
+import {IPageManager_PageLoad} from "./IPageManager";
+import {MoocchatUser_Events} from "./MoocchatUser";
+import {IMoocchatUser_LoginSuccess} from "./IMoocchatUser";
 
-declare const _paq: any[];        // Piwik _paq
-// declare const Piwik: any;         // Piwik tracker object
+import {MoocchatAnalyticsCore} from "./MoocchatAnalyticsCore";
+import {IMoocchatAnalytics_TrackEvent} from "./IMoocchatAnalytics";
 
-interface IMoocchatAnalytics_TrackEvent {
-    category: string,
-    action: string,
-    name?: string,
-    value?: number
-}
-
-/**
- * MOOCchat
- * AnalyticsCore class module
- * 
- * This is used to represent the public methods for the analytics class,
- * and can be used to represent a MoocchatAnalytics object when analytics is turned off. 
- */
-export class MoocchatAnalyticsCore {
-    public trackEvent(category: string, action: string, name?: string, value?: number) {}
-    public listenAndForwardEvent<EventData>(eventName: string, func: (data: EventData) => IMoocchatAnalytics_TrackEvent) {}
-}
+declare const _paq: any[];        // Piwik _paq is global
 
 /**
  * MOOCchat
@@ -56,22 +41,26 @@ export class MoocchatAnalytics extends MoocchatAnalyticsCore {
         })
     }
 
-    // Piwik tracking events are written as instance functions rather than prototyped ones
-    // so that references to this are preserved correctly
-    private trackPageView = (data: IPageManager_PageLoad) => {
-        _paq.push(["setDocumentTitle", data.name]);
+    /**
+     * Processes page load data and pushes page view event to Piwik.
+     */
+    private trackPageView(data: IPageManager_PageLoad) {
+        _paq.push(["setDocumentTitle", `Page ${data.name}`]);
         _paq.push(["setCustomUrl", "/internal_page/" + data.name]);
-        _paq.push(["setGenerationTimeMs", data.loadTimeMs]);    // Generation time now reflects the load time of the page
+        _paq.push(["setGenerationTimeMs", data.loadTimeMs]);    // Generation time reflects the load time of the page
         _paq.push(["trackPageView", data.name]);
     }
 
-    private setUserId = (data: IMoocchatUser_LoginSuccess) => {
+    /**
+     * Sets Piwik session user ID with login data.
+     */
+    private setUserId(data: IMoocchatUser_LoginSuccess) {
         _paq.push(["setUserId", data.username]);
     }
 
-
-
-    // Attach handlers
+    /**
+     * Attaches handlers and sets up session analytics.
+     */
     private setup() {
         this.setupHeartBeatTimer();
         this.setupTrackPageView();
@@ -90,6 +79,4 @@ export class MoocchatAnalytics extends MoocchatAnalyticsCore {
     private setupSetUserId() {
         this.session.eventManager.on(MoocchatUser_Events.LOGIN_SUCCESS, this.setUserId);
     }
-
-
 }

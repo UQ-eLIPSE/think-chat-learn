@@ -1,9 +1,10 @@
-/**
+/*
  * MOOCchat
- * Quiz interface
+ * Quiz interfaces
  * 
  * Encodes the expected quiz data from the server.
  */
+
 export interface IQuiz {
     question: IQuizQuestion;
     questionOptions:IQuizQuestionOption[];

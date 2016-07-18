@@ -4,11 +4,11 @@ import * as socket from "socket.io-client";
  * MOOCchat
  * Websocket management class module
  * 
- * Acts as thin layer over Socket.IO object
+ * Acts as thin layer over Socket.IO object; methods act approximately the same way.
  */
 export class WebsocketManager {
     private socket: SocketIOClient.Socket;
-    private silentClose: boolean = false;
+    private silentClose: boolean;
 
     public open() {
         this.socket = socket.connect({

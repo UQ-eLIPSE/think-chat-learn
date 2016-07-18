@@ -78,11 +78,15 @@ export const BackupClientWaitStateHandler: IStateHandler<STATE> =
                         notificationTone.play();
                     }
 
+                    function onBackupClientEjected() {
+                        session.stateMachine.goTo(STATE.BACKUP_CLIENT_EJECTED);
+                    }
+
                     // Attach socket listeners to queue and pool status
                     session.socket.on<IInboundData.BackupClientQueueUpdate>(WebsocketEvents.INBOUND.BACKUP_CLIENT_QUEUE_UPDATE, onBackupClientQueueUpdate);
                     session.socket.on<IInboundData.ClientPoolCountUpdate>(WebsocketEvents.INBOUND.BACKUP_CLIENT_STANDARD_CLIENT_POOL_COUNT_UPDATE, onClientPoolCountUpdate);
                     session.socket.on(WebsocketEvents.INBOUND.BACKUP_CLIENT_TRANSFER_CALL, onBackupClientTransferCall);
-                    session.socket.on(WebsocketEvents.INBOUND.BACKUP_CLIENT_EJECTED, () => { session.stateMachine.goTo(STATE.BACKUP_CLIENT_EJECTED); });
+                    session.socket.on(WebsocketEvents.INBOUND.BACKUP_CLIENT_EJECTED, onBackupClientEjected);
 
                     // Request information now (once only)
                     session.socket.emitData<IOutboundData.BackupClientStatusRequest>(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_STATUS_REQUEST, { sessionId: session.id });

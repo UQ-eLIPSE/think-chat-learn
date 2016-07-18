@@ -1,13 +1,4 @@
-import {IStateTransition} from "./IStateTransition";
-
-interface IStateFlowState<StateEnumType> extends IStateTransition<StateEnumType> {
-    state: StateEnumType;
-}
-
-interface IStateFlowStateHistory<StateEnumType> {
-    entryTimestamp: number;
-    stateData: IStateFlowState<StateEnumType>;
-}
+import {IStateFlow_State, IStateFlow_StateHistory} from "./IStateFlow";
 
 /**
  * MOOCchat
@@ -16,24 +7,24 @@ interface IStateFlowStateHistory<StateEnumType> {
  * Holds the state machine that transitions between pages
  */
 export class StateFlow<StateEnumType> {
-    private states: { [state: string]: IStateFlowState<StateEnumType> } = {};
-    private history: IStateFlowStateHistory<StateEnumType>[] = [];
+    private states: { [state: string]: IStateFlow_State<StateEnumType> } = {};
+    private history: IStateFlow_StateHistory<StateEnumType>[] = [];
 
     /**
      * Registers a state.
      * 
-     * @param {IStateFlowState} data State data
+     * @param {IStateFlow_State} data State data
      */
-    public register(data: IStateFlowState<StateEnumType>) {
+    public register(data: IStateFlow_State<StateEnumType>) {
         this.states[data.state.toString()] = data;
     }
 
     /**
      * Registers multiple states in one go.
      * 
-     * @param {IStateFlowState[]} dataArray State data array
+     * @param {IStateFlow_State[]} dataArray State data array
      */
-    public registerAll(dataArray: IStateFlowState<StateEnumType>[]) {
+    public registerAll(dataArray: IStateFlow_State<StateEnumType>[]) {
         dataArray.forEach(data => this.register(data));
     }
 
@@ -73,7 +64,7 @@ export class StateFlow<StateEnumType> {
     /**
      * Gets the requested registered state data.
      * 
-     * @return {IStateFlowState}
+     * @return {IStateFlow_State}
      */
     private getStateData(state: StateEnumType) {
         return this.states[state.toString()];
@@ -82,9 +73,9 @@ export class StateFlow<StateEnumType> {
     /**
      * Sets new state data.
      * 
-     * @param {IStateFlowState} data
+     * @param {IStateFlow_State} data
      */
-    private setNewStateData(data: IStateFlowState<StateEnumType>) {
+    private setNewStateData(data: IStateFlow_State<StateEnumType>) {
         this.history.push({
             entryTimestamp: Date.now(),
             stateData: data
@@ -94,7 +85,7 @@ export class StateFlow<StateEnumType> {
     /**
      * Gets the state data for the current state.
      * 
-     * @return {IStateFlowState}
+     * @return {IStateFlow_State}
      */
     private getCurrentState() {
         const historyData = this.getCurrentStateHistoryData();
@@ -109,7 +100,7 @@ export class StateFlow<StateEnumType> {
     /**
      * Gets the history data for the current state.
      * 
-     * @return {IStateFlowStateHistory}
+     * @return {IStateFlow_StateHistory}
      */
     private getCurrentStateHistoryData() {
         if (this.history.length === 0) {

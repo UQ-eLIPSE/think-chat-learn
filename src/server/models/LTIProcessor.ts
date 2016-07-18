@@ -1,8 +1,13 @@
 import {LTIUtil} from "./LTIUtil";
 
-import {ILTIData} from "../models/ILTIData";
-import {ILTISignatureVerifyInfo} from "../models/ILTISignatureVerifyInfo";
-import {NonceStore} from "../models/NonceStore";
+import {ILTIData} from "./ILTIData";
+import {ILTISignatureVerifyInfo} from "./ILTISignatureVerifyInfo";
+import {NonceStore} from "./NonceStore";
+
+/**
+ * MOOCchat
+ * LTI processing class
+ */
 
 export class LTIProcessor {
     private nonceStore: NonceStore;

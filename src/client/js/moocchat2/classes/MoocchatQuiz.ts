@@ -16,18 +16,6 @@ export class MoocchatQuiz {
         this.data = data;
     }
 
-    // public get questionNumber() {
-    //     return this.data.questionNumber;
-    // }
-
-    // public get questionReading() {
-    //     return this.data.reading;
-    // }
-
-    // public get questionStatement() {
-    //     return this.data.probingQuestion;
-    // }
-
     public get questionId() {
         return this.data.question._id;
     }

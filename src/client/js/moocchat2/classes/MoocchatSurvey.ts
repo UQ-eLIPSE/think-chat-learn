@@ -18,6 +18,9 @@ export class MoocchatSurvey {
         this.data = data;
     }
 
+    /**
+     * Generates elements for a short text survey question.
+     */
     private generateHTML_TextShort(content: ISurveyContent, name: string) {
         const $statement = $("<p>").html(content.questionStatement);
         const $field = $("<input>").prop({
@@ -30,6 +33,9 @@ export class MoocchatSurvey {
         return $("<div>").addClass("survey-question").append($wrapped);
     }
 
+    /**
+     * Generates elements for a multiple choice survey question.
+     */
     private generateHTML_MultipleChoice(content: ISurveyContent, name: string) {
         const $statement = $("<p>").html(content.questionStatement);
 
@@ -52,6 +58,9 @@ export class MoocchatSurvey {
         return $("<div>").addClass("survey-question").append($statement).append($wrappedFields);
     }
 
+    /**
+     * Generates elements for the survey.
+     */
     public generateHTML() {
         const $surveyQuestionHTMLs: JQuery[] = [];
 
@@ -77,6 +86,11 @@ export class MoocchatSurvey {
         return $("<div>").append($surveyQuestionHTMLs);
     }
 
+    /**
+     * Validates a survey form, given the root form element itself.
+     * 
+     * @return {boolean}
+     */
     public validateForm($form: JQuery) {
         let validationPass = true;
 
@@ -129,6 +143,11 @@ export class MoocchatSurvey {
         return validationPass;
     }
 
+    /**
+     * Generates response content data to be sent back to the server for a given survey form root element.
+     * 
+     * @return {ISurveyResponseContent[]}
+     */
     public generateResponseContent($form: JQuery) {
         const content: ISurveyResponseContent[] = [];
 

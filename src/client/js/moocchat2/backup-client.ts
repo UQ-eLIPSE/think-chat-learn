@@ -44,8 +44,6 @@ $(() => {
     const $taskSections = $("#task-sections");
     const $content = $("#content");
 
-    // TODO: Need to make MoocchatSession easier to use as it's a
-    // bit opaque as to what the $xxx elements are 
     const session = new MoocchatSession<STATE>(false, $content, $taskSections).setSocket(socket);
 
 

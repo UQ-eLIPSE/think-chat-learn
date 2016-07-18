@@ -2,11 +2,6 @@ import {EventBox} from "./EventBox";
 import {TaskSection} from "./TaskSection";
 
 /**
- * Type mirrors TaskSection constructor parameters as array
- */
-export type TaskSectionDefinition = [string, string] | [string, string, number];
-
-/**
  * MOOCchat
  * Task section manager class module
  * 
@@ -15,15 +10,15 @@ export type TaskSectionDefinition = [string, string] | [string, string, number];
 export class TaskSectionManager {
     private sections: { [id: string]: TaskSection } = {};
     
-    private eventBox: EventBox;
+    private sharedEventManager: EventBox;
 
     private $taskSectionRootElem: JQuery;
 
     /**
      * @param {JQuery} $taskSectionRootElem Root element where task sections are to be inserted
      */
-    constructor(eventBox: EventBox, $taskSectionRootElem: JQuery) {
-        this.eventBox = eventBox;
+    constructor(sharedEventManager: EventBox, $taskSectionRootElem: JQuery) {
+        this.sharedEventManager = sharedEventManager;
         this.$taskSectionRootElem = $taskSectionRootElem;
     }
 
@@ -61,3 +56,8 @@ export class TaskSectionManager {
     }
 
 }
+
+/**
+ * Type mirrors TaskSection constructor parameters as array
+ */
+export type TaskSectionDefinition = [string, string] | [string, string, number];

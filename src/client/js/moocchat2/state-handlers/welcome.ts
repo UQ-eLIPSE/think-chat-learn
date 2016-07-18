@@ -22,7 +22,6 @@ export const WelcomeStateHandler: IStateHandler<STATE> =
 
                     page$("#not-you-help-link").on("click", (e) => {
                         e.preventDefault();
-
                         page$("#not-you-help").toggle();
                     }).trigger("click");
 

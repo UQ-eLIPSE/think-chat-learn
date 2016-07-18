@@ -1,7 +1,4 @@
-export interface IAnswer {
-    optionId?: string;
-    justification?: string;
-}
+import {IAnswer} from "./IAnswer";
 
 /**
  * MOOCchat
@@ -10,8 +7,12 @@ export interface IAnswer {
  * Holds answers provided by the user for a session.
  */
 export class MoocchatAnswerContainer {
-    public initial: IAnswer = {};
-    public revised: IAnswer = {};
+    public initial: IAnswer;
+    public revised: IAnswer;
+
+    constructor() {
+        this.reset();
+    }
 
     /**
      * Resets all answers to blank initial state.

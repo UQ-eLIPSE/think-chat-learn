@@ -1,7 +1,12 @@
 import * as oauthSignature from "oauth-signature";
 
-import {ILTIData} from "../models/ILTIData";
-import {ILTISignatureVerifyInfo} from "../models/ILTISignatureVerifyInfo";
+import {ILTIData} from "./ILTIData";
+import {ILTISignatureVerifyInfo} from "./ILTISignatureVerifyInfo";
+
+/**
+ * MOOCchat
+ * LTI utilities class
+ */
 
 export class LTIUtil {
     public static validateConsumerKey(data: ILTIData, info: ILTISignatureVerifyInfo) {
@@ -32,6 +37,9 @@ export class LTIUtil {
         return data.oauth_signature === calculatedSignature;
     }
 
+    /**
+     * Shallow copies a key-value object.
+     */
     private static copyKVObject(obj: {[key: string]: string}) {
         const copiedObj: {[key: string]: string} = {};
 

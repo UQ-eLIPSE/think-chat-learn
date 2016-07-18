@@ -11,7 +11,7 @@ import * as IOutboundData from "../classes/IOutboundData";
 
 import {IQuizQuestionOption} from "../classes/IQuiz";
 import {MoocchatSession} from "../classes/MoocchatSession";
-import {IAnswer} from "../classes/MoocchatAnswerContainer";
+import {IAnswer} from "../classes/IAnswer";
 
 const maxJustificationLength = conf.answers.justification.maxLength;
 

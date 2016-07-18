@@ -1,3 +1,6 @@
+/**
+ * Basic internal replacement for Window.sessionStorage key-value store that may be blocked in some circumstances.  
+ */
 export class SessionStorage {
     private storage: {[key: string]: any};
 
