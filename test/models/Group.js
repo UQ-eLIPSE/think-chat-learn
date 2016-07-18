@@ -4,11 +4,11 @@
 
 "use strict";
 
-const assert = require("chai").assert;
+var assert = require("chai").assert;
 
-const io = global.io;
-const Client = require("../../models/client");
-const Group = require("../../models/Group");
+var io = global.io;
+var Client = require("../../build/models/client");
+var Group = require("../../build/models/Group");
 
 
 describe("/models/Group", function() {
@@ -23,7 +23,7 @@ describe("/models/Group", function() {
     });
 
     describe("#getNumberOfClients", function() {
-        let newBlankGroup = new Group();
+        var newBlankGroup = new Group();
 
         it("should return `0` for a new Group", function() {
             assert.strictEqual(newBlankGroup.clients.length, newBlankGroup.numberOfClients());
@@ -31,7 +31,7 @@ describe("/models/Group", function() {
         });
 
 
-        let newGroup2 = new Group();
+        var newGroup2 = new Group();
         newGroup2.clients = [new Client(), new Client()];
 
         it("should return `2` for a Group with two clients", function() {
@@ -44,11 +44,11 @@ describe("/models/Group", function() {
     // before they can be added
       
     describe("#addClient", function() {
-        let clientA = new Client();
-        // let clientB = new Client();
+        var clientA = new Client();
+        // var clientB = new Client();
 
         it("should add a client to a Group"/*, function() {
-            let newGroup = new Group([]);
+            var newGroup = new Group([]);
 
             assert.strictEqual(newGroup.numberOfClients(), 0);
 
@@ -58,7 +58,7 @@ describe("/models/Group", function() {
         }*/);
 
         it("should not add the same client again"/*, function() {
-            let newGroup = new Group([]);
+            var newGroup = new Group([]);
 
             assert.strictEqual(newGroup.numberOfClients(), 0);
 
@@ -70,11 +70,11 @@ describe("/models/Group", function() {
     });
 
     describe("#addClients", function() {
-        let clientA = new Client();
-        let clientB = new Client();
+        var clientA = new Client();
+        var clientB = new Client();
 
         it("should add no clients when given empty array", function() {
-            let newGroup = new Group([]);
+            var newGroup = new Group([]);
 
             newGroup.addClients([]);
 
@@ -82,7 +82,7 @@ describe("/models/Group", function() {
         });
 
         it("should add 2 clients when given two unique ones"/*, function() {
-            let newGroup = new Group([]);
+            var newGroup = new Group([]);
             
             newGroup.addClients([clientA, clientB]);
 
@@ -90,7 +90,7 @@ describe("/models/Group", function() {
         }*/);
         
         it("should add 1 client when given two identical ones"/*, function() {
-            let newGroup = new Group([]);
+            var newGroup = new Group([]);
             
             newGroup.addClients([clientA, clientA]);
 

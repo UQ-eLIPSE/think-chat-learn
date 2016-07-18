@@ -4,18 +4,18 @@
 
 "use strict";
 
-const assert = require("chai").assert;
+var assert = require("chai").assert;
 
-const io = global.io;
-const Client = require("../../models/client");
-const ChatGroup = require("../../models/ChatGroup");
+var io = global.io;
+var Client = require("../../build/models/client");
+var ChatGroup = require("../../build/models/ChatGroup");
 
 
 describe("/models/ChatGroup", function() {
 
     describe("#constructor", function() {
-        let group1 = new ChatGroup();
-        let group2 = new ChatGroup();
+        var group1 = new ChatGroup();
+        var group2 = new ChatGroup();
 
         it("should create ChatGroups which have non identical IDs", function() {
             assert.notStrictEqual(group1.id, group2.id);
@@ -28,7 +28,7 @@ describe("/models/ChatGroup", function() {
     });
 
     describe("#numberOfClientsQueuedToQuit", function() {
-        let newBlankGroup = new ChatGroup();
+        var newBlankGroup = new ChatGroup();
 
         it("should return `0` for a new ChatGroup", function() {
             assert.strictEqual(newBlankGroup.numberOfClientsQueuedToQuit(), 0);

@@ -4,9 +4,9 @@
 
 "use strict";
 
-const assert = require("chai").assert;
+var assert = require("chai").assert;
 
-const ClientAnswerPool = require("../../models/ClientAnswerPool");
+var ClientAnswerPool = require("../../build/models/ClientAnswerPool");
 
 
 describe("/models/ClientAnswerPool", function() {

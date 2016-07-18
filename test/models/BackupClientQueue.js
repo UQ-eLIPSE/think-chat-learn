@@ -4,11 +4,11 @@
 
 "use strict";
 
-const assert = require("chai").assert;
+var assert = require("chai").assert;
 
-const io = global.io;
-const Client = require("../../models/client");
-const BackupClientQueue = require("../../models/BackupClientQueue");
+var io = global.io;
+var Client = require("../../build/models/client");
+var BackupClientQueue = require("../../build/models/BackupClientQueue");
 
 
 describe("/models/BackupClientQueue", function() {

@@ -4,9 +4,9 @@
 
 "use strict";
 
-const assert = require("chai").assert;
+var assert = require("chai").assert;
 
-const DatabaseWrapper = require("../../models/DatabaseWrapper");
+var DatabaseWrapper = require("../../build/models/DatabaseWrapper").DatabaseWrapper;
 
 
 describe("/models/DatabaseWrapper", function() {
@@ -14,8 +14,8 @@ describe("/models/DatabaseWrapper", function() {
     describe("#constructor", function() {
 
         it("should store the table name correctly", function() {
-            let tableName = "tableNameString";
-            let dbWrapper = new DatabaseWrapper(tableName);
+            var tableName = "tableNameString";
+            var dbWrapper = new DatabaseWrapper(tableName);
 
             assert.strictEqual(dbWrapper.tableName, tableName);
         });
