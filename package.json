@@ -7,6 +7,7 @@
     "start": "node app.js",
     "seed": "node util/db_seed.js",
     "db_test": "node ./node_modules/mocha/bin/mocha test/database.js",
+    "tests": "npm run build && mocha && mocha test/models",
     "clean_client": "rimraf public/css/moocchat2 public/js/moocchat2",
     "clean_server": "rimraf build",
     "clean": "npm run clean_client && npm run clean_server",

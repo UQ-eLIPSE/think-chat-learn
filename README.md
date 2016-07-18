@@ -28,7 +28,17 @@ To do this, LTI test mode must be enabled. This will enable a manual launch page
 * Go to the URL `/lti-launch`. By default, you should submit via. "lti.php" which emulates what Blackboard would do, but you are also able to force trigger the standard or backup queue clients.
 
 ## Running tests
-To run the database tests, run `npm run db_test`, if the tests don't run make sure to run `npm install` to pull down the test runner dependencies.
+Ensure mongo is running; then run `npm run tests`.
+
+This will first build the project before running the relevant tests.
+
+### Tests available
+* /models/* (incomplete)
+* database^
+* server^
+* util^
+
+Those marked [^] are tests written before the MOOCchat rewrite for older code. Failures are to be expected.
 
 ## Important notes
 * Mongodb must be running before starting `npm start`
