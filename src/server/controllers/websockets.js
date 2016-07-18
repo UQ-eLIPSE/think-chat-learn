@@ -52,20 +52,51 @@ function getSessionFromId(sessionId) {
     return allSessions.getSessionById(sessionId);
 }
 
+/**
+ * Gets associated client answer pool for a given user session's quiz session.
+ * 
+ * @param {Session} session
+ * 
+ * @returns {ClientAnswerPool}
+ */
 function getClientAnswerPoolFromSession(session) {
     return quizSchedule_ClientAnswerPool[session.getQuizScheduleIdString()];
 }
 
+/**
+ * Gets associated backup client queue for a given user session's quiz session.
+ * 
+ * @param {Session} session
+ * 
+ * @returns {BackupClientQueue}
+ */
 function getBackupClientQueueFromSession(session) {
     return quizSchedule_BackupClientQueue[session.getQuizScheduleIdString()];
 }
 
+/**
+ * Gets associated chat groups for a given user session's quiz session.
+ * 
+ * @param {Session} session
+ * 
+ * @returns {ChatGroup[]}
+ */
 function getChatGroupsFromSession(session) {
     return quizSchedule_ChatGroupArray[session.getQuizScheduleIdString()];
 }
 
+/**
+ * Gets the chat group the user is located in.
+ * 
+ * @param {Session} session
+ */
 function getChatGroupFromSession(session) {
     var chatGroups = getChatGroupsFromSession(session);
+
+    if (!chatGroups) {
+        return;
+    }
+
     var client = session.client;
 
     for (var i = 0; i < chatGroups.length; ++i) {
@@ -77,8 +108,13 @@ function getChatGroupFromSession(session) {
     }
 }
 
-function deleteChatGroupUsingSession(session) {
-    var chatGroupToDelete = getChatGroupFromSession(session);
+/**
+ * Deletes given chat group from mapping store.
+ * 
+ * @param {Session} session Session of user in/previously in chat group
+ * @param {ChatGroup} chatGroupToDelete
+ */
+function deleteChatGroupFromMappingStore(session, chatGroupToDelete) {
     var allChatGroupsInQuiz = getChatGroupsFromSession(session);
     var chatGroupIndex = allChatGroupsInQuiz.indexOf(chatGroupToDelete);
 
@@ -108,7 +144,7 @@ function removeClientFromEverything(client) {
     if (chatGroup && chatGroup.removeClient(client)) {
         // If the chat group terminates, then remove the chat group from array
         if (chatGroup.terminationCheck()) {
-            deleteChatGroupUsingSession(session);
+            deleteChatGroupFromMappingStore(session, chatGroup);
         }
     }
 }
@@ -214,7 +250,7 @@ function handleChatGroupQuitStatusChange(data) {
 
     // If the chat group terminates, then remove the chat group reference
     if (chatGroup.terminationCheck()) {
-        deleteChatGroupUsingSession(session);
+        deleteChatGroupFromMappingStore(session, chatGroup);
     }
 }
 
