@@ -925,9 +925,9 @@ io.sockets.on('connection', function(socket) {
         var backupClientQueue = getBackupClientQueueFromSession(session);
         var chatGroups = getChatGroupsFromSession(session);
 
-        if (clientAnswerPool.totalPoolSize() === 0 &&
-            backupClientQueue.getQueueSize() === 0 &&
-            chatGroups.length === 0) {
+        if (clientAnswerPool && clientAnswerPool.totalPoolSize() === 0 &&
+            backupClientQueue && backupClientQueue.getQueueSize() === 0 &&
+            chatGroups && chatGroups.length === 0) {
             delete quizSchedule_ClientAnswerPool[session.getQuizScheduleIdString()];
             delete quizSchedule_BackupClientQueue[session.getQuizScheduleIdString()];
             delete quizSchedule_ChatGroupArray[session.getQuizScheduleIdString()];
