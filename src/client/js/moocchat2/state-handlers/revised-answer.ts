@@ -1,5 +1,3 @@
-import {conf} from "../conf";
-
 import * as $ from "jquery";
 
 import {IStateHandler} from "../classes/IStateHandler";
@@ -11,126 +9,88 @@ import {MoocchatChat} from "../classes/MoocchatChat";
 import {WebsocketEvents} from "../classes/WebsocketEvents";
 import * as IOutboundData from "../classes/IOutboundData";
 
+import * as AnswerComponents from "../shared/AnswerComponents";
+
 export const RevisedAnswerStateHandler: IStateHandler<STATE> =
     (session) => {
         const section = session.sectionManager.getSection("revised-answer");
-        const maxJustificationLength = conf.answers.justification.maxLength;
 
-        function submitRevisedAnswer(optionId: string, justification: string) {
-            session.answers.revised.optionId = optionId;
-            session.answers.revised.justification = justification.substr(0, maxJustificationLength);
+        const submitRevisedAnswerFunc = AnswerComponents.SubmissionFuncFactory(session, "revised", WebsocketEvents.OUTBOUND.REVISED_ANSWER_SUBMISSION);
 
-            session.socket.emitData<IOutboundData.RevisedAnswer>(WebsocketEvents.OUTBOUND.REVISED_ANSWER_SUBMISSION, {
-                sessionId: session.id,
-                optionId: session.answers.revised.optionId,
-                justification: session.answers.revised.justification
-            });
-
+        // Successful revised answer save
+        session.socket.once(WebsocketEvents.INBOUND.REVISED_ANSWER_SUBMISSION_SAVED, () => {
             session.stateMachine.goTo(STATE.SURVEY);
-        }
+        });
 
         return {
             onEnter: (data) => {
                 session.pageManager.loadPage("revised-answer", (page$) => {
+                    const $answers = page$("#answers");
+                    const $justification = page$("#justification");
+                    const $submitAnswer = page$(".submit-answer-button");
+                    const $charAvailable = page$("#char-available");
+                    const $questionReading = page$("#question-reading");
+                    const $enableRevision = page$("#enable-revision");
+                    const $questionChatSection = page$("#question-chat-container");
+                    const $showQuestionChat = page$("#show-hide-question-chat");
+
                     section.setActive();
                     section.startTimer();
 
-                    let $answers = page$("#answers");
-                    // let $answersUL = page$("#answers > ul");
-                    let $justification = page$("#justification");
-                    let $submitAnswer = page$(".submit-answer-button");
-                    let $charAvailable = page$("#char-available");
-                    let $enableRevision = page$("#enable-revision");
-                    let $showQuestionChat = page$("#show-hide-question-chat");
-
                     // Force answer when timer runs out
                     section.attachTimerCompleted(() => {
-                        let justification = $.trim($justification.val());
-                        let optionId: string = page$("#answers > .selected").data("optionId");
-
-                        if (justification.length === 0) {
-                            justification = "[NO JUSTIFICATION]";
-                        }
-
-                        if (!optionId) {
-                            justification = "[DID NOT ANSWER]";
-                            optionId = null;
-                        }
-
-                        submitRevisedAnswer(optionId, justification);
+                        AnswerComponents.ProcessForcedSubmission(
+                            AnswerComponents.ExtractOptionId($answers),
+                            AnswerComponents.ExtractJustification($justification),
+                            submitRevisedAnswerFunc);
                     });
 
+                    // Standard answer submission click
                     $submitAnswer.on("click", () => {
-                        let justification = $.trim($justification.val());
-                        let optionId = page$("#answers > .selected").data("optionId");
-
-                        if (justification.length === 0 || !optionId) {
-                            alert("You must provide an answer and justification.");
-                            return;
-                        }
-
-                        if (justification.length > maxJustificationLength) {
-                            alert("Justification is too long. Reduce your justification length.");
-                            return;
-                        }
-
-                        submitRevisedAnswer(optionId, justification);
+                        AnswerComponents.ProcessSubmission(
+                            AnswerComponents.ExtractOptionId($answers),
+                            AnswerComponents.ExtractJustification($justification),
+                            submitRevisedAnswerFunc);
                     });
 
+                    // Update char available
                     $justification.on("change input", () => {
-                        let charRemaining = maxJustificationLength - $.trim($justification.val()).length;
-
-                        $charAvailable.text(charRemaining);
-
-                        if (charRemaining < 0) {
-                            $charAvailable.addClass("invalid");
-                        } else {
-                            $charAvailable.removeClass("invalid");
-                        }
+                        AnswerComponents.UpdateJustificationCharAvailable($justification.val(), $charAvailable);
                     }).trigger("input");
 
+                    // Answer multiple choice highlighting
                     $enableRevision.on("click", () => {
                         page$(".pre-edit-enable").hide();
                         page$(".post-edit-enable").show();
-                        $answers.removeClass("locked");
                         $justification.prop("disabled", false).trigger("input");
 
                         $answers.on("click", "button", (e) => {
                             e.preventDefault();
-
                             $("button", $answers).removeClass("selected");
-
                             $(e.currentTarget).addClass("selected");
-
-                        });
+                        }).removeClass("locked");
                     });
 
+                    // Toggle question+chat section
                     $showQuestionChat.on("click", () => {
-                        page$("#question-chat-container").toggle();
-                    });
-                    page$("#question-chat-container").hide();
-
-                    // Render question, choices
-                    page$("#question-reading").html(session.quiz.questionContent);
-                    // page$("#question-statement").html(session.quiz.questionStatement);
-
-                    let answerDOMs: JQuery[] = [];
-                    session.quiz.questionOptions.forEach((option) => {
-                        answerDOMs.push($("<button>").html(option.content).data("optionId", option._id));
+                        $questionChatSection.toggle();
                     });
 
-                    $answers.append(answerDOMs);
+                    // Hide question+chat section by default
+                    $questionChatSection.hide();
 
-
+                    // Render question and answer choices
+                    $questionReading.html(session.quiz.questionContent);
+                    $answers.append(AnswerComponents.GenerateAnswerOptionElems(session.quiz.questionOptions));
+                
                     // Populate previous answer
                     $justification.val(session.answers.initial.justification);
-                    $("button", $answers).each((i, e) => {
-                        if ($(e).data("optionId") === session.answers.initial.optionId) {
-                            $(e).addClass("selected");
+                    $("button", $answers).each((i, elem) => {
+                        if ($(elem).data("optionId") === session.answers.initial.optionId) {
+                            $(elem).addClass("selected");
                             return false;
                         }
                     });
-
 
                     // Set pre-/post-edit-enable elements
                     $justification.prop("disabled", true);
@@ -139,8 +99,7 @@ export const RevisedAnswerStateHandler: IStateHandler<STATE> =
 
                     // If passed chat object, clone window into expected chat area
                     if (data instanceof MoocchatChat) {
-                        let chat = data as MoocchatChat;
-
+                        const chat = data as MoocchatChat;
                         page$("#chat-clone").append(chat.chatWindow);
                     }
                 });

@@ -51,7 +51,7 @@ export class MoocchatAnalytics extends MoocchatAnalyticsCore {
      */
     public listenAndForwardEvent<EventData>(eventName: string, func: (data: EventData) => IMoocchatAnalytics_TrackEvent) {
         this.session.eventManager.on(eventName, (data: EventData) => {
-            let result = func(data);
+            const result = func(data);
             this.trackEvent(result.category, result.action, result.name, result.value);
         })
     }

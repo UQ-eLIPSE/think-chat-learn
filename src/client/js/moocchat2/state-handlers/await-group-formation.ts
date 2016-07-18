@@ -9,18 +9,18 @@ export const AwaitGroupFormationStateHandler: IStateHandler<STATE> =
 
         return {
             onEnter: () => {
-                let waitStartTime = new Date().getTime();
+                const waitStartTime = new Date().getTime();
 
                 session.pageManager.loadPage("await-group-formation", (page$) => {
                     section.setActive();
 
-                    MoocchatChat.emitJoinRequest(session, (data) => {
-                        let playTone = page$("#play-group-formation-tone").is(":checked");
+                    MoocchatChat.EmitJoinRequest(session, (data) => {
+                        const playTone = page$("#play-group-formation-tone").is(":checked");
                         session.storage.setItem("play-notification-tone", playTone ? "true" : "false");
 
                         // Grouping events
-                        let waitEndTime = new Date().getTime();
-                        let waitTimeInSec = Math.floor((waitEndTime - waitStartTime) / 1000);
+                        const waitEndTime = new Date().getTime();
+                        const waitTimeInSec = Math.floor((waitEndTime - waitStartTime) / 1000);
                         session.analytics.trackEvent("GROUP", data.groupId, "SIZE", data.groupSize);
                         session.analytics.trackEvent("GROUP", data.groupId, "WAIT_TIME_SECONDS", waitTimeInSec);
 

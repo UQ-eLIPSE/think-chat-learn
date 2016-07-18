@@ -19,7 +19,7 @@ export const StartupStateHandler: IStateHandler<STATE> =
                     session.stateMachine.goTo(STATE.NO_LTI_DATA);
                     session.analytics.trackEvent("MOOCCHAT", "NO_LTI_DATA");
                 } else {
-                    let courseName = _LTI_BASIC_LAUNCH_DATA.context_id.split("_")[0];
+                    const courseName = _LTI_BASIC_LAUNCH_DATA.context_id.split("_")[0];
 
                     $courseNameElem.text(courseName + ((isBackupClient) ? " Backup Queue" : ""));
                     session.stateMachine.goTo(STATE.LOGIN);

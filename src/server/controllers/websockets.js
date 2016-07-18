@@ -550,7 +550,6 @@ function handleLoginLti(data, socket) {
         socket.emit('loginSuccess', {
             sessionId: session.getId(),
             username: client.username,
-            // hasElevatedPermissions: session.hasElevatedPermissions,
             quiz: {
                 quizSchedule: quizSchedule,
                 question: question,
@@ -577,67 +576,94 @@ function broadcastPoolCountToBackupQueue(clientAnswerPool) {
 
 // ===== Question + answer =====
 
-/**
- * data = {
- *      sessionId {string}
- *      optionId {string}
- *      justification {string}
- * }
- */
-function handleAnswerSubmissionInitial(data) {
-    var session = getSessionFromId(data.sessionId);
+function answerSubmissionHandlerFactory(answerType) {
+    return function(data) {
+        var session = getSessionFromId(data.sessionId);
 
-    var client = session.client;
+        var client = session.client;
 
-    var username = client.username;
-    var socket = client.getSocket();
+        var username = client.username;
+        var socket = client.getSocket();
 
-    var optionIdString = data.optionId;
-    var justification = data.justification;
+        var optionIdString = data.optionId;
+        var justification = data.justification;
 
-    // Check that option ID is valid for session
-    if (optionIdString &&
-        session.quizQuestionOptions
-            .map(function(option) { return option._id.toString(); })
-            .indexOf(optionIdString) < 0) {
-        // TODO: Return error to client?
-        return;
-    }
+        /** Holds reference to the answer object (depends on `answerType`) */  
+        var sessionAnswerObj;
 
-    db_wrapper.questionResponse.create({
-        optionId: (optionIdString ? mongojs.ObjectId(optionIdString) : null),
-        justification: justification,
-        timestamp: new Date()
-    }, function(err, result) {
-        if (err) {
+        /** String for websocket event to be sent on success */
+        var onSuccessWebsocketEvent;
+
+        /** Function for generating the update set depending on `answerType` */
+        var generateUpdateSet;
+
+        switch (answerType) {
+            case "initial":
+                sessionAnswerObj = session.responseInitial;
+                onSuccessWebsocketEvent = "answerSubmissionInitialSaved";
+                generateUpdateSet = function(questionResponseObjectId) {
+                    return {
+                        responseInitialId: questionResponseObjectId
+                    }
+                }
+                break;
+
+            case "final":
+                sessionAnswerObj = session.responseFinal;
+                onSuccessWebsocketEvent = "answerSubmissionFinalSaved";
+                generateUpdateSet = function(questionResponseObjectId) {
+                    return {
+                        responseFinalId: questionResponseObjectId
+                    }
+                }
+                break;
+
+            default:
+                throw new Error("Unrecogised answer type");
+        }
+
+        // Check that option ID is valid for session
+        if (optionIdString &&
+            session.quizQuestionOptions
+                .map(function(option) { return option._id.toString(); })
+                .indexOf(optionIdString) < 0) {
             // TODO: Return error to client?
             return;
         }
 
-        var questionResponseObjectId = result._id;
+        db_wrapper.questionResponse.create({
+            optionId: (optionIdString ? mongojs.ObjectId(optionIdString) : null),
+            justification: justification,
+            timestamp: new Date()
+        }, function(err, result) {
+            if (err) {
+                // TODO: Return error to client?
+                return;
+            }
 
-        session.responseInitial._id = questionResponseObjectId.toString();
-        session.responseInitial.optionId = optionIdString;
-        session.responseInitial.justification = justification;
+            var questionResponseObjectId = result._id;
 
-        db_wrapper.userSession.update(
-            {
-                _id: mongojs.ObjectId(session.getId())
-            },
-            {
-                $set: {
-                    responseInitialId: questionResponseObjectId
-                }
-            },
-            function(err, result) {
-                if (err) {
-                    // TODO: Return error to client?
-                    return;
-                }
+            sessionAnswerObj._id = questionResponseObjectId.toString();
+            sessionAnswerObj.optionId = optionIdString;
+            sessionAnswerObj.justification = justification;
 
-                socket.emit("answerSubmissionInitialSaved");
-            });
-    });
+            db_wrapper.userSession.update(
+                {
+                    _id: mongojs.ObjectId(session.getId())
+                },
+                {
+                    $set: generateUpdateSet(questionResponseObjectId)
+                },
+                function(err, result) {
+                    if (err) {
+                        // TODO: Return error to client?
+                        return;
+                    }
+
+                    socket.emit(onSuccessWebsocketEvent);
+                });
+        });
+    }
 }
 
 /**
@@ -647,62 +673,16 @@ function handleAnswerSubmissionInitial(data) {
  *      justification {string}
  * }
  */
-function handleAnswerSubmissionFinal(data) {
-    var session = getSessionFromId(data.sessionId);
+var handleAnswerSubmissionInitial = answerSubmissionHandlerFactory("initial");
 
-    var client = session.client;
-
-    var username = client.username;
-    var socket = client.getSocket();
-
-    var optionIdString = data.optionId;
-    var justification = data.justification;
-
-    // Check that option ID is valid for session
-    if (optionIdString &&
-        session.quizQuestionOptions
-            .map(function(option) { return option._id.toString(); })
-            .indexOf(optionIdString) < 0) {
-        // TODO: Return error to client?
-        return;
-    }
-
-    db_wrapper.questionResponse.create({
-        optionId: (optionIdString ? mongojs.ObjectId(optionIdString) : null),
-        justification: justification,
-        timestamp: new Date()
-    }, function(err, result) {
-        if (err) {
-            // TODO: Return error to client?
-            return;
-        }
-
-        var questionResponseObjectId = result._id;
-
-        session.responseFinal._id = questionResponseObjectId.toString();
-        session.responseFinal.optionId = optionIdString;
-        session.responseFinal.justification = justification;
-
-        db_wrapper.userSession.update(
-            {
-                _id: mongojs.ObjectId(session.getId())
-            },
-            {
-                $set: {
-                    responseFinalId: questionResponseObjectId
-                }
-            },
-            function(err, result) {
-                if (err) {
-                    // TODO: Return error to client?
-                    return;
-                }
-
-                socket.emit("answerSubmissionFinalSaved");
-            });
-    });
-}
-
+/**
+ * data = {
+ *      sessionId {string}
+ *      optionId {string}
+ *      justification {string}
+ * }
+ */
+var handleAnswerSubmissionFinal = answerSubmissionHandlerFactory("final");
 
 
 

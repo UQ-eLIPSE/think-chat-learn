@@ -19,8 +19,8 @@ export class NonceStore {
             return;
         }
 
-        let storedNonces = Object.keys(this.nonceToTimestamp);
-        let oldestTimestampToKeep = this.oldestTimestampToKeep;
+        const storedNonces = Object.keys(this.nonceToTimestamp);
+        const oldestTimestampToKeep = this.oldestTimestampToKeep;
 
         storedNonces.forEach((nonce) => {
             if (this.nonceToTimestamp[nonce] < oldestTimestampToKeep) {
@@ -32,8 +32,8 @@ export class NonceStore {
     }
 
     public verifyAndStore(nonce: string) {
-        let storedNonces = Object.keys(this.nonceToTimestamp);
-        let oldestTimestampToKeep = this.oldestTimestampToKeep;
+        const storedNonces = Object.keys(this.nonceToTimestamp);
+        const oldestTimestampToKeep = this.oldestTimestampToKeep;
 
         this.clean();
 
@@ -54,7 +54,7 @@ export class NonceStore {
     }
 
     private store(nonce: string) {
-        let timestamp = Date.now();
+        const timestamp = Date.now();
         this.nonceToTimestamp[nonce] = timestamp;
         this.lastSaveTimestamp = timestamp;
     }

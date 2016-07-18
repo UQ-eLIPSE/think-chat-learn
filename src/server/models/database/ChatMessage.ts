@@ -1,7 +1,7 @@
 import {tables} from "./Tables";
 import {DatabaseWrapper} from "../DatabaseWrapper";
 
-let tableName = tables.CHAT_MESSAGE;
+const tableName = tables.CHAT_MESSAGE;
 
 export class ChatMessage extends DatabaseWrapper<IDB_ChatMessage> {
     constructor(database: any) {

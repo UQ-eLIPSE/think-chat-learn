@@ -83,7 +83,7 @@ export class TaskSection {
      * @return {JQuery}
      */
     private generateElement(text: string) {
-        let $sectionElement = $("<li>");
+        const $sectionElement = $("<li>");
 
         $sectionElement.attr("data-section", this.id).text(text);
 

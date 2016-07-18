@@ -1,7 +1,7 @@
 import {tables} from "./Tables";
 import {DatabaseWrapper} from "../DatabaseWrapper";
 
-let tableName = tables.USER_SESSION;
+const tableName = tables.USER_SESSION;
 
 export class UserSession extends DatabaseWrapper<IDB_UserSession> {
     constructor(database: any) {

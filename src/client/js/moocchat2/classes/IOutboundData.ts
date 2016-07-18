@@ -6,7 +6,7 @@ interface SessionResponse {
     sessionId: string;
 }
 
-interface AnswerResponse extends SessionResponse {
+export interface AnswerResponse extends SessionResponse {
     optionId: string;
     justification: string;
 }

@@ -24,16 +24,16 @@ export class LTIUtil {
         }
 
         // Copy data object and strip signature property out before passing to generator
-        let dataCopy = LTIUtil.copyKVObject(data);
+        const dataCopy = LTIUtil.copyKVObject(data);
         delete dataCopy["oauth_signature"];
 
-        let calculatedSignature = oauthSignature.generate(info.method, info.url, dataCopy, info.consumer.secret, undefined, { encodeSignature: false });
+        const calculatedSignature = oauthSignature.generate(info.method, info.url, dataCopy, info.consumer.secret, undefined, { encodeSignature: false });
 
         return data.oauth_signature === calculatedSignature;
     }
 
     private static copyKVObject(obj: {[key: string]: string}) {
-        let copiedObj: {[key: string]: string} = {};
+        const copiedObj: {[key: string]: string} = {};
 
         Object.keys(obj).forEach((key) => copiedObj[key] = obj[key]);
 

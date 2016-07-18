@@ -1,7 +1,7 @@
 import {tables} from "./Tables";
 import {DatabaseWrapper} from "../DatabaseWrapper";
 
-let tableName = tables.SURVEY_RESPONSE;
+const tableName = tables.SURVEY_RESPONSE;
 
 export class SurveyResponse extends DatabaseWrapper<IDB_SurveyResponse> {
     constructor(database: any) {

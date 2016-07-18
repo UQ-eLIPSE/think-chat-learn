@@ -26,10 +26,10 @@ export const SurveyStateHandler: IStateHandler<STATE> =
                         // Validate                        
                         $("#form-validation-failure", $surveyForm).remove();
 
-                        let formValid = session.survey.validateForm($surveyForm);
+                        const formValid = session.survey.validateForm($surveyForm);
 
                         if (!formValid) {
-                            let $submitButton = $("*[type='submit']", $surveyForm);
+                            const $submitButton = $("*[type='submit']", $surveyForm);
 
                             $("<p>")
                                 .prop("id", "form-validation-failure")
@@ -44,7 +44,7 @@ export const SurveyStateHandler: IStateHandler<STATE> =
                         }
 
                         // Send survey
-                        let surveyResponseContent = session.survey.generateResponseContent($surveyForm);
+                        const surveyResponseContent = session.survey.generateResponseContent($surveyForm);
                         session.socket.emitData<IOutboundData.SurveyResponse>(WebsocketEvents.OUTBOUND.SURVEY_SUBMISSION, {
                             sessionId: session.id,
                             content: surveyResponseContent

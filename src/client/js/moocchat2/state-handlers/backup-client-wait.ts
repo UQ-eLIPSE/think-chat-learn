@@ -18,14 +18,14 @@ export const BackupClientWaitStateHandler: IStateHandler<STATE> =
                 session.pageManager.loadPage("backup-client-wait", (page$) => {
                     section.setActive();
 
-                    let $backupClientQueue = page$("ul#backup-client-queue");
-                    let $numOfClientsInPool = page$("span#number-of-clients-in-pool");
+                    const $backupClientQueue = page$("ul#backup-client-queue");
+                    const $numOfClientsInPool = page$("span#number-of-clients-in-pool");
 
                     function onBackupClientQueueUpdate(data: IInboundData.BackupClientQueueUpdate) {
                         $backupClientQueue.empty();
 
                         data.clients.forEach((client) => {
-                            let $backupClientLI = $("<li>").text(client.username);
+                            const $backupClientLI = $("<li>").text(client.username);
 
                             if (client.username === session.user.username) {
                                 $backupClientLI.css("font-weight", "bold");
@@ -41,7 +41,7 @@ export const BackupClientWaitStateHandler: IStateHandler<STATE> =
                         // Play tone if fewer than 2 remain to get people's attention
                         if (data.numberOfClients < 2) {
                             // https://notificationsounds.com/message-tones/mission-accomplished-252
-                            let notificationTone = new Audio("./mp3/mission-accomplished.mp3");
+                            const notificationTone = new Audio("./mp3/mission-accomplished.mp3");
                             notificationTone.play();
                         }
                     }
@@ -49,8 +49,8 @@ export const BackupClientWaitStateHandler: IStateHandler<STATE> =
                     let countdownIntervalHandle: number;
 
                     function onBackupClientTransferCall() {
-                        let $transferConfirmBox = page$("#transfer-confirmation");
-                        let $transferCountdown = page$("#transfer-remaining-seconds");
+                        const $transferConfirmBox = page$("#transfer-confirmation");
+                        const $transferCountdown = page$("#transfer-remaining-seconds");
 
                         $transferConfirmBox.removeClass("hidden");
 
@@ -74,7 +74,7 @@ export const BackupClientWaitStateHandler: IStateHandler<STATE> =
                         });
 
                         // https://notificationsounds.com/message-tones/mission-accomplished-252
-                        let notificationTone = new Audio("./mp3/mission-accomplished.mp3");
+                        const notificationTone = new Audio("./mp3/mission-accomplished.mp3");
                         notificationTone.play();
                     }
 

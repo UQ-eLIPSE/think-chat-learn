@@ -44,13 +44,13 @@ export class StateFlow<StateEnumType> {
      * @param {any} goToData Data to pass to the onLeave() function of the old state and onEnter() function of the new state
      */
     public goTo(newState: StateEnumType, goToData?: any) {
-        let oldStateHistoryData = this.getCurrentStateHistoryData();
-        let newStateData = this.getStateData(newState);
+        const oldStateHistoryData = this.getCurrentStateHistoryData();
+        const newStateData = this.getStateData(newState);
 
         let onLeaveData: any;
 
         if (oldStateHistoryData) {
-            let onLeave = oldStateHistoryData.stateData.onLeave;
+            const onLeave = oldStateHistoryData.stateData.onLeave;
 
             if (onLeave) {
                 onLeaveData = onLeave(goToData, newStateData.state);
@@ -63,7 +63,7 @@ export class StateFlow<StateEnumType> {
 
         this.setNewStateData(newStateData);
 
-        let onEnter = newStateData.onEnter;
+        const onEnter = newStateData.onEnter;
 
         if (onEnter) {
             onEnter(goToData, onLeaveData, ((oldStateHistoryData) ? oldStateHistoryData.stateData.state : undefined));
@@ -97,7 +97,7 @@ export class StateFlow<StateEnumType> {
      * @return {IStateFlowState}
      */
     private getCurrentState() {
-        let historyData = this.getCurrentStateHistoryData();
+        const historyData = this.getCurrentStateHistoryData();
         
         if (!historyData) {
             return;

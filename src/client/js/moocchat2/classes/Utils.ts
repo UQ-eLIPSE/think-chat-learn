@@ -23,9 +23,9 @@ export const Utils = {
          * @param {number} ms Time interval in milliseconds
          */
         formatIntervalAsMMSS: (ms: number) => {
-            let minutes = Math.floor(ms / (1000 * 60));
+            const minutes = Math.floor(ms / (1000 * 60));
 
-            let seconds = Math.floor(ms % (1000 * 60) / 1000);
+            const seconds = Math.floor(ms % (1000 * 60) / 1000);
 
             return minutes + ":" + ((seconds < 10) ? "0" : "") + seconds;
         }

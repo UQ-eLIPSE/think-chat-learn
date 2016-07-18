@@ -83,10 +83,10 @@ export class MoocchatChat {
      * @param {boolean} forceNewBlock
      */
     public displayMessage(clientId: number, message: string, forceNewBlock: boolean = false) {
-        let $message = $("<p>").text(message);
+        const $message = $("<p>").text(message);
 
-        let $lastPersonBlock = $("blockquote:last-child", this.$chatWindow);
-        let lastPersonClientId = $lastPersonBlock.data("client-id");
+        const $lastPersonBlock = $("blockquote:last-child", this.$chatWindow);
+        const lastPersonClientId = $lastPersonBlock.data("client-id");
 
         if (!forceNewBlock &&
             lastPersonClientId &&
@@ -120,7 +120,7 @@ export class MoocchatChat {
      */
     private receiveQuitStatusChange(data: IInboundData.ChatGroupQuitStatusChange) {
         if (data.quitStatus) {
-            let clientId = data.clientIndex + 1;
+            const clientId = data.clientIndex + 1;
             this.displaySystemMessage(`Person #${clientId} has quit this chat session.`, true);
         }
     }
@@ -148,7 +148,7 @@ export class MoocchatChat {
         return this.$chatWindow;
     }
 
-    public static emitJoinRequest(session: MoocchatSession<any>, callback: (data: IInboundData.ChatGroupFormed) => void) {
+    public static EmitJoinRequest<StateTypeEnum>(session: MoocchatSession<StateTypeEnum>, callback: (data: IInboundData.ChatGroupFormed) => void) {
         session.socket.once<IInboundData.ChatGroupFormed>(WebsocketEvents.INBOUND.CHAT_GROUP_FORMED, callback);
         session.socket.emitData<IOutboundData.ChatGroupJoin>(WebsocketEvents.OUTBOUND.CHAT_GROUP_JOIN_REQUEST, {
             sessionId: session.id

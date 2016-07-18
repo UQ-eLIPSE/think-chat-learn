@@ -53,16 +53,16 @@ export class PageManager {
      * @return {JQueryXHR} Object from the AJAX page fetch  
      */
     public loadPage(name: string, onDone?: (page$?: (selector?: string) => JQuery) => void) {
-        let pageFetchXHR = $.ajax({
+        const pageFetchXHR = $.ajax({
             url: `./html/${name}.html`,
             dataType: "html",
             method: "GET"
         });
 
-        let loadStartTime = new Date().getTime();
+        const loadStartTime = new Date().getTime();
 
         pageFetchXHR.done((html: string) => {
-            let loadEndTime = new Date().getTime();
+            const loadEndTime = new Date().getTime();
 
             this.$contentElem.html(html);
 

@@ -9,6 +9,8 @@ import * as IInboundData from "../classes/IInboundData";
 
 import {MoocchatChat} from "../classes/MoocchatChat";
 
+import * as AnswerComponents from "../shared/AnswerComponents";
+
 export const DiscussionStateHandler: IStateHandler<STATE> =
     (session: MoocchatSession<STATE>, nextState: STATE = STATE.REVISED_ANSWER) => {
         const section = session.sectionManager.getSection("discussion");
@@ -16,15 +18,35 @@ export const DiscussionStateHandler: IStateHandler<STATE> =
         return {
             onEnter: (data: IInboundData.ChatGroupFormed) => {
                 session.pageManager.loadPage("discussion", (page$) => {
+                    const $endChat = page$("#end-chat");
+                    const $confirmEndChat = page$("#confirm-end-chat");
+                    const $cancelEndChat = page$("#cancel-end-chat");
+                    const $endChatConfirmation = page$("#end-chat-confirmation");
+
+                    const $chatBox = page$("#chat-box");
+                    const $chatInput = page$("#chat-input");
+                    const $chatInputWrapper = page$("#chat-input-wrapper");
+
+                    const $answers = page$("#answers");
+                    const $questionReading = page$("#question-reading");
+
+                    const chat = new MoocchatChat(session, data, $chatBox);
+                    const playTone = session.storage.getItem("play-notification-tone") === "true";
+
                     section.setActive();
                     section.startTimer();
 
                     session.analytics.trackEvent("CHAT", "START");
 
-                    let $activeSection = $("[data-active-section]", "#session-sections");
-                    let $chatBox = page$("#chat-box");
+                    // Play notification tone
+                    if (playTone) {
+                        const notificationTone = new Audio("./mp3/here-i-am.mp3");
+                        notificationTone.play();
+                    }
 
-                    let chat = new MoocchatChat(session, data, $chatBox);
+                    // Always reset after playing
+                    session.storage.removeItem("play-notification-tone");
+
 
                     function endChat() {
                         chat.terminate();
@@ -34,15 +56,15 @@ export const DiscussionStateHandler: IStateHandler<STATE> =
                         session.stateMachine.goTo(nextState, chat);
                     }
 
-                    page$("#end-chat").on("click", () => {
-                        page$("#end-chat-confirmation").removeClass("hidden");
+                    $endChat.on("click", () => {
+                        $endChatConfirmation.removeClass("hidden");
                     });
 
-                    page$("#cancel-end-chat").on("click", () => {
-                        page$("#end-chat-confirmation").addClass("hidden");
+                    $cancelEndChat.on("click", () => {
+                        $endChatConfirmation.addClass("hidden");
                     });
 
-                    page$("#confirm-end-chat").on("click", () => {
+                    $confirmEndChat.on("click", () => {
                         endChat();
                     });
 
@@ -51,25 +73,11 @@ export const DiscussionStateHandler: IStateHandler<STATE> =
                         endChat();
                     });
 
-
-
-                    let playTone = session.storage.getItem("play-notification-tone") === "true";
-
-                    if (playTone) {
-                        let notificationTone = new Audio("./mp3/here-i-am.mp3");
-                        notificationTone.play();
-                    }
-
-                    session.storage.removeItem("play-notification-tone");
-
-
-
-
-
-                    page$("#chat-input-wrapper").on("submit", (e) => {
+                    // Chat input form submission = On clicking "send" or hitting ENTER
+                    $chatInputWrapper.on("submit", (e) => {
                         e.preventDefault();
 
-                        let message = $.trim(page$("#chat-input").val());
+                        const message = $.trim($chatInput.val());
 
                         if (message.length === 0) {
                             return;
@@ -77,45 +85,22 @@ export const DiscussionStateHandler: IStateHandler<STATE> =
 
                         chat.sendMessage(message);
 
-                        page$("#chat-input").val("").focus();
+                        $chatInput.val("").focus();
                     });
 
+                    // Render question and answer choices
+                    $questionReading.html(session.quiz.questionContent);
 
-                    // Notes at top
-                    chat.displaySystemMessage(`Your discussion group has ${data.groupSize} member${(data.groupSize !== 1) ? "s" : ""}`);
-                    chat.displaySystemMessage(`You are Person #${data.clientIndex + 1}`);
-
-                    if (data.groupSize === 1) {
-                        chat.displaySystemMessage(`Looks like you're alone.`, true);
-                        chat.displaySystemMessage(`Discuss with yourself about how you arrived at your answer and the possibilities of the other options.`);
-                    } else {
-                        chat.displaySystemMessage(`Talk with your group to develop a better understanding of the question and everyone's reasoning.`, true);
-                        chat.displaySystemMessage(`You can find group answers in the answers pane on the left.`);
-                    }
-
-                    // data.groupAnswers.forEach((answerData) => {
-                    //     chat.displayMessage(answerData.clientIndex + 1, `Answer = ${String.fromCharCode(65 + answerData.answer)}; Justification = ${answerData.justification}`)
-                    // });
-
-
-
-
-                    let $answers = page$("#answers");
-
-                    let answerDOMs: JQuery[] = [];
-
-                    // Render question, choices
-                    page$("#question-reading").html(session.quiz.questionContent);
-                    // page$("#question-statement").html(session.quiz.questionStatement);
+                    const $answerOptElems = AnswerComponents.GenerateAnswerOptionElems(session.quiz.questionOptions, "<div>");
 
                     // Go through each client's answers and add them into the answer choices
-                    let answerJustificationMap: { [optionId: string]: { clientIndex: number; justification: string; }[] } = {};
+                    const answerJustificationMap: { [optionId: string]: { clientIndex: number; justification: string; }[] } = {};
 
                     data.groupAnswers.forEach((clientAnswer) => {
-                        let clientIndex = clientAnswer.clientIndex;
+                        const clientIndex = clientAnswer.clientIndex;
 
-                        let justification = clientAnswer.answer.justification;
-                        let optionId = clientAnswer.answer.optionId;
+                        const justification = clientAnswer.answer.justification;
+                        const optionId = clientAnswer.answer.optionId;
 
                         if (!answerJustificationMap[optionId]) {
                             answerJustificationMap[optionId] = [];
@@ -127,29 +112,39 @@ export const DiscussionStateHandler: IStateHandler<STATE> =
                         });
                     });
 
-                    session.quiz.questionOptions.forEach((option) => {
-                        let $answer = $("<div>").html(option.content);
+                    $answerOptElems.forEach(($answerListElem) => {
+                        const optionId = $answerListElem.data("optionId") as string;
 
-                        if (answerJustificationMap[option._id]) {
-                            let $clientAnswerBlockUL = $("<ul>").prop("id", "client-justifications");
+                        if (answerJustificationMap[optionId]) {
+                            const $clientAnswerBlockUL = $("<ul>").addClass("client-justifications");
 
-                            answerJustificationMap[option._id].forEach((clientJustification) => {
+                            answerJustificationMap[optionId].forEach((clientJustification) => {
                                 $("<li>")
                                     .attr("data-client-id", clientJustification.clientIndex + 1)
                                     .text(clientJustification.justification)
                                     .appendTo($clientAnswerBlockUL);
                             });
 
-                            $clientAnswerBlockUL.appendTo($answer);
+                            $clientAnswerBlockUL.appendTo($answerListElem);
                         }
-
-                        answerDOMs.push($answer);
                     });
 
-                    $answers.append(answerDOMs);
+                    $answers.append($answerOptElems);
 
+                    // Display system chat messages at top
+                    chat.displaySystemMessage(`Your discussion group has ${data.groupSize} member${(data.groupSize !== 1) ? "s" : ""}`);
+                    chat.displaySystemMessage(`You are Person #${data.clientIndex + 1}`);
 
-                    page$("#chat-input").focus();
+                    if (data.groupSize === 1) {
+                        chat.displaySystemMessage("Looks like you're alone.", true);
+                        chat.displaySystemMessage("Discuss with yourself about how you arrived at your answer and the possibilities of the other options.");
+                    } else {
+                        chat.displaySystemMessage("Talk with your group to develop a better understanding of the question and everyone's reasoning.", true);
+                        chat.displaySystemMessage("You can find group answers in the answers pane on the left.");
+                    }
+
+                    // Put focus to input field at start of chat so people can get started immediately
+                    $chatInput.focus();
                 });
             },
             onLeave: () => {

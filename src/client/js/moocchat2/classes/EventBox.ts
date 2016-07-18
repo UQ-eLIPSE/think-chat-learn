@@ -21,7 +21,7 @@ export class EventBox {
      * @param {boolean} runCallbackOnBindIfDispatched Run callback when bound to an event, if event has already previously occurred. Default: `true`.
      */
     public on(eventName: string, callback: EventBoxCallback, runCallbackOnBindIfDispatched: boolean = true) {
-        let registeredCallbacks = this.eventCallbacks[eventName];
+        const registeredCallbacks = this.eventCallbacks[eventName];
 
         if (!registeredCallbacks) {
             this.eventCallbacks[eventName] = [];
@@ -45,14 +45,14 @@ export class EventBox {
      * @param {EventBoxCallback} callback
      */
     public off(eventName: string, callback?: EventBoxCallback) {
-        let registeredCallbacks = this.eventCallbacks[eventName];
+        const registeredCallbacks = this.eventCallbacks[eventName];
 
         if (!registeredCallbacks) {
             return;
         }
 
         if (callback) {
-            let index = registeredCallbacks.indexOf(callback);
+            const index = registeredCallbacks.indexOf(callback);
 
             if (index < 0) {
                 return;
@@ -92,7 +92,7 @@ export class EventBox {
      * @param {any} data Data to be passed to callbacks
      */
     private runCallbacks(eventName: string, data?: any) {
-        let callbacks = this.eventCallbacks[eventName];
+        const callbacks = this.eventCallbacks[eventName];
 
         if (callbacks) {
             // This must be in a traditional function(){} block

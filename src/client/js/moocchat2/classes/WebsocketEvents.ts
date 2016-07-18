@@ -12,6 +12,9 @@ export const WebsocketEvents = {
         /** void */
         INITIAL_ANSWER_SUBMISSION_SAVED: "answerSubmissionInitialSaved",
 
+        /** void */
+        REVISED_ANSWER_SUBMISSION_SAVED: "answerSubmissionFinalSaved",
+
         /** IInboundData.ChatGroupFormed */
         CHAT_GROUP_FORMED: "chatGroupFormed",
 

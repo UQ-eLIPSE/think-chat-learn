@@ -1,5 +1,3 @@
-import {conf} from "../conf";
-
 import * as $ from "jquery";
 
 import {IStateHandler} from "../classes/IStateHandler";
@@ -10,21 +8,13 @@ import {WebsocketEvents} from "../classes/WebsocketEvents";
 import * as IInboundData from "../classes/IInboundData";
 import * as IOutboundData from "../classes/IOutboundData";
 
+import * as AnswerComponents from "../shared/AnswerComponents";
+
 export const BackupClientAnswerStateHandler: IStateHandler<STATE> =
     (session) => {
         const section = session.sectionManager.getSection("backup-client-answer");
-        const maxJustificationLength = conf.answers.justification.maxLength;
 
-        function submitAnswerAndJoinQueue(optionId: string, justification: string) {
-            session.answers.initial.optionId = optionId;
-            session.answers.initial.justification = justification.substr(0, maxJustificationLength);
-
-            session.socket.emitData<IOutboundData.BackupClientAnswer>(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_ANSWER_AND_JOIN_QUEUE, {
-                sessionId: session.id,
-                optionId: session.answers.initial.optionId,
-                justification: session.answers.initial.justification
-            });
-        }
+        const submitAnswerAndJoinQueue = AnswerComponents.SubmissionFuncFactory(session, "initial", WebsocketEvents.OUTBOUND.BACKUP_CLIENT_ANSWER_AND_JOIN_QUEUE);
 
         // Successful backup client answer save
         session.socket.once<IInboundData.BackupClientEnterQueueState>(WebsocketEvents.INBOUND.BACKUP_CLIENT_ENTER_QUEUE_STATE, (data) => {
@@ -37,62 +27,37 @@ export const BackupClientAnswerStateHandler: IStateHandler<STATE> =
             onEnter: () => {
                 // Reuse initial answer page for backup queue answer submission
                 session.pageManager.loadPage("initial-answer", (page$) => {
+                    const $answers = page$("#answers");
+                    const $justification = page$("#justification");
+                    const $submitAnswer = page$(".submit-answer-button");
+                    const $charAvailable = page$("#char-available");
+                    const $questionReading = page$("#question-reading");
+
                     section.setActive();
 
-                    let $answers = page$("#answers");
-                    // let $answersUL = page$("#answers > ul");
-                    let $justification = page$("#justification");
-                    let $submitAnswer = page$(".submit-answer-button");
-                    let $charAvailable = page$("#char-available");
-
+                    // Standard answer submission click
                     $submitAnswer.on("click", () => {
-                        let justification = $.trim($justification.val());
-                        let optionId: string = page$("#answers > .selected").data("optionId");
-
-                        if (justification.length === 0 || !optionId) {
-                            alert("You must provide an answer and justification.");
-                            return;
-                        }
-
-                        if (justification.length > maxJustificationLength) {
-                            alert("Justification is too long. Reduce your justification length.");
-                            return;
-                        }
-
-                        submitAnswerAndJoinQueue(optionId, justification);
+                        AnswerComponents.ProcessSubmission(
+                            AnswerComponents.ExtractOptionId($answers),
+                            AnswerComponents.ExtractJustification($justification),
+                            submitAnswerAndJoinQueue);
                     });
 
+                    // Answer multiple choice highlighting
                     $answers.on("click", "button", (e) => {
                         e.preventDefault();
-
                         $("button", $answers).removeClass("selected");
-
                         $(e.currentTarget).addClass("selected");
                     });
 
+                    // Update char available
                     $justification.on("change input", () => {
-                        let charRemaining = maxJustificationLength - $.trim($justification.val()).length;
-
-                        $charAvailable.text(charRemaining);
-
-                        if (charRemaining < 0) {
-                            $charAvailable.addClass("invalid");
-                        } else {
-                            $charAvailable.removeClass("invalid");
-                        }
+                        AnswerComponents.UpdateJustificationCharAvailable($justification.val(), $charAvailable);
                     }).trigger("input");
 
-
-                    // Render question, choices
-                    page$("#question-reading").html(session.quiz.questionContent);
-                    // page$("#question-statement").html(session.quiz.questionStatement);
-
-                    let answerDOMs: JQuery[] = [];
-                    session.quiz.questionOptions.forEach((option) => {
-                        answerDOMs.push($("<button>").html(option.content).data("optionId", option._id));
-                    });
-
-                    $answers.append(answerDOMs);
+                    // Render question and answer choices
+                    $questionReading.html(session.quiz.questionContent);
+                    $answers.append(AnswerComponents.GenerateAnswerOptionElems(session.quiz.questionOptions));
                 });
             },
             onLeave: () => {
