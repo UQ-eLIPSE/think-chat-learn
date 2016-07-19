@@ -17,6 +17,7 @@ var websockets = require('./build/controllers/websockets');
 
 // Use ejs for templating on pages
 app.set("view engine", "ejs");
+app.set("views", __dirname + "/views");
 
 
 // POST body parsing (required for LTI incoming data)
@@ -27,7 +28,7 @@ app.use(bodyParser.urlencoded({
 
 
 // Everything under URL/* will be statically delivered from PROJECT/public/*
-app.use(express.static('public'));
+app.use(express.static(__dirname + "/public"));
 
 
 // LTI launcher page only available in test mode
