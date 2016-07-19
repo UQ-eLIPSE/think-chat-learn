@@ -7,11 +7,11 @@
 var assert = require("chai").assert;
 
 var io = global.io;
-var Client = require("../../build/models/client");
-var Group = require("../../build/models/Group");
+var Client = require("../../../build/models/client");
+var Group = require("../../../build/models/Group");
 
 
-describe("/models/Group", function() {
+describe("server/models/Group", function() {
 
     describe("#constructor", function() {
         var group1 = new Group();

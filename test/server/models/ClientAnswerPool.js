@@ -6,10 +6,10 @@
 
 var assert = require("chai").assert;
 
-var ClientAnswerPool = require("../../build/models/ClientAnswerPool");
+var ClientAnswerPool = require("../../../build/models/ClientAnswerPool");
 
 
-describe("/models/ClientAnswerPool", function() {
+describe("server/models/ClientAnswerPool", function() {
     // TODO: Write tests for ClientAnswerPool.
     
     // Currently held back because quiz object not well defined,

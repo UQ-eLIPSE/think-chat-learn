@@ -31,7 +31,10 @@ To do this, LTI test mode must be enabled. This will enable a manual launch page
 Ensure mongo is running; then build; then run `npm run test`.
 
 ### Tests available
-* /models/* (incomplete)
+* server/
+    * models/*
+* client/
+    * classes/*
 * database^
 * server^
 * util^
