@@ -25,7 +25,7 @@ export class WebsocketManager {
                 return;
             }
             
-            alert("You or the server has disconnected the websocket connection.\n\nYour MOOCchat session has been terminated and will require restarting.");
+            alert("You or the server has disconnected the websocket connection.\n\nYour MOOCchat session has been terminated.\n\nIf your session was terminated prematurely you will need to restart your MOOCchat session.");
         });
     }
 

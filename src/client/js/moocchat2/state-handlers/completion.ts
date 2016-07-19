@@ -40,6 +40,9 @@ export const CompletionStateHandler: IStateHandler<STATE> =
                     page$("#revised-answer-content").html(revisedAnswer.content);
                     page$("#revised-answer-justification").text(session.answers.revised.justification);
                 });
+
+                // End session by closing socket
+                session.socket.close(true);
             }
         }
     }

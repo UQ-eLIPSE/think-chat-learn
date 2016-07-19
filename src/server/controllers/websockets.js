@@ -217,6 +217,11 @@ var chatGroupFormationLoop = (function() {
  */
 function handleChatGroupJoinRequest(data) {
     var session = getSessionFromId(data.sessionId);
+
+    if (!session) {
+        return;
+    }
+
     var client = session.client;
     var answerOptionId = session.responseInitial.optionId;
     var clientAnswerPool = getClientAnswerPoolFromSession(session);
@@ -239,6 +244,11 @@ function handleChatGroupJoinRequest(data) {
  */
 function handleChatGroupQuitStatusChange(data) {
     var session = getSessionFromId(data.sessionId);
+
+    if (!session) {
+        return;
+    }
+
     var client = session.client;
     var chatGroup = getChatGroupFromSession(session);
 
@@ -265,6 +275,10 @@ function handleChatGroupQuitStatusChange(data) {
  */
 function handleChatGroupMessage(data) {
     var session = getSessionFromId(data.sessionId);
+
+    if (!session) {
+        return;
+    }
 
     var client = session.client;
     var chatGroup = getChatGroupFromSession(session);
@@ -618,6 +632,10 @@ function answerSubmissionHandlerFactory(answerType) {
     return function(data) {
         var session = getSessionFromId(data.sessionId);
 
+        if (!session) {
+            return;
+        }
+
         var client = session.client;
 
         var username = client.username;
@@ -626,7 +644,7 @@ function answerSubmissionHandlerFactory(answerType) {
         var optionIdString = data.optionId;
         var justification = data.justification;
 
-        /** Holds reference to the answer object (depends on `answerType`) */  
+        /** Holds reference to the answer object (depends on `answerType`) */
         var sessionAnswerObj;
 
         /** String for websocket event to be sent on success */
@@ -730,6 +748,10 @@ var handleAnswerSubmissionFinal = answerSubmissionHandlerFactory("final");
 function saveSurvey(data) {
     var session = getSessionFromId(data.sessionId);
 
+    if (!session) {
+        return;
+    }
+
     db_wrapper.surveyResponse.create({
         sessionId: mongojs.ObjectId(session.getId()),
         surveyId: session.survey._id,
@@ -751,6 +773,11 @@ function saveSurvey(data) {
  */
 function handleBackupClientLogout(data) {
     var session = getSessionFromId(data.sessionId);
+
+    if (!session) {
+        return;
+    }
+
     var client = session.client;
 
     removeClientFromEverything(client);
@@ -765,6 +792,10 @@ function handleBackupClientLogout(data) {
  */
 function handleBackupClientEnterQueue(data) {
     var session = getSessionFromId(data.sessionId);
+
+    if (!session) {
+        return;
+    }
 
     var backupClientQueue = getBackupClientQueueFromSession(session);
     var client = session.client;
@@ -789,6 +820,10 @@ function handleBackupClientEnterQueue(data) {
 function handleBackupClientReturnToQueue(data) {
     var session = getSessionFromId(data.sessionId);
 
+    if (!session) {
+        return;
+    }
+
     var backupClientQueue = getBackupClientQueueFromSession(session);
     var client = session.client;
 
@@ -812,6 +847,10 @@ function handleBackupClientReturnToQueue(data) {
 function handleBackupClientStatusRequest(data) {
     var session = getSessionFromId(data.sessionId);
 
+    if (!session) {
+        return;
+    }
+
     var backupClientQueue = getBackupClientQueueFromSession(session);
     var clientAnswerPool = getClientAnswerPoolFromSession(session);
 
@@ -826,6 +865,10 @@ function handleBackupClientStatusRequest(data) {
  */
 function handleBackupClientTransferConfirm(data) {
     var session = getSessionFromId(data.sessionId);
+
+    if (!session) {
+        return;
+    }
 
     var backupClientQueue = getBackupClientQueueFromSession(session);
     var clientAnswerPool = getClientAnswerPoolFromSession(session);
