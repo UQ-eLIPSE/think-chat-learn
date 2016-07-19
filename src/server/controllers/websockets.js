@@ -357,7 +357,7 @@ function handleLoginLti(data, socket) {
         callbackChainer();
     }
 
-    function nCallbackSyncGenerator(n, done) {
+    function callbackSyncFactory(n, done) {
         return function() {
             if (--n === 0) {
                 done();
@@ -415,7 +415,7 @@ function handleLoginLti(data, socket) {
         }
 
         if (allSessions.hasSessionWithUsername(ltiUsername)) {
-            return throwErr(new Error('The username is being used.'));
+            return throwErr(new Error('The username is currently in an active session.'));
         }
 
         next();
@@ -481,7 +481,7 @@ function handleLoginLti(data, socket) {
 
 
             // Sync on n = 2 (question + question options)
-            var callbackSync = nCallbackSyncGenerator(2, next);
+            var callbackSync = callbackSyncFactory(2, next);
 
             db_wrapper.question.read({
                 "_id": quizSchedule.questionId
