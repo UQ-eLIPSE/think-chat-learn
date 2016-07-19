@@ -25,7 +25,8 @@ export class MoocchatSurvey {
         const $statement = $("<p>").html(content.questionStatement);
         const $field = $("<input>").prop({
             type: "text",
-            name: name
+            name: name,
+            autocomplete: "off"
         });
 
         const $wrapped = $("<label>").append([$statement, $field]);
