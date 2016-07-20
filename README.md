@@ -24,7 +24,7 @@ Where a clean of compiled code is needed, run `npm run clean`.
 Since MOOCchat now uses LTI for log ins, the LTI requests must be faked to initiate a MOOCchat session.
 To do this, LTI test mode must be enabled. This will enable a manual launch page and disables LTI verification checks (e.g. signatures).
 
-* Change `config/conf.json` -> `lti.testMode` to `true`.
+* Change `config/conf.json` -> `lti.testMode` to `true`. Restart server if already running.
 * Go to the URL `/lti-launch`. By default, you should submit via. "lti.php" which emulates what Blackboard would do, but you are also able to force trigger the standard or backup queue clients.
 
 ## Piwik support
