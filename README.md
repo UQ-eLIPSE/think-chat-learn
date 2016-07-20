@@ -27,6 +27,14 @@ To do this, LTI test mode must be enabled. This will enable a manual launch page
 * Change `config/conf.json` -> `lti.testMode` to `true`.
 * Go to the URL `/lti-launch`. By default, you should submit via. "lti.php" which emulates what Blackboard would do, but you are also able to force trigger the standard or backup queue clients.
 
+## Piwik support
+Piwik is now supported. To set this up, `config/conf.json` -> `piwik` needs to be set to point to the correct URL and site ID.
+
+The URL is relative to the public URL the client sees. e.g. on staging, with `piwik.url` set to `/piwik`, this will load Piwik via. "https://mc-stg.uqcloud.net/piwik".
+An absolute URL can also supplied.
+
+The site ID can be found in Piwik -> Administration (cog icon in top right) -> Websites.
+
 ## Running tests
 Ensure mongo is running; then build; then run `npm run test`.
 
