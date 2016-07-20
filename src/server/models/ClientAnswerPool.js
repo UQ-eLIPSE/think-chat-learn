@@ -39,7 +39,11 @@ var ClientAnswerPool = function(questionOptions, backupClientQueue) {
 ClientAnswerPool.prototype.addClient = function(client, optionId) {
     // Answer is either not in range expected or some weird answer
     if (!this.answerQueues.hasOwnProperty(optionId)) {
-        throw new Error("Client answer not recognised; Cannot assign to answer queue");
+        // Assign to random queue instead
+        var queueKeys = Object.keys(this.answerQueues);
+        var randomQueueKeyIndex = Math.floor(Math.random() * queueKeys.length);
+
+        optionId = queueKeys[randomQueueKeyIndex];
     }
 
     var answerQueue = this.answerQueues[optionId];
