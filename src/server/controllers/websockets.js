@@ -328,6 +328,8 @@ function handleLoginLti(data, socket) {
             checkUserId,
             retrieveUserId,
             findScheduledQuiz,
+            checkQuizSessionNotTaken,
+            loadQuestionData,
             findSurvey,
             setupPoolsAndQueues,
             setupClient,
@@ -376,8 +378,8 @@ function handleLoginLti(data, socket) {
     /** {string} */
     var ltiUsername;
 
-    /** {string} */
-    var userId;
+    /** {Mongo.ObjectId()} */
+    var userObjectId;
 
     /** {IDB_QuizSchedule} */
     var quizSchedule;
@@ -411,11 +413,11 @@ function handleLoginLti(data, socket) {
         ltiUsername = ltiObject.user_id;
 
         if (!ltiUsername) {
-            return throwErr(new Error('No user ID received.'));
+            return throwErr(new Error("No user ID received."));
         }
 
         if (allSessions.hasSessionWithUsername(ltiUsername)) {
-            return throwErr(new Error('The username is currently in an active session.'));
+            return throwErr(new Error("The user '" + ltiUsername + "' is currently in an active session."));
         }
 
         next();
@@ -428,7 +430,7 @@ function handleLoginLti(data, socket) {
             }
 
             if (result.length > 1) {
-                return throwErr(new Error("More than one user with same username detected."));
+                return throwErr(new Error("More than one user with same username '" + ltiUsername + "' detected."));
             }
 
             // New user
@@ -446,7 +448,7 @@ function handleLoginLti(data, socket) {
                         return throwErr(err);
                     }
 
-                    userId = result._id.toString();
+                    userObjectId = result._id;
                     next();
                 });
 
@@ -454,7 +456,7 @@ function handleLoginLti(data, socket) {
             }
 
             // Existing user
-            userId = result[0]._id.toString();
+            userObjectId = result[0]._id;
             next();
         });
     }
@@ -477,41 +479,62 @@ function handleLoginLti(data, socket) {
 
             quizSchedule = result[0];
 
+            next();
+        });
+    }
 
+    function checkQuizSessionNotTaken(throwErr, next) {
+        // A session is considered to have been taken if a user
+        // successfully fills in an initial AND final answer response
+        db_wrapper.userSession.read({
+            userId: userObjectId,
+            responseInitialId: { $ne: null },
+            responseFinalId: { $ne: null }
+        }, function(err, result) {
+            if (err) {
+                return throwErr(err);
+            }
 
+            if (result.length > 0) {
+                return throwErr(new Error("User '" + ltiUsername + "' has previously completed the current quiz session."));
+            }
 
-            // Sync on n = 2 (question + question options)
-            var callbackSync = callbackSyncFactory(2, next);
+            next();
+        });
+    }
 
-            db_wrapper.question.read({
-                "_id": quizSchedule.questionId
-            }, function(err, result) {
-                if (err) {
-                    return throwErr(err);
-                }
+    function loadQuestionData(throwErr, next) {
+        // Sync on n = 2 (question + question options)
+        var callbackSync = callbackSyncFactory(2, next);
 
-                if (result.length === 0) {
-                    return throwErr(new Error("No question with _id = " + quizSchedule.questionId));
-                }
+        db_wrapper.question.read({
+            "_id": quizSchedule.questionId
+        }, function(err, result) {
+            if (err) {
+                return throwErr(err);
+            }
 
-                question = result[0];
-                callbackSync();
-            });
+            if (result.length === 0) {
+                return throwErr(new Error("No question with _id = " + quizSchedule.questionId));
+            }
 
-            db_wrapper.questionOption.read({
-                "questionId": quizSchedule.questionId
-            }, function(err, result) {
-                if (err) {
-                    return throwErr(err);
-                }
+            question = result[0];
+            callbackSync();
+        });
 
-                if (result.length === 0) {
-                    return throwErr(new Error("No question options for " + quizSchedule.questionId));
-                }
+        db_wrapper.questionOption.read({
+            "questionId": quizSchedule.questionId
+        }, function(err, result) {
+            if (err) {
+                return throwErr(err);
+            }
 
-                questionOptions = result;
-                callbackSync();
-            });
+            if (result.length === 0) {
+                return throwErr(new Error("No question options for question ID = " + quizSchedule.questionId));
+            }
+
+            questionOptions = result;
+            callbackSync();
         });
     }
 
@@ -527,7 +550,7 @@ function handleLoginLti(data, socket) {
 
             // Find first available survey at this time session
             if (result.length === 0) {
-                return throwErr(new Error("No survey available at this time. Survey required."));
+                return throwErr(new Error("No survey available at this time. Survey required for MOOCchat to operate."));
             }
 
             survey = result[0];
@@ -557,7 +580,7 @@ function handleLoginLti(data, socket) {
 
     function setupClient(throwErr, next) {
         client = new Client();
-        client.userId = userId;
+        client.userId = userObjectId.toString();
         client.username = ltiUsername;
         client.setSocket(socket);
 
@@ -567,7 +590,7 @@ function handleLoginLti(data, socket) {
     function writeSessionToDb(throwErr, next) {
         db_wrapper.userSession.create({
             _id: mongojs.ObjectId(require('crypto').randomBytes(12).toString('hex')),
-            userId: mongojs.ObjectId(userId),
+            userId: userObjectId,
 
             timestampStart: new Date(),
             timestampEnd: null,
