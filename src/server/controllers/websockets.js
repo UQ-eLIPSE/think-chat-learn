@@ -183,7 +183,6 @@ function formChatGroup(clientAnswerPool) {
 }
 
 // Recurring task
-// TODO: Have a library/package handle this task in a different thread?    
 var chatGroupFormationLoop = (function() {
     var timeBetweenChecks = conf.chat.groups.formationIntervalMs;
     var timeoutHandles = {};
@@ -486,8 +485,10 @@ function handleLoginLti(data, socket) {
     function checkQuizSessionNotTaken(throwErr, next) {
         // A session is considered to have been taken if a user
         // successfully fills in an initial AND final answer response
+        // for this quiz session
         db_wrapper.userSession.read({
             userId: userObjectId,
+            quizScheduleId: quizSchedule._id,
             responseInitialId: { $ne: null },
             responseFinalId: { $ne: null }
         }, function(err, result) {
