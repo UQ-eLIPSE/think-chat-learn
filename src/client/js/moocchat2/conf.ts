@@ -13,7 +13,7 @@ export const conf = {
 
     answers: {
         justification: {
-            maxLength: 200
+            maxLength: 500
         }
     }
 }
