@@ -67,6 +67,15 @@ export class MoocchatChat {
     }
 
     /**
+     * Handler to display received chat messages.
+     * 
+     * @param {IEventData_ChatGroupMessageReceived} data
+     */
+    private receiveMessage(data: IInboundData.ChatGroupMessage) {
+        this.displayMessage(data.clientIndex + 1, data.message);
+    }
+
+    /**
      * Displays message in chat window.
      * 
      * @param {number} clientId Client identification number (generally `clientIndex + 1`)
@@ -105,20 +114,11 @@ export class MoocchatChat {
     }
 
     /**
-     * Handler to display received chat messages.
-     * 
-     * @param {IEventData_ChatGroupMessageReceived} data
-     */
-    private receiveMessage = (data: IInboundData.ChatGroupMessage) => {
-        this.displayMessage(data.clientIndex + 1, data.message);
-    }
-
-    /**
      * Handler for chat member quit updates.
      * 
      * @param {IEventData_ChatGroupQuitChange} data
      */
-    private receiveQuitStatusChange = (data: IInboundData.ChatGroupQuitStatusChange) => {
+    private receiveQuitStatusChange(data: IInboundData.ChatGroupQuitStatusChange) {
         if (data.quitStatus) {
             const clientId = data.clientIndex + 1;
             this.displaySystemMessage(`Person #${clientId} has quit this chat session.`, true);
@@ -129,8 +129,11 @@ export class MoocchatChat {
      * Attaches the incoming message event handler.
      */
     private attachReceiveMessageHandler() {
-        this.session.socket.on<IInboundData.ChatGroupMessage>(WebsocketEvents.INBOUND.CHAT_GROUP_RECEIVE_MESSAGE, this.receiveMessage);
-        this.session.socket.on<IInboundData.ChatGroupQuitStatusChange>(WebsocketEvents.INBOUND.CHAT_GROUP_QUIT_STATUS_CHANGE, this.receiveQuitStatusChange);
+        this.receiveMessageCallback = this.receiveMessage.bind(this);
+        this.receiveQuitStatusChangeCallback = this.receiveQuitStatusChange.bind(this);
+
+        this.session.socket.on<IInboundData.ChatGroupMessage>(WebsocketEvents.INBOUND.CHAT_GROUP_RECEIVE_MESSAGE, this.receiveMessageCallback);
+        this.session.socket.on<IInboundData.ChatGroupQuitStatusChange>(WebsocketEvents.INBOUND.CHAT_GROUP_QUIT_STATUS_CHANGE, this.receiveQuitStatusChangeCallback);
     }
 
     /**
