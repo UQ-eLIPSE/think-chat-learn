@@ -1,0 +1,16 @@
+{
+	"compilerOptions": {
+        "target": "es5",
+        "module": "amd",
+        "noImplicitAny": true,
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "sourceMap": false,
+        "outDir": "../../../public/js/moocchat2"
+    },
+    "files": [
+        "./typings/index.d.ts",
+        "./moocchat2/main.ts",
+        "./moocchat2/backup-client.ts"
+    ]
+}

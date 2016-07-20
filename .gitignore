@@ -36,3 +36,13 @@ jspm_packages
 
 # Visual Studio Code
 .vscode
+
+# Compiled client code
+public/js/moocchat2
+public/css/moocchat2
+
+# Compiled server code
+build
+
+# SASS cache directory
+.sass-cache
