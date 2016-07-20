@@ -7,19 +7,15 @@
 
 var Session = require("./Session");
 
-/**
+/*
  * IActiveSessionData = {
  *      session: Session;
  *      lastTime: number;       // Last known activity time in milliseconds
  * }
  */
 
-/**
- * @param {number} timeout Timeout in milliseconds
- */
-var SessionManager = function(timeout) {
+var SessionManager = function() {
     this.activeSessions = {};
-    this.timeout = timeout || (1 * 60 * 60 * 1000); // milliseconds; default = 1 hour
 }
 
 /**
@@ -35,9 +31,6 @@ SessionManager.prototype.addSession = function(session) {
         session: session,
         lastTime: 0
     };
-
-    // Run keep active now to fill in `lastTime`
-    this.keepSessionActive(session);
 }
 
 /**
@@ -109,31 +102,6 @@ SessionManager.prototype.hasSessionId = function(sessionId) {
  */
 SessionManager.prototype.hasSession = function(session) {
     return this.hasSessionId(session.id);
-}
-
-/**
- * @param {Session} session
- * 
- * @return {boolean}
- */
-SessionManager.prototype.isSessionValid = function(session) {
-    if (!this.hasSession(session)) {
-        return false;
-    }
-
-    // Timeout passed
-    if ((this.activeSessions[session.id].lastTime + this.timeout) < Date.now()) {
-        return false;
-    }
-
-    return true;
-}
-
-/**
- * @param {Session} session
- */
-SessionManager.prototype.keepSessionActive = function(session) {
-    this.activeSessions[session.id].lastTime = Date.now();
 }
 
 /**
