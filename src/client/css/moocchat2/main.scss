@@ -195,6 +195,10 @@ button.thin {
 
     display: table;
 
+    &.width-auto {
+        width: auto;
+    }
+
     & > .row {
         display: table-row;
 

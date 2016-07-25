@@ -600,7 +600,9 @@ function handleLoginLti(data, socket) {
             quizScheduleId: quizSchedule._id,
 
             responseInitialId: null,
-            responseFinalId: null
+            responseFinalId: null,
+
+            researchConsent: null
         }, function(err, result) {
             if (err) {
                 return throwErr(err);
@@ -638,7 +640,38 @@ function handleLoginLti(data, socket) {
     }
 }
 
+function handleResearchConsentSet(data) {
+    var session = getSessionFromId(data.sessionId);
 
+    if (!session) {
+        return;
+    }
+
+    var client = session.client;
+    var socket = client.getSocket();
+
+    var researchConsent = data.researchConsent;
+
+    if (!(researchConsent === false || researchConsent === true)) {
+        return;
+    }
+
+    db_wrapper.userSession.update({
+        _id: mongojs.ObjectId(session.getId())
+    },
+        {
+            $set: {
+                researchConsent: researchConsent
+            }
+        },
+        function(err, result) {
+            if (err) {
+                return;
+            }
+
+            socket.emit("researchConsentSaved");
+        });
+}
 
 // ===== Student client pool =====
 
@@ -929,7 +962,8 @@ io.sockets.on('connection', function(socket) {
 
     /* Log ins */
     socket.on("loginLti", function(data) { handleLoginLti(data, socket); });
-
+    socket.on("researchConsentSet", handleResearchConsentSet);
+    
     /* Chat group discussion */
     socket.on("chatGroupJoinRequest", handleChatGroupJoinRequest);
     socket.on("chatGroupMessage", handleChatGroupMessage);
