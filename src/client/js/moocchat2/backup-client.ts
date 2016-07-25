@@ -60,7 +60,7 @@ $(() => {
 
     // Individual state handlers
     const startupState = StartupStateHandler(session, STATE.LOGIN, $courseName, true);
-    const loginState = LoginStateHandler(session, STATE.SET_RESEARCH_CONSENT);
+    const loginState = LoginStateHandler(session, STATE.SET_RESEARCH_CONSENT, STATE.SET_RESEARCH_CONSENT);
     const setResearchConsentState = SetResearchConsentStateHandler(session);
     const welcomeState = WelcomeStateHandler(session, STATE.BACKUP_CLIENT_ANSWER);
     const backupClientAnswerState = BackupClientAnswerStateHandler(session);

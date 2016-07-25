@@ -1,8 +1,19 @@
 <!-- All pages must specify <section data-name="..." /> as root element -->
 <section data-name="consent-form">
     <h1>Before we begin...</h1>
-    <p>Before participating in the study, please review the Participation Information Sheet (see link below) and then select
-        one of the options at the bottom of the Consent Form below.</p>
+
+    <p>MOOCchat is an innovative, online peer-assisted learning tool designed to place students in small groups to engage discussion
+        around high-level questions.</p>
+
+    <p>As part of research into the benefits of online chats in peer-based student learning, we require permission for the collection
+        of your MOOCchat session data, such as your answers and discussion messages.</p>
+
+    <p>All information will remain completely confidential, and you may request to withdraw your consent at any time.</p>
+
+    <p>Please review the <button id="participant-info-sheet" class="neutral thin link">Participant Information Sheet (PDF)</button>,
+        which provides further information about MOOCchat and the study.</p>
+
+    <p><em>Please note that your consent or lack thereof does not impact on your ability to use MOOCchat as part of course assessment.</em></p>
 
     <hr>
 
@@ -31,12 +42,16 @@
         <li>I voluntarily consent to participate in this research project.
     </ul>
 
-    <p>Please click one of the links below.</p>
+    <br>
 
-    <p><button id="participant-info-sheet" class="neutral thin link">Show me the Participant Information Sheet. (PDF)</button></p>
+    <form id="consent-form">
+        <p>
+            <label><input type="radio" name="consent" value="true"/> I consent to participate in this study.</label><br><br>
+            <label><input type="radio" name="consent" value="false"/> I do not consent to participate in this study.</label>
+        </p>
 
-    <p>
-        <button id="accept">I consent to participate in this study. Take me to the chat system now.</button><br><br>
-        <button id="decline">I do not wish to participate in this study. Take me to the chat session now.</button>
-    </p>
+        <p>
+            <button id="continue" type="submit">Submit consent form and start MOOCchat</button>
+        </p>
+    </form>
 </section>

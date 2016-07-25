@@ -83,7 +83,7 @@ $(() => {
 
     // Individual state handlers
     const startupState = StartupStateHandler(session, STATE.LOGIN, $courseName);
-    const loginState = LoginStateHandler(session, STATE.CONSENT_FORM);
+    const loginState = LoginStateHandler(session, STATE.WELCOME, STATE.CONSENT_FORM);
     const consentFormState = ConsentFormStateHandler(session);
     const setResearchConsentState = SetResearchConsentStateHandler(session);
     const welcomeState = WelcomeStateHandler(session);

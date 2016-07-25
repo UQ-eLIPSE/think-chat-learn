@@ -1,3 +1,5 @@
+import * as $ from "jquery";
+
 import {IStateHandler} from "../classes/IStateHandler";
 
 import {MoocchatState as STATE} from "../classes/MoocchatStates";
@@ -11,16 +13,23 @@ export const ConsentFormStateHandler: IStateHandler<STATE> =
                         window.open("/pdf/ENGG1200%20MOOCchat%20Participant%20Information%20Sheet.pdf");
                     });
 
-                    // NOTE:    Both #decline and #accept are in regards to participation in the research study only.
+                    // NOTE:    Both decline and accept are in regards to participation in the research study only.
                     //          ** MOOCchat will launch either way. **
 
-                    page$("#decline").on("click", () => {
-                        session.setConsent(false);
-                        session.stateMachine.goTo(STATE.SET_RESEARCH_CONSENT);
-                    });
+                    const $consentForm = page$("#consent-form");
 
-                    page$("#accept").on("click", () => {
-                        session.setConsent(true);
+                    $consentForm.on("submit", (e) => {
+                        e.preventDefault();
+                        
+                        const $checkedOption = $(":checked", $consentForm);
+
+                        if ($checkedOption.length === 0) {
+                            alert("You must select an option on the consent form.");
+                            return;
+                        }
+
+                        // Consent is given if "true" radio selected
+                        session.setConsent($checkedOption.val() === "true");
                         session.stateMachine.goTo(STATE.SET_RESEARCH_CONSENT);
                     });
                 });

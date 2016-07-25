@@ -398,6 +398,9 @@ function handleLoginLti(data, socket) {
     /** {Session} */
     var session;
 
+    /** {boolean} */
+    var researchConsentUnknown;
+
     function processLtiObject(throwErr, next) {
         try {
             ltiObject = ltiProcessor.verifyAndReturnLTIObj(data);
@@ -440,14 +443,18 @@ function handleLoginLti(data, socket) {
                 db_wrapper.user.create({
                     _id: mongojs.ObjectId(require('crypto').randomBytes(12).toString('hex')),
                     username: ltiUsername,
+
                     firstName: ltiFirstName,
-                    lastName: ltiLastName
+                    lastName: ltiLastName,
+
+                    researchConsent: null
                 }, function(err, result) {
                     if (err) {
                         return throwErr(err);
                     }
 
                     userObjectId = result._id;
+                    researchConsentUnknown = true;
                     next();
                 });
 
@@ -456,6 +463,14 @@ function handleLoginLti(data, socket) {
 
             // Existing user
             userObjectId = result[0]._id;
+            
+            if (result[0].researchConsent === false || result[0].researchConsent === true) {
+                // Research consent value has been set previously
+                researchConsentUnknown = false;
+            } else {
+                researchConsentUnknown = true;
+            }
+
             next();
         });
     }
@@ -600,9 +615,7 @@ function handleLoginLti(data, socket) {
             quizScheduleId: quizSchedule._id,
 
             responseInitialId: null,
-            responseFinalId: null,
-
-            researchConsent: null
+            responseFinalId: null
         }, function(err, result) {
             if (err) {
                 return throwErr(err);
@@ -633,7 +646,8 @@ function handleLoginLti(data, socket) {
                 question: question,
                 questionOptions: questionOptions
             },
-            survey: survey
+            survey: survey,
+            researchConsentRequired: researchConsentUnknown
         });
 
         next();
@@ -656,8 +670,8 @@ function handleResearchConsentSet(data) {
         return;
     }
 
-    db_wrapper.userSession.update({
-        _id: mongojs.ObjectId(session.getId())
+    db_wrapper.user.update({
+        _id: mongojs.ObjectId(client.userId)
     },
         {
             $set: {
