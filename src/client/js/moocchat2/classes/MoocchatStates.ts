@@ -5,6 +5,9 @@
  * All the states used for the state machine
  */
 export enum MoocchatState {
+    CONSENT_FORM,
+    SET_RESEARCH_CONSENT,
+
     STARTUP,
     LOGIN,
 

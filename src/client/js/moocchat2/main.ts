@@ -12,6 +12,8 @@ import {MoocchatState as STATE} from "./classes/MoocchatStates";
 
 import {StartupStateHandler} from "./state-handlers/startup";
 import {LoginStateHandler} from "./state-handlers/login";
+import {ConsentFormStateHandler} from "./state-handlers/consent-form";
+import {SetResearchConsentStateHandler} from "./state-handlers/set-research-consent";
 import {WelcomeStateHandler} from "./state-handlers/welcome";
 import {InitialAnswerStateHandler} from "./state-handlers/initial-answer";
 import {AwaitGroupFormationStateHandler} from "./state-handlers/await-group-formation";
@@ -80,8 +82,10 @@ $(() => {
 
 
     // Individual state handlers
-    const startupState = StartupStateHandler(session, $courseName);
-    const loginState = LoginStateHandler(session);
+    const startupState = StartupStateHandler(session, STATE.LOGIN, $courseName);
+    const loginState = LoginStateHandler(session, STATE.WELCOME, STATE.CONSENT_FORM);
+    const consentFormState = ConsentFormStateHandler(session);
+    const setResearchConsentState = SetResearchConsentStateHandler(session);
     const welcomeState = WelcomeStateHandler(session);
     const initialAnswerState = InitialAnswerStateHandler(session);
     const awaitGroupFormationState = AwaitGroupFormationStateHandler(session);
@@ -109,6 +113,14 @@ $(() => {
         {   // Invalid login
             state: STATE.INVALID_LOGIN,
             onEnter: invalidLoginState.onEnter
+        },
+        {   // Consent form
+            state: STATE.CONSENT_FORM,
+            onEnter: consentFormState.onEnter  
+        },
+        {   // Set research consent
+            state: STATE.SET_RESEARCH_CONSENT,
+            onEnter: setResearchConsentState.onEnter
         },
         {   // Welcome
             state: STATE.WELCOME,

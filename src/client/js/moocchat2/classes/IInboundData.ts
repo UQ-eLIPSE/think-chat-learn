@@ -22,6 +22,7 @@ export interface LoginSuccess {
     username: string;
     quiz: IQuiz;
     survey: ISurvey;
+    researchConsentRequired: boolean;
 }
 export type LoginFailure = string;
 export interface LoginExistingUser {

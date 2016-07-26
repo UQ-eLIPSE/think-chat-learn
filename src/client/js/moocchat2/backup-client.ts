@@ -12,6 +12,7 @@ import {MoocchatState as STATE} from "./classes/MoocchatStates";
 
 import {StartupStateHandler} from "./state-handlers/startup";
 import {LoginStateHandler} from "./state-handlers/login";
+import {SetResearchConsentStateHandler} from "./state-handlers/set-research-consent";
 import {WelcomeStateHandler} from "./state-handlers/welcome";
 import {BackupClientAnswerStateHandler} from "./state-handlers/backup-client-answer";
 import {BackupClientWaitStateHandler} from "./state-handlers/backup-client-wait";
@@ -58,8 +59,9 @@ $(() => {
     ]);
 
     // Individual state handlers
-    const startupState = StartupStateHandler(session, $courseName, true);
-    const loginState = LoginStateHandler(session);
+    const startupState = StartupStateHandler(session, STATE.LOGIN, $courseName, true);
+    const loginState = LoginStateHandler(session, STATE.SET_RESEARCH_CONSENT, STATE.SET_RESEARCH_CONSENT);
+    const setResearchConsentState = SetResearchConsentStateHandler(session);
     const welcomeState = WelcomeStateHandler(session, STATE.BACKUP_CLIENT_ANSWER);
     const backupClientAnswerState = BackupClientAnswerStateHandler(session);
     const backupClientWaitState = BackupClientWaitStateHandler(session);
@@ -87,6 +89,10 @@ $(() => {
         {   // Invalid login
             state: STATE.INVALID_LOGIN,
             onEnter: invalidLoginState.onEnter
+        },
+        {   // Set research consent
+            state: STATE.SET_RESEARCH_CONSENT,
+            onEnter: setResearchConsentState.onEnter
         },
         {   // Welcome
             state: STATE.WELCOME,
@@ -121,6 +127,9 @@ $(() => {
             onEnter: backupClientLogoutState.onEnter
         }
     ]);
+
+    // Backup client has implicit research consent TRUE.
+    session.setConsent(true);
 
     // Start the state machine
     session.stateMachine.goTo(STATE.STARTUP);

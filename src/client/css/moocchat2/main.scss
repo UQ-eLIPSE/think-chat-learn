@@ -195,6 +195,10 @@ button.thin {
 
     display: table;
 
+    &.width-auto {
+        width: auto;
+    }
+
     & > .row {
         display: table-row;
 
@@ -271,8 +275,10 @@ button.link:active {
     cursor: pointer;
     text-decoration: none;
 
-    box-shadow: 0;
-    text-shadow: 0;
+    box-shadow: none;
+    text-shadow: none;
+
+    text-align: inherit;
 
     &:hover {
         background: none;

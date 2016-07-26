@@ -1,6 +1,8 @@
 import {IStateHandler} from "../classes/IStateHandler";
 import {MoocchatState as STATE} from "../classes/MoocchatStates";
 
+import {MoocchatSession} from "../classes/MoocchatSession";
+
 import {MoocchatUser} from "../classes/MoocchatUser";
 import {MoocchatQuiz} from "../classes/MoocchatQuiz";
 import {MoocchatSurvey} from "../classes/MoocchatSurvey";
@@ -10,7 +12,7 @@ import {ILTIBasicLaunchData} from "../classes/ILTIBasicLaunchData";
 declare const _LTI_BASIC_LAUNCH_DATA: ILTIBasicLaunchData;
 
 export const LoginStateHandler: IStateHandler<STATE> =
-    (session) => {
+    (session: MoocchatSession<STATE>, nextState: STATE, researchConsentRequiredNextState: STATE) => {
         return {
             onEnter: () => {
                 const user = new MoocchatUser(session.eventManager, _LTI_BASIC_LAUNCH_DATA);
@@ -22,7 +24,11 @@ export const LoginStateHandler: IStateHandler<STATE> =
                         .setSurvey(new MoocchatSurvey(data.survey))
                         .setUser(user);
 
-                    session.stateMachine.goTo(STATE.WELCOME);
+                    if (data.researchConsentRequired) {
+                        session.stateMachine.goTo(researchConsentRequiredNextState);
+                    } else {
+                        session.stateMachine.goTo(nextState);
+                    }
                 }
 
                 user.onLoginFail = (data) => {

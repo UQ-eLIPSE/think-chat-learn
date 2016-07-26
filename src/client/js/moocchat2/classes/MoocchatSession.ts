@@ -37,6 +37,7 @@ export class MoocchatSession<StateTypeEnum> {
 
     public storage: SessionStorage;
 
+    private _consent: boolean;
 
     constructor($content: JQuery, $taskSections: JQuery, turnOnAnalytics: boolean = true) {
         this._eventManager = new EventBox();
@@ -46,6 +47,9 @@ export class MoocchatSession<StateTypeEnum> {
 
         this.answers = new MoocchatAnswerContainer();
         this.storage = new SessionStorage();
+
+        // Research consent is always null by default as we need to capture user input
+        this._consent = null;
 
         if (turnOnAnalytics) {
             this._analytics = new MoocchatAnalytics(this);
@@ -82,6 +86,10 @@ export class MoocchatSession<StateTypeEnum> {
 
     public get analytics() {
         return this._analytics || new MoocchatAnalyticsCore();
+    }
+
+    public get consent() {
+        return this._consent;
     }
 
     /**
@@ -207,6 +215,22 @@ export class MoocchatSession<StateTypeEnum> {
     public setEventManager(eventManager: EventBox) {
         if (!this._eventManager) {
             this._eventManager = eventManager;
+        }
+
+        return this;
+    }
+
+    /**
+     * Sets the research consent flag for this session.
+     * Only settable once; further sets are ignored.
+     * 
+     * @param {boolean} consent
+     * 
+     * @return {this}
+     */
+    public setConsent(consent: boolean) {
+        if (!(this._consent === false || this._consent === true)) {
+            this._consent = consent;
         }
 
         return this;

@@ -10,6 +10,9 @@ export const WebsocketEvents = {
         LOGIN_USER_ALREADY_EXISTS: "loginExistingUser",
 
         /** void */
+        LOGIN_RESEARCH_CONSENT_SAVED: "researchConsentSaved",
+
+        /** void */
         INITIAL_ANSWER_SUBMISSION_SAVED: "answerSubmissionInitialSaved",
 
         /** void */
@@ -43,6 +46,9 @@ export const WebsocketEvents = {
     OUTBOUND: {
         /** IOutboundData.LoginLti */
         LOGIN_LTI_REQUEST: "loginLti",
+
+        /** boolean */
+        LOGIN_RESEARCH_CONSENT_SET: "researchConsentSet",
 
         /** IOutboundData.InitialAnswer */
         INITIAL_ANSWER_SUBMISSION: "answerSubmissionInitial",

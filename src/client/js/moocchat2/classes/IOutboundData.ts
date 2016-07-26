@@ -17,6 +17,9 @@ interface ChatGroupResponse extends SessionResponse {
 
 // Outbound data interfaces
 export interface LoginLti extends ILTIBasicLaunchData { }
+export interface LoginResearchConsent extends SessionResponse {
+    researchConsent: boolean;
+}
 
 export interface InitialAnswer extends AnswerResponse { }
 export interface RevisedAnswer extends AnswerResponse { }

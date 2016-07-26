@@ -11,7 +11,7 @@ import {ILTIBasicLaunchData} from "../classes/ILTIBasicLaunchData";
 declare const _LTI_BASIC_LAUNCH_DATA: ILTIBasicLaunchData;
 
 export const StartupStateHandler: IStateHandler<STATE> =
-    (session: MoocchatSession<STATE>, $courseNameElem: JQuery, isBackupClient: boolean = false) => {
+    (session: MoocchatSession<STATE>, nextState: STATE, $courseNameElem: JQuery, isBackupClient: boolean = false) => {
         return {
             onEnter: () => {
                 if (typeof _LTI_BASIC_LAUNCH_DATA === "undefined") {
@@ -36,7 +36,7 @@ export const StartupStateHandler: IStateHandler<STATE> =
                     }
 
                     $courseNameElem.text(courseName + ((isBackupClient) ? " Backup Queue" : ""));
-                    session.stateMachine.goTo(STATE.LOGIN);
+                    session.stateMachine.goTo(nextState);
                     session.analytics.trackEvent("MOOCCHAT", "START");
                 }
             }
