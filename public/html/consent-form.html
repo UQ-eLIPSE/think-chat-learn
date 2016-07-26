@@ -1,14 +1,16 @@
 <!-- All pages must specify <section data-name="..." /> as root element -->
 <section data-name="consent-form">
-    <h1>Before we begin...</h1>
+    <h1>Before we start your assessment...</h1>
 
-    <p>MOOCchat is an innovative, online peer-assisted learning tool designed to place students in small groups to engage discussion
-        around high-level questions.</p>
+    <p>MOOCchat is designed to support peer learning around challenging problems or concepts. The tool is part of a collaborative
+        teaching and learning research initiative with the University of California, Berkeley. We ask your permission to
+        collect and analyse anonymous data from the MOOChat sessions to further investigate benefits to student learning,
+        and to inform improvements to the system.</p>
 
-    <p>As part of research into the benefits of online chats in peer-based student learning, we require permission for the collection
-        of your MOOCchat session data, such as your answers and discussion messages.</p>
-
-    <p>All information will remain completely confidential, and you may request to withdraw your consent at any time.</p>
+    <p>All information will remain completely confidential. No identifying information from any of the data collected will be
+        revealed to teaching staff or published. Participation in the research is voluntary and will have no impact on your
+        ability to complete the assessment task and it will have no bearing on your marks or on your standing in the course.
+        You have the right to withdraw your permission for your information to be used at any time.</p>
 
     <p>Please review the <button id="participant-info-sheet" class="neutral thin link">Participant Information Sheet (PDF)</button>,
         which provides further information about MOOCchat and the study.</p>
@@ -21,7 +23,7 @@
     <h4><em>Title of the Project: Enhancing academic and practitioner skills in first year Engineers using an active learning course
         architecture: Online chats and peer learning.</em></h4>
 
-    <p>
+    <p> 
         <div class="table width-auto">
             <div class="row">
                 <div><b>Researcher Contact Details</b></div>
@@ -45,6 +47,10 @@
     <br>
 
     <form id="consent-form">
+        <p>
+            Participant's name: <span id="name" />
+        </p>
+
         <p>
             <label><input type="radio" name="consent" value="true"/> I consent to participate in this study.</label><br><br>
             <label><input type="radio" name="consent" value="false"/> I do not consent to participate in this study.</label>
