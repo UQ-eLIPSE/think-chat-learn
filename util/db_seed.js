@@ -3,13 +3,16 @@
  */
 
 var db = require("../build/controllers/database");
+var mongojs = require("mongojs");
+
+var dataFolder = "./data";
 
 // Data to insert
-var questionData = require("./data/uq_question");
-var questionOptionData = require("./data/uq_questionOption");
-var questionOptionCorrectData = require("./data/uq_questionOptionCorrect");
-var quizScheduleData = require("./data/uq_quizSchedule");
-var surveyData = require("./data/uq_survey");
+var questionData = require(dataFolder + "/uq_question")(mongojs);
+var questionOptionData = require(dataFolder + "/uq_questionOption")(mongojs);
+var questionOptionCorrectData = require(dataFolder + "/uq_questionOptionCorrect")(mongojs);
+var quizScheduleData = require(dataFolder + "/uq_quizSchedule")(mongojs);
+var surveyData = require(dataFolder + "/uq_survey")(mongojs);
 
 /**
  * Generates function that counts executions to synchronise provided callback
