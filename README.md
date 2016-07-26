@@ -27,6 +27,9 @@ To do this, LTI test mode must be enabled. This will enable a manual launch page
 * Change `config/conf.json` -> `lti.testMode` to `true`. Restart server if already running.
 * Go to the URL `/lti-launch`. By default, you should submit via. "lti.php" which emulates what Blackboard would do, but you are also able to force trigger the standard or backup queue clients.
 
+## Putting new question content in
+Run `node util/db_incrInsert.js $DATA_DIR_HERE` for incremental insertions. All data JS files must exist in that directory; see `util/data` for the data files and their format expected.
+
 ## Piwik support
 Piwik is now supported. To set this up, `config/conf.json` -> `piwik` needs to be set to point to the correct URL and site ID.
 
