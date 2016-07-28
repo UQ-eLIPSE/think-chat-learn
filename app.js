@@ -2,7 +2,11 @@ var conf = require('./config/conf.json');
 
 var express = require('express');
 var app = express();
-var server = require('http').createServer(app).listen(conf.portNum);
+
+var http = require("http");
+http.globalAgent.maxSockets = 65000;
+
+var server = http.createServer(app).listen(conf.portNum);
 var io = require('socket.io')(server, { serveClient: false });
 
 global.conf = conf;
