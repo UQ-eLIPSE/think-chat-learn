@@ -1033,6 +1033,42 @@ button.link:active {
     }
 }
 
+// Short height devices (< 600px in window, approx < 900px in Blackboard, device approx < 1000px)
+@media (max-height: 600px) {
+    html, body {
+        font-size: $body-std-font-size * 0.9;
+    }
+    
+    #moocchat-name {
+        margin-top: $mc-sidebar-padding-tb * 1.5;
+    }
+
+    #course-name {
+        margin-bottom: $mc-sidebar-padding-tb * 0.7;
+    }
+
+    #task-sections {
+        li {
+            padding-top: ($mc-sidebar-padding-tb / 2);
+            padding-bottom: ($mc-sidebar-padding-tb / 2);
+        }
+    }
+}
+
+// Very short height devices (< 400px in window, approx < 600px in Blackboard, device approx < 800px)
+@media (max-height: 400px) {
+    #header {
+        font-size: 1.1rem;
+    }
+
+    #moocchat-name {
+        margin-bottom: $mc-sidebar-padding-tb * 0.3;
+    }
+
+    #course-name {
+        margin-top: $mc-sidebar-padding-tb * 0.3;
+    }
+}
 
 // Printers
 @media print {
