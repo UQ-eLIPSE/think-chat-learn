@@ -1,3 +1,20 @@
+// Attach timestamps to all logged messages
+function timestampedLoggerFactory(origLoggerFunc) {
+    return function(e) {
+        arguments[0] = "[" + new Date().toISOString() + "] " + arguments[0];
+        origLoggerFunc.apply(void 0, arguments);
+    }
+}
+
+console.error = timestampedLoggerFactory(console.error);
+console.log = timestampedLoggerFactory(console.log);
+
+process.on('uncaughtException', function (e) {
+    console.error(e.stack || e);
+});
+
+// ============================================================================
+
 var conf = require('./config/conf.json');
 
 var express = require('express');
