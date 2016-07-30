@@ -14,7 +14,7 @@ export const ConsentFormStateHandler: IStateHandler<STATE> =
             onEnter: () => {
                 session.pageManager.loadPage("consent-form", (page$) => {
                     page$("#participant-info-sheet").on("click", () => {
-                        window.open("/pdf/ENGG1200%20MOOCchat%20Participant%20Information%20Sheet.pdf");
+                        window.open("./static/pdf/ENGG1200%20MOOCchat%20Participant%20Information%20Sheet.pdf");
                     });
 
                     // Fill in the name
