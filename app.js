@@ -48,9 +48,11 @@ app.use(bodyParser.urlencoded({
 }));
 
 
-// Everything under URL/* will be statically delivered from PROJECT/public/*
-app.use(express.static(__dirname + "/public"));
-
+// If static content delivery by Express is enabled,
+// everything under URL/static/* will be statically delivered from PROJECT/public/*
+if (conf.express && conf.express.serveStaticContent) {
+    app.use("/static", express.static(__dirname + "/public"));
+}
 
 // LTI launcher page only available in test mode
 if (conf.lti && conf.lti.testMode) {

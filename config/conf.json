@@ -1,6 +1,9 @@
 {
     "portNum": 8080,
     "database": "localhost/moocchatDB",
+    "express": {
+        "serveStaticContent": false
+    },
     "lti": {
         "testMode": false,
         "signingInfo": {

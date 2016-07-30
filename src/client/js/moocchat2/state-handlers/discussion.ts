@@ -40,7 +40,7 @@ export const DiscussionStateHandler: IStateHandler<STATE> =
 
                     // Play notification tone
                     if (playTone) {
-                        const notificationTone = new Audio("./mp3/here-i-am.mp3");
+                        const notificationTone = new Audio("./static/mp3/here-i-am.mp3");
                         notificationTone.play();
                     }
 

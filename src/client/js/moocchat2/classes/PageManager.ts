@@ -47,7 +47,7 @@ export class PageManager {
      */
     public loadPage(name: string, onDone?: (page$?: (selector?: string) => JQuery) => void) {
         const pageFetchXHR = $.ajax({
-            url: `./html/${name}.html`,
+            url: `./static/html/${name}.html`,
             dataType: "html",
             method: "GET"
         });

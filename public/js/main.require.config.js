@@ -1,6 +1,6 @@
 requirejs.config({
     // Relative to URL of public page (not server filesystem path)
-    baseUrl: "./js/moocchat2",
+    baseUrl: "./static/js/moocchat2",
 
     // All references to external resources
     paths: {
