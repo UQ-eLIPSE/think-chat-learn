@@ -444,13 +444,13 @@ button.link:active {
 
         font-weight: 300;
 
-        padding: $mc-sidebar-padding-tb $mc-sidebar-padding-lr $mc-sidebar-padding-tb 3rem;
+        padding: $mc-sidebar-padding-tb $mc-sidebar-padding-lr $mc-sidebar-padding-tb 2.5em;
         margin: 0;
 
         background-image: url(../../img/task-section-link-mid-open.png);
         background-repeat: no-repeat;
-        background-position: 1rem center;
-        background-size: 20px 200px;
+        background-position: 1em center;
+        background-size: 1em 10em;
 
         &:first-child {
             background-image: url(../../img/task-section-link-top-open.png);
@@ -487,7 +487,7 @@ button.link:active {
 
                 margin-top: -0.5em;
 
-                font-size: 1rem;
+                font-size: 0.8em;
                 line-height: 1;
 
                 opacity: 0.7;
