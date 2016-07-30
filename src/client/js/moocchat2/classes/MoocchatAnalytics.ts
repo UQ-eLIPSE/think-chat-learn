@@ -62,7 +62,8 @@ export class MoocchatAnalytics extends MoocchatAnalyticsCore {
      * Attaches handlers and sets up session analytics.
      */
     private setup() {
-        this.setupHeartBeatTimer();
+        // Temporarily disabling heartbeat timer due to excessive traffic
+        // this.setupHeartBeatTimer();
         this.setupTrackPageView();
         this.setupSetUserId();
     }
