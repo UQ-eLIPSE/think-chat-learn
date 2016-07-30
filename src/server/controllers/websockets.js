@@ -463,7 +463,7 @@ function handleLoginLti(data, socket) {
 
             // Existing user
             userObjectId = result[0]._id;
-            
+
             if (result[0].researchConsent === false || result[0].researchConsent === true) {
                 // Research consent value has been set previously
                 researchConsentUnknown = false;
@@ -962,33 +962,49 @@ function handleBackupClientTransferConfirm(data) {
 
 
 
+function registerSocketEventWithLoggingFactory(socket) {
+    var eventList = [];
+
+    return function(event, handler) {
+        if (eventList.indexOf(event) < 0) {
+            socket.on(event, function(data) {
+                console.log(`socket.io${socket.id} [${event}]`, data);
+            });
+            
+            eventList.push(event);
+        }
+
+        socket.on(event, handler);
+    }
+}
 
 io.sockets.on('connection', function(socket) {
     /// Registration of socket event handlers
+    var registerSocketEventWithLogging = registerSocketEventWithLoggingFactory(socket);
 
     /* On websocket disconnect */
     socket.on('disconnect', disconnect);
 
     /* Submission of answers and surveys */
-    socket.on("answerSubmissionInitial", handleAnswerSubmissionInitial);
-    socket.on("answerSubmissionFinal", handleAnswerSubmissionFinal);
-    socket.on("submitSurvey", saveSurvey);
+    registerSocketEventWithLogging("answerSubmissionInitial", handleAnswerSubmissionInitial);
+    registerSocketEventWithLogging("answerSubmissionFinal", handleAnswerSubmissionFinal);
+    registerSocketEventWithLogging("submitSurvey", saveSurvey);
 
     /* Log ins */
-    socket.on("loginLti", function(data) { handleLoginLti(data, socket); });
-    socket.on("researchConsentSet", handleResearchConsentSet);
-    
+    registerSocketEventWithLogging("loginLti", function(data) { handleLoginLti(data, socket); });
+    registerSocketEventWithLogging("researchConsentSet", handleResearchConsentSet);
+
     /* Chat group discussion */
-    socket.on("chatGroupJoinRequest", handleChatGroupJoinRequest);
-    socket.on("chatGroupMessage", handleChatGroupMessage);
-    socket.on("chatGroupQuitStatusChange", handleChatGroupQuitStatusChange);
+    registerSocketEventWithLogging("chatGroupJoinRequest", handleChatGroupJoinRequest);
+    registerSocketEventWithLogging("chatGroupMessage", handleChatGroupMessage);
+    registerSocketEventWithLogging("chatGroupQuitStatusChange", handleChatGroupQuitStatusChange);
 
     /* Backup client */
-    socket.on("backupClientLogout", handleBackupClientLogout);
-    socket.on("backupClientEnterQueue", handleBackupClientEnterQueue);
-    socket.on("backupClientReturnToQueue", handleBackupClientReturnToQueue);
-    socket.on("backupClientStatusRequest", handleBackupClientStatusRequest);
-    socket.on("backupClientTransferConfirm", handleBackupClientTransferConfirm);
+    registerSocketEventWithLogging("backupClientLogout", handleBackupClientLogout);
+    registerSocketEventWithLogging("backupClientEnterQueue", handleBackupClientEnterQueue);
+    registerSocketEventWithLogging("backupClientReturnToQueue", handleBackupClientReturnToQueue);
+    registerSocketEventWithLogging("backupClientStatusRequest", handleBackupClientStatusRequest);
+    registerSocketEventWithLogging("backupClientTransferConfirm", handleBackupClientTransferConfirm);
 
     /* Testing */
     // socket.on('loadTestReq', loadTest);
