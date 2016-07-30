@@ -10,7 +10,7 @@
     "clean_client": "rimraf public/css/moocchat2 public/js/moocchat2",
     "clean_server": "rimraf build",
     "clean": "npm run clean_client && npm run clean_server",
-    "build_client": "tsc --project ./src/client/js && node-sass -q ./src/client/css/moocchat2/main.scss ./public/css/moocchat2/main.css",
+    "build_client": "tsc --project ./src/client/js && tsc --project ./src/client/js/tsconfig-backup-client.json && node-sass -q ./src/client/css/moocchat2/main.scss ./public/css/moocchat2/main.css",
     "build_server": "tsc --project ./src/server",
     "build": "npm run clean && npm run build_client && npm run build_server"
   },

@@ -9,6 +9,9 @@ export const InvalidLoginStateHandler: IStateHandler<STATE> =
                 session.pageManager.loadPage("invalid-login", (page$) => {
                     page$("#reason").text(data.reason);
                 });
+
+                // End session by closing socket
+                session.socket.close(true);
             }
         }
     }

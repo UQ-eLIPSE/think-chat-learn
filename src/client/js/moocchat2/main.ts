@@ -61,6 +61,17 @@ $(() => {
     const session = new MoocchatSession<STATE>($content, $taskSections).setSocket(socket);
 
 
+    // Track errors
+    window.addEventListener("error", (e: ErrorEvent) => {
+        const errMsg = e.message;
+        const errFile = e.filename || "";
+        const errLine = e.lineno || "";
+
+        const errFilePlusLine = ((errFile.length > 0) ? `${errFile}:${errLine}` : "");
+
+        session.analytics.trackEvent("JS_ERROR", errMsg, errFilePlusLine);
+    });
+
     // Send event on any button click
     $content.on("click", "button, input[type=button]", (e) => {
         const $elem = $(e.currentTarget);
@@ -116,7 +127,7 @@ $(() => {
         },
         {   // Consent form
             state: STATE.CONSENT_FORM,
-            onEnter: consentFormState.onEnter  
+            onEnter: consentFormState.onEnter
         },
         {   // Set research consent
             state: STATE.SET_RESEARCH_CONSENT,

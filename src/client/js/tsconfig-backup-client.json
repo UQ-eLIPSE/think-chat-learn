@@ -7,10 +7,10 @@
         "preserveConstEnums": true,
         "sourceMap": false,
         "outDir": "../../../public/js/moocchat2",
-        "outFile": "../../../public/js/moocchat2/main.js"
+        "outFile": "../../../public/js/moocchat2/backup-client.js"
     },
     "files": [
         "./typings/index.d.ts",
-        "./moocchat2/main.ts"
+        "./moocchat2/backup-client.ts"
     ]
 }
