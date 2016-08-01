@@ -8,12 +8,17 @@ import * as socket from "socket.io-client";
  */
 export class WebsocketManager {
     private socket: SocketIOClient.Socket;
+    private socketId: string;
     private silentClose: boolean;
 
     public open() {
         this.socket = socket.connect({
             path: "/socket.io",
             transports: ["websocket"]
+        });
+
+        this.on("connected", () => {
+            this.socketId = this.socket.id;
         });
 
         this.on("error", () => {
@@ -25,7 +30,14 @@ export class WebsocketManager {
                 return;
             }
             
-            alert("You or the server has disconnected the websocket connection.\n\nYour MOOCchat session has been terminated.\n\nIf your session was terminated prematurely you will need to restart your MOOCchat session.");
+            alert(`You or the server has disconnected the websocket connection.
+
+Your MOOCchat session has been terminated.
+
+If your session was terminated prematurely you will need to restart your MOOCchat session.
+
+
+Socket ID: ${this.socketId}`);
         });
     }
 

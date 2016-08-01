@@ -316,7 +316,7 @@ function handleChatGroupMessage(data) {
  */
 function handleLoginLti(data, socket) {
     function notifyClientOnError(err) {
-        socket.emit("loginFailure", (err && err.message) ? err.message : "Unexpected error");
+        socketEmitWithLogging(socket,"loginFailure", (err && err.message) ? err.message : "Unexpected error");
     }
 
     // Callback chain
@@ -638,7 +638,7 @@ function handleLoginLti(data, socket) {
 
     function notifyClientOfLogin(throwErr, next) {
         // Complete login by notifying client
-        socket.emit('loginSuccess', {
+        socketEmitWithLogging(socket,'loginSuccess', {
             sessionId: session.getId(),
             username: client.username,
             quiz: {
@@ -683,7 +683,7 @@ function handleResearchConsentSet(data) {
                 return;
             }
 
-            socket.emit("researchConsentSaved");
+            socketEmitWithLogging(socket,"researchConsentSaved");
         });
 }
 
@@ -784,7 +784,7 @@ function answerSubmissionHandlerFactory(answerType) {
                         return;
                     }
 
-                    socket.emit(onSuccessWebsocketEvent);
+                    socketEmitWithLogging(socket,onSuccessWebsocketEvent);
                 });
         });
     }
@@ -961,6 +961,7 @@ function handleBackupClientTransferConfirm(data) {
 
 
 
+// Socket logging receive/emit proxy functions
 
 function registerSocketEventWithLoggingFactory(socket) {
     var eventList = [];
@@ -968,7 +969,17 @@ function registerSocketEventWithLoggingFactory(socket) {
     return function(event, handler) {
         if (eventList.indexOf(event) < 0) {
             socket.on(event, function(data) {
-                console.log(`socket.io${socket.id} [${event}]`, data);
+                var loggedData = [
+                    'socket.io' + socket.id,
+                    'INBOUND',
+                    '[' + event + ']'
+                ];
+
+                if (typeof data !== "undefined") {
+                    loggedData.push(data);
+                }
+
+                console.log.apply(undefined, loggedData);
             });
             
             eventList.push(event);
@@ -978,12 +989,28 @@ function registerSocketEventWithLoggingFactory(socket) {
     }
 }
 
+function socketEmitWithLogging(socket, event, data) {
+    var loggedData = [
+        'socket.io' + socket.id,
+        'OUTBOUND',
+        '[' + event + ']'
+    ];
+
+    if (typeof data !== "undefined") {
+        loggedData.push(data);
+    }
+
+    console.log.apply(undefined, loggedData);
+
+    socket.emit(event, data);
+}
+
 io.sockets.on('connection', function(socket) {
     /// Registration of socket event handlers
     var registerSocketEventWithLogging = registerSocketEventWithLoggingFactory(socket);
 
     /* On websocket disconnect */
-    socket.on('disconnect', disconnect);
+    registerSocketEventWithLogging('disconnect', disconnect);
 
     /* Submission of answers and surveys */
     registerSocketEventWithLogging("answerSubmissionInitial", handleAnswerSubmissionInitial);
@@ -1010,8 +1037,8 @@ io.sockets.on('connection', function(socket) {
     // socket.on('loadTestReq', loadTest);
     // socket.on('saveLoadTestResults', saveLoadTestResults);
 
-    // For unit test framework to know when to begin
-    socket.emit('connected');
+    // Signal back to client/test framework that socket is connected
+    socketEmitWithLogging(socket,'connected');
 
 
 
