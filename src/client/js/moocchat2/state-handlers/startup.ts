@@ -11,7 +11,7 @@ import {ILTIBasicLaunchData} from "../classes/ILTIBasicLaunchData";
 declare const _LTI_BASIC_LAUNCH_DATA: ILTIBasicLaunchData;
 
 export const StartupStateHandler: IStateHandler<STATE> =
-    (session: MoocchatSession<STATE>, nextState: STATE, $courseNameElem: JQuery, isBackupClient: boolean = false) => {
+    (session: MoocchatSession<STATE>, nextState: STATE, $courseNameElem: JQuery, $blackboardOpen: JQuery, isBackupClient: boolean = false) => {
         return {
             onEnter: () => {
                 if (typeof _LTI_BASIC_LAUNCH_DATA === "undefined") {
@@ -35,7 +35,14 @@ export const StartupStateHandler: IStateHandler<STATE> =
                         }
                     }
 
+                    // Make Blackboard link visible and set new window open
+                    $("button", $blackboardOpen).on("click", () => {
+                        window.open(_LTI_BASIC_LAUNCH_DATA.launch_presentation_return_url);
+                    });
+                    $blackboardOpen.removeClass("hidden");
+
                     $courseNameElem.text(courseName + ((isBackupClient) ? " Backup Queue" : ""));
+                    
                     session.stateMachine.goTo(nextState);
                     session.analytics.trackEvent("MOOCCHAT", "START");
                 }

@@ -349,6 +349,20 @@ button.link:active {
 
 /********** Core UI structure **********/
 
+#blackboard-open {
+    margin: 0 1em;
+    border-bottom: 1px solid fg-on-bg($mc-colour-1);
+    opacity: 0.5;
+    text-align: center;
+    font-weight: 300;
+
+    button {
+        font-size: 0.8em;
+        margin: 0.5em;
+        color: fg-on-bg($mc-colour-1);
+    }
+}
+
 #header {
     background: $mc-colour-1;
     color: fg-on-bg($mc-colour-1);
