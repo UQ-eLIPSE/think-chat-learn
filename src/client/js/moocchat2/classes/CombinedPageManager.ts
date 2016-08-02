@@ -44,7 +44,7 @@ export class CombinedPageManager extends PageManager {
             }
 
             // Render this requested page element from the combined page
-            this.render(requestedPageElem, loadStartTime, onDone);
+            this.render(name, requestedPageElem, loadStartTime, onDone);
         });
     }
 }

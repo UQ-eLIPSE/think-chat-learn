@@ -55,7 +55,7 @@ export class PageManager {
         const loadStartTime = new Date().getTime();
 
         pageFetchXHR.done((html: string) => {
-            this.render(html, loadStartTime, onDone);
+            this.render(name, html, loadStartTime, onDone);
         });
     }
 
@@ -66,7 +66,7 @@ export class PageManager {
         this.sharedEventManager.dispatch(PageManager_Events.PAGE_LOAD, data);
     }
 
-    protected render(elem: string | Element, loadStartTime: number, onDone?: (page$?: (selector?: string) => JQuery) => void) {
+    protected render(name: string, elem: string | Element, loadStartTime: number, onDone?: (page$?: (selector?: string) => JQuery) => void) {
         const loadEndTime = new Date().getTime();
 
         if (typeof elem === "string") {
