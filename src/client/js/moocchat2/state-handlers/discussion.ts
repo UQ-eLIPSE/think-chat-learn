@@ -99,8 +99,25 @@ export const DiscussionStateHandler: IStateHandler<STATE> =
                     data.groupAnswers.forEach((clientAnswer) => {
                         const clientIndex = clientAnswer.clientIndex;
 
-                        const justification = clientAnswer.answer.justification;
-                        const optionId = clientAnswer.answer.optionId;
+                        let justification: string;
+                        let optionId: string;
+
+                        // If we are given `null` for the client answer when we should have one (for ourselves)
+                        // it is most likely that we are in a virtualised server environment
+                        // --> Put data from our own session object in instead
+                        if (data.clientIndex === clientAnswer.clientIndex &&
+                            clientAnswer.answer.optionId === null && session.answers.initial.optionId !== null) {
+                            justification = session.answers.initial.justification;
+                            optionId = session.answers.initial.optionId;
+                        } else {
+                            justification = clientAnswer.answer.justification;
+                            optionId = clientAnswer.answer.optionId;
+                        }
+
+                        // If no option ID then skip
+                        if (optionId === null || typeof optionId === "undefined") {
+                            return;
+                        }
 
                         if (!answerJustificationMap[optionId]) {
                             answerJustificationMap[optionId] = [];
