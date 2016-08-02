@@ -195,6 +195,10 @@ button.thin {
 
     display: table;
 
+    &.layout-fixed {
+        table-layout: fixed;
+    }
+
     &.width-auto {
         width: auto;
     }
@@ -554,6 +558,14 @@ button.link:active {
 }
 
 /********** Q&A sections **********/
+
+#question-reading {
+    p > img {
+        display: block;
+        max-width: 100%;
+        margin: 0 auto;
+    }
+}
 
 #question-statement {
     font-weight: bold;
