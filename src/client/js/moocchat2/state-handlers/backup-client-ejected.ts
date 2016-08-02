@@ -11,7 +11,8 @@ export const BackupClientEjectedStateHandler: IStateHandler<STATE> =
         return {
             onEnter: () => {
                 // Log out by closing socket silently
-                session.socket.close(true);
+                // session.socket.close(true);
+                session.socket.close();
                 
                 session.pageManager.loadPage("backup-client-ejected", (page$) => {
                     page$("#go-to-return-url").on("click", () => {

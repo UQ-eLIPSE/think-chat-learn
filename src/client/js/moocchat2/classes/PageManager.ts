@@ -11,7 +11,7 @@ import {EventBox} from "./EventBox";
  * Manages swapping in and out of pages
  */
 export class PageManager {
-    private $contentElem: JQuery;
+    protected $contentElem: JQuery;
     private sharedEventManager: EventBox;
 
     /**
@@ -55,31 +55,37 @@ export class PageManager {
         const loadStartTime = new Date().getTime();
 
         pageFetchXHR.done((html: string) => {
-            const loadEndTime = new Date().getTime();
-
-            this.$contentElem.html(html);
-
-            // Scroll to top to ensure clean start at top on every page load
-            this.$contentElem.scrollTop(0);
-
-            this.dispatchOnPageLoad({
-                name: name,
-                loadTimeMs: (loadEndTime - loadStartTime)
-            });
-
-            if (onDone) {
-                onDone(this.page$.bind(this));
-            }
+            this.render(html, loadStartTime, onDone);
         });
-
-        return pageFetchXHR;
     }
 
     /**
      * Fires page load event to the shared event manager for others to catch.
      */
-    public dispatchOnPageLoad(data: IPageManager_PageLoad) {
+    protected dispatchOnPageLoad(data: IPageManager_PageLoad) {
         this.sharedEventManager.dispatch(PageManager_Events.PAGE_LOAD, data);
+    }
+
+    protected render(elem: string | Element, loadStartTime: number, onDone?: (page$?: (selector?: string) => JQuery) => void) {
+        const loadEndTime = new Date().getTime();
+
+        if (typeof elem === "string") {
+            this.$contentElem.html(elem);
+        } else {
+            this.$contentElem.empty().append(elem);
+        }
+
+        // Scroll to top to ensure clean start at top on every page load
+        this.$contentElem.scrollTop(0);
+
+        this.dispatchOnPageLoad({
+            name: name,
+            loadTimeMs: (loadEndTime - loadStartTime)
+        });
+
+        if (onDone) {
+            onDone(this.page$.bind(this));
+        }
     }
 }
 

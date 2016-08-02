@@ -8,6 +8,7 @@ import {MoocchatSession} from "./classes/MoocchatSession";
 
 import {MoocchatState as STATE} from "./classes/MoocchatStates";
 
+import {VirtServerComms} from "./classes/VirtServerComms";
 
 
 import {StartupStateHandler} from "./state-handlers/startup";
@@ -46,9 +47,9 @@ const windowUnloadWarning = (event: BeforeUnloadEvent) => {
 window.addEventListener("beforeunload", windowUnloadWarning);
 
 
-// Start Websockets as soon as possible
-const socket = new WebsocketManager();
-socket.open();
+// Start server communications
+const virtServerComms = new VirtServerComms();
+virtServerComms.open();
 
 
 // On DOM Ready
@@ -58,7 +59,7 @@ $(() => {
     const $taskSections = $("#task-sections");
     const $content = $("#content");
 
-    const session = new MoocchatSession<STATE>($content, $taskSections).setSocket(socket);
+    const session = new MoocchatSession<STATE>($content, $taskSections).setSocket(virtServerComms);
 
 
     // Track errors

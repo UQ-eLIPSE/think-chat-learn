@@ -1,6 +1,9 @@
+import {conf} from "../conf";
+
 import {EventBox} from "./EventBox";
 import {StateFlow} from "./StateFlow";
 import {PageManager} from "./PageManager";
+import {CombinedPageManager} from "./CombinedPageManager";
 import {TaskSectionManager} from "./TaskSectionManager";
 import {WebsocketManager} from "./WebsocketManager";
 import {SessionStorage} from "./SessionStorage";
@@ -41,7 +44,7 @@ export class MoocchatSession<StateTypeEnum> {
 
     constructor($content: JQuery, $taskSections: JQuery, turnOnAnalytics: boolean = true) {
         this._eventManager = new EventBox();
-        this._pageManager = new PageManager(this._eventManager, $content);
+        this._pageManager = new CombinedPageManager(this._eventManager, $content, conf.combinedHTML.url);
         this._sectionManager = new TaskSectionManager(this._eventManager, $taskSections);
         this._stateMachine = new StateFlow<StateTypeEnum>();
 

@@ -11,7 +11,8 @@ export const InvalidLoginStateHandler: IStateHandler<STATE> =
                 });
 
                 // End session by closing socket
-                session.socket.close(true);
+                // session.socket.close(true);
+                session.socket.close();
             }
         }
     }
