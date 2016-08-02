@@ -16,8 +16,8 @@
         }
     },
     "piwik": {
-        "url": "/piwik",
-        "siteId": 1
+        "url": "https://analytics.uqcloud.net/piwik",
+        "siteId": 2
     },
     "chat": {
         "groups": {
