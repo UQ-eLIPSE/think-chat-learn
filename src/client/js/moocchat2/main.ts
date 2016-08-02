@@ -75,7 +75,7 @@ $(() => {
     });
 
     // Send event on any button click
-    $content.on("click", "button, input[type=button]", (e) => {
+    $("body").on("click", "button, input[type=button]", (e) => {
         const $elem = $(e.currentTarget);
         session.analytics.trackEvent("BUTTON_CLICK", $elem.text() || $elem.val());
     });
