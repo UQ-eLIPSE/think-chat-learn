@@ -6,7 +6,7 @@ import {EventBox} from "./EventBox";
 
 export class CombinedPageManager extends PageManager {
     private combinedPageXHR: JQueryXHR;
-    private combinedPageDOM: Element[];
+    private combinedPageDOM: {[name: string]: Element} = {};
 
     constructor(sharedEventManager: EventBox, $contentElem: JQuery, combinedPageUrl: string) {
         super(sharedEventManager, $contentElem);
@@ -18,8 +18,16 @@ export class CombinedPageManager extends PageManager {
         });
         
         this.combinedPageXHR.done((html: string) => {
-            // Store the parsed HTML into array of <section /> elements, one for each "page"
-            this.combinedPageDOM = $.parseHTML(html, undefined, true);
+            // Store the parsed HTML into map of <section /> elements, one for each "page"
+            const pageDOMs: Element[] = $.parseHTML(html, undefined, true);
+            
+            pageDOMs.forEach((pageElem) => {
+                const pageName: string = $(pageElem).data("name");
+
+                if (pageName) {
+                    this.combinedPageDOM[pageName] = pageElem;
+                }
+            });
         });
     }
 
@@ -27,17 +35,8 @@ export class CombinedPageManager extends PageManager {
         const loadStartTime = new Date().getTime();
 
         this.combinedPageXHR.done(() => {
-            // Find the requested element
-            let requestedPageElem: Element;
-
-            // this.combinedPageDOM should be loaded with the information by this time
-            for (let i = 0; i < this.combinedPageDOM.length; ++i) {
-                const pageElem = this.combinedPageDOM[i];
-                if ($(pageElem).data("name") === name) {
-                    requestedPageElem = pageElem;
-                    break;
-                }
-            }
+            // Find the requested page element
+            let requestedPageElem = this.combinedPageDOM[name];
 
             if (!requestedPageElem) {
                 // throw new Error("Page not found");
