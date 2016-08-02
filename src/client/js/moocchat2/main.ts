@@ -58,6 +58,7 @@ $(() => {
     const $courseName = $("#course-name");
     const $taskSections = $("#task-sections");
     const $content = $("#content");
+    const $blackboardOpen = $("#blackboard-open");
 
     const session = new MoocchatSession<STATE>($content, $taskSections).setSocket(virtServerComms);
 
@@ -94,7 +95,7 @@ $(() => {
 
 
     // Individual state handlers
-    const startupState = StartupStateHandler(session, STATE.LOGIN, $courseName);
+    const startupState = StartupStateHandler(session, STATE.LOGIN, $courseName, $blackboardOpen);
     const loginState = LoginStateHandler(session, STATE.WELCOME, STATE.CONSENT_FORM);
     const consentFormState = ConsentFormStateHandler(session);
     const setResearchConsentState = SetResearchConsentStateHandler(session);
