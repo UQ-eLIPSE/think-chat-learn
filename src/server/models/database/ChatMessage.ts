@@ -11,8 +11,8 @@ export class ChatMessage extends DatabaseWrapper<IDB_ChatMessage> {
 }
 
 export interface IDB_ChatMessage {
-    _id?: string,
-    sessionId?: string,
+    _id?: ObjectId,
+    sessionId?: ObjectId,
     timestamp?: Date,
     content?: string
 }

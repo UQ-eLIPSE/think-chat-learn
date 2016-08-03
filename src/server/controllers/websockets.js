@@ -20,6 +20,11 @@ var SessionManager = require("../models/SessionManager");
 
 
 
+// Replacement code for previous session/client classes
+var MoocchatUserSession = require("../models/MoocchatUserSession").MoocchatUserSession;
+var MoocchatWaitPool = require("../models/MoocchatWaitPool").MoocchatWaitPool;
+
+
 
 
 var allSessions = new SessionManager();
@@ -189,16 +194,36 @@ var chatGroupFormationLoop = (function() {
 
     /**
      * Runs another round of the loop, or starts the loop if not already active.
+     * 
+     * @param {MoocchatWaitPool} waitPool
      */
-    function run(clientAnswerPool) {
-        clearTimeout(timeoutHandles[clientAnswerPool.id]);
+    function run(waitPool) {
+        clearTimeout(timeoutHandles[waitPool.getQuizSessionId()]);
 
-        var newChatGroup = formChatGroup(clientAnswerPool);
+        var newGroup = waitPool.tryFormGroup();
 
-        if (newChatGroup) {
-            setImmediate(run, clientAnswerPool);   // Process next group at next available timeslot
+        if (newGroup && newGroup.length > 0) {
+            // TODO: Form chat group
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            // Process next group at next available timeslot
+            setImmediate(run, waitPool);
         } else {
-            timeoutHandles[clientAnswerPool.id] = setTimeout(run, timeBetweenChecks, clientAnswerPool);
+            timeoutHandles[waitPool.getQuizSessionId()] =
+                setTimeout(run, timeBetweenChecks, waitPool);
         }
     }
 
@@ -215,21 +240,17 @@ var chatGroupFormationLoop = (function() {
  * @param {any} data
  */
 function handleChatGroupJoinRequest(data, _socket) {
-    var session = getSessionFromId(data.sessionId);
+    var session = MoocchatUserSession.GetSession(data.sessionId);
 
     if (!session) {
-        return;
+        return console.error("Attempted chat group join request with invalid session ID = " + data.sessionId);
     }
 
-    var client = session.client;
-    var answerOptionId = session.responseInitial.optionId;
-    var clientAnswerPool = getClientAnswerPoolFromSession(session);
-
-    clientAnswerPool.addClient(client, answerOptionId);
-
-    broadcastPoolCountToBackupQueue(clientAnswerPool);
-
-    chatGroupFormationLoop.run(clientAnswerPool);
+    var waitPool = MoocchatWaitPool.GetPool(session.data.quizSchedule._id.toString(), session.data.quizQuestionOptions);
+    
+    waitPool.addSession(session);
+    broadcastPoolCountToBackupQueue__WaitPool(waitPool);
+    chatGroupFormationLoop.run(waitPool);
 }
 
 /**
@@ -242,25 +263,32 @@ function handleChatGroupJoinRequest(data, _socket) {
  * @param {any} data
  */
 function handleChatGroupQuitStatusChange(data, _socket) {
-    var session = getSessionFromId(data.sessionId);
+    var session = MoocchatUserSession.GetSession(data.sessionId);
 
     if (!session) {
-        return;
+        return console.error("Attempted chat group join request with invalid session ID = " + data.sessionId);
     }
 
-    var client = session.client;
-    var chatGroup = getChatGroupFromSession(session);
+    var chatGroup = MoocchatChatGroup.GetChatGroup(session);
 
     if (data.quitStatus) {
-        chatGroup.queueClientToQuit(client);
+        chatGroup.queueClientToQuit(session);
     } else {
-        chatGroup.unqueueClientToQuit(client);
+        chatGroup.unqueueClientToQuit(session);
     }
 
-    // If the chat group terminates, then remove the chat group reference
-    if (chatGroup.terminationCheck()) {
-        deleteChatGroupFromMappingStore(session, chatGroup);
-    }
+    // var chatGroup = getChatGroupFromSession(session);
+
+    // if (data.quitStatus) {
+    //     chatGroup.queueClientToQuit(client);
+    // } else {
+    //     chatGroup.unqueueClientToQuit(client);
+    // }
+
+    // // If the chat group terminates, then remove the chat group reference
+    // if (chatGroup.terminationCheck()) {
+    //     deleteChatGroupFromMappingStore(session, chatGroup);
+    // }
 }
 
 /**
@@ -316,7 +344,7 @@ function handleChatGroupMessage(data, _socket) {
  */
 function handleLoginLti(data, socket) {
     function notifyClientOnError(err) {
-        socketEmitWithLogging(socket,"loginFailure", (err && err.message) ? err.message : "Unexpected error");
+        socketEmitWithLogging(socket, "loginFailure", (err && err.message) ? err.message : "Unexpected error");
     }
 
     // Callback chain
@@ -393,9 +421,9 @@ function handleLoginLti(data, socket) {
     var survey;
 
     /** {Client} */
-    var client;
+    // var client;
 
-    /** {Session} */
+    /** {MoocchatUserSession} */
     var session;
 
     /** {boolean} */
@@ -595,10 +623,10 @@ function handleLoginLti(data, socket) {
     }
 
     function setupClient(throwErr, next) {
-        client = new Client();
-        client.userId = userObjectId.toString();
-        client.username = ltiUsername;
-        client.setSocket(socket);
+        // client = new Client();
+        // client.userId = userObjectId.toString();
+        // client.username = ltiUsername;
+        // client.setSocket(socket);
 
         next();
     }
@@ -624,13 +652,13 @@ function handleLoginLti(data, socket) {
             var sessionIdString = result._id.toString();
 
             // Set up session
-            session = new Session(client, quizSchedule);
-            session.setId(sessionIdString);
-            session.setSurvey(survey);
-            session.setQuizQuestion(question);
-            session.setQuizQuestionOptions(questionOptions);
-
-            allSessions.addSession(session);
+            session = new MoocchatUserSession(userObjectId.toString(), sessionIdString);
+            session.initSessionData(
+                quizSchedule,
+                question,
+                questionOptions,
+                survey
+            );
 
             next();
         });
@@ -638,9 +666,9 @@ function handleLoginLti(data, socket) {
 
     function notifyClientOfLogin(throwErr, next) {
         // Complete login by notifying client
-        socketEmitWithLogging(socket,'loginSuccess', {
+        socketEmitWithLogging(socket, 'loginSuccess', {
             sessionId: session.getId(),
-            username: client.username,
+            username: ltiUsername,
             quiz: {
                 quizSchedule: quizSchedule,
                 question: question,
@@ -654,15 +682,43 @@ function handleLoginLti(data, socket) {
     }
 }
 
-function handleResearchConsentSet(data, _socket) {
-    var session = getSessionFromId(data.sessionId);
+function handleLogout(data, socket) {
+    var session = MoocchatUserSession.GetSession(data.sessionId);
 
     if (!session) {
-        return;
+        return console.error("Attempted logout with invalid session ID = " + data.sessionId);
     }
 
-    var client = session.client;
-    var socket = client.getSocket();
+    var sessionId = session.getId();
+
+    MoocchatUserSession.Destroy(session);
+
+    db_wrapper.userSession.update(
+        {
+            _id: mongojs.ObjectId(sessionId)
+        },
+        {
+            $set: {
+                timestampEnd: new Date()
+            }
+        },
+        function(err, result) {
+            if (err) {
+                return console.error(err);
+            }
+
+            socketEmitWithLogging(socket, "logoutSuccess", {
+                sessionId: sessionId
+            });
+        });
+}
+
+function handleResearchConsentSet(data, socket) {
+    var session = MoocchatUserSession.GetSession(data.sessionId);
+
+    if (!session) {
+        return console.error("Attempted research consent set with invalid session ID = " + data.sessionId);
+    }
 
     var researchConsent = data.researchConsent;
 
@@ -670,9 +726,10 @@ function handleResearchConsentSet(data, _socket) {
         return;
     }
 
-    db_wrapper.user.update({
-        _id: mongojs.ObjectId(client.userId)
-    },
+    db_wrapper.user.update(
+        {
+            _id: mongojs.ObjectId(session.getUserId())
+        },
         {
             $set: {
                 researchConsent: researchConsent
@@ -680,10 +737,10 @@ function handleResearchConsentSet(data, _socket) {
         },
         function(err, result) {
             if (err) {
-                return;
+                return console.error(err);
             }
 
-            socketEmitWithLogging(socket,"researchConsentSaved");
+            socketEmitWithLogging(socket, "researchConsentSaved");
         });
 }
 
@@ -695,22 +752,26 @@ function broadcastPoolCountToBackupQueue(clientAnswerPool) {
     });
 }
 
+function broadcastPoolCountToBackupQueue__WaitPool(waitPool) {
+    var quizSessionId = waitPool.getQuizSessionId();
+
+    var backupClientQueue = MoocchatBackupClientQueue.GetQueue(quizSessionId);
+
+    backupClientQueue.broadcastEvent("clientPoolCountUpdate", {
+        numberOfClients: waitPool.getSize()
+    });
+}
 
 
 // ===== Question + answer =====
 
 function answerSubmissionHandlerFactory(answerType) {
     return function(data, _socket) {
-        var session = getSessionFromId(data.sessionId);
+        var session = MoocchatUserSession.GetSession(data.sessionId);
 
         if (!session) {
-            return;
+            return console.error("Attempted answer submission with invalid session ID = " + data.sessionId);
         }
-
-        var client = session.client;
-
-        var username = client.username;
-        var socket = client.getSocket();
 
         var optionIdString = data.optionId;
         var justification = data.justification;
@@ -726,7 +787,7 @@ function answerSubmissionHandlerFactory(answerType) {
 
         switch (answerType) {
             case "initial":
-                sessionAnswerObj = session.responseInitial;
+                sessionAnswerObj = session.data.response.initial;
                 onSuccessWebsocketEvent = "answerSubmissionInitialSaved";
                 generateUpdateSet = function(questionResponseObjectId) {
                     return {
@@ -736,7 +797,7 @@ function answerSubmissionHandlerFactory(answerType) {
                 break;
 
             case "final":
-                sessionAnswerObj = session.responseFinal;
+                sessionAnswerObj = session.data.response.final;
                 onSuccessWebsocketEvent = "answerSubmissionFinalSaved";
                 generateUpdateSet = function(questionResponseObjectId) {
                     return {
@@ -751,7 +812,7 @@ function answerSubmissionHandlerFactory(answerType) {
 
         // Check that option ID is valid for session
         if (optionIdString &&
-            session.quizQuestionOptions
+            session.data.quizQuestionOptions
                 .map(function(option) { return option._id.toString(); })
                 .indexOf(optionIdString) < 0) {
             return;
@@ -763,13 +824,14 @@ function answerSubmissionHandlerFactory(answerType) {
             timestamp: new Date()
         }, function(err, result) {
             if (err) {
-                return;
+                return console.error(err);
             }
 
             var questionResponseObjectId = result._id;
 
-            sessionAnswerObj._id = questionResponseObjectId.toString();
-            sessionAnswerObj.optionId = optionIdString;
+            // Sets the OBJECT that is being held in session.data.response.*
+            sessionAnswerObj._id = questionResponseObjectId;
+            sessionAnswerObj.optionId = mongojs.ObjectId(optionIdString);
             sessionAnswerObj.justification = justification;
 
             db_wrapper.userSession.update(
@@ -781,10 +843,10 @@ function answerSubmissionHandlerFactory(answerType) {
                 },
                 function(err, result) {
                     if (err) {
-                        return;
+                        return console.error(err);
                     }
 
-                    socketEmitWithLogging(socket,onSuccessWebsocketEvent);
+                    socketEmitWithLogging(socket, onSuccessWebsocketEvent);
                 });
         });
     }
@@ -817,15 +879,15 @@ var handleAnswerSubmissionFinal = answerSubmissionHandlerFactory("final");
  * }
  */
 function saveSurvey(data, _socket) {
-    var session = getSessionFromId(data.sessionId);
+    var session = MoocchatUserSession.GetSession(data.sessionId);
 
     if (!session) {
-        return;
+        return console.error("Attempted survey submission with invalid session ID = " + data.sessionId);
     }
 
     db_wrapper.surveyResponse.create({
         sessionId: mongojs.ObjectId(session.getId()),
-        surveyId: session.survey._id,
+        surveyId: mongojs.ObjectId(session.data.survey._id),
         timestamp: new Date(),
         content: data.content
     });
@@ -981,7 +1043,7 @@ function registerSocketEventWithLoggingFactory(socket) {
 
                 console.log.apply(undefined, loggedData);
             });
-            
+
             eventList.push(event);
         }
 
@@ -1020,6 +1082,7 @@ io.sockets.on('connection', function(socket) {
     /* Log ins */
     registerSocketEventWithLogging("loginLti", function(data) { handleLoginLti(data, socket); });
     registerSocketEventWithLogging("researchConsentSet", function(data) { handleResearchConsentSet(data, socket); });
+    registerSocketEventWithLogging("logout", function(data) { handleLogout(data, socket); });
 
     /* Chat group discussion */
     registerSocketEventWithLogging("chatGroupJoinRequest", function(data) { handleChatGroupJoinRequest(data, socket); });
@@ -1038,7 +1101,7 @@ io.sockets.on('connection', function(socket) {
     // socket.on('saveLoadTestResults', saveLoadTestResults);
 
     // Signal back to client/test framework that socket is connected
-    socketEmitWithLogging(socket,'connected');
+    socketEmitWithLogging(socket, 'connected');
 
 
 
@@ -1067,44 +1130,48 @@ io.sockets.on('connection', function(socket) {
     // }
 
     function disconnect() {
-        var session = allSessions.getSessionBySocket(socket);
+        // Disconnects no longer cleans sessions, only explicit logouts do.
+        // ----> See handleLogout().
 
-        // No session = no action to do
-        if (!session) {
-            return;
-        }
 
-        // Clean up pools, queues, chats
-        var client = session.client;
+        // var session = allSessions.getSessionBySocket(socket);
 
-        if (client) {
-            removeClientFromEverything(client);
-        }
+        // // No session = no action to do
+        // if (!session) {
+        //     return;
+        // }
 
-        var clientAnswerPool = getClientAnswerPoolFromSession(session);
-        var backupClientQueue = getBackupClientQueueFromSession(session);
-        var chatGroups = getChatGroupsFromSession(session);
+        // // Clean up pools, queues, chats
+        // var client = session.client;
 
-        if (clientAnswerPool && clientAnswerPool.totalPoolSize() === 0 &&
-            backupClientQueue && backupClientQueue.getQueueSize() === 0 &&
-            chatGroups && chatGroups.length === 0) {
-            delete quizSchedule_ClientAnswerPool[session.getQuizScheduleIdString()];
-            delete quizSchedule_BackupClientQueue[session.getQuizScheduleIdString()];
-            delete quizSchedule_ChatGroupArray[session.getQuizScheduleIdString()];
-        }
+        // if (client) {
+        //     removeClientFromEverything(client);
+        // }
 
-        // Remove session and update session entry in DB
-        allSessions.removeSession(session);
+        // var clientAnswerPool = getClientAnswerPoolFromSession(session);
+        // var backupClientQueue = getBackupClientQueueFromSession(session);
+        // var chatGroups = getChatGroupsFromSession(session);
 
-        db_wrapper.userSession.update(
-            {
-                _id: mongojs.ObjectId(session.getId())
-            },
-            {
-                $set: {
-                    timestampEnd: new Date()
-                }
-            });
+        // if (clientAnswerPool && clientAnswerPool.totalPoolSize() === 0 &&
+        //     backupClientQueue && backupClientQueue.getQueueSize() === 0 &&
+        //     chatGroups && chatGroups.length === 0) {
+        //     delete quizSchedule_ClientAnswerPool[session.getQuizScheduleIdString()];
+        //     delete quizSchedule_BackupClientQueue[session.getQuizScheduleIdString()];
+        //     delete quizSchedule_ChatGroupArray[session.getQuizScheduleIdString()];
+        // }
+
+        // // Remove session and update session entry in DB
+        // allSessions.removeSession(session);
+
+        // db_wrapper.userSession.update(
+        //     {
+        //         _id: mongojs.ObjectId(session.getId())
+        //     },
+        //     {
+        //         $set: {
+        //             timestampEnd: new Date()
+        //         }
+        //     });
     }
 });
 

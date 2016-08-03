@@ -11,12 +11,12 @@ export class UserSession extends DatabaseWrapper<IDB_UserSession> {
 }
 
 export interface IDB_UserSession {
-    _id?: string,
-    userUuid?: string,
-    quizScheduleId?: string,
+    _id?: ObjectId,
+    userUuid?: ObjectId,
+    quizScheduleId?: ObjectId,
     timestampStart?: Date,
     timestampEnd?: Date,
-    responseInitialId?: string,
-    responseFinalId?: string,
+    responseInitialId?: ObjectId,
+    responseFinalId?: ObjectId,
     chatGroupId?: string
 }

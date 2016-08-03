@@ -11,8 +11,8 @@ export class SurveyResponse extends DatabaseWrapper<IDB_SurveyResponse> {
 }
 
 export interface IDB_SurveyResponse {
-    sessionId?: string,
-    surveyId?: string,
+    sessionId?: ObjectId,
+    surveyId?: ObjectId,
     timestamp?: Date,
     content?: IDB_SurveyResponse_Content[]
 }
