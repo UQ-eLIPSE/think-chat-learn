@@ -12,3 +12,5 @@ declare module "oauth-signature" {
         tokenSecret?: string,
         options?: { [key: string]: any }): string;
 }
+
+declare type ObjectId = any;

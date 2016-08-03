@@ -44,9 +44,13 @@ $(() => {
     const $courseName = $("#course-name");
     const $taskSections = $("#task-sections");
     const $content = $("#content");
+    const $blackboardOpen = $("#blackboard-open");
 
     const session = new MoocchatSession<STATE>($content, $taskSections, false).setSocket(socket);
 
+    window.addEventListener("unload", () => {
+        session.logout();
+    });
 
     // Sections must be defined now before other resources use them
     session.sectionManager.registerAll([
@@ -59,7 +63,7 @@ $(() => {
     ]);
 
     // Individual state handlers
-    const startupState = StartupStateHandler(session, STATE.LOGIN, $courseName, true);
+    const startupState = StartupStateHandler(session, STATE.LOGIN, $courseName, $blackboardOpen, true);
     const loginState = LoginStateHandler(session, STATE.SET_RESEARCH_CONSENT, STATE.SET_RESEARCH_CONSENT);
     const setResearchConsentState = SetResearchConsentStateHandler(session);
     const welcomeState = WelcomeStateHandler(session, STATE.BACKUP_CLIENT_ANSWER);

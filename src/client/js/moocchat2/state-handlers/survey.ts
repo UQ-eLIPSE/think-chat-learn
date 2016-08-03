@@ -6,6 +6,7 @@ import {WebsocketManager} from "../classes/WebsocketManager";
 
 import {WebsocketEvents} from "../classes/WebsocketEvents";
 import * as IOutboundData from "../classes/IOutboundData";
+import * as IInboundData from "../classes/IInboundData";
 
 export const SurveyStateHandler: IStateHandler<STATE> =
     (session) => {

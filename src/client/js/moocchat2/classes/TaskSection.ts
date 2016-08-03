@@ -17,6 +17,8 @@ export class TaskSection {
     private timerStart: number;
     private timerActive: boolean;
     private lastUpdate: number;
+
+    private timeoutHandle: number;
     private rafHandle: number;
 
     private $elem: JQuery;
@@ -166,6 +168,11 @@ export class TaskSection {
         this.timerStart = Date.now();
         this.timerActive = true;
 
+        this.timeoutHandle = setTimeout(() => {
+            this.runTimerCompletionCallbacks();
+            this.clearTimer();
+        }, this.milliseconds);
+
         this.requestTimerUpdate();
     }
 
@@ -175,6 +182,7 @@ export class TaskSection {
     public stopTimer() {
         this.timerActive = false;
 
+        clearTimeout(this.timeoutHandle);
         cancelAnimationFrame(this.rafHandle);
     }
 
@@ -217,9 +225,9 @@ export class TaskSection {
             }
 
             // Halt updating timer when completed
-            if (this.timeRemaining <= timerUpdateIntervalMs) {
+            if (this.timeRemaining <= 0) {
                 this.runTimerCompletionCallbacks();
-                
+
                 // Clear all timer callbacks (as timers are intended to be run once only)
                 this.clearTimer();
 

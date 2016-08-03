@@ -1,18 +1,18 @@
 import {tables} from "./Tables";
 import {DatabaseWrapper} from "../DatabaseWrapper";
 
-const tableName = tables.CHAT_MESSAGE;
+const tableName = tables.VIRTSERVER_BACKUPS;
 
-export class ChatMessage extends DatabaseWrapper<IDB_ChatMessage> {
+export class VirtServerBackups extends DatabaseWrapper<IDB_VirtServer_Backups> {
     constructor(database: any) {
         super(tableName);
         this.init(database);
     }
 }
 
-export interface IDB_ChatMessage {
+export interface IDB_VirtServer_Backups {
     _id?: ObjectId,
-    sessionId?: ObjectId,
     timestamp?: Date,
-    content?: string
+    json?: string,
+    sessionId: string
 }

@@ -195,6 +195,10 @@ button.thin {
 
     display: table;
 
+    &.layout-fixed {
+        table-layout: fixed;
+    }
+
     &.width-auto {
         width: auto;
     }
@@ -349,6 +353,20 @@ button.link:active {
 
 /********** Core UI structure **********/
 
+#blackboard-open {
+    margin: 0 1em;
+    border-bottom: 1px solid fg-on-bg($mc-colour-1);
+    opacity: 0.5;
+    text-align: center;
+    font-weight: 300;
+
+    button {
+        font-size: 0.8em;
+        margin: 0.5em;
+        color: fg-on-bg($mc-colour-1);
+    }
+}
+
 #header {
     background: $mc-colour-1;
     color: fg-on-bg($mc-colour-1);
@@ -444,13 +462,13 @@ button.link:active {
 
         font-weight: 300;
 
-        padding: $mc-sidebar-padding-tb $mc-sidebar-padding-lr $mc-sidebar-padding-tb 3rem;
+        padding: $mc-sidebar-padding-tb $mc-sidebar-padding-lr $mc-sidebar-padding-tb 2.5em;
         margin: 0;
 
         background-image: url(../../img/task-section-link-mid-open.png);
         background-repeat: no-repeat;
-        background-position: 1rem center;
-        background-size: 20px 200px;
+        background-position: 1em center;
+        background-size: 1.05em 10.5em;
 
         &:first-child {
             background-image: url(../../img/task-section-link-top-open.png);
@@ -487,7 +505,7 @@ button.link:active {
 
                 margin-top: -0.5em;
 
-                font-size: 1rem;
+                font-size: 0.8em;
                 line-height: 1;
 
                 opacity: 0.7;
@@ -540,6 +558,14 @@ button.link:active {
 }
 
 /********** Q&A sections **********/
+
+#question-reading {
+    p > img {
+        display: block;
+        max-width: 100%;
+        margin: 0 auto;
+    }
+}
 
 #question-statement {
     font-weight: bold;
@@ -1033,6 +1059,58 @@ button.link:active {
     }
 }
 
+// Short height devices (< 600px in window, approx < 900px in Blackboard, device approx < 1000px)
+@media (max-height: 650px) {
+    html, body {
+        font-size: $body-std-font-size * 0.9;
+    }
+    
+    #moocchat-name {
+        margin-top: $mc-sidebar-padding-tb * 1.5;
+    }
+
+    #course-name {
+        margin-bottom: $mc-sidebar-padding-tb * 0.7;
+    }
+
+    #task-sections {
+        li {
+            padding-top: $mc-sidebar-padding-tb * 0.8;
+            padding-bottom: $mc-sidebar-padding-tb * 0.8;
+        }
+    }
+}
+
+@media (max-height: 550px) {
+    #task-sections {
+        li {
+            padding-top: $mc-sidebar-padding-tb * 0.5;
+            padding-bottom: $mc-sidebar-padding-tb * 0.5;
+        }
+    }
+}
+
+// Very short height devices (< 400px in window, approx < 600px in Blackboard, device approx < 800px)
+@media (max-height: 450px) {
+    #header {
+        font-size: 1.1rem;
+    }
+
+    #moocchat-name {
+        margin-bottom: $mc-sidebar-padding-tb * 0.3;
+    }
+
+    #course-name {
+        margin-top: $mc-sidebar-padding-tb * 0.3;
+    }
+
+    #task-sections {
+        li {
+            padding-top: $mc-sidebar-padding-tb * 0.3;
+            padding-bottom: $mc-sidebar-padding-tb * 0.3;
+        }
+    }
+}
 
 // Printers
 @media print {

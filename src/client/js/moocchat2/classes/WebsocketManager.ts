@@ -7,31 +7,18 @@ import * as socket from "socket.io-client";
  * Acts as thin layer over Socket.IO object; methods act approximately the same way.
  */
 export class WebsocketManager {
-    private socket: SocketIOClient.Socket;
-    private silentClose: boolean;
+    protected socket: SocketIOClient.Socket;
 
     public open() {
         this.socket = socket.connect({
             path: "/socket.io",
+            reconnection: false,            // Don't reconnect
             transports: ["websocket"]
-        });
-
-        this.on("error", () => {
-            alert("An error occurred with the websocket connection.\n\nA restart of MOOCchat is strongly recommended.");
-        });
-
-        this.on("disconnect", () => {
-            if (this.silentClose) {
-                return;
-            }
-            
-            alert("You or the server has disconnected the websocket connection.\n\nYour MOOCchat session has been terminated.\n\nIf your session was terminated prematurely you will need to restart your MOOCchat session.");
         });
     }
 
-    public close(silentClose: boolean = false) {
-        this.silentClose = silentClose;
-        this.socket.close();
+    public close() {
+        return this.socket.close();
     }
 
     public emit(event: string, ...args: any[]) {
@@ -52,5 +39,13 @@ export class WebsocketManager {
 
     public once<IData>(event: string, fn: (data: IData) => void) {
         return this.socket.once(event, fn);
+    }
+
+    protected getListeners(event: string) {
+        return this.socket.listeners(event);
+    }
+
+    protected get connected() {
+        return this.socket.connected;
     }
 }

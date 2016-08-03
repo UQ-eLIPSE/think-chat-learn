@@ -29,7 +29,8 @@
     }
 
     %>
-    <form action="/" method="POST">
+    <!-- Use of `_top` target means we break out from all nested frames that Blackboard might have --> 
+    <form action="/" method="POST" target="_top">
         <%
         var postDataKeys = Object.keys(postData);
 

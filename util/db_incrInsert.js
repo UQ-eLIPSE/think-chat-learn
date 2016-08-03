@@ -61,6 +61,9 @@ questionData.forEach(function(data) {
     });
 });
 
+if (questionData.length === 0) {
+    done();
+}
 
 
 var createdQuestionOption = doneFactory(questionOptionData.length, function() {
@@ -74,6 +77,9 @@ questionOptionData.forEach(function(data) {
     });
 });
 
+if (questionOptionData.length === 0) {
+    done();
+}
 
 
 var createdQuestionOptionCorrect = doneFactory(questionOptionCorrectData.length, function() {
@@ -87,6 +93,9 @@ questionOptionCorrectData.forEach(function(data) {
     });
 });
 
+if (questionOptionCorrectData.length === 0) {
+    done();
+}
 
 
 var createdQuizSchedule = doneFactory(quizScheduleData.length, function() {
@@ -100,6 +109,9 @@ quizScheduleData.forEach(function(data) {
     });
 });
 
+if (quizScheduleData.length === 0) {
+    done();
+}
 
 
 var createdSurvey = doneFactory(surveyData.length, function() {
@@ -112,3 +124,7 @@ surveyData.forEach(function(data) {
         createdSurvey();
     });
 });
+
+if (surveyData.length === 0) {
+    done();
+}

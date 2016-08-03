@@ -15,5 +15,10 @@ export const conf = {
         justification: {
             maxLength: 500
         }
+    },
+
+    combinedHTML: {
+        // Relative to URL of public page (not server filesystem path)
+        url: "./static/combined-html/all-pages.html"
     }
 }

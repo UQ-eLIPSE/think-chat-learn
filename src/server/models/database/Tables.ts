@@ -19,5 +19,9 @@ export const tables = {
 
 	// Survey
 	"SURVEY": "uq_survey",
-	"SURVEY_RESPONSE": "uq_surveyResponse"
+	"SURVEY_RESPONSE": "uq_surveyResponse",
+
+
+	// VirtServer backups
+	"VIRTSERVER_BACKUPS": "uq_virtserverBackups"
 }

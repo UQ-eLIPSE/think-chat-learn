@@ -1,6 +1,9 @@
+import {conf} from "../conf";
+
 import {EventBox} from "./EventBox";
 import {StateFlow} from "./StateFlow";
 import {PageManager} from "./PageManager";
+import {CombinedPageManager} from "./CombinedPageManager";
 import {TaskSectionManager} from "./TaskSectionManager";
 import {WebsocketManager} from "./WebsocketManager";
 import {SessionStorage} from "./SessionStorage";
@@ -11,6 +14,10 @@ import {MoocchatUser} from "./MoocchatUser";
 import {MoocchatQuiz} from "./MoocchatQuiz";
 import {MoocchatSurvey} from "./MoocchatSurvey";
 import {MoocchatAnswerContainer} from "./MoocchatAnswerContainer";
+
+import {WebsocketEvents} from "../classes/WebsocketEvents";
+import * as IOutboundData from "../classes/IOutboundData";
+import * as IInboundData from "../classes/IInboundData";
 
 /**
  * MOOCchat
@@ -41,7 +48,7 @@ export class MoocchatSession<StateTypeEnum> {
 
     constructor($content: JQuery, $taskSections: JQuery, turnOnAnalytics: boolean = true) {
         this._eventManager = new EventBox();
-        this._pageManager = new PageManager(this._eventManager, $content);
+        this._pageManager = new CombinedPageManager(this._eventManager, $content, conf.combinedHTML.url);
         this._sectionManager = new TaskSectionManager(this._eventManager, $taskSections);
         this._stateMachine = new StateFlow<StateTypeEnum>();
 
@@ -241,5 +248,20 @@ export class MoocchatSession<StateTypeEnum> {
      */
     public resetAnswers() {
         this.answers.reset();
+    }
+
+
+    public logout(callback?: () => void) {
+        if (this.id) {
+            this.socket.once<IInboundData.LogoutSuccess>(WebsocketEvents.INBOUND.LOGOUT_SUCCESS, (data) => {
+                if (callback) {
+                    callback();
+                }
+            });
+
+            this.socket.emitData<IOutboundData.Logout>(WebsocketEvents.OUTBOUND.LOGOUT, {
+                sessionId: this.id
+            });
+        }
     }
 }

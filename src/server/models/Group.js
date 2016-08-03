@@ -85,6 +85,27 @@ Group.prototype.emitEvent = function(client, event, data) {
         throw new Error("Client socket not found");
     }
 
+
+
+    // ======= Logging starts here =======
+
+    var loggedData = [
+        'socket.io' + clientSocket.id,
+        'OUTBOUND',
+        '[' + event + ']'
+    ];
+
+    if (typeof data !== "undefined") {
+        loggedData.push(data);
+    }
+
+    console.log.apply(undefined, loggedData);
+
+    // ======= Logging ends here =======
+
+
+
+
     clientSocket.emit(event, data);
 }
 

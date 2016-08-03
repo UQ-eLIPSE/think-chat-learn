@@ -12,8 +12,12 @@ export const BackupClientLogoutStateHandler: IStateHandler<STATE> =
 
         return {
             onEnter: () => {
-                // Log out by closing socket silently
-                session.socket.close(true);
+                // Log out now
+                session.logout(() => {
+                    setTimeout(() => {
+                        session.socket.close();
+                    }, 500);
+                });
 
                 session.pageManager.loadPage("backup-client-logout", (page$) => {
                     section.setActive();

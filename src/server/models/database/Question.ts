@@ -11,6 +11,6 @@ export class Question extends DatabaseWrapper<IDB_Question> {
 }
 
 export interface IDB_Question {
-    _id?: string,
+    _id?: ObjectId,
     content?: string
 }

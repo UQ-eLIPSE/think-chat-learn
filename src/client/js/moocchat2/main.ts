@@ -8,6 +8,7 @@ import {MoocchatSession} from "./classes/MoocchatSession";
 
 import {MoocchatState as STATE} from "./classes/MoocchatStates";
 
+import {VirtServerComms} from "./classes/VirtServerComms";
 
 
 import {StartupStateHandler} from "./state-handlers/startup";
@@ -38,17 +39,16 @@ import {InvalidLoginStateHandler} from "./state-handlers/invalid-login";
 // Unfortunately most browsers now ignore the text and give a generic message instead,
 // but a non-void return is still required to trigger the warning dialog.
 const windowUnloadWarning = (event: BeforeUnloadEvent) => {
-    const dialogText = `Your MOOCchat session will end prematurely if you leave now.`;
+    const dialogText = `Your MOOCchat session will end if you leave now.`;
     event.returnValue = dialogText;
     return dialogText;
 }
 
 window.addEventListener("beforeunload", windowUnloadWarning);
 
-
-// Start Websockets as soon as possible
-const socket = new WebsocketManager();
-socket.open();
+// Start server communications
+const virtServerComms = new VirtServerComms();
+virtServerComms.open();
 
 
 // On DOM Ready
@@ -57,9 +57,13 @@ $(() => {
     const $courseName = $("#course-name");
     const $taskSections = $("#task-sections");
     const $content = $("#content");
+    const $blackboardOpen = $("#blackboard-open");
 
-    const session = new MoocchatSession<STATE>($content, $taskSections).setSocket(socket);
+    const session = new MoocchatSession<STATE>($content, $taskSections).setSocket(virtServerComms);
 
+    window.addEventListener("unload", () => {
+        session.logout();
+    });
 
     // Track errors
     window.addEventListener("error", (e: ErrorEvent) => {
@@ -73,7 +77,7 @@ $(() => {
     });
 
     // Send event on any button click
-    $content.on("click", "button, input[type=button]", (e) => {
+    $("body").on("click", "button, input[type=button]", (e) => {
         const $elem = $(e.currentTarget);
         session.analytics.trackEvent("BUTTON_CLICK", $elem.text() || $elem.val());
     });
@@ -93,7 +97,7 @@ $(() => {
 
 
     // Individual state handlers
-    const startupState = StartupStateHandler(session, STATE.LOGIN, $courseName);
+    const startupState = StartupStateHandler(session, STATE.LOGIN, $courseName, $blackboardOpen);
     const loginState = LoginStateHandler(session, STATE.WELCOME, STATE.CONSENT_FORM);
     const consentFormState = ConsentFormStateHandler(session);
     const setResearchConsentState = SetResearchConsentStateHandler(session);

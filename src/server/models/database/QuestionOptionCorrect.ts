@@ -11,8 +11,8 @@ export class QuestionOptionCorrect extends DatabaseWrapper<IDB_QuestionOptionCor
 }
 
 export interface IDB_QuestionOptionCorrect {
-    _id?: string,
-    questionId?: string,
-    optionId?: string,
+    _id?: ObjectId,
+    questionId?: ObjectId,
+    optionId?: ObjectId,
     justification?: string
 }

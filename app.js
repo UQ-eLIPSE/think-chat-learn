@@ -1,3 +1,20 @@
+// Attach timestamps to all logged messages
+function timestampedLoggerFactory(origLoggerFunc) {
+    return function(e) {
+        arguments[0] = "[" + new Date().toISOString() + "] " + arguments[0];
+        origLoggerFunc.apply(void 0, arguments);
+    }
+}
+
+console.error = timestampedLoggerFactory(console.error);
+console.log = timestampedLoggerFactory(console.log);
+
+process.on('uncaughtException', function(e) {
+    console.error(e.stack || e);
+});
+
+// ============================================================================
+
 var conf = require('./config/conf.json');
 
 var express = require('express');
@@ -18,7 +35,6 @@ console.log('Socket.io server listening on port ' + conf.portNum);
 var database = require('./build/controllers/database');
 var websockets = require('./build/controllers/websockets');
 
-
 // Use ejs for templating on pages
 app.set("view engine", "ejs");
 app.set("views", __dirname + "/views");
@@ -31,9 +47,11 @@ app.use(bodyParser.urlencoded({
 }));
 
 
-// Everything under URL/* will be statically delivered from PROJECT/public/*
-app.use(express.static(__dirname + "/public"));
-
+// If static content delivery by Express is enabled,
+// everything under URL/static/* will be statically delivered from PROJECT/public/*
+if (conf.express && conf.express.serveStaticContent) {
+    app.use("/static", express.static(__dirname + "/public"));
+}
 
 // LTI launcher page only available in test mode
 if (conf.lti && conf.lti.testMode) {
@@ -49,6 +67,33 @@ app.post("/lti.php", function(req, res) {
 
 app.get("/lti.php", function(req, res) {
     res.render("lti-intermediary.ejs");
+});
+
+// VirtServer backups
+app.post("/virtserver-backup", function(req, res) {
+    var input = req.body;
+
+    console.log("VirtServer backup", input);
+
+    if (!input) {
+        res.sendStatus(400);
+        return;
+    }
+
+    database.virtServerBackups.create(
+        {
+            timestamp: new Date(),
+            json: input.data.toString()
+        },
+        function(err, result) {
+            if (err) {
+                res.sendStatus(500);
+                console.err(err);
+                return;
+            }
+            
+            res.sendStatus(200);
+        });
 });
 
 // Backup client

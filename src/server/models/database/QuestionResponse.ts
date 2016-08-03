@@ -11,8 +11,8 @@ export class QuestionResponse extends DatabaseWrapper<IDB_QuestionResponse> {
 }
 
 export interface IDB_QuestionResponse {
-    _id?: string,
-    optionId?: string,
+    _id?: ObjectId,
+    optionId?: ObjectId,
     justification?: string,
     timestamp?: Date
 }

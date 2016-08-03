@@ -41,7 +41,7 @@ export const BackupClientWaitStateHandler: IStateHandler<STATE> =
                         // Play tone if fewer than 2 remain to get people's attention
                         if (data.numberOfClients < 2) {
                             // https://notificationsounds.com/message-tones/mission-accomplished-252
-                            const notificationTone = new Audio("./mp3/mission-accomplished.mp3");
+                            const notificationTone = new Audio("./static/mp3/mission-accomplished.mp3");
                             notificationTone.play();
                         }
                     }
@@ -74,7 +74,7 @@ export const BackupClientWaitStateHandler: IStateHandler<STATE> =
                         });
 
                         // https://notificationsounds.com/message-tones/mission-accomplished-252
-                        const notificationTone = new Audio("./mp3/mission-accomplished.mp3");
+                        const notificationTone = new Audio("./static/mp3/mission-accomplished.mp3");
                         notificationTone.play();
                     }
 

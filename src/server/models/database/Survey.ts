@@ -11,7 +11,7 @@ export class Survey extends DatabaseWrapper<IDB_Survey> {
 }
 
 export interface IDB_Survey {
-    _id?: string;
+    _id?: ObjectId;
     availableStart?: Date;
     content?: IDB_Survey_Content[];
 }

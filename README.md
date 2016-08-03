@@ -6,8 +6,8 @@
 2. Install Nodejs and MongoDB
 3. Start Mongodb, usually the command to run is `mongod`
 4. Run `npm install` from within Moocchat folder
-5. Seed the database by running `npm run seed` (only needs to be done once)
-6. Build source: `npm run build`
+5. Build source: `npm run build`
+6. Seed the database by running `npm run seed` (only needs to be done once)
 7. Ensure `/config/conf.json` file has correct configuration
 8. Run `npm start`
 

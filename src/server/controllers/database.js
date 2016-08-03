@@ -31,6 +31,8 @@ var UserSession = require("../models/database/UserSession").UserSession;
 var Survey = require("../models/database/Survey").Survey;
 var SurveyResponse = require("../models/database/SurveyResponse").SurveyResponse;
 
+var VirtServerBackups = require("../models/database/VirtServerBackups").VirtServerBackups;
+
 module.exports = {
 	database: db,
 
@@ -48,5 +50,7 @@ module.exports = {
 	userSession: new UserSession(db),
 
 	survey: new Survey(db),
-	surveyResponse: new SurveyResponse(db)
+	surveyResponse: new SurveyResponse(db),
+
+	virtServerBackups: new VirtServerBackups(db)
 };

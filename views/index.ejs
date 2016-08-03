@@ -7,9 +7,9 @@
 
     <title>MOOCchat</title>
 
-    <link rel="stylesheet" href="./css/lib/normalize/4.1.1/normalize.min.css" />
+    <link rel="stylesheet" href="./static/css/lib/normalize/4.1.1/normalize.min.css" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,700" />
-    <link rel="stylesheet" href="./css/moocchat2/main.css" />
+    <link rel="stylesheet" href="./static/css/moocchat2/main.css" />
     
     <!-- Piwik code must sit BEFORE require.js loads in main code -->
     <%- include("./piwik", { url: conf.piwik.url, siteId: conf.piwik.siteId }); %>
@@ -22,13 +22,14 @@
     <% } %>
 
     <!--[if lte IE9]>
-    <script src="./js/rAF.js"></script>
+    <script src="./static/js/rAF.js"></script>
     <![endif]-->
-    <script data-main="./js/main.require.config" src="./js/lib/require.js/2.2.0/require.min.js"></script>
+    <script data-main="./static/js/main.require.config" src="./static/js/lib/require.js/2.2.0/require.min.js"></script>
 </head>
 
 <body>
     <div id="header">
+        <div id="blackboard-open" class="hidden"><button class="thin link">Open Blackboard</button></div>
         <div id="logo"></div>
         <h1 id="moocchat-name">MOOCchat</h1>
         <div id="course-name"></div>

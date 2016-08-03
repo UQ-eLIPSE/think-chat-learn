@@ -11,8 +11,8 @@ export class QuizSchedule extends DatabaseWrapper<IDB_QuizSchedule> {
 }
 
 export interface IDB_QuizSchedule {
-    _id?: string;
-    questionId?: string;
+    _id?: ObjectId;
+    questionId?: ObjectId;
     course?: string;
     availableStart?: Date;
     availableEnd?: Date;
