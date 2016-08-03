@@ -106,7 +106,7 @@ export class VirtServerComms extends WebsocketManager {
         if (this.terminated) {
             return;
         }
-        
+
         // Pretend websocket is being responded to
         const virtServerResponse = this.virtServer.sendToServer(event, data);
 
@@ -121,6 +121,24 @@ export class VirtServerComms extends WebsocketManager {
             // When executing the event handlers, they must be scoped to the Socket.IO object
             listener.bind(this.socket)(virtServerResponse.data);
         });
+    }
+
+    private isThereDataToSend() {
+        return this.virtServer.getStore().length > 0;
+    }
+
+    public syncWithRealServer(sessionId: string) {
+        const virtServer = this.virtServer;
+
+        if (!virtServer) {
+            return;
+        }
+
+        if (!this.isThereDataToSend()) {
+            return;
+        }
+
+        return virtServer.syncWithRealServer(sessionId);
     }
 }
 

@@ -1,4 +1,6 @@
 
+import * as $ from "jquery";
+
 import * as IInboundData from "./IInboundData";
 import * as IOutboundData from "./IOutboundData";
 
@@ -90,7 +92,7 @@ export class VirtServer {
         "terminateSessions": [
             // DO NOT EMULATE
         ]
-        
+
 
         // Backup client events not supported
     }
@@ -157,12 +159,25 @@ export class VirtServer {
         this.dataStore = [];
     }
 
-    public syncWithRealServer() {
-        // TODO: Copy data store array?
-        // TODO: Send array with keys
-        // TODO: Server returns with keys processed/stored
-        // TODO: Clear store of processed keys
-        // TODO: Rerun after timeout if processed events still queued in data store
+    public syncWithRealServer(sessionId: string) {
+        const data = {
+            json: (this.dataStore || []),
+            sessionId: sessionId
+        };
+
+        const jsonString = JSON.stringify(data);
+
+        return {
+            xhr: $.ajax({
+                url: "/virtserver-backup",
+                method: "POST",
+                data: {
+                    data: jsonString
+                }
+            }),
+            
+            data: jsonString
+        };
     }
 }
 

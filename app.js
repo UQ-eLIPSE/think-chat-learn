@@ -9,7 +9,7 @@ function timestampedLoggerFactory(origLoggerFunc) {
 console.error = timestampedLoggerFactory(console.error);
 console.log = timestampedLoggerFactory(console.log);
 
-process.on('uncaughtException', function (e) {
+process.on('uncaughtException', function(e) {
     console.error(e.stack || e);
 });
 
@@ -34,7 +34,6 @@ console.log('Socket.io server listening on port ' + conf.portNum);
 
 var database = require('./build/controllers/database');
 var websockets = require('./build/controllers/websockets');
-
 
 // Use ejs for templating on pages
 app.set("view engine", "ejs");
@@ -68,6 +67,33 @@ app.post("/lti.php", function(req, res) {
 
 app.get("/lti.php", function(req, res) {
     res.render("lti-intermediary.ejs");
+});
+
+// VirtServer backups
+app.post("/virtserver-backup", function(req, res) {
+    var input = req.body;
+
+    console.log("VirtServer backup", input);
+
+    if (!input) {
+        res.sendStatus(400);
+        return;
+    }
+
+    database.virtServerBackups.create(
+        {
+            timestamp: new Date(),
+            json: input.data.toString()
+        },
+        function(err, result) {
+            if (err) {
+                res.sendStatus(500);
+                console.err(err);
+                return;
+            }
+            
+            res.sendStatus(200);
+        });
 });
 
 // Backup client
