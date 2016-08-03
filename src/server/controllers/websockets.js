@@ -214,7 +214,7 @@ var chatGroupFormationLoop = (function() {
  * 
  * @param {any} data
  */
-function handleChatGroupJoinRequest(data) {
+function handleChatGroupJoinRequest(data, _socket) {
     var session = getSessionFromId(data.sessionId);
 
     if (!session) {
@@ -241,7 +241,7 @@ function handleChatGroupJoinRequest(data) {
  * 
  * @param {any} data
  */
-function handleChatGroupQuitStatusChange(data) {
+function handleChatGroupQuitStatusChange(data, _socket) {
     var session = getSessionFromId(data.sessionId);
 
     if (!session) {
@@ -272,7 +272,7 @@ function handleChatGroupQuitStatusChange(data) {
  * 
  * @param {any} data
  */
-function handleChatGroupMessage(data) {
+function handleChatGroupMessage(data, _socket) {
     var session = getSessionFromId(data.sessionId);
 
     if (!session) {
@@ -654,7 +654,7 @@ function handleLoginLti(data, socket) {
     }
 }
 
-function handleResearchConsentSet(data) {
+function handleResearchConsentSet(data, _socket) {
     var session = getSessionFromId(data.sessionId);
 
     if (!session) {
@@ -700,7 +700,7 @@ function broadcastPoolCountToBackupQueue(clientAnswerPool) {
 // ===== Question + answer =====
 
 function answerSubmissionHandlerFactory(answerType) {
-    return function(data) {
+    return function(data, _socket) {
         var session = getSessionFromId(data.sessionId);
 
         if (!session) {
@@ -816,7 +816,7 @@ var handleAnswerSubmissionFinal = answerSubmissionHandlerFactory("final");
  *      content {IDB_SurveyResponse_Content[]}
  * }
  */
-function saveSurvey(data) {
+function saveSurvey(data, _socket) {
     var session = getSessionFromId(data.sessionId);
 
     if (!session) {
@@ -842,7 +842,7 @@ function saveSurvey(data) {
  *      sessionId {string}
  * }
  */
-function handleBackupClientLogout(data) {
+function handleBackupClientLogout(data, _socket) {
     var session = getSessionFromId(data.sessionId);
 
     if (!session) {
@@ -861,7 +861,7 @@ function handleBackupClientLogout(data) {
  *      justification {string}
  * }
  */
-function handleBackupClientEnterQueue(data) {
+function handleBackupClientEnterQueue(data, _socket) {
     var session = getSessionFromId(data.sessionId);
 
     if (!session) {
@@ -888,7 +888,7 @@ function handleBackupClientEnterQueue(data) {
  *      sessionId {string}
  * }
  */
-function handleBackupClientReturnToQueue(data) {
+function handleBackupClientReturnToQueue(data, _socket) {
     var session = getSessionFromId(data.sessionId);
 
     if (!session) {
@@ -915,7 +915,7 @@ function handleBackupClientReturnToQueue(data) {
  *      sessionId {string}
  * }
  */
-function handleBackupClientStatusRequest(data) {
+function handleBackupClientStatusRequest(data, _socket) {
     var session = getSessionFromId(data.sessionId);
 
     if (!session) {
@@ -934,7 +934,7 @@ function handleBackupClientStatusRequest(data) {
  *      sessionId {string}
  * }
  */
-function handleBackupClientTransferConfirm(data) {
+function handleBackupClientTransferConfirm(data, _socket) {
     var session = getSessionFromId(data.sessionId);
 
     if (!session) {
@@ -1013,25 +1013,25 @@ io.sockets.on('connection', function(socket) {
     registerSocketEventWithLogging('disconnect', disconnect);
 
     /* Submission of answers and surveys */
-    registerSocketEventWithLogging("answerSubmissionInitial", handleAnswerSubmissionInitial);
-    registerSocketEventWithLogging("answerSubmissionFinal", handleAnswerSubmissionFinal);
-    registerSocketEventWithLogging("submitSurvey", saveSurvey);
+    registerSocketEventWithLogging("answerSubmissionInitial", function(data) { handleAnswerSubmissionInitial(data, socket); });
+    registerSocketEventWithLogging("answerSubmissionFinal", function(data) { handleAnswerSubmissionFinal(data, socket); });
+    registerSocketEventWithLogging("submitSurvey", function(data) { saveSurvey(data, socket); });
 
     /* Log ins */
     registerSocketEventWithLogging("loginLti", function(data) { handleLoginLti(data, socket); });
-    registerSocketEventWithLogging("researchConsentSet", handleResearchConsentSet);
+    registerSocketEventWithLogging("researchConsentSet", function(data) { handleResearchConsentSet(data, socket); });
 
     /* Chat group discussion */
-    registerSocketEventWithLogging("chatGroupJoinRequest", handleChatGroupJoinRequest);
-    registerSocketEventWithLogging("chatGroupMessage", handleChatGroupMessage);
-    registerSocketEventWithLogging("chatGroupQuitStatusChange", handleChatGroupQuitStatusChange);
+    registerSocketEventWithLogging("chatGroupJoinRequest", function(data) { handleChatGroupJoinRequest(data, socket); });
+    registerSocketEventWithLogging("chatGroupMessage", function(data) { handleChatGroupMessage(data, socket); });
+    registerSocketEventWithLogging("chatGroupQuitStatusChange", function(data) { handleChatGroupQuitStatusChange(data, socket); });
 
     /* Backup client */
-    registerSocketEventWithLogging("backupClientLogout", handleBackupClientLogout);
-    registerSocketEventWithLogging("backupClientEnterQueue", handleBackupClientEnterQueue);
-    registerSocketEventWithLogging("backupClientReturnToQueue", handleBackupClientReturnToQueue);
-    registerSocketEventWithLogging("backupClientStatusRequest", handleBackupClientStatusRequest);
-    registerSocketEventWithLogging("backupClientTransferConfirm", handleBackupClientTransferConfirm);
+    registerSocketEventWithLogging("backupClientLogout", function(data) { handleBackupClientLogout(data, socket); });
+    registerSocketEventWithLogging("backupClientEnterQueue", function(data) { handleBackupClientEnterQueue(data, socket); });
+    registerSocketEventWithLogging("backupClientReturnToQueue", function(data) { handleBackupClientReturnToQueue(data, socket); });
+    registerSocketEventWithLogging("backupClientStatusRequest", function(data) { handleBackupClientStatusRequest(data, socket); });
+    registerSocketEventWithLogging("backupClientTransferConfirm", function(data) { handleBackupClientTransferConfirm(data, socket); });
 
     /* Testing */
     // socket.on('loadTestReq', loadTest);
