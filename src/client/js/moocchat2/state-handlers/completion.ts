@@ -9,11 +9,11 @@ declare const _LTI_BASIC_LAUNCH_DATA: ILTIBasicLaunchData;
 export const CompletionStateHandler: IStateHandler<STATE> =
     (session, beforeUnloadHandler) => {
         const section = session.sectionManager.getSection("finish");
-        
+
         return {
             onEnter: () => {
                 session.analytics.trackEvent("MOOCCHAT", "FINISH");
-                
+
                 window.removeEventListener("beforeunload", beforeUnloadHandler);
 
                 session.pageManager.loadPage("completion", (page$) => {
@@ -41,9 +41,12 @@ export const CompletionStateHandler: IStateHandler<STATE> =
                     page$("#revised-answer-justification").text(session.answers.revised.justification);
                 });
 
-                // End session by closing socket
-                // session.socket.close(true);
-                session.socket.close();
+                // Log out now
+                session.logout(() => {
+                    setTimeout(() => {
+                        session.socket.close();
+                    }, 500);
+                });
             }
         }
     }

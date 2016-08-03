@@ -40,7 +40,10 @@ export const WebsocketEvents = {
         BACKUP_CLIENT_EJECTED: "backupClientEjected",
 
         /** IInboundData.ClientPoolCountUpdate */
-        BACKUP_CLIENT_STANDARD_CLIENT_POOL_COUNT_UPDATE: "clientPoolCountUpdate"
+        BACKUP_CLIENT_STANDARD_CLIENT_POOL_COUNT_UPDATE: "clientPoolCountUpdate",
+
+        /** IInboundData.LogoutSuccess */
+        LOGOUT_SUCCESS: "logoutSuccess"
     },
 
     OUTBOUND: {
@@ -78,6 +81,9 @@ export const WebsocketEvents = {
         BACKUP_CLIENT_TRANSFER_CONFIRM: "backupClientTransferConfirm",
 
         /** IOutboundData.SurveyResponse */
-        SURVEY_SUBMISSION: "submitSurvey"
+        SURVEY_SUBMISSION: "submitSurvey",
+
+        /** IOutboundData.Logout */
+        LOGOUT: "logout"
     }
 }

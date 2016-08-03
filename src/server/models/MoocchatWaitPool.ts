@@ -2,7 +2,8 @@ declare const global: any;
 
 import {IDB_QuestionOption} from "./database/QuestionOption";
 
-import {MoocchatUserSession} from "./MoocchatUserSession"
+import {MoocchatUserSession} from "./MoocchatUserSession";
+import {MoocchatBackupClientQueue} from "./MoocchatBackupClientQueue";
 
 /**
  * Replacement for ClientAnswerPool
@@ -26,7 +27,15 @@ export class MoocchatWaitPool {
         return MoocchatWaitPool.WaitPools[quizSessionId];
     }
 
+    /** Slight misnomer - gets pool with same quiz schedule as supplied session. Session may not actually be in wait pool. */
+    public static GetPoolWith(session: MoocchatUserSession) {
+        return MoocchatWaitPool.GetPool(session.data.quizSchedule._id.toString(), session.data.quizQuestionOptions);
+    }
+
     public static Destroy(pool: MoocchatWaitPool) {
+        pool._quizSessionId = undefined;
+        pool.answerQueues = {};
+        
         delete MoocchatWaitPool.WaitPools[pool.getQuizSessionId()];
     }
 
@@ -90,6 +99,7 @@ export class MoocchatWaitPool {
             for (var j = 0; j < thisAnswerSessionDataArray.length; ++j) {
                 if (thisAnswerSessionDataArray[j].session === session) {
                     // Remove the client out and return it
+                    console.log(`Removing session '${session.getId()}' from wait pool '${this.getQuizSessionId()}'`);
                     return thisAnswerSessionDataArray.splice(j, 1)[0].session;
                 }
             }
@@ -172,10 +182,13 @@ export class MoocchatWaitPool {
             }
 
             if (totalPoolSize < MoocchatWaitPool.DesiredGroupSize) {
-                if (totalPoolSize === 1 &&
-                    this.backupClientQueue.attemptTransferBackupClientToClientPool(this)) {
+                const backupClientQueue = MoocchatBackupClientQueue.GetQueue(this.getQuizSessionId());
+                
+                if (backupClientQueue &&
+                    totalPoolSize === 1 &&
+                    backupClientQueue.callToPool(this)) {
                     // Don't do anything if there is a backup client to be placed into the pool
-                    // (happens when #attemptTransferBackupClientToClientPool returns TRUE)
+                    // (happens when #callToPool() returns TRUE)
                     return [];
                 }
             }

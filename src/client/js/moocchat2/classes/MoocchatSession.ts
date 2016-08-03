@@ -15,6 +15,10 @@ import {MoocchatQuiz} from "./MoocchatQuiz";
 import {MoocchatSurvey} from "./MoocchatSurvey";
 import {MoocchatAnswerContainer} from "./MoocchatAnswerContainer";
 
+import {WebsocketEvents} from "../classes/WebsocketEvents";
+import * as IOutboundData from "../classes/IOutboundData";
+import * as IInboundData from "../classes/IInboundData";
+
 /**
  * MOOCchat
  * Client session module
@@ -244,5 +248,20 @@ export class MoocchatSession<StateTypeEnum> {
      */
     public resetAnswers() {
         this.answers.reset();
+    }
+
+
+    public logout(callback?: () => void) {
+        if (this.id) {
+            this.socket.once<IInboundData.LogoutSuccess>(WebsocketEvents.INBOUND.LOGOUT_SUCCESS, (data) => {
+                if (callback) {
+                    callback();
+                }
+            });
+
+            this.socket.emitData<IOutboundData.Logout>(WebsocketEvents.OUTBOUND.LOGOUT, {
+                sessionId: this.id
+            });
+        }
     }
 }

@@ -6,14 +6,14 @@ var db_wrapper = require("./database");
 
 var LTIProcessor = require("../models/LTIProcessor").LTIProcessor;
 
-var Client = require('../models/client');
+// var Client = require('../models/client');
 
-var ClientAnswerPool = require("../models/ClientAnswerPool");
-var ChatGroup = require("../models/ChatGroup");
-var BackupClientQueue = require("../models/BackupClientQueue");
+// var ClientAnswerPool = require("../models/ClientAnswerPool");
+// var ChatGroup = require("../models/ChatGroup");
+// var BackupClientQueue = require("../models/BackupClientQueue");
 
-var Session = require("../models/Session");
-var SessionManager = require("../models/SessionManager");
+// var Session = require("../models/Session");
+// var SessionManager = require("../models/SessionManager");
 
 // var util = require('../helpers/util');
 // var randomInteger = util.randomInteger;
@@ -23,11 +23,13 @@ var SessionManager = require("../models/SessionManager");
 // Replacement code for previous session/client classes
 var MoocchatUserSession = require("../models/MoocchatUserSession").MoocchatUserSession;
 var MoocchatWaitPool = require("../models/MoocchatWaitPool").MoocchatWaitPool;
+var MoocchatChatGroup = require("../models/MoocchatChatGroup").MoocchatChatGroup;
+var MoocchatBackupClientQueue = require("../models/MoocchatBackupClientQueue").MoocchatBackupClientQueue;
 
 
 
 
-var allSessions = new SessionManager();
+// var allSessions = new SessionManager();
 
 // LTI processor for incoming logins
 var ltiProcessor = new LTIProcessor(conf.lti.signingInfo);
@@ -37,13 +39,13 @@ ltiProcessor.setTestMode(conf.lti.testMode);
 // Mappings between quiz schedule ID and the different groups and queues used
 
 /** Object(QuizScheduleId{string} => BackupClientQueue) */
-var quizSchedule_BackupClientQueue = {};
+// var quizSchedule_BackupClientQueue = {};
 
 /** Object(QuizScheduleId{string} => ClientAnswerPool) */
-var quizSchedule_ClientAnswerPool = {};
+// var quizSchedule_ClientAnswerPool = {};
 
 /** Object(QuizScheduleId{string} => ChatGroup[]) */
-var quizSchedule_ChatGroupArray = {};
+// var quizSchedule_ChatGroupArray = {};
 
 
 
@@ -53,9 +55,9 @@ var quizSchedule_ChatGroupArray = {};
 /**
  * @param {string} sessionId
  */
-function getSessionFromId(sessionId) {
-    return allSessions.getSessionById(sessionId);
-}
+// function getSessionFromId(sessionId) {
+//     return allSessions.getSessionById(sessionId);
+// }
 
 /**
  * Gets associated client answer pool for a given user session's quiz session.
@@ -64,9 +66,9 @@ function getSessionFromId(sessionId) {
  * 
  * @returns {ClientAnswerPool}
  */
-function getClientAnswerPoolFromSession(session) {
-    return quizSchedule_ClientAnswerPool[session.getQuizScheduleIdString()];
-}
+// function getClientAnswerPoolFromSession(session) {
+//     return quizSchedule_ClientAnswerPool[session.getQuizScheduleIdString()];
+// }
 
 /**
  * Gets associated backup client queue for a given user session's quiz session.
@@ -75,9 +77,9 @@ function getClientAnswerPoolFromSession(session) {
  * 
  * @returns {BackupClientQueue}
  */
-function getBackupClientQueueFromSession(session) {
-    return quizSchedule_BackupClientQueue[session.getQuizScheduleIdString()];
-}
+// function getBackupClientQueueFromSession(session) {
+//     return quizSchedule_BackupClientQueue[session.getQuizScheduleIdString()];
+// }
 
 /**
  * Gets associated chat groups for a given user session's quiz session.
@@ -86,32 +88,32 @@ function getBackupClientQueueFromSession(session) {
  * 
  * @returns {ChatGroup[]}
  */
-function getChatGroupsFromSession(session) {
-    return quizSchedule_ChatGroupArray[session.getQuizScheduleIdString()];
-}
+// function getChatGroupsFromSession(session) {
+//     return quizSchedule_ChatGroupArray[session.getQuizScheduleIdString()];
+// }
 
 /**
  * Gets the chat group the user is located in.
  * 
  * @param {Session} session
  */
-function getChatGroupFromSession(session) {
-    var chatGroups = getChatGroupsFromSession(session);
+// function getChatGroupFromSession(session) {
+//     var chatGroups = getChatGroupsFromSession(session);
 
-    if (!chatGroups) {
-        return;
-    }
+//     if (!chatGroups) {
+//         return;
+//     }
 
-    var client = session.client;
+//     var client = session.client;
 
-    for (var i = 0; i < chatGroups.length; ++i) {
-        var chatGroup = chatGroups[i];
+//     for (var i = 0; i < chatGroups.length; ++i) {
+//         var chatGroup = chatGroups[i];
 
-        if (chatGroup.getClientIndex(client) > -1) {
-            return chatGroup;
-        }
-    }
-}
+//         if (chatGroup.getClientIndex(client) > -1) {
+//             return chatGroup;
+//         }
+//     }
+// }
 
 /**
  * Deletes given chat group from mapping store.
@@ -119,40 +121,40 @@ function getChatGroupFromSession(session) {
  * @param {Session} session Session of user in/previously in chat group
  * @param {ChatGroup} chatGroupToDelete
  */
-function deleteChatGroupFromMappingStore(session, chatGroupToDelete) {
-    var allChatGroupsInQuiz = getChatGroupsFromSession(session);
-    var chatGroupIndex = allChatGroupsInQuiz.indexOf(chatGroupToDelete);
+// function deleteChatGroupFromMappingStore(session, chatGroupToDelete) {
+//     var allChatGroupsInQuiz = getChatGroupsFromSession(session);
+//     var chatGroupIndex = allChatGroupsInQuiz.indexOf(chatGroupToDelete);
 
-    if (chatGroupIndex > -1) {
-        return allChatGroupsInQuiz.splice(chatGroupIndex, 1);
-    }
-}
+//     if (chatGroupIndex > -1) {
+//         return allChatGroupsInQuiz.splice(chatGroupIndex, 1);
+//     }
+// }
 
 /**
  * @param {Client} client
  */
-function removeClientFromEverything(client) {
-    var session = allSessions.getSessionByClient(client);
+// function removeClientFromEverything(client) {
+//     var session = allSessions.getSessionByClient(client);
 
-    var clientAnswerPool = getClientAnswerPoolFromSession(session);
-    var backupClientQueue = getBackupClientQueueFromSession(session);
-    var chatGroup = getChatGroupFromSession(session);
+//     var clientAnswerPool = getClientAnswerPoolFromSession(session);
+//     var backupClientQueue = getBackupClientQueueFromSession(session);
+//     var chatGroup = getChatGroupFromSession(session);
 
-    if (backupClientQueue && backupClientQueue.removeClient(client)) {
-        backupClientQueue.broadcastUpdate();
-    }
+//     if (backupClientQueue && backupClientQueue.removeClient(client)) {
+//         backupClientQueue.broadcastUpdate();
+//     }
 
-    if (clientAnswerPool && clientAnswerPool.removeClient(client)) {
-        broadcastPoolCountToBackupQueue(clientAnswerPool);
-    }
+//     if (clientAnswerPool && clientAnswerPool.removeClient(client)) {
+//         broadcastPoolCountToBackupQueue(clientAnswerPool);
+//     }
 
-    if (chatGroup && chatGroup.removeClient(client)) {
-        // If the chat group terminates, then remove the chat group from array
-        if (chatGroup.terminationCheck()) {
-            deleteChatGroupFromMappingStore(session, chatGroup);
-        }
-    }
-}
+//     if (chatGroup && chatGroup.removeClient(client)) {
+//         // If the chat group terminates, then remove the chat group from array
+//         if (chatGroup.terminationCheck()) {
+//             deleteChatGroupFromMappingStore(session, chatGroup);
+//         }
+//     }
+// }
 
 
 
@@ -161,31 +163,32 @@ function removeClientFromEverything(client) {
 /**
  * @return {ChatGroup | undefined}
  */
-function formChatGroup(clientAnswerPool) {
-    var newChatGroup = clientAnswerPool.tryMakeChatGroup();
+// function formChatGroup(clientAnswerPool) {
+//     var newChatGroup = clientAnswerPool.tryMakeChatGroup();
 
-    // Store reference to chat group if formed
-    if (newChatGroup) {
-        var quizScheduleIdString = newChatGroup.clients[0].getSession().getQuizScheduleIdString();
+//     if (newChatGroup) {
+//         var quizScheduleIdString = newChatGroup.clients[0].getSession().getQuizScheduleIdString();
 
-        quizSchedule_ChatGroupArray[quizScheduleIdString].push(newChatGroup);
+//         quizSchedule_ChatGroupArray[quizScheduleIdString].push(newChatGroup);
 
-        newChatGroup.clients.forEach(function(client) {
-            db_wrapper.userSession.update({
-                _id: mongojs.ObjectId(client.getSession().getId())
-            },
-                {
-                    $set: {
-                        chatGroupId: newChatGroup.id
-                    }
-                });
-        });
+//         newChatGroup.clients.forEach(function(client) {
+//             db_wrapper.userSession.update({
+//                 _id: mongojs.ObjectId(client.getSession().getId())
+//             },
+//                 {
+//                     $set: {
+//                         chatGroupId: newChatGroup.id
+//                     }
+//                 });
+//         });
 
-        broadcastPoolCountToBackupQueue(clientAnswerPool);
+//         broadcastPoolCountToBackupQueue(clientAnswerPool);
 
-        return newChatGroup;
-    }
-}
+//         return newChatGroup;
+//     }
+// }
+
+
 
 // Recurring task
 var chatGroupFormationLoop = (function() {
@@ -200,24 +203,27 @@ var chatGroupFormationLoop = (function() {
     function run(waitPool) {
         clearTimeout(timeoutHandles[waitPool.getQuizSessionId()]);
 
-        var newGroup = waitPool.tryFormGroup();
+        var sessionsInGroup = waitPool.tryFormGroup();
 
-        if (newGroup && newGroup.length > 0) {
-            // TODO: Form chat group
+        if (sessionsInGroup && sessionsInGroup.length > 0) {
+            // Form chat group
+            var newChatGroup = new MoocchatChatGroup(sessionsInGroup);
 
+            // Record
+            newChatGroup.getSessions().forEach(function(session) {
+                db_wrapper.userSession.update(
+                    {
+                        _id: mongojs.ObjectId(session.getId())
+                    },
+                    {
+                        $set: {
+                            chatGroupId: newChatGroup.getId()
+                        }
+                    });
+            });
 
-
-
-
-
-
-
-
-
-
-
-
-
+            // Update backup clients about this
+            broadcastPoolCountToBackupQueue__WaitPool(waitPool);
 
             // Process next group at next available timeslot
             setImmediate(run, waitPool);
@@ -239,16 +245,16 @@ var chatGroupFormationLoop = (function() {
  * 
  * @param {any} data
  */
-function handleChatGroupJoinRequest(data, _socket) {
-    var session = MoocchatUserSession.GetSession(data.sessionId);
+function handleChatGroupJoinRequest(data, socket) {
+    var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
     if (!session) {
         return console.error("Attempted chat group join request with invalid session ID = " + data.sessionId);
     }
 
-    var waitPool = MoocchatWaitPool.GetPool(session.data.quizSchedule._id.toString(), session.data.quizQuestionOptions);
-    
+    var waitPool = MoocchatWaitPool.GetPoolWith(session);
     waitPool.addSession(session);
+
     broadcastPoolCountToBackupQueue__WaitPool(waitPool);
     chatGroupFormationLoop.run(waitPool);
 }
@@ -262,19 +268,19 @@ function handleChatGroupJoinRequest(data, _socket) {
  * 
  * @param {any} data
  */
-function handleChatGroupQuitStatusChange(data, _socket) {
-    var session = MoocchatUserSession.GetSession(data.sessionId);
+function handleChatGroupQuitStatusChange(data, socket) {
+    var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
     if (!session) {
-        return console.error("Attempted chat group join request with invalid session ID = " + data.sessionId);
+        return console.error("Attempted chat group quit request with invalid session ID = " + data.sessionId);
     }
 
-    var chatGroup = MoocchatChatGroup.GetChatGroup(session);
+    var chatGroup = MoocchatChatGroup.GetChatGroupWith(session);
 
     if (data.quitStatus) {
-        chatGroup.queueClientToQuit(session);
+        chatGroup.quitSession(session);
     } else {
-        chatGroup.unqueueClientToQuit(session);
+        // chatGroup.unqueueClientToQuit(session);
     }
 
     // var chatGroup = getChatGroupFromSession(session);
@@ -300,15 +306,14 @@ function handleChatGroupQuitStatusChange(data, _socket) {
  * 
  * @param {any} data
  */
-function handleChatGroupMessage(data, _socket) {
-    var session = getSessionFromId(data.sessionId);
+function handleChatGroupMessage(data, socket) {
+    var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
     if (!session) {
-        return;
+        return console.error("Attempted chat group message from invalid session ID = " + data.sessionId);
     }
 
-    var client = session.client;
-    var chatGroup = getChatGroupFromSession(session);
+    var chatGroup = MoocchatChatGroup.GetChatGroupWith(session);
 
     db_wrapper.chatMessage.create({
         content: data.message,
@@ -316,7 +321,7 @@ function handleChatGroupMessage(data, _socket) {
         timestamp: new Date()
     });
 
-    chatGroup.broadcastMessage(client, data.message);
+    chatGroup.broadcastMessage(session, data.message);
 }
 
 
@@ -354,6 +359,7 @@ function handleLoginLti(data, socket) {
             processLtiObject,
             checkUserId,
             retrieveUserId,
+            checkNoActiveSession,
             findScheduledQuiz,
             checkQuizSessionNotTaken,
             loadQuestionData,
@@ -443,11 +449,7 @@ function handleLoginLti(data, socket) {
         ltiUsername = ltiObject.user_id;
 
         if (!ltiUsername) {
-            return throwErr(new Error("No user ID received."));
-        }
-
-        if (allSessions.hasSessionWithUsername(ltiUsername)) {
-            return throwErr(new Error("The user '" + ltiUsername + "' is currently in an active session."));
+            return throwErr(new Error("[10] No user ID received."));
         }
 
         next();
@@ -460,7 +462,7 @@ function handleLoginLti(data, socket) {
             }
 
             if (result.length > 1) {
-                return throwErr(new Error("More than one user with same username '" + ltiUsername + "' detected."));
+                return throwErr(new Error("[11] More than one user with same username '" + ltiUsername + "' detected."));
             }
 
             // New user
@@ -469,7 +471,7 @@ function handleLoginLti(data, socket) {
                 var ltiLastName = ltiObject.lis_person_name_family || "";
 
                 db_wrapper.user.create({
-                    _id: mongojs.ObjectId(require('crypto').randomBytes(12).toString('hex')),
+                    _id: mongojs.ObjectId(require('crypto').randomBytes(12).toString('hex')),   // MongoDB ObjectIDs are 12 bytes only!
                     username: ltiUsername,
 
                     firstName: ltiFirstName,
@@ -503,6 +505,16 @@ function handleLoginLti(data, socket) {
         });
     }
 
+    function checkNoActiveSession(throwErr, next) {
+        var session = MoocchatUserSession.GetSessionWith(userObjectId.toString());
+
+        if (session) {
+            return throwErr(new Error("[20] The user '" + ltiUsername + "' is currently in an active session."));
+        }
+
+        next();
+    }
+
     function findScheduledQuiz(throwErr, next) {
         var now = new Date();
 
@@ -516,7 +528,7 @@ function handleLoginLti(data, socket) {
 
             // Find first available scheduled quiz session
             if (result.length === 0) {
-                return throwErr(new Error("No scheduled quizzes right now. Try again during a scheduled time."));
+                return throwErr(new Error("[30] No scheduled quiz found."));
             }
 
             quizSchedule = result[0];
@@ -540,7 +552,7 @@ function handleLoginLti(data, socket) {
             }
 
             if (result.length > 0) {
-                return throwErr(new Error("User '" + ltiUsername + "' has previously completed the current quiz session."));
+                return throwErr(new Error("[21] User '" + ltiUsername + "' has previously completed the current quiz session."));
             }
 
             next();
@@ -559,7 +571,7 @@ function handleLoginLti(data, socket) {
             }
 
             if (result.length === 0) {
-                return throwErr(new Error("No question with _id = " + quizSchedule.questionId));
+                return throwErr(new Error("[50] No question with _id = " + quizSchedule.questionId));
             }
 
             question = result[0];
@@ -574,7 +586,7 @@ function handleLoginLti(data, socket) {
             }
 
             if (result.length === 0) {
-                return throwErr(new Error("No question options for question ID = " + quizSchedule.questionId));
+                return throwErr(new Error("[51] No question options for question ID = " + quizSchedule.questionId));
             }
 
             questionOptions = result;
@@ -594,7 +606,7 @@ function handleLoginLti(data, socket) {
 
             // Find first available survey at this time session
             if (result.length === 0) {
-                return throwErr(new Error("No survey available at this time. Survey required for MOOCchat to operate."));
+                return throwErr(new Error("[52] No survey available at this time. Survey required for MOOCchat to operate."));
             }
 
             survey = result[0];
@@ -604,20 +616,20 @@ function handleLoginLti(data, socket) {
     }
 
     function setupPoolsAndQueues(throwErr, next) {
-        var quizScheduleIdString = quizSchedule._id.toString();
+        // var quizScheduleIdString = quizSchedule._id.toString();
 
-        if (!quizSchedule_BackupClientQueue[quizScheduleIdString] &&
-            !quizSchedule_ClientAnswerPool[quizScheduleIdString] &&
-            !quizSchedule_ChatGroupArray[quizScheduleIdString]) {
-            var newBackupClientQueue = new BackupClientQueue();
-            var newClientAnswerPool = new ClientAnswerPool(questionOptions, newBackupClientQueue);
+        // if (!quizSchedule_BackupClientQueue[quizScheduleIdString] &&
+        //     !quizSchedule_ClientAnswerPool[quizScheduleIdString] &&
+        //     !quizSchedule_ChatGroupArray[quizScheduleIdString]) {
+        //     var newBackupClientQueue = new BackupClientQueue();
+        //     var newClientAnswerPool = new ClientAnswerPool(questionOptions, newBackupClientQueue);
 
-            quizSchedule_BackupClientQueue[quizScheduleIdString] = newBackupClientQueue;
-            quizSchedule_ClientAnswerPool[quizScheduleIdString] = newClientAnswerPool;
-            quizSchedule_ChatGroupArray[quizScheduleIdString] = [];     // Empty array to be filled in when chat groups form later down the track
+        //     quizSchedule_BackupClientQueue[quizScheduleIdString] = newBackupClientQueue;
+        //     quizSchedule_ClientAnswerPool[quizScheduleIdString] = newClientAnswerPool;
+        //     quizSchedule_ChatGroupArray[quizScheduleIdString] = [];     // Empty array to be filled in when chat groups form later down the track
 
-            chatGroupFormationLoop.run(newClientAnswerPool);
-        }
+        //     chatGroupFormationLoop.run(newClientAnswerPool);
+        // }
 
         next();
     }
@@ -633,7 +645,7 @@ function handleLoginLti(data, socket) {
 
     function writeSessionToDb(throwErr, next) {
         db_wrapper.userSession.create({
-            _id: mongojs.ObjectId(require('crypto').randomBytes(12).toString('hex')),
+            _id: mongojs.ObjectId(require('crypto').randomBytes(12).toString('hex')),   // MongoDB ObjectIDs are 12 bytes only!
             userId: userObjectId,
 
             timestampStart: new Date(),
@@ -652,12 +664,13 @@ function handleLoginLti(data, socket) {
             var sessionIdString = result._id.toString();
 
             // Set up session
-            session = new MoocchatUserSession(userObjectId.toString(), sessionIdString);
+            session = new MoocchatUserSession(socket, userObjectId.toString(), sessionIdString);
             session.initSessionData(
                 quizSchedule,
                 question,
                 questionOptions,
-                survey
+                survey,
+                ltiUsername
             );
 
             next();
@@ -683,15 +696,13 @@ function handleLoginLti(data, socket) {
 }
 
 function handleLogout(data, socket) {
-    var session = MoocchatUserSession.GetSession(data.sessionId);
+    var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
     if (!session) {
         return console.error("Attempted logout with invalid session ID = " + data.sessionId);
     }
 
     var sessionId = session.getId();
-
-    MoocchatUserSession.Destroy(session);
 
     db_wrapper.userSession.update(
         {
@@ -710,11 +721,48 @@ function handleLogout(data, socket) {
             socketEmitWithLogging(socket, "logoutSuccess", {
                 sessionId: sessionId
             });
+
+            // Destroy session
+            MoocchatUserSession.Destroy(session);
+        });
+}
+
+function handleTerminateSessions(data, socket) {
+    var username = data.username;
+
+    if (!username || typeof username !== "string") {
+        return;
+    }
+
+    db_wrapper.user.read(
+        {
+            username: username
+        },
+        function(err, result) {
+            if (err) {
+                return;
+            }
+
+            if (result.length === 0) {
+                return;
+            }
+
+            var user = result[0];
+            var userIdString = user._id.toString();
+
+            console.log("Destroying all sessions with username '" + username + "'; user ID '" + userIdString + "'");
+
+            var session;
+            while (session = MoocchatUserSession.GetSessionWith(userIdString)) {
+                MoocchatUserSession.Destroy(session, true);
+            }
+
+            socket.emit("terminateSessionsComplete");
         });
 }
 
 function handleResearchConsentSet(data, socket) {
-    var session = MoocchatUserSession.GetSession(data.sessionId);
+    var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
     if (!session) {
         return console.error("Attempted research consent set with invalid session ID = " + data.sessionId);
@@ -746,18 +794,18 @@ function handleResearchConsentSet(data, socket) {
 
 // ===== Student client pool =====
 
-function broadcastPoolCountToBackupQueue(clientAnswerPool) {
-    clientAnswerPool.backupClientQueue.broadcastEvent("clientPoolCountUpdate", {
-        numberOfClients: clientAnswerPool.totalPoolSize()
-    });
-}
+// function broadcastPoolCountToBackupQueue(clientAnswerPool) {
+//     clientAnswerPool.backupClientQueue.broadcastEvent("clientPoolCountUpdate", {
+//         numberOfClients: clientAnswerPool.totalPoolSize()
+//     });
+// }
 
 function broadcastPoolCountToBackupQueue__WaitPool(waitPool) {
     var quizSessionId = waitPool.getQuizSessionId();
 
     var backupClientQueue = MoocchatBackupClientQueue.GetQueue(quizSessionId);
 
-    backupClientQueue.broadcastEvent("clientPoolCountUpdate", {
+    backupClientQueue.broadcast("clientPoolCountUpdate", {
         numberOfClients: waitPool.getSize()
     });
 }
@@ -766,8 +814,8 @@ function broadcastPoolCountToBackupQueue__WaitPool(waitPool) {
 // ===== Question + answer =====
 
 function answerSubmissionHandlerFactory(answerType) {
-    return function(data, _socket) {
-        var session = MoocchatUserSession.GetSession(data.sessionId);
+    return function(data, socket) {
+        var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
         if (!session) {
             return console.error("Attempted answer submission with invalid session ID = " + data.sessionId);
@@ -878,8 +926,8 @@ var handleAnswerSubmissionFinal = answerSubmissionHandlerFactory("final");
  *      content {IDB_SurveyResponse_Content[]}
  * }
  */
-function saveSurvey(data, _socket) {
-    var session = MoocchatUserSession.GetSession(data.sessionId);
+function saveSurvey(data, socket) {
+    var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
     if (!session) {
         return console.error("Attempted survey submission with invalid session ID = " + data.sessionId);
@@ -904,17 +952,17 @@ function saveSurvey(data, _socket) {
  *      sessionId {string}
  * }
  */
-function handleBackupClientLogout(data, _socket) {
-    var session = getSessionFromId(data.sessionId);
+// function handleBackupClientLogout(data, _socket) {
+//     var session = getSessionFromId(data.sessionId);
 
-    if (!session) {
-        return;
-    }
+//     if (!session) {
+//         return;
+//     }
 
-    var client = session.client;
+//     var client = session.client;
 
-    removeClientFromEverything(client);
-}
+//     removeClientFromEverything(client);
+// }
 
 /**
  * data = {
@@ -923,26 +971,24 @@ function handleBackupClientLogout(data, _socket) {
  *      justification {string}
  * }
  */
-function handleBackupClientEnterQueue(data, _socket) {
-    var session = getSessionFromId(data.sessionId);
+function handleBackupClientEnterQueue(data, socket) {
+    var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
     if (!session) {
-        return;
+        return console.error("Attempted backup client enter queue with invalid session ID = " + data.sessionId);
     }
 
-    var backupClientQueue = getBackupClientQueueFromSession(session);
-    var client = session.client;
-
-    session.responseInitial.optionId = data.optionId;
-    session.responseInitial.justification = data.justification;
+    // Fake a database entry with question response data
+    session.data.response.initial.optionId = mongojs.ObjectId(data.optionId);
+    session.data.response.initial.justification = data.justification;
 
     // Add the client to the backup queue here, only *after* we
     // have all the information for question/answer
-    backupClientQueue.addClient(client);
+    var backupClientQueue = MoocchatBackupClientQueue.GetQueueWith(session);
 
-    client.getSocket().emit("backupClientEnterQueueState", {
-        success: true
-    });
+    if (backupClientQueue) {
+        backupClientQueue.addSession(session);
+    }
 }
 
 /**
@@ -950,25 +996,22 @@ function handleBackupClientEnterQueue(data, _socket) {
  *      sessionId {string}
  * }
  */
-function handleBackupClientReturnToQueue(data, _socket) {
-    var session = getSessionFromId(data.sessionId);
+function handleBackupClientReturnToQueue(data, socket) {
+    var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
     if (!session) {
-        return;
+        return console.error("Attempted backup client return to queue with invalid session ID = " + data.sessionId);
     }
-
-    var backupClientQueue = getBackupClientQueueFromSession(session);
-    var client = session.client;
 
     // If session already has answer then return to queue
-    if (session.responseInitial.optionId &&
-        session.responseInitial.justification) {
+    if (!(session.data.initial.response.optionId && session.data.initial.response.justification)) {
+        return;
+    }
 
-        backupClientQueue.addClient(client);
+    var backupClientQueue = MoocchatBackupClientQueue.GetQueueWith(session);
 
-        client.getSocket().emit("backupClientEnterQueueState", {
-            success: true
-        });
+    if (backupClientQueue) {
+        backupClientQueue.addSession(session);
     }
 }
 
@@ -977,18 +1020,24 @@ function handleBackupClientReturnToQueue(data, _socket) {
  *      sessionId {string}
  * }
  */
-function handleBackupClientStatusRequest(data, _socket) {
-    var session = getSessionFromId(data.sessionId);
+function handleBackupClientStatusRequest(data, socket) {
+    var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
     if (!session) {
-        return;
+        return console.error("Attempted backup client status request with invalid session ID = " + data.sessionId);
     }
 
-    var backupClientQueue = getBackupClientQueueFromSession(session);
-    var clientAnswerPool = getClientAnswerPoolFromSession(session);
+    var backupClientQueue = MoocchatBackupClientQueue.GetQueueWith(session);
 
-    backupClientQueue.broadcastUpdate();
-    broadcastPoolCountToBackupQueue(clientAnswerPool);
+    if (backupClientQueue) {
+        backupClientQueue.broadcastQueueChange();
+
+        var waitPool = MoocchatWaitPool.GetPoolWith(session);
+
+        if (waitPool) {
+            broadcastPoolCountToBackupQueue__WaitPool(waitPool);
+        }
+    }
 }
 
 /**
@@ -996,22 +1045,22 @@ function handleBackupClientStatusRequest(data, _socket) {
  *      sessionId {string}
  * }
  */
-function handleBackupClientTransferConfirm(data, _socket) {
-    var session = getSessionFromId(data.sessionId);
+// function handleBackupClientTransferConfirm(data, _socket) {
+//     var session = getSessionFromId(data.sessionId);
 
-    if (!session) {
-        return;
-    }
+//     if (!session) {
+//         return;
+//     }
 
-    var backupClientQueue = getBackupClientQueueFromSession(session);
-    var clientAnswerPool = getClientAnswerPoolFromSession(session);
-    var client = session.client;
+//     var backupClientQueue = getBackupClientQueueFromSession(session);
+//     var clientAnswerPool = getClientAnswerPoolFromSession(session);
+//     var client = session.client;
 
-    if (backupClientQueue.clientOutTray && backupClientQueue.clientOutTray.client === client) {
-        backupClientQueue.moveOutTrayClientToClientPool();
-        chatGroupFormationLoop.run(clientAnswerPool);
-    }
-}
+//     if (backupClientQueue.clientOutTray && backupClientQueue.clientOutTray.client === client) {
+//         backupClientQueue.moveOutTrayClientToClientPool();
+//         chatGroupFormationLoop.run(clientAnswerPool);
+//     }
+// }
 
 
 
@@ -1083,18 +1132,20 @@ io.sockets.on('connection', function(socket) {
     registerSocketEventWithLogging("loginLti", function(data) { handleLoginLti(data, socket); });
     registerSocketEventWithLogging("researchConsentSet", function(data) { handleResearchConsentSet(data, socket); });
     registerSocketEventWithLogging("logout", function(data) { handleLogout(data, socket); });
-
+    registerSocketEventWithLogging("terminateSessions", function(data) { handleTerminateSessions(data, socket); });
     /* Chat group discussion */
     registerSocketEventWithLogging("chatGroupJoinRequest", function(data) { handleChatGroupJoinRequest(data, socket); });
     registerSocketEventWithLogging("chatGroupMessage", function(data) { handleChatGroupMessage(data, socket); });
     registerSocketEventWithLogging("chatGroupQuitStatusChange", function(data) { handleChatGroupQuitStatusChange(data, socket); });
 
     /* Backup client */
-    registerSocketEventWithLogging("backupClientLogout", function(data) { handleBackupClientLogout(data, socket); });
+    // registerSocketEventWithLogging("backupClientLogout", function(data) { handleBackupClientLogout(data, socket); });
     registerSocketEventWithLogging("backupClientEnterQueue", function(data) { handleBackupClientEnterQueue(data, socket); });
     registerSocketEventWithLogging("backupClientReturnToQueue", function(data) { handleBackupClientReturnToQueue(data, socket); });
     registerSocketEventWithLogging("backupClientStatusRequest", function(data) { handleBackupClientStatusRequest(data, socket); });
-    registerSocketEventWithLogging("backupClientTransferConfirm", function(data) { handleBackupClientTransferConfirm(data, socket); });
+
+    // No longer done here; see MoocchatBackupClientQueue#callToPool()
+    // registerSocketEventWithLogging("backupClientTransferConfirm", function(data) { handleBackupClientTransferConfirm(data, socket); });
 
     /* Testing */
     // socket.on('loadTestReq', loadTest);

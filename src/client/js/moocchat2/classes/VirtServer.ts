@@ -23,6 +23,17 @@ export class VirtServer {
             { event: "loginSuccess" }
         ],
 
+        "logout": [
+            {
+                event: "logoutSuccess",
+                generator: (dataFromClient: IOutboundData.Logout) => {
+                    return {
+                        sessionId: dataFromClient.sessionId
+                    }
+                }
+            }
+        ],
+
         "researchConsentSet": [
             { event: "researchConsentSaved" }
         ],
@@ -46,7 +57,7 @@ export class VirtServer {
                                 }
                             }
                         ],
-                        screenName: "???",      // Not used anymore
+                        screenName: "",         // Not used anymore
                         clientIndex: 0
                     }
 
@@ -60,7 +71,7 @@ export class VirtServer {
                 event: "chatGroupMessage",
                 generator: (dataFromClient: IOutboundData.ChatGroupSendMessage) => {
                     const data: IInboundData.ChatGroupMessage = {
-                        screenName: "???",      // Not used anymore
+                        screenName: "",         // Not used anymore
                         clientIndex: 0,
                         message: dataFromClient.message,
                         timestamp: Date.now()
@@ -73,9 +84,13 @@ export class VirtServer {
 
         "chatGroupQuitStatusChange": [
             // NOTE: Force terminate? - not really used or necessary
-            { event: "chatGroupTerminated" }
-        ]
+            // { event: "chatGroupTerminated" }
+        ],
 
+        "terminateSessions": [
+            // DO NOT EMULATE
+        ]
+        
 
         // Backup client events not supported
     }

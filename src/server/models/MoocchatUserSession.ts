@@ -1,6 +1,10 @@
 import {MoocchatUserSessionData} from "./MoocchatUserSessionData";
 import {MoocchatUserSessionStore} from "./MoocchatUserSessionStore";
 
+import {MoocchatWaitPool} from "./MoocchatWaitPool";
+import {MoocchatChatGroup} from "./MoocchatChatGroup";
+import {MoocchatBackupClientQueue} from "./MoocchatBackupClientQueue";
+
 import {IDB_Question} from "./database/Question";
 import {IDB_QuestionOption} from "./database/QuestionOption";
 import {IDB_QuizSchedule} from "./database/QuizSchedule";
@@ -12,7 +16,7 @@ export class MoocchatUserSession {
     private _userId: string;
     private _sessionId: string;
     private _userSessionData: MoocchatUserSessionData;
-
+    private _socket: SocketIO.Socket;
 
 
 
@@ -20,31 +24,75 @@ export class MoocchatUserSession {
         return MoocchatUserSession.UserSessionStore.getSessionIds();
     }
 
-    public static GetSession(sessionId: string) {
-        return MoocchatUserSession.UserSessionStore.getSession(sessionId);
+    public static GetSession(sessionId: string, socket?: SocketIO.Socket) {
+        const session = MoocchatUserSession.UserSessionStore.getSession(sessionId);
+
+        if (session && socket) {
+            // Update socket reference in case someone has switched/disconnected-connected sockets
+            session.setSocket(socket);
+        }
+
+        return session;
     }
 
-    public static Destroy(session: MoocchatUserSession) {
-        const userId = session.getUserId();
+    public static GetSessionWith(userId: string) {
+        return MoocchatUserSession.UserSessionStore.getSessionByUserId(userId);
+    }
+
+    public static Destroy(session: MoocchatUserSession, sendTerminateMessage: boolean = false) {
         const sessionId = session.getId();
 
+        // Remove session from other objects
+        var waitPool = MoocchatWaitPool.GetPoolWith(session);
+
+        if (waitPool) {
+            waitPool.removeSession(session);
+        }
+
+        var chatGroup = MoocchatChatGroup.GetChatGroupWith(session);
+
+        if (chatGroup) {
+            chatGroup.quitSession(session);
+        }
+
+        var backupClientQueue = MoocchatBackupClientQueue.GetQueueWith(session);
+
+        if (backupClientQueue) {
+            backupClientQueue.removeSession(session);
+        }
+
+
+
+        // Wipe user session info - this must be done *AFTER* all other clean ups in other objects
         session._userSessionData = undefined;
         session.setId(undefined);
         session.setUserId(undefined);
 
-        MoocchatUserSession.UserSessionStore.remove(session);
+        if (session.getSocket()) {
+            if (sendTerminateMessage) {
+                session.getSocket().emit("terminated");
+            }
 
-        console.log(`Session destroyed; User = ${userId}, Session = ${sessionId}`);
+            // Give a little bit of time before disconnecting
+            setTimeout(() => {
+                session.getSocket().disconnect(true);
+            }, 500);
+        }
+
+        session.removeFromStore();
+
+        console.log(`Session '${sessionId}' destroyed`);
     }
 
 
 
-    constructor(userId: string, sessionId: string) {
+    constructor(socket: SocketIO.Socket, userId: string, sessionId: string) {
+        this.setSocket(socket);
         this.setUserId(userId);
         this.setId(sessionId);
         this.addToStore();
 
-        console.log(`Session created; User = ${this.getUserId()}, Session = ${this.getId()}`);
+        console.log(`Session '${this.getId()}' created; User = ${this.getUserId()}`);
     }
 
     public get data() {
@@ -58,13 +106,15 @@ export class MoocchatUserSession {
         quizSchedule: IDB_QuizSchedule,
         quizQuestion: IDB_Question,
         quizQuestionOptions: IDB_QuestionOption[],
-        survey: IDB_Survey) {
+        survey: IDB_Survey,
+        username: string) {
 
         this._userSessionData = new MoocchatUserSessionData(
             quizSchedule,
             quizQuestion,
             quizQuestionOptions,
-            survey
+            survey,
+            username
         );
     }
 
@@ -84,8 +134,13 @@ export class MoocchatUserSession {
         return this._sessionId;
     }
 
+    private setSocket(socket: SocketIO.Socket) {
+        this._socket = socket;
+    }
 
-
+    public getSocket() {
+        return this._socket;
+    }
 
     private addToStore() {
         MoocchatUserSession.UserSessionStore.add(this);

@@ -59,3 +59,7 @@ export interface ClientPoolCountUpdate {
 export interface BackupClientQueueUpdate {
     clients: { username: string; }[];
 }
+
+export interface LogoutSuccess {
+    sessionId: string;
+}

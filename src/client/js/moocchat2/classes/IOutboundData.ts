@@ -40,3 +40,5 @@ export interface BackupClientTransferConfirm extends SessionResponse { }
 export interface SurveyResponse extends SessionResponse {
     content: ISurveyResponseContent[]
 }
+
+export interface Logout extends SessionResponse {}

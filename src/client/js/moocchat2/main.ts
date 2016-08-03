@@ -39,13 +39,12 @@ import {InvalidLoginStateHandler} from "./state-handlers/invalid-login";
 // Unfortunately most browsers now ignore the text and give a generic message instead,
 // but a non-void return is still required to trigger the warning dialog.
 const windowUnloadWarning = (event: BeforeUnloadEvent) => {
-    const dialogText = `Your MOOCchat session will end prematurely if you leave now.`;
+    const dialogText = `Your MOOCchat session will end if you leave now.`;
     event.returnValue = dialogText;
     return dialogText;
 }
 
 window.addEventListener("beforeunload", windowUnloadWarning);
-
 
 // Start server communications
 const virtServerComms = new VirtServerComms();
@@ -62,6 +61,9 @@ $(() => {
 
     const session = new MoocchatSession<STATE>($content, $taskSections).setSocket(virtServerComms);
 
+    window.addEventListener("unload", () => {
+        session.logout();
+    });
 
     // Track errors
     window.addEventListener("error", (e: ErrorEvent) => {

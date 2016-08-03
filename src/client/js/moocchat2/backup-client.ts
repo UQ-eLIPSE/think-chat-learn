@@ -48,6 +48,9 @@ $(() => {
 
     const session = new MoocchatSession<STATE>($content, $taskSections, false).setSocket(socket);
 
+    window.addEventListener("unload", () => {
+        session.logout();
+    });
 
     // Sections must be defined now before other resources use them
     session.sectionManager.registerAll([

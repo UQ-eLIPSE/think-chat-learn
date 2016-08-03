@@ -10,10 +10,13 @@ export const BackupClientEjectedStateHandler: IStateHandler<STATE> =
     (session) => {
         return {
             onEnter: () => {
-                // Log out by closing socket silently
-                // session.socket.close(true);
-                session.socket.close();
-                
+                // Log out now
+                session.logout(() => {
+                    setTimeout(() => {
+                        session.socket.close();
+                    }, 500);
+                });
+
                 session.pageManager.loadPage("backup-client-ejected", (page$) => {
                     page$("#go-to-return-url").on("click", () => {
                         window.top.location.href = _LTI_BASIC_LAUNCH_DATA.launch_presentation_return_url;

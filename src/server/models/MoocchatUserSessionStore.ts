@@ -27,6 +27,16 @@ export class MoocchatUserSessionStore {
         }
     }
 
+    public getSessionByUserId(userId: string) {
+        for (let i = 0; i < this.store.length; ++i) {
+            const userSession = this.store[i];
+            
+            if (userSession.getUserId() === userId) {
+                return userSession;
+            }
+        }
+    }
+
     public add(session: MoocchatUserSession) {
         if (this.has(session)) {
             return;
@@ -37,7 +47,7 @@ export class MoocchatUserSessionStore {
 
     public remove(session: MoocchatUserSession) {
         if (this.has(session)) {
-            return this.store.splice(this.indexOf(session), 1);
+            return this.store.splice(this.indexOf(session), 1)[0];
         }
     }
 

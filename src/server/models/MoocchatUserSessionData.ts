@@ -12,6 +12,8 @@ export class MoocchatUserSessionData {
 
     public survey: IDB_Survey;
 
+    public username: string;
+
     // `responseInitial` and `responseFinal` hold the answers as received from client
     public response: { initial: IDB_QuestionResponse, final: IDB_QuestionResponse } = {
         initial: {},
@@ -22,12 +24,15 @@ export class MoocchatUserSessionData {
         quizSchedule: IDB_QuizSchedule,
         quizQuestion: IDB_Question,
         quizQuestionOptions: IDB_QuestionOption[],
-        survey: IDB_Survey) {
+        survey: IDB_Survey,
+        username: string) {
             
         this.quizSchedule = quizSchedule;
         this.quizQuestion = quizQuestion;
         this.quizQuestionOptions = quizQuestionOptions;
 
         this.survey = survey;
+
+        this.username = username;
     }
 }

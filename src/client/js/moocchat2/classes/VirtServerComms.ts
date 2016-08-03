@@ -9,6 +9,7 @@ import {VirtServer} from "./VirtServer";
  */
 export class VirtServerComms extends WebsocketManager {
     private virtServer: VirtServer;
+    private terminated: boolean = false;
 
     constructor() {
         super();
@@ -25,6 +26,12 @@ export class VirtServerComms extends WebsocketManager {
         this.on("connected", () => {
             // Only enable virt server after we connect for the first time otherwise we may end up with virt server being utilised first
             this.virtServer = new VirtServer();
+        });
+
+
+        this.on("terminated", () => {
+            alert("You or someone has requested a full termination of all sessions associated with this username.");
+            this.terminated = true;
         });
 
         return super_openResult;
@@ -96,6 +103,10 @@ export class VirtServerComms extends WebsocketManager {
     }
 
     private sendToVirtServer<IData>(event: string, data: IData) {
+        if (this.terminated) {
+            return;
+        }
+        
         // Pretend websocket is being responded to
         const virtServerResponse = this.virtServer.sendToServer(event, data);
 
