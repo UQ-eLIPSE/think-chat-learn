@@ -18,6 +18,8 @@ export const LoginStateHandler: IStateHandler<STATE> =
                 const user = new MoocchatUser(session.eventManager, _LTI_BASIC_LAUNCH_DATA);
 
                 user.onLoginSuccess = (data) => {
+                    user.clearLoginCallbacks();
+
                     session
                         .setId(data.sessionId)
                         .setQuiz(new MoocchatQuiz(data.quiz))
@@ -32,6 +34,8 @@ export const LoginStateHandler: IStateHandler<STATE> =
                 }
 
                 user.onLoginFail = (data) => {
+                    user.clearLoginCallbacks();
+                    
                     let reason: string;
 
                     if (typeof data === "string") {

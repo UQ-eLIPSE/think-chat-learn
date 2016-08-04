@@ -55,7 +55,16 @@ export class MoocchatUser {
      * Clears all callbacks.
      */
     public clearLoginCallbacks() {
-        this.sharedEventManager.destroy();
+        this.clearLoginSuccessCallbacks();
+        this.clearLoginFailCallbacks();
+    }
+
+    private clearLoginSuccessCallbacks() {
+        this.sharedEventManager.off(MoocchatUser_Events.LOGIN_SUCCESS);
+    }
+
+    private clearLoginFailCallbacks() {
+        this.sharedEventManager.off(MoocchatUser_Events.LOGIN_FAIL);
     }
 
     /**
