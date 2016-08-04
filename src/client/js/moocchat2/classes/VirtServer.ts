@@ -47,7 +47,7 @@ export class VirtServer {
                     const data: IInboundData.ChatGroupFormed = {
                         // Random 16 byte ID using Math.random() as best-effort most widely compatible randomness source
                         // http://stackoverflow.com/a/2117523
-                        groupId: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'.replace(/[x]/g, function(c) { return (Math.random() * 16 | 0).toString(16); }),
+                        groupId: 'deadxxxxxxxxxxxxxxxxxxxxxxxxdead'.replace(/[x]/g, function(c) { return (Math.random() * 16 | 0).toString(16); }),
 
                         groupSize: 1,
                         groupAnswers: [
