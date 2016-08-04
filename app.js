@@ -24,7 +24,12 @@ var http = require("http");
 http.globalAgent.maxSockets = 65000;
 
 var server = http.createServer(app).listen(conf.portNum);
-var io = require('socket.io')(server, { serveClient: false });
+var io = require('socket.io')(server, { 
+    serveClient: false,
+
+    pingInterval: 14000,    // Ping roughly 4 times a minute
+    pingTimeout: 60000      // Timeout must be greater than interval
+ });
 
 global.conf = conf;
 global.server = server;
