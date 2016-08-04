@@ -52,7 +52,7 @@ export class VirtServer {
                         groupSize: 1,
                         groupAnswers: [
                             {
-                                clientIndex: 0,
+                                clientIndex: -1,
                                 answer: {
                                     justification: "",
                                     optionId: null
@@ -60,7 +60,7 @@ export class VirtServer {
                             }
                         ],
                         screenName: "",         // Not used anymore
-                        clientIndex: 0
+                        clientIndex: -1
                     }
 
                     return data;
@@ -74,7 +74,7 @@ export class VirtServer {
                 generator: (dataFromClient: IOutboundData.ChatGroupSendMessage) => {
                     const data: IInboundData.ChatGroupMessage = {
                         screenName: "",         // Not used anymore
-                        clientIndex: 0,
+                        clientIndex: -1,
                         message: dataFromClient.message,
                         timestamp: Date.now()
                     }

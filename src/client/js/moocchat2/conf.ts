@@ -20,5 +20,13 @@ export const conf = {
     combinedHTML: {
         // Relative to URL of public page (not server filesystem path)
         url: "./static/combined-html/all-pages.html"
+    },
+
+    virtServer: {
+        maxRealServerTimeoutMs: Utils.DateTime.secToMs(5)
+    },
+
+    websockets: {
+        disconnectCooloffTimeoutMs: Utils.DateTime.secToMs(0.5)
     }
 }

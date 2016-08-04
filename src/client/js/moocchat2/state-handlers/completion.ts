@@ -1,3 +1,5 @@
+import {conf} from "../conf";
+
 import {IStateHandler} from "../classes/IStateHandler";
 import {VirtServerComms} from "../classes/VirtServerComms";
 
@@ -55,7 +57,7 @@ export const CompletionStateHandler: IStateHandler<STATE> =
                     session.logout(() => {
                         setTimeout(() => {
                             session.socket.close();
-                        }, 500);
+                        }, conf.websockets.disconnectCooloffTimeoutMs);
                     });
                 }
 

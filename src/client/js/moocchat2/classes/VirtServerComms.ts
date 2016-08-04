@@ -1,3 +1,5 @@
+import {conf} from "../conf";
+
 import {WebsocketManager} from "./WebsocketManager";
 import {VirtServer} from "./VirtServer";
 
@@ -10,6 +12,7 @@ import {VirtServer} from "./VirtServer";
 export class VirtServerComms extends WebsocketManager {
     private virtServer: VirtServer;
     private terminated: boolean = false;
+    private virtServerSwitchOver: boolean = false;
 
     constructor() {
         super();
@@ -59,13 +62,14 @@ export class VirtServerComms extends WebsocketManager {
 
         let timeoutHandle: number;
 
-        // TODO: Can I do this? cVST() refers to vSS() below BEFORE initialisation, though the functions haven't been executed yet
         const clearVirtServerTimeout = () => {
             this.off("disconnect", virtServerSwitch);
             clearTimeout(timeoutHandle);
         }
 
-        const virtServerSwitch = () => {
+        const virtServerSwitch = (reason: string) => {
+            this.virtServerSwitchOver = true;
+
             clearVirtServerTimeout();
 
             // Switchover must close actual websocket connection
@@ -73,6 +77,11 @@ export class VirtServerComms extends WebsocketManager {
             console.log("Switched over to virtual server");
 
             // Send to server
+            this.sendToVirtServer("_VIRTSERVER", {
+                timestamp: new Date().toISOString(),
+                switchReason: reason
+            });
+
             this.sendToVirtServer(event, args[0]);
         }
 
@@ -91,13 +100,22 @@ export class VirtServerComms extends WebsocketManager {
             });
 
             // If there are other events that cause a switch over (disconnect) then this emit also needs to switch
-            this.once("disconnect", virtServerSwitch);
+            this.once("disconnect", () => {
+                // If disconnect came from virtServerSwitch(), then just send the event as is 
+                if (this.virtServerSwitchOver) {
+                    this.sendToVirtServer(event, args[0]);
+                } else {
+                    virtServerSwitch("Client received disconnect event");
+                }
+            });
 
             // Don't set timeout for indefinitely long responses
             if (!indefiniteEventExpected) {
+                const timeoutMs = conf.virtServer.maxRealServerTimeoutMs;
+
                 timeoutHandle = setTimeout(() => {
-                    virtServerSwitch();
-                }, 500);        // WebSockets should be practically instantaneous
+                    virtServerSwitch(`Client did not receive server response within ${timeoutMs}ms`);
+                }, timeoutMs);
             }
         }
     }

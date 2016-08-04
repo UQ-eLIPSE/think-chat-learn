@@ -682,6 +682,13 @@ button.link:active {
             margin-top: -0.7rem;
         }
 
+        // VirtServer or unknown client
+        &[data-client-id="0"] {
+            &::before {
+                content: "?";
+            }
+        }
+
         &[data-client-id="1"] {
             color: $client-1-colour;
 
@@ -779,6 +786,11 @@ button.link:active {
         // Message coming from system
         &[data-client-id="-1"]::after {
             content: "";
+        }
+
+        // VirtServer or unknown client
+        &[data-client-id="0"]::after {
+            content: "?";
         }
 
         p {
