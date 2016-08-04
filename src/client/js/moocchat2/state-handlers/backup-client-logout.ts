@@ -1,3 +1,5 @@
+import {conf} from "../conf";
+
 import {IStateHandler} from "../classes/IStateHandler";
 
 import {MoocchatState as STATE} from "../classes/MoocchatStates";
@@ -16,7 +18,7 @@ export const BackupClientLogoutStateHandler: IStateHandler<STATE> =
                 session.logout(() => {
                     setTimeout(() => {
                         session.socket.close();
-                    }, 500);
+                    }, conf.websockets.disconnectCooloffTimeoutMs);
                 });
 
                 session.pageManager.loadPage("backup-client-logout", (page$) => {
