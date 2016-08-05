@@ -63,7 +63,7 @@ export class VirtServerComms extends WebsocketManager {
         let timeoutHandle: number;
 
         const clearVirtServerTimeout = () => {
-            this.off("disconnect", virtServerSwitch);
+            this.off("disconnect", onDisconnect);
             clearTimeout(timeoutHandle);
         }
 
@@ -85,7 +85,14 @@ export class VirtServerComms extends WebsocketManager {
             this.sendToVirtServer(event, args[0]);
         }
 
-
+        const onDisconnect = () => {
+            // If disconnect came from virtServerSwitch(), then just send the event as is 
+            if (this.virtServerSwitchOver) {
+                this.sendToVirtServer(event, args[0]);
+            } else {
+                virtServerSwitch("Client received disconnect event");
+            }
+        }
 
         // If there are expected responses
         if (expectedResponseData.length) {
@@ -100,14 +107,7 @@ export class VirtServerComms extends WebsocketManager {
             });
 
             // If there are other events that cause a switch over (disconnect) then this emit also needs to switch
-            this.once("disconnect", () => {
-                // If disconnect came from virtServerSwitch(), then just send the event as is 
-                if (this.virtServerSwitchOver) {
-                    this.sendToVirtServer(event, args[0]);
-                } else {
-                    virtServerSwitch("Client received disconnect event");
-                }
-            });
+            this.once("disconnect", onDisconnect);
 
             // Don't set timeout for indefinitely long responses
             if (!indefiniteEventExpected) {
