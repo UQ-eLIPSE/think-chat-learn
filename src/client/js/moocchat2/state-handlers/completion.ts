@@ -1,3 +1,5 @@
+import * as $ from "jquery";
+
 import {conf} from "../conf";
 
 import {IStateHandler} from "../classes/IStateHandler";

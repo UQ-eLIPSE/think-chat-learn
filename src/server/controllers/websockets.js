@@ -1004,7 +1004,7 @@ function handleBackupClientReturnToQueue(data, socket) {
     }
 
     // If session already has answer then return to queue
-    if (!(session.data.initial.response.optionId && session.data.initial.response.justification)) {
+    if (!(session.data.response.initial.optionId && session.data.response.initial.justification)) {
         return;
     }
 
