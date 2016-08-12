@@ -6,7 +6,7 @@
 
 var assert = require("chai").assert;
 
-var DatabaseWrapper = require("../../../build/models/DatabaseWrapper").DatabaseWrapper;
+var DatabaseWrapper = require("../../../build/server/models/DatabaseWrapper").DatabaseWrapper;
 
 
 describe("server/models/DatabaseWrapper", function() {

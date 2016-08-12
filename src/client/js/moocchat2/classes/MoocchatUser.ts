@@ -1,6 +1,6 @@
 import * as socket from "socket.io-client";
 
-import {EventBox, EventBox_Callback} from "./EventBox";
+import {EventBox} from "../../../../common/js/classes/EventBox";
 import {WebsocketManager} from "./WebsocketManager";
 
 import {WebsocketEvents} from "./WebsocketEvents";

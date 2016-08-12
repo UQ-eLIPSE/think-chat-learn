@@ -2,7 +2,7 @@ import {PageManager} from "./PageManager";
 
 import * as $ from "jquery";
 
-import {EventBox} from "./EventBox";
+import {EventBox} from "../../../../common/js/classes/EventBox";
 
 export class CombinedPageManager extends PageManager {
     private combinedPageXHR: JQueryXHR;

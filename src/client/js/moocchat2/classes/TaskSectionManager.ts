@@ -1,4 +1,4 @@
-import {EventBox} from "./EventBox";
+import {EventBox} from "../../../../common/js/classes/EventBox";
 import {TaskSection} from "./TaskSection";
 
 /**

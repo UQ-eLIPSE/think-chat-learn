@@ -1,23 +1,15 @@
-var conf = global.conf;
-var io = global.io;
+declare type _UNKNOWN = any; 
+
+import {PacSeqSocket_Server} from "../../common/js/classes/PacSeqSocket_Server";
+
+
+var conf = (<_UNKNOWN>global).conf;
+var io = (<_UNKNOWN>global).io;
 
 var mongojs = require("mongojs");
 var db_wrapper = require("./database");
 
 var LTIProcessor = require("../models/LTIProcessor").LTIProcessor;
-
-// var Client = require('../models/client');
-
-// var ClientAnswerPool = require("../models/ClientAnswerPool");
-// var ChatGroup = require("../models/ChatGroup");
-// var BackupClientQueue = require("../models/BackupClientQueue");
-
-// var Session = require("../models/Session");
-// var SessionManager = require("../models/SessionManager");
-
-// var util = require('../helpers/util');
-// var randomInteger = util.randomInteger;
-
 
 
 // Replacement code for previous session/client classes
@@ -29,178 +21,25 @@ var MoocchatBackupClientQueue = require("../models/MoocchatBackupClientQueue").M
 
 
 
-// var allSessions = new SessionManager();
 
 // LTI processor for incoming logins
 var ltiProcessor = new LTIProcessor(conf.lti.signingInfo);
 ltiProcessor.setTestMode(conf.lti.testMode);
 
-
-// Mappings between quiz schedule ID and the different groups and queues used
-
-/** Object(QuizScheduleId{string} => BackupClientQueue) */
-// var quizSchedule_BackupClientQueue = {};
-
-/** Object(QuizScheduleId{string} => ClientAnswerPool) */
-// var quizSchedule_ClientAnswerPool = {};
-
-/** Object(QuizScheduleId{string} => ChatGroup[]) */
-// var quizSchedule_ChatGroupArray = {};
-
-
-
-
-// ===== Utils =====
-
-/**
- * @param {string} sessionId
- */
-// function getSessionFromId(sessionId) {
-//     return allSessions.getSessionById(sessionId);
-// }
-
-/**
- * Gets associated client answer pool for a given user session's quiz session.
- * 
- * @param {Session} session
- * 
- * @returns {ClientAnswerPool}
- */
-// function getClientAnswerPoolFromSession(session) {
-//     return quizSchedule_ClientAnswerPool[session.getQuizScheduleIdString()];
-// }
-
-/**
- * Gets associated backup client queue for a given user session's quiz session.
- * 
- * @param {Session} session
- * 
- * @returns {BackupClientQueue}
- */
-// function getBackupClientQueueFromSession(session) {
-//     return quizSchedule_BackupClientQueue[session.getQuizScheduleIdString()];
-// }
-
-/**
- * Gets associated chat groups for a given user session's quiz session.
- * 
- * @param {Session} session
- * 
- * @returns {ChatGroup[]}
- */
-// function getChatGroupsFromSession(session) {
-//     return quizSchedule_ChatGroupArray[session.getQuizScheduleIdString()];
-// }
-
-/**
- * Gets the chat group the user is located in.
- * 
- * @param {Session} session
- */
-// function getChatGroupFromSession(session) {
-//     var chatGroups = getChatGroupsFromSession(session);
-
-//     if (!chatGroups) {
-//         return;
-//     }
-
-//     var client = session.client;
-
-//     for (var i = 0; i < chatGroups.length; ++i) {
-//         var chatGroup = chatGroups[i];
-
-//         if (chatGroup.getClientIndex(client) > -1) {
-//             return chatGroup;
-//         }
-//     }
-// }
-
-/**
- * Deletes given chat group from mapping store.
- * 
- * @param {Session} session Session of user in/previously in chat group
- * @param {ChatGroup} chatGroupToDelete
- */
-// function deleteChatGroupFromMappingStore(session, chatGroupToDelete) {
-//     var allChatGroupsInQuiz = getChatGroupsFromSession(session);
-//     var chatGroupIndex = allChatGroupsInQuiz.indexOf(chatGroupToDelete);
-
-//     if (chatGroupIndex > -1) {
-//         return allChatGroupsInQuiz.splice(chatGroupIndex, 1);
-//     }
-// }
-
-/**
- * @param {Client} client
- */
-// function removeClientFromEverything(client) {
-//     var session = allSessions.getSessionByClient(client);
-
-//     var clientAnswerPool = getClientAnswerPoolFromSession(session);
-//     var backupClientQueue = getBackupClientQueueFromSession(session);
-//     var chatGroup = getChatGroupFromSession(session);
-
-//     if (backupClientQueue && backupClientQueue.removeClient(client)) {
-//         backupClientQueue.broadcastUpdate();
-//     }
-
-//     if (clientAnswerPool && clientAnswerPool.removeClient(client)) {
-//         broadcastPoolCountToBackupQueue(clientAnswerPool);
-//     }
-
-//     if (chatGroup && chatGroup.removeClient(client)) {
-//         // If the chat group terminates, then remove the chat group from array
-//         if (chatGroup.terminationCheck()) {
-//             deleteChatGroupFromMappingStore(session, chatGroup);
-//         }
-//     }
-// }
-
-
-
 // ===== Chat group =====
-
-/**
- * @return {ChatGroup | undefined}
- */
-// function formChatGroup(clientAnswerPool) {
-//     var newChatGroup = clientAnswerPool.tryMakeChatGroup();
-
-//     if (newChatGroup) {
-//         var quizScheduleIdString = newChatGroup.clients[0].getSession().getQuizScheduleIdString();
-
-//         quizSchedule_ChatGroupArray[quizScheduleIdString].push(newChatGroup);
-
-//         newChatGroup.clients.forEach(function(client) {
-//             db_wrapper.userSession.update({
-//                 _id: mongojs.ObjectId(client.getSession().getId())
-//             },
-//                 {
-//                     $set: {
-//                         chatGroupId: newChatGroup.id
-//                     }
-//                 });
-//         });
-
-//         broadcastPoolCountToBackupQueue(clientAnswerPool);
-
-//         return newChatGroup;
-//     }
-// }
-
 
 
 // Recurring task
 var chatGroupFormationLoop = (function() {
     var timeBetweenChecks = conf.chat.groups.formationIntervalMs;
-    var timeoutHandles = {};
+    var timeoutHandles: _UNKNOWN = {};
 
     /**
      * Runs another round of the loop, or starts the loop if not already active.
      * 
      * @param {MoocchatWaitPool} waitPool
      */
-    function run(waitPool) {
+    function run(waitPool: _UNKNOWN) {
         clearTimeout(timeoutHandles[waitPool.getQuizSessionId()]);
 
         var sessionsInGroup = waitPool.tryFormGroup();
@@ -210,7 +49,7 @@ var chatGroupFormationLoop = (function() {
             var newChatGroup = new MoocchatChatGroup(sessionsInGroup);
 
             // Record
-            newChatGroup.getSessions().forEach(function(session) {
+            newChatGroup.getSessions().forEach(function(session: _UNKNOWN) {
                 db_wrapper.userSession.update(
                     {
                         _id: mongojs.ObjectId(session.getId())
@@ -245,7 +84,7 @@ var chatGroupFormationLoop = (function() {
  * 
  * @param {any} data
  */
-function handleChatGroupJoinRequest(data, socket) {
+function handleChatGroupJoinRequest(data: _UNKNOWN, socket: _UNKNOWN) {
     var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
     if (!session) {
@@ -268,7 +107,7 @@ function handleChatGroupJoinRequest(data, socket) {
  * 
  * @param {any} data
  */
-function handleChatGroupQuitStatusChange(data, socket) {
+function handleChatGroupQuitStatusChange(data: _UNKNOWN, socket: _UNKNOWN) {
     var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
     if (!session) {
@@ -279,22 +118,7 @@ function handleChatGroupQuitStatusChange(data, socket) {
 
     if (data.quitStatus) {
         chatGroup.quitSession(session);
-    } else {
-        // chatGroup.unqueueClientToQuit(session);
     }
-
-    // var chatGroup = getChatGroupFromSession(session);
-
-    // if (data.quitStatus) {
-    //     chatGroup.queueClientToQuit(client);
-    // } else {
-    //     chatGroup.unqueueClientToQuit(client);
-    // }
-
-    // // If the chat group terminates, then remove the chat group reference
-    // if (chatGroup.terminationCheck()) {
-    //     deleteChatGroupFromMappingStore(session, chatGroup);
-    // }
 }
 
 /**
@@ -306,7 +130,7 @@ function handleChatGroupQuitStatusChange(data, socket) {
  * 
  * @param {any} data
  */
-function handleChatGroupMessage(data, socket) {
+function handleChatGroupMessage(data: _UNKNOWN, socket: _UNKNOWN) {
     var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
     if (!session) {
@@ -347,8 +171,8 @@ function handleChatGroupMessage(data, socket) {
  *      ...
  * }
  */
-function handleLoginLti(data, socket) {
-    function notifyClientOnError(err) {
+function handleLoginLti(data: _UNKNOWN, socket: _UNKNOWN) {
+    function notifyClientOnError(err: _UNKNOWN) {
         socketEmitWithLogging(socket, "loginFailure", (err && err.message) ? err.message : "Unexpected error");
     }
 
@@ -364,19 +188,17 @@ function handleLoginLti(data, socket) {
             checkQuizSessionNotTaken,
             loadQuestionData,
             findSurvey,
-            setupPoolsAndQueues,
-            setupClient,
             writeSessionToDb,
             notifyClientOfLogin
         ]);
 
 
     // Callback chain and synchronisation
-    function runCallbackChain(errorThrowFunc, callbackChain) {
+    function runCallbackChain(errorThrowFunc: _UNKNOWN, callbackChain: _UNKNOWN) {
         var chainIndex = -1;
         var errorThrown = false;
 
-        var throwErr = function(err) {
+        var throwErr = function(err: _UNKNOWN) {
             errorThrown = true;
             errorThrowFunc(err);
             return;
@@ -392,7 +214,7 @@ function handleLoginLti(data, socket) {
         callbackChainer();
     }
 
-    function callbackSyncFactory(n, done) {
+    function callbackSyncFactory(n: _UNKNOWN, done: _UNKNOWN) {
         return function() {
             if (--n === 0) {
                 done();
@@ -406,36 +228,36 @@ function handleLoginLti(data, socket) {
     // Variables in serialised callback chain
 
     /** {ILTIData} */
-    var ltiObject;
+    var ltiObject: _UNKNOWN;
 
     /** {string} */
-    var ltiUsername;
+    var ltiUsername: _UNKNOWN;
 
     /** {Mongo.ObjectId()} */
-    var userObjectId;
+    var userObjectId: _UNKNOWN;
 
     /** {IDB_QuizSchedule} */
-    var quizSchedule;
+    var quizSchedule: _UNKNOWN;
 
     /** {IDB_Question} */
-    var question;
+    var question: _UNKNOWN;
 
     /** {IDB_QuestionOption[]} */
-    var questionOptions;
+    var questionOptions: _UNKNOWN;
 
     /** {IDB_Survey} */
-    var survey;
+    var survey: _UNKNOWN;
 
     /** {Client} */
     // var client;
 
     /** {MoocchatUserSession} */
-    var session;
+    var session: _UNKNOWN;
 
     /** {boolean} */
-    var researchConsentUnknown;
+    var researchConsentUnknown: _UNKNOWN;
 
-    function processLtiObject(throwErr, next) {
+    function processLtiObject(throwErr: _UNKNOWN, next: _UNKNOWN) {
         try {
             ltiObject = ltiProcessor.verifyAndReturnLTIObj(data);
         } catch (e) {
@@ -445,7 +267,7 @@ function handleLoginLti(data, socket) {
         next();
     }
 
-    function checkUserId(throwErr, next) {
+    function checkUserId(throwErr: _UNKNOWN, next: _UNKNOWN) {
         ltiUsername = ltiObject.user_id;
 
         if (!ltiUsername) {
@@ -455,8 +277,8 @@ function handleLoginLti(data, socket) {
         next();
     }
 
-    function retrieveUserId(throwErr, next) {
-        db_wrapper.user.read({ username: ltiUsername }, function(err, result) {
+    function retrieveUserId(throwErr: _UNKNOWN, next: _UNKNOWN) {
+        db_wrapper.user.read({ username: ltiUsername }, function(err: _UNKNOWN, result: _UNKNOWN) {
             if (err) {
                 return throwErr(err);
             }
@@ -478,7 +300,7 @@ function handleLoginLti(data, socket) {
                     lastName: ltiLastName,
 
                     researchConsent: null
-                }, function(err, result) {
+                }, function(err: _UNKNOWN, result: _UNKNOWN) {
                     if (err) {
                         return throwErr(err);
                     }
@@ -505,7 +327,7 @@ function handleLoginLti(data, socket) {
         });
     }
 
-    function checkNoActiveSession(throwErr, next) {
+    function checkNoActiveSession(throwErr: _UNKNOWN, next: _UNKNOWN) {
         var session = MoocchatUserSession.GetSessionWith(userObjectId.toString());
 
         if (session) {
@@ -515,13 +337,13 @@ function handleLoginLti(data, socket) {
         next();
     }
 
-    function findScheduledQuiz(throwErr, next) {
+    function findScheduledQuiz(throwErr: _UNKNOWN, next: _UNKNOWN) {
         var now = new Date();
 
         db_wrapper.quizSchedule.read({
             "availableStart": { "$lte": now },
             "availableEnd": { "$gte": now }
-        }, function(err, result) {
+        }, function(err: _UNKNOWN, result: _UNKNOWN) {
             if (err) {
                 return throwErr(err);
             }
@@ -537,7 +359,7 @@ function handleLoginLti(data, socket) {
         });
     }
 
-    function checkQuizSessionNotTaken(throwErr, next) {
+    function checkQuizSessionNotTaken(throwErr: _UNKNOWN, next: _UNKNOWN) {
         // A session is considered to have been taken if a user
         // successfully fills in an initial AND final answer response
         // for this quiz session
@@ -546,7 +368,7 @@ function handleLoginLti(data, socket) {
             quizScheduleId: quizSchedule._id,
             responseInitialId: { $ne: null },
             responseFinalId: { $ne: null }
-        }, function(err, result) {
+        }, function(err: _UNKNOWN, result: _UNKNOWN) {
             if (err) {
                 return throwErr(err);
             }
@@ -559,13 +381,13 @@ function handleLoginLti(data, socket) {
         });
     }
 
-    function loadQuestionData(throwErr, next) {
+    function loadQuestionData(throwErr: _UNKNOWN, next: _UNKNOWN) {
         // Sync on n = 2 (question + question options)
         var callbackSync = callbackSyncFactory(2, next);
 
         db_wrapper.question.read({
             "_id": quizSchedule.questionId
-        }, function(err, result) {
+        }, function(err: _UNKNOWN, result: _UNKNOWN) {
             if (err) {
                 return throwErr(err);
             }
@@ -580,7 +402,7 @@ function handleLoginLti(data, socket) {
 
         db_wrapper.questionOption.read({
             "questionId": quizSchedule.questionId
-        }, function(err, result) {
+        }, function(err: _UNKNOWN, result: _UNKNOWN) {
             if (err) {
                 return throwErr(err);
             }
@@ -594,12 +416,12 @@ function handleLoginLti(data, socket) {
         });
     }
 
-    function findSurvey(throwErr, next) {
+    function findSurvey(throwErr: _UNKNOWN, next: _UNKNOWN) {
         var now = new Date();
 
         db_wrapper.survey.read({
             "availableStart": { "$lte": now }
-        }, function(err, result) {
+        }, function(err: _UNKNOWN, result: _UNKNOWN) {
             if (err) {
                 return throwErr(err);
             }
@@ -615,35 +437,7 @@ function handleLoginLti(data, socket) {
         });
     }
 
-    function setupPoolsAndQueues(throwErr, next) {
-        // var quizScheduleIdString = quizSchedule._id.toString();
-
-        // if (!quizSchedule_BackupClientQueue[quizScheduleIdString] &&
-        //     !quizSchedule_ClientAnswerPool[quizScheduleIdString] &&
-        //     !quizSchedule_ChatGroupArray[quizScheduleIdString]) {
-        //     var newBackupClientQueue = new BackupClientQueue();
-        //     var newClientAnswerPool = new ClientAnswerPool(questionOptions, newBackupClientQueue);
-
-        //     quizSchedule_BackupClientQueue[quizScheduleIdString] = newBackupClientQueue;
-        //     quizSchedule_ClientAnswerPool[quizScheduleIdString] = newClientAnswerPool;
-        //     quizSchedule_ChatGroupArray[quizScheduleIdString] = [];     // Empty array to be filled in when chat groups form later down the track
-
-        //     chatGroupFormationLoop.run(newClientAnswerPool);
-        // }
-
-        next();
-    }
-
-    function setupClient(throwErr, next) {
-        // client = new Client();
-        // client.userId = userObjectId.toString();
-        // client.username = ltiUsername;
-        // client.setSocket(socket);
-
-        next();
-    }
-
-    function writeSessionToDb(throwErr, next) {
+    function writeSessionToDb(throwErr: _UNKNOWN, next: _UNKNOWN) {
         db_wrapper.userSession.create({
             _id: mongojs.ObjectId(require('crypto').randomBytes(12).toString('hex')),   // MongoDB ObjectIDs are 12 bytes only!
             userId: userObjectId,
@@ -656,7 +450,7 @@ function handleLoginLti(data, socket) {
 
             responseInitialId: null,
             responseFinalId: null
-        }, function(err, result) {
+        }, function(err: _UNKNOWN, result: _UNKNOWN) {
             if (err) {
                 return throwErr(err);
             }
@@ -677,7 +471,7 @@ function handleLoginLti(data, socket) {
         });
     }
 
-    function notifyClientOfLogin(throwErr, next) {
+    function notifyClientOfLogin(throwErr: _UNKNOWN, next: _UNKNOWN) {
         // Complete login by notifying client
         socketEmitWithLogging(socket, 'loginSuccess', {
             sessionId: session.getId(),
@@ -695,7 +489,7 @@ function handleLoginLti(data, socket) {
     }
 }
 
-function handleLogout(data, socket) {
+function handleLogout(data: _UNKNOWN, socket: _UNKNOWN) {
     var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
     if (!session) {
@@ -713,7 +507,7 @@ function handleLogout(data, socket) {
                 timestampEnd: new Date()
             }
         },
-        function(err, result) {
+        function(err: _UNKNOWN, result: _UNKNOWN) {
             if (err) {
                 return console.error(err);
             }
@@ -727,7 +521,7 @@ function handleLogout(data, socket) {
         });
 }
 
-function handleTerminateSessions(data, socket) {
+function handleTerminateSessions(data: _UNKNOWN, socket: _UNKNOWN) {
     var username = data.username;
 
     if (!username || typeof username !== "string") {
@@ -738,7 +532,7 @@ function handleTerminateSessions(data, socket) {
         {
             username: username
         },
-        function(err, result) {
+        function(err: _UNKNOWN, result: _UNKNOWN) {
             if (err) {
                 return;
             }
@@ -752,7 +546,7 @@ function handleTerminateSessions(data, socket) {
 
             console.log("Destroying all sessions with username '" + username + "'; user ID '" + userIdString + "'");
 
-            var session;
+            var session: _UNKNOWN;
             while (session = MoocchatUserSession.GetSessionWith(userIdString)) {
                 MoocchatUserSession.Destroy(session, true);
             }
@@ -761,7 +555,7 @@ function handleTerminateSessions(data, socket) {
         });
 }
 
-function handleResearchConsentSet(data, socket) {
+function handleResearchConsentSet(data: _UNKNOWN, socket: _UNKNOWN) {
     var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
     if (!session) {
@@ -783,7 +577,7 @@ function handleResearchConsentSet(data, socket) {
                 researchConsent: researchConsent
             }
         },
-        function(err, result) {
+        function(err: _UNKNOWN, result: _UNKNOWN) {
             if (err) {
                 return console.error(err);
             }
@@ -794,13 +588,7 @@ function handleResearchConsentSet(data, socket) {
 
 // ===== Student client pool =====
 
-// function broadcastPoolCountToBackupQueue(clientAnswerPool) {
-//     clientAnswerPool.backupClientQueue.broadcastEvent("clientPoolCountUpdate", {
-//         numberOfClients: clientAnswerPool.totalPoolSize()
-//     });
-// }
-
-function broadcastPoolCountToBackupQueue__WaitPool(waitPool) {
+function broadcastPoolCountToBackupQueue__WaitPool(waitPool: _UNKNOWN) {
     var quizSessionId = waitPool.getQuizSessionId();
 
     var backupClientQueue = MoocchatBackupClientQueue.GetQueue(quizSessionId);
@@ -813,8 +601,8 @@ function broadcastPoolCountToBackupQueue__WaitPool(waitPool) {
 
 // ===== Question + answer =====
 
-function answerSubmissionHandlerFactory(answerType) {
-    return function(data, socket) {
+function answerSubmissionHandlerFactory(answerType: _UNKNOWN) {
+    return function(data: _UNKNOWN, socket: _UNKNOWN) {
         var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
         if (!session) {
@@ -825,19 +613,19 @@ function answerSubmissionHandlerFactory(answerType) {
         var justification = data.justification;
 
         /** Holds reference to the answer object (depends on `answerType`) */
-        var sessionAnswerObj;
+        var sessionAnswerObj: _UNKNOWN;
 
         /** String for websocket event to be sent on success */
-        var onSuccessWebsocketEvent;
+        var onSuccessWebsocketEvent: _UNKNOWN;
 
         /** Function for generating the update set depending on `answerType` */
-        var generateUpdateSet;
+        var generateUpdateSet: _UNKNOWN;
 
         switch (answerType) {
             case "initial":
                 sessionAnswerObj = session.data.response.initial;
                 onSuccessWebsocketEvent = "answerSubmissionInitialSaved";
-                generateUpdateSet = function(questionResponseObjectId) {
+                generateUpdateSet = function(questionResponseObjectId: _UNKNOWN) {
                     return {
                         responseInitialId: questionResponseObjectId
                     }
@@ -847,7 +635,7 @@ function answerSubmissionHandlerFactory(answerType) {
             case "final":
                 sessionAnswerObj = session.data.response.final;
                 onSuccessWebsocketEvent = "answerSubmissionFinalSaved";
-                generateUpdateSet = function(questionResponseObjectId) {
+                generateUpdateSet = function(questionResponseObjectId: _UNKNOWN) {
                     return {
                         responseFinalId: questionResponseObjectId
                     }
@@ -861,7 +649,7 @@ function answerSubmissionHandlerFactory(answerType) {
         // Check that option ID is valid for session
         if (optionIdString &&
             session.data.quizQuestionOptions
-                .map(function(option) { return option._id.toString(); })
+                .map(function(option: _UNKNOWN) { return option._id.toString(); })
                 .indexOf(optionIdString) < 0) {
             return;
         }
@@ -870,7 +658,7 @@ function answerSubmissionHandlerFactory(answerType) {
             optionId: (optionIdString ? mongojs.ObjectId(optionIdString) : null),
             justification: justification,
             timestamp: new Date()
-        }, function(err, result) {
+        }, function(err: _UNKNOWN, result: _UNKNOWN) {
             if (err) {
                 return console.error(err);
             }
@@ -889,7 +677,7 @@ function answerSubmissionHandlerFactory(answerType) {
                 {
                     $set: generateUpdateSet(questionResponseObjectId)
                 },
-                function(err, result) {
+                function(err: _UNKNOWN, result: _UNKNOWN) {
                     if (err) {
                         return console.error(err);
                     }
@@ -926,7 +714,7 @@ var handleAnswerSubmissionFinal = answerSubmissionHandlerFactory("final");
  *      content {IDB_SurveyResponse_Content[]}
  * }
  */
-function saveSurvey(data, socket) {
+function saveSurvey(data: _UNKNOWN, socket: _UNKNOWN) {
     var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
     if (!session) {
@@ -950,28 +738,11 @@ function saveSurvey(data, socket) {
 /**
  * data = {
  *      sessionId {string}
- * }
- */
-// function handleBackupClientLogout(data, _socket) {
-//     var session = getSessionFromId(data.sessionId);
-
-//     if (!session) {
-//         return;
-//     }
-
-//     var client = session.client;
-
-//     removeClientFromEverything(client);
-// }
-
-/**
- * data = {
- *      sessionId {string}
  *      optionId {string}
  *      justification {string}
  * }
  */
-function handleBackupClientEnterQueue(data, socket) {
+function handleBackupClientEnterQueue(data: _UNKNOWN, socket: _UNKNOWN) {
     var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
     if (!session) {
@@ -996,7 +767,7 @@ function handleBackupClientEnterQueue(data, socket) {
  *      sessionId {string}
  * }
  */
-function handleBackupClientReturnToQueue(data, socket) {
+function handleBackupClientReturnToQueue(data: _UNKNOWN, socket: _UNKNOWN) {
     var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
     if (!session) {
@@ -1020,7 +791,7 @@ function handleBackupClientReturnToQueue(data, socket) {
  *      sessionId {string}
  * }
  */
-function handleBackupClientStatusRequest(data, socket) {
+function handleBackupClientStatusRequest(data: _UNKNOWN, socket: _UNKNOWN) {
     var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
     if (!session) {
@@ -1040,46 +811,17 @@ function handleBackupClientStatusRequest(data, socket) {
     }
 }
 
-/**
- * data = {
- *      sessionId {string}
- * }
- */
-// function handleBackupClientTransferConfirm(data, _socket) {
-//     var session = getSessionFromId(data.sessionId);
-
-//     if (!session) {
-//         return;
-//     }
-
-//     var backupClientQueue = getBackupClientQueueFromSession(session);
-//     var clientAnswerPool = getClientAnswerPoolFromSession(session);
-//     var client = session.client;
-
-//     if (backupClientQueue.clientOutTray && backupClientQueue.clientOutTray.client === client) {
-//         backupClientQueue.moveOutTrayClientToClientPool();
-//         chatGroupFormationLoop.run(clientAnswerPool);
-//     }
-// }
-
-
-
-
-
-
-
-
 
 
 
 // Socket logging receive/emit proxy functions
 
-function registerSocketEventWithLoggingFactory(socket) {
-    var eventList = [];
+function registerSocketEventWithLoggingFactory(socket: _UNKNOWN) {
+    var eventList: _UNKNOWN = [];
 
-    return function(event, handler) {
+    return function(event: _UNKNOWN, handler: _UNKNOWN) {
         if (eventList.indexOf(event) < 0) {
-            socket.on(event, function(data) {
+            socket.on(event, function(data: _UNKNOWN) {
                 var loggedData = [
                     'socket.io' + socket.id,
                     'INBOUND',
@@ -1100,7 +842,7 @@ function registerSocketEventWithLoggingFactory(socket) {
     }
 }
 
-function socketEmitWithLogging(socket, event, data) {
+function socketEmitWithLogging(socket: _UNKNOWN, event: _UNKNOWN, data?: _UNKNOWN) {
     var loggedData = [
         'socket.io' + socket.id,
         'OUTBOUND',
@@ -1116,7 +858,12 @@ function socketEmitWithLogging(socket, event, data) {
     socket.emit(event, data);
 }
 
-io.sockets.on('connection', function(socket) {
+io.sockets.on('connection', function(_socket: _UNKNOWN) {
+    console.log(`socket.io${_socket.id} CONNECTION`);
+
+    // Wrap socket with PacSeqSocket
+    const socket = new PacSeqSocket_Server(_socket);
+
     /// Registration of socket event handlers
     var registerSocketEventWithLogging = registerSocketEventWithLoggingFactory(socket);
 
@@ -1124,25 +871,25 @@ io.sockets.on('connection', function(socket) {
     registerSocketEventWithLogging('disconnect', disconnect);
 
     /* Submission of answers and surveys */
-    registerSocketEventWithLogging("answerSubmissionInitial", function(data) { handleAnswerSubmissionInitial(data, socket); });
-    registerSocketEventWithLogging("answerSubmissionFinal", function(data) { handleAnswerSubmissionFinal(data, socket); });
-    registerSocketEventWithLogging("submitSurvey", function(data) { saveSurvey(data, socket); });
+    registerSocketEventWithLogging("answerSubmissionInitial", function(data: _UNKNOWN) { handleAnswerSubmissionInitial(data, socket); });
+    registerSocketEventWithLogging("answerSubmissionFinal", function(data: _UNKNOWN) { handleAnswerSubmissionFinal(data, socket); });
+    registerSocketEventWithLogging("submitSurvey", function(data: _UNKNOWN) { saveSurvey(data, socket); });
 
     /* Log ins */
-    registerSocketEventWithLogging("loginLti", function(data) { handleLoginLti(data, socket); });
-    registerSocketEventWithLogging("researchConsentSet", function(data) { handleResearchConsentSet(data, socket); });
-    registerSocketEventWithLogging("logout", function(data) { handleLogout(data, socket); });
-    registerSocketEventWithLogging("terminateSessions", function(data) { handleTerminateSessions(data, socket); });
+    registerSocketEventWithLogging("loginLti", function(data: _UNKNOWN) { handleLoginLti(data, socket); });
+    registerSocketEventWithLogging("researchConsentSet", function(data: _UNKNOWN) { handleResearchConsentSet(data, socket); });
+    registerSocketEventWithLogging("logout", function(data: _UNKNOWN) { handleLogout(data, socket); });
+    registerSocketEventWithLogging("terminateSessions", function(data: _UNKNOWN) { handleTerminateSessions(data, socket); });
     /* Chat group discussion */
-    registerSocketEventWithLogging("chatGroupJoinRequest", function(data) { handleChatGroupJoinRequest(data, socket); });
-    registerSocketEventWithLogging("chatGroupMessage", function(data) { handleChatGroupMessage(data, socket); });
-    registerSocketEventWithLogging("chatGroupQuitStatusChange", function(data) { handleChatGroupQuitStatusChange(data, socket); });
+    registerSocketEventWithLogging("chatGroupJoinRequest", function(data: _UNKNOWN) { handleChatGroupJoinRequest(data, socket); });
+    registerSocketEventWithLogging("chatGroupMessage", function(data: _UNKNOWN) { handleChatGroupMessage(data, socket); });
+    registerSocketEventWithLogging("chatGroupQuitStatusChange", function(data: _UNKNOWN) { handleChatGroupQuitStatusChange(data, socket); });
 
     /* Backup client */
     // registerSocketEventWithLogging("backupClientLogout", function(data) { handleBackupClientLogout(data, socket); });
-    registerSocketEventWithLogging("backupClientEnterQueue", function(data) { handleBackupClientEnterQueue(data, socket); });
-    registerSocketEventWithLogging("backupClientReturnToQueue", function(data) { handleBackupClientReturnToQueue(data, socket); });
-    registerSocketEventWithLogging("backupClientStatusRequest", function(data) { handleBackupClientStatusRequest(data, socket); });
+    registerSocketEventWithLogging("backupClientEnterQueue", function(data: _UNKNOWN) { handleBackupClientEnterQueue(data, socket); });
+    registerSocketEventWithLogging("backupClientReturnToQueue", function(data: _UNKNOWN) { handleBackupClientReturnToQueue(data, socket); });
+    registerSocketEventWithLogging("backupClientStatusRequest", function(data: _UNKNOWN) { handleBackupClientStatusRequest(data, socket); });
 
     // No longer done here; see MoocchatBackupClientQueue#callToPool()
     // registerSocketEventWithLogging("backupClientTransferConfirm", function(data) { handleBackupClientTransferConfirm(data, socket); });
@@ -1152,7 +899,7 @@ io.sockets.on('connection', function(socket) {
     // socket.on('saveLoadTestResults', saveLoadTestResults);
 
     // Signal back to client/test framework that socket is connected
-    socketEmitWithLogging(socket, 'connected');
+    // socketEmitWithLogging(socket, 'connected');
 
 
 
@@ -1183,46 +930,6 @@ io.sockets.on('connection', function(socket) {
     function disconnect() {
         // Disconnects no longer cleans sessions, only explicit logouts do.
         // ----> See handleLogout().
-
-
-        // var session = allSessions.getSessionBySocket(socket);
-
-        // // No session = no action to do
-        // if (!session) {
-        //     return;
-        // }
-
-        // // Clean up pools, queues, chats
-        // var client = session.client;
-
-        // if (client) {
-        //     removeClientFromEverything(client);
-        // }
-
-        // var clientAnswerPool = getClientAnswerPoolFromSession(session);
-        // var backupClientQueue = getBackupClientQueueFromSession(session);
-        // var chatGroups = getChatGroupsFromSession(session);
-
-        // if (clientAnswerPool && clientAnswerPool.totalPoolSize() === 0 &&
-        //     backupClientQueue && backupClientQueue.getQueueSize() === 0 &&
-        //     chatGroups && chatGroups.length === 0) {
-        //     delete quizSchedule_ClientAnswerPool[session.getQuizScheduleIdString()];
-        //     delete quizSchedule_BackupClientQueue[session.getQuizScheduleIdString()];
-        //     delete quizSchedule_ChatGroupArray[session.getQuizScheduleIdString()];
-        // }
-
-        // // Remove session and update session entry in DB
-        // allSessions.removeSession(session);
-
-        // db_wrapper.userSession.update(
-        //     {
-        //         _id: mongojs.ObjectId(session.getId())
-        //     },
-        //     {
-        //         $set: {
-        //             timestampEnd: new Date()
-        //         }
-        //     });
     }
 });
 

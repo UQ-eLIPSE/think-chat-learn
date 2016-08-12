@@ -10,13 +10,15 @@ import {IDB_QuestionOption} from "./database/QuestionOption";
 import {IDB_QuizSchedule} from "./database/QuizSchedule";
 import {IDB_Survey} from "./database/Survey";
 
+import {PacSeqSocket_Server} from "../../common/js/classes/PacSeqSocket_Server";
+
 export class MoocchatUserSession {
     private static UserSessionStore: MoocchatUserSessionStore = new MoocchatUserSessionStore();
 
     private _userId: string;
     private _sessionId: string;
     private _userSessionData: MoocchatUserSessionData;
-    private _socket: SocketIO.Socket;
+    private _socket: PacSeqSocket_Server;
 
 
 
@@ -24,11 +26,17 @@ export class MoocchatUserSession {
         return MoocchatUserSession.UserSessionStore.getSessionIds();
     }
 
-    public static GetSession(sessionId: string, socket?: SocketIO.Socket) {
+    public static GetSession(sessionId: string, socket?: PacSeqSocket_Server) {
         const session = MoocchatUserSession.UserSessionStore.getSession(sessionId);
 
-        if (session && socket) {
+        if (session && socket && socket !== session.getSocket()) {
             // Update socket reference in case someone has switched/disconnected-connected sockets
+            const oldSocket = session.getSocket();
+            const newSocket = socket;
+
+            // Force move the session
+            PacSeqSocket_Server.Copy(oldSocket, newSocket);
+            PacSeqSocket_Server.Destroy(oldSocket);
             session.setSocket(socket);
         }
 
@@ -86,7 +94,7 @@ export class MoocchatUserSession {
 
 
 
-    constructor(socket: SocketIO.Socket, userId: string, sessionId: string) {
+    constructor(socket: PacSeqSocket_Server, userId: string, sessionId: string) {
         this.setSocket(socket);
         this.setUserId(userId);
         this.setId(sessionId);
@@ -134,7 +142,7 @@ export class MoocchatUserSession {
         return this._sessionId;
     }
 
-    private setSocket(socket: SocketIO.Socket) {
+    private setSocket(socket: PacSeqSocket_Server) {
         this._socket = socket;
     }
 

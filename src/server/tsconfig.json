@@ -11,6 +11,47 @@
         "allowJs": true,
 
         "outDir": "../../build",
-        "rootDir": "."
-    }
+        "rootDir": "../"
+    },
+    "files": [
+        "./index.d.ts",
+
+        "./controllers/database.js",
+        "./controllers/websockets.ts",
+
+        "./helpers/util.js",
+
+        "./models/BackupClientQueue.js",
+        "./models/ChatGroup.js",
+        "./models/client.js",
+        "./models/ClientAnswerPool.js",
+        "./models/DatabaseWrapper.ts",
+        "./models/Group.js",
+        "./models/ILTIData.ts",
+        "./models/ILTISignatureVerifyInfo.ts",
+        "./models/LTIProcessor.ts",
+        "./models/LTIUtil.ts",
+        "./models/MoocchatBackupClientQueue.ts",
+        "./models/MoocchatChatGroup.ts",
+        "./models/MoocchatUserSession.ts",
+        "./models/MoocchatUserSessionData.ts",
+        "./models/MoocchatUserSessionStore.ts",
+        "./models/MoocchatWaitPool.ts",
+        "./models/NonceStore.ts",
+        "./models/Session.js",
+        "./models/SessionManager.js",
+
+        "./models/database/ChatMessage.ts",
+        "./models/database/Question.ts",
+        "./models/database/QuestionOption.ts",
+        "./models/database/QuestionOptionCorrect.ts",
+        "./models/database/QuestionResponse.ts",
+        "./models/database/QuizSchedule.ts",
+        "./models/database/Survey.ts",
+        "./models/database/SurveyResponse.ts",
+        "./models/database/Tables.ts",
+        "./models/database/User.ts",
+        "./models/database/UserSession.ts",
+        "./models/database/VirtServerBackups.ts"
+    ]    
 }

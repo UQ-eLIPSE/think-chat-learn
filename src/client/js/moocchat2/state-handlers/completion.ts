@@ -3,7 +3,7 @@ import * as $ from "jquery";
 import {conf} from "../conf";
 
 import {IStateHandler} from "../classes/IStateHandler";
-import {VirtServerComms} from "../classes/VirtServerComms";
+// import {VirtServerComms} from "../classes/VirtServerComms";
 
 import {MoocchatState as STATE} from "../classes/MoocchatStates";
 
@@ -46,40 +46,40 @@ export const CompletionStateHandler: IStateHandler<STATE> =
                         page$("#revised-answer-content").html(revisedAnswer.content);
                         page$("#revised-answer-justification").text(session.answers.revised.justification);
 
-                        if (virtServerData) {
-                            const $virtServerBackupFail = page$("#virtserver-backup-fail");
-                            $virtServerBackupFail.removeClass("hidden");
-                            $("p", $virtServerBackupFail).text(virtServerData);
-                            alert(`Server synchronisation failed. Please copy the contents of the page and send this to your course representative.`);
-                        }
+                        // if (virtServerData) {
+                        //     const $virtServerBackupFail = page$("#virtserver-backup-fail");
+                        //     $virtServerBackupFail.removeClass("hidden");
+                        //     $("p", $virtServerBackupFail).text(virtServerData);
+                        //     alert(`Server synchronisation failed. Please copy the contents of the page and send this to your course representative.`);
+                        // }
 
                     });
 
                     // Log out now
                     session.logout(() => {
                         setTimeout(() => {
-                            session.socket.close();
+                            // session.socket.close();
                         }, conf.websockets.disconnectCooloffTimeoutMs);
                     });
                 }
 
-                if (session.socket instanceof VirtServerComms) {
-                    const syncXHR = (<VirtServerComms>session.socket).syncWithRealServer(session.id);
+                // if (session.socket instanceof VirtServerComms) {
+                //     const syncXHR = (<VirtServerComms>session.socket).syncWithRealServer(session.id);
 
-                    if (syncXHR) {
-                        syncXHR.xhr
-                            .done(() => {
-                                loadFunc();
-                            })
-                            .fail(() => {
-                                loadFunc(syncXHR.data);
-                            });
-                    } else {
-                        loadFunc();
-                    }
-                } else {
+                //     if (syncXHR) {
+                //         syncXHR.xhr
+                //             .done(() => {
+                //                 loadFunc();
+                //             })
+                //             .fail(() => {
+                //                 loadFunc(syncXHR.data);
+                //             });
+                //     } else {
+                //         loadFunc();
+                //     }
+                // } else {
                     loadFunc();
-                }
+                // }
             }
         }
     }

@@ -21,7 +21,7 @@ export class MoocchatChatGroup {
 
         for (let i = 0; i < chatGroupIds.length; i++) {
             const chatGroup = MoocchatChatGroup.ChatGroups[chatGroupIds[i]];
-            
+
             if (chatGroup.getSessions().indexOf(session) > -1) {
                 return chatGroup;
             }
@@ -33,7 +33,7 @@ export class MoocchatChatGroup {
 
         chatGroup.getSessions().forEach((session) => {
             console.log(`socket.io(${chatGroupId}) LEAVE Session '${session.getId()}'`);
-            session.getSocket().leave(chatGroupId);
+            // session.getSocket().leave(chatGroupId);  // Can't do this anymore with PacSeqSocket
         });
 
         chatGroup._id = undefined;
@@ -66,7 +66,7 @@ export class MoocchatChatGroup {
 
         this._sessions.forEach((session) => {
             console.log(`socket.io(${chatGroupId}) JOIN Session '${session.getId()}'`);
-            session.getSocket().join(chatGroupId);
+            // session.getSocket().join(chatGroupId);   // Can't do this anymore with PacSeqSocket
         });
     }
 
@@ -87,7 +87,15 @@ export class MoocchatChatGroup {
 
         // ======= Logging ends here =======
 
-        io.sockets.in(this.getId()).emit(event, data);
+        // io.sockets.in(this.getId()).emit(event, data);   // Can't do this anymore with PacSeqSocket
+
+        this.getSessions().forEach((session) => {
+            var sessionSocket = session.getSocket();
+
+            if (sessionSocket) {
+                sessionSocket.emit(event, data);
+            }
+        });
     }
 
     public numberOfSessions() {

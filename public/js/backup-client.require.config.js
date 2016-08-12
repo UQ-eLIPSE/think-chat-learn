@@ -4,10 +4,11 @@ requirejs.config({
 
     // All references to external resources
     paths: {
+        "client/js/moocchat2/backup-client": "./backup-client",
         "jquery": "../lib/jquery/3.0.0/jquery.min",
         "socket.io-client": "../lib/socket.io/1.4.6/socket.io.min"
     },
 
     // App entry point
-    deps: ["backup-client"]
+    deps: ["client/js/moocchat2/backup-client"]
 });

@@ -151,7 +151,7 @@ export class MoocchatBackupClientQueue {
             const sessionToCall = this.sessionToCall;
 
             if (sessionToCall) {
-                sessionToCall.getSocket().removeListener("backupClientTransferConfirm", responseFunc);
+                sessionToCall.getSocket().off("backupClientTransferConfirm", responseFunc);
                 sessionToCall.getSocket().emit("backupClientEjected");
                 this.removeSession(sessionToCall);
             }

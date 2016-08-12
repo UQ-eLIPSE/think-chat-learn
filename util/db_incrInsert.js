@@ -4,7 +4,7 @@
  * *ALL* data JS files must be present, but the data can be blank if no insertions are required for that table/collection.
  */
 
-var db = require("../build/controllers/database");
+var db = require("../build/server/controllers/database");
 var mongojs = require("mongojs");
 
 // Get folder arg from command line

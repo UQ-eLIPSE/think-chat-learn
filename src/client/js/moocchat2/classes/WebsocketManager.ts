@@ -1,5 +1,7 @@
 import * as socket from "socket.io-client";
 
+import {PacSeqSocket_Client} from "../../../common/js/classes/PacSeqSocket_Client";
+
 /**
  * MOOCchat
  * Websocket management class module
@@ -7,22 +9,31 @@ import * as socket from "socket.io-client";
  * Acts as thin layer over Socket.IO object; methods act approximately the same way.
  */
 export class WebsocketManager {
-    protected socket: SocketIOClient.Socket;
+    protected socketProxy: PacSeqSocket_Client;
 
     public open() {
-        this.socket = socket.connect({
-            path: "/socket.io",
-            reconnection: false,            // Don't reconnect
-            transports: ["websocket"]
-        });
+        this.socketProxy = new PacSeqSocket_Client(
+            socket.connect({
+                path: "/socket.io",
+
+                // Permit infinite reconnects
+                reconnection: true,
+                reconnectionAttempts: Infinity,
+                reconnectionDelay: 1500,
+                reconnectionDelayMax: 5000,
+
+                transports: ["websocket"]
+            })
+        );
     }
 
     public close() {
-        return this.socket.close();
+        this.socketProxy.pause();
+        return this.socketProxy.getSocket().close();
     }
 
     public emit(event: string, ...args: any[]) {
-        return this.socket.emit(event, ...args);
+        return this.socketProxy.emit(event, ...args);
     }
 
     public emitData<IData>(event: string, data: IData) {
@@ -30,22 +41,23 @@ export class WebsocketManager {
     }
 
     public on<IData>(event: string, fn: (data: IData) => void) {
-        return this.socket.on(event, fn);
+        return this.socketProxy.on(event, fn);
     }
 
-    public off(event: string, fn?: Function) {
-        return this.socket.off(event, fn);
+    public off(event: string, fn?: (data?: any) => any) {
+        return this.socketProxy.off(event, fn);
     }
 
-    public once<IData>(event: string, fn: (data: IData) => void) {
-        return this.socket.once(event, fn);
+    public once<IData>(event: string, fn: (data?: IData) => void) {
+        return this.socketProxy.once(event, fn);
     }
 
+    // TODO: Fix type
     protected getListeners(event: string) {
-        return this.socket.listeners(event);
+        return (<SocketIOClient.Socket>this.socketProxy.getSocket()).listeners(event);
     }
 
     protected get connected() {
-        return this.socket.connected;
+        return this.socketProxy.getSocket().connected;
     }
 }
