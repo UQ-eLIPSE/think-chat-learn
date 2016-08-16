@@ -66,7 +66,7 @@ export class MoocchatBackupClientQueue {
             // ======= Logging starts here =======
 
             var loggedData = [
-                'socket.io' + socket.id,
+                'socket.io/' + socket.id,
                 'OUTBOUND',
                 '[' + event + ']'
             ];

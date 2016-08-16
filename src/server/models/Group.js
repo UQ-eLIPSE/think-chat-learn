@@ -98,7 +98,7 @@ Group.prototype.emitEvent = function(client, event, data) {
     // ======= Logging starts here =======
 
     var loggedData = [
-        'socket.io' + clientSocket.id,
+        'socket.io/' + clientSocket.id,
         'OUTBOUND',
         '[' + event + ']'
     ];

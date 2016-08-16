@@ -2,24 +2,19 @@ declare type _UNKNOWN = any;
 
 import {PacSeqSocket_Server} from "../../common/js/classes/PacSeqSocket_Server";
 
+import {MoocchatUserSession} from "../models/MoocchatUserSession";
+import {MoocchatWaitPool} from "../models/MoocchatWaitPool";
+import {MoocchatChatGroup} from "../models/MoocchatChatGroup";
+import {MoocchatBackupClientQueue} from "../models/MoocchatBackupClientQueue";
+
+import {LTIProcessor} from "../models/LTIProcessor";
+
 
 var conf = (<_UNKNOWN>global).conf;
 var io = (<_UNKNOWN>global).io;
 
 var mongojs = require("mongojs");
 var db_wrapper = require("./database");
-
-var LTIProcessor = require("../models/LTIProcessor").LTIProcessor;
-
-
-// Replacement code for previous session/client classes
-var MoocchatUserSession = require("../models/MoocchatUserSession").MoocchatUserSession;
-var MoocchatWaitPool = require("../models/MoocchatWaitPool").MoocchatWaitPool;
-var MoocchatChatGroup = require("../models/MoocchatChatGroup").MoocchatChatGroup;
-var MoocchatBackupClientQueue = require("../models/MoocchatBackupClientQueue").MoocchatBackupClientQueue;
-
-
-
 
 
 // LTI processor for incoming logins
@@ -84,7 +79,7 @@ var chatGroupFormationLoop = (function() {
  * 
  * @param {any} data
  */
-function handleChatGroupJoinRequest(data: _UNKNOWN, socket: _UNKNOWN) {
+function handleChatGroupJoinRequest(data: _UNKNOWN, socket: PacSeqSocket_Server) {
     var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
     if (!session) {
@@ -107,7 +102,7 @@ function handleChatGroupJoinRequest(data: _UNKNOWN, socket: _UNKNOWN) {
  * 
  * @param {any} data
  */
-function handleChatGroupQuitStatusChange(data: _UNKNOWN, socket: _UNKNOWN) {
+function handleChatGroupQuitStatusChange(data: _UNKNOWN, socket: PacSeqSocket_Server) {
     var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
     if (!session) {
@@ -130,7 +125,7 @@ function handleChatGroupQuitStatusChange(data: _UNKNOWN, socket: _UNKNOWN) {
  * 
  * @param {any} data
  */
-function handleChatGroupMessage(data: _UNKNOWN, socket: _UNKNOWN) {
+function handleChatGroupMessage(data: _UNKNOWN, socket: PacSeqSocket_Server) {
     var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
     if (!session) {
@@ -171,8 +166,9 @@ function handleChatGroupMessage(data: _UNKNOWN, socket: _UNKNOWN) {
  *      ...
  * }
  */
-function handleLoginLti(data: _UNKNOWN, socket: _UNKNOWN) {
+function handleLoginLti(data: _UNKNOWN, socket: PacSeqSocket_Server) {
     function notifyClientOnError(err: _UNKNOWN) {
+        // Reply direct to the user that sent the request as at this point no session is available
         socketEmitWithLogging(socket, "loginFailure", (err && err.message) ? err.message : "Unexpected error");
     }
 
@@ -473,7 +469,7 @@ function handleLoginLti(data: _UNKNOWN, socket: _UNKNOWN) {
 
     function notifyClientOfLogin(throwErr: _UNKNOWN, next: _UNKNOWN) {
         // Complete login by notifying client
-        socketEmitWithLogging(socket, 'loginSuccess', {
+        socketEmitWithLogging(session.getSocket(), 'loginSuccess', {
             sessionId: session.getId(),
             username: ltiUsername,
             quiz: {
@@ -489,7 +485,7 @@ function handleLoginLti(data: _UNKNOWN, socket: _UNKNOWN) {
     }
 }
 
-function handleLogout(data: _UNKNOWN, socket: _UNKNOWN) {
+function handleLogout(data: _UNKNOWN, socket: PacSeqSocket_Server) {
     var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
     if (!session) {
@@ -512,7 +508,7 @@ function handleLogout(data: _UNKNOWN, socket: _UNKNOWN) {
                 return console.error(err);
             }
 
-            socketEmitWithLogging(socket, "logoutSuccess", {
+            socketEmitWithLogging(session.getSocket(), "logoutSuccess", {
                 sessionId: sessionId
             });
 
@@ -521,7 +517,7 @@ function handleLogout(data: _UNKNOWN, socket: _UNKNOWN) {
         });
 }
 
-function handleTerminateSessions(data: _UNKNOWN, socket: _UNKNOWN) {
+function handleTerminateSessions(data: _UNKNOWN, socket: PacSeqSocket_Server) {
     var username = data.username;
 
     if (!username || typeof username !== "string") {
@@ -551,11 +547,12 @@ function handleTerminateSessions(data: _UNKNOWN, socket: _UNKNOWN) {
                 MoocchatUserSession.Destroy(session, true);
             }
 
-            socket.emit("terminateSessionsComplete");
+            // Reply direct to the user that sent the request as at this point no session is available
+            socketEmitWithLogging(socket, "terminateSessionsComplete");
         });
 }
 
-function handleResearchConsentSet(data: _UNKNOWN, socket: _UNKNOWN) {
+function handleResearchConsentSet(data: _UNKNOWN, socket: PacSeqSocket_Server) {
     var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
     if (!session) {
@@ -582,7 +579,7 @@ function handleResearchConsentSet(data: _UNKNOWN, socket: _UNKNOWN) {
                 return console.error(err);
             }
 
-            socketEmitWithLogging(socket, "researchConsentSaved");
+            socketEmitWithLogging(session.getSocket(), "researchConsentSaved");
         });
 }
 
@@ -602,7 +599,7 @@ function broadcastPoolCountToBackupQueue__WaitPool(waitPool: _UNKNOWN) {
 // ===== Question + answer =====
 
 function answerSubmissionHandlerFactory(answerType: _UNKNOWN) {
-    return function(data: _UNKNOWN, socket: _UNKNOWN) {
+    return function(data: _UNKNOWN, socket: PacSeqSocket_Server) {
         var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
         if (!session) {
@@ -682,7 +679,7 @@ function answerSubmissionHandlerFactory(answerType: _UNKNOWN) {
                         return console.error(err);
                     }
 
-                    socketEmitWithLogging(socket, onSuccessWebsocketEvent);
+                    socketEmitWithLogging(session.getSocket(), onSuccessWebsocketEvent);
                 });
         });
     }
@@ -714,7 +711,7 @@ var handleAnswerSubmissionFinal = answerSubmissionHandlerFactory("final");
  *      content {IDB_SurveyResponse_Content[]}
  * }
  */
-function saveSurvey(data: _UNKNOWN, socket: _UNKNOWN) {
+function saveSurvey(data: _UNKNOWN, socket: PacSeqSocket_Server) {
     var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
     if (!session) {
@@ -742,7 +739,7 @@ function saveSurvey(data: _UNKNOWN, socket: _UNKNOWN) {
  *      justification {string}
  * }
  */
-function handleBackupClientEnterQueue(data: _UNKNOWN, socket: _UNKNOWN) {
+function handleBackupClientEnterQueue(data: _UNKNOWN, socket: PacSeqSocket_Server) {
     var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
     if (!session) {
@@ -767,7 +764,7 @@ function handleBackupClientEnterQueue(data: _UNKNOWN, socket: _UNKNOWN) {
  *      sessionId {string}
  * }
  */
-function handleBackupClientReturnToQueue(data: _UNKNOWN, socket: _UNKNOWN) {
+function handleBackupClientReturnToQueue(data: _UNKNOWN, socket: PacSeqSocket_Server) {
     var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
     if (!session) {
@@ -791,7 +788,7 @@ function handleBackupClientReturnToQueue(data: _UNKNOWN, socket: _UNKNOWN) {
  *      sessionId {string}
  * }
  */
-function handleBackupClientStatusRequest(data: _UNKNOWN, socket: _UNKNOWN) {
+function handleBackupClientStatusRequest(data: _UNKNOWN, socket: PacSeqSocket_Server) {
     var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
     if (!session) {
@@ -816,14 +813,14 @@ function handleBackupClientStatusRequest(data: _UNKNOWN, socket: _UNKNOWN) {
 
 // Socket logging receive/emit proxy functions
 
-function registerSocketEventWithLoggingFactory(socket: _UNKNOWN) {
+function registerSocketEventWithLoggingFactory(socket: PacSeqSocket_Server) {
     var eventList: _UNKNOWN = [];
 
     return function(event: _UNKNOWN, handler: _UNKNOWN) {
         if (eventList.indexOf(event) < 0) {
             socket.on(event, function(data: _UNKNOWN) {
                 var loggedData = [
-                    'socket.io' + socket.id,
+                    'socket.io/' + socket.id,
                     'INBOUND',
                     '[' + event + ']'
                 ];
@@ -842,9 +839,9 @@ function registerSocketEventWithLoggingFactory(socket: _UNKNOWN) {
     }
 }
 
-function socketEmitWithLogging(socket: _UNKNOWN, event: _UNKNOWN, data?: _UNKNOWN) {
+function socketEmitWithLogging(socket: PacSeqSocket_Server, event: _UNKNOWN, data?: _UNKNOWN) {
     var loggedData = [
-        'socket.io' + socket.id,
+        'socket.io/' + socket.id,
         'OUTBOUND',
         '[' + event + ']'
     ];
