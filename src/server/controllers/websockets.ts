@@ -811,6 +811,19 @@ function handleBackupClientStatusRequest(data: _UNKNOWN, socket: PacSeqSocket_Se
 
 
 
+function handleSessionSocketResync(data: _UNKNOWN, socket: PacSeqSocket_Server) {
+    var session = MoocchatUserSession.GetSession(data.sessionId, socket);
+
+    if (!session) {
+        return console.error("Attempted session socket resync with invalid session ID = " + data.sessionId);
+    }
+}
+
+
+
+
+
+
 // Socket logging receive/emit proxy functions
 
 function registerSocketEventWithLoggingFactory(socket: PacSeqSocket_Server) {
@@ -856,7 +869,7 @@ function socketEmitWithLogging(socket: PacSeqSocket_Server, event: _UNKNOWN, dat
 }
 
 io.sockets.on('connection', function(_socket: _UNKNOWN) {
-    console.log(`socket.io${_socket.id} CONNECTION`);
+    console.log(`socket.io/${_socket.id} CONNECTION`);
 
     // Wrap socket with PacSeqSocket
     const socket = new PacSeqSocket_Server(_socket);
@@ -887,6 +900,12 @@ io.sockets.on('connection', function(_socket: _UNKNOWN) {
     registerSocketEventWithLogging("backupClientEnterQueue", function(data: _UNKNOWN) { handleBackupClientEnterQueue(data, socket); });
     registerSocketEventWithLogging("backupClientReturnToQueue", function(data: _UNKNOWN) { handleBackupClientReturnToQueue(data, socket); });
     registerSocketEventWithLogging("backupClientStatusRequest", function(data: _UNKNOWN) { handleBackupClientStatusRequest(data, socket); });
+
+
+
+    registerSocketEventWithLogging("sessionSocketResync", function(data: _UNKNOWN) { handleSessionSocketResync(data, socket); });
+
+
 
     // No longer done here; see MoocchatBackupClientQueue#callToPool()
     // registerSocketEventWithLogging("backupClientTransferConfirm", function(data) { handleBackupClientTransferConfirm(data, socket); });

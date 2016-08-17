@@ -27,8 +27,8 @@ var server = http.createServer(app).listen(conf.portNum);
 var io = require('socket.io')(server, { 
     serveClient: false,
 
-    pingInterval: 14000,    // Ping roughly 4 times a minute
-    pingTimeout: 60000      // Timeout must be greater than interval
+    pingInterval: 5000,    // Ping roughly every 5 seconds
+    pingTimeout: 16000      // Timeout must be greater than interval
  });
 
 global.conf = conf;

@@ -3,6 +3,8 @@ import {conf} from "./conf";
 import * as $ from "jquery";
 
 import {WebsocketManager} from "./classes/WebsocketManager";
+import {WebsocketEvents} from "./classes/WebsocketEvents";
+import * as IOutboundData from "./classes/IOutboundData";
 
 import {MoocchatSession} from "./classes/MoocchatSession";
 
@@ -60,6 +62,8 @@ $(() => {
     const $content = $("#content");
     const $blackboardOpen = $("#blackboard-open");
 
+    const $reconnectMessage = $("#reconnect-message");
+
     const session = new MoocchatSession<STATE>($content, $taskSections).setSocket(websocket);
 
     window.addEventListener("unload", () => {
@@ -83,6 +87,20 @@ $(() => {
         session.analytics.trackEvent("BUTTON_CLICK", $elem.text() || $elem.val());
     });
 
+    // Resend sync when [re]connected when we have a session going
+    websocket.on("connect", () => {
+        $reconnectMessage.addClass("hidden");
+
+        if (session.id) {
+            websocket.emitData<IOutboundData.SessionSocketResync>(WebsocketEvents.OUTBOUND.SESSION_SOCKET_RESYNC, {
+                sessionId: session.id
+            });
+        }
+    });
+
+    websocket.on("reconnecting", () => {
+        $reconnectMessage.removeClass("hidden");
+    });
 
     // Sections must be defined now before other resources use them
     session.sectionManager.registerAll([

@@ -84,6 +84,9 @@ export const WebsocketEvents = {
         SURVEY_SUBMISSION: "submitSurvey",
 
         /** IOutboundData.Logout */
-        LOGOUT: "logout"
+        LOGOUT: "logout",
+
+        /** IOutboundData.SessionSocketResync */
+        SESSION_SOCKET_RESYNC: "sessionSocketResync" 
     }
 }

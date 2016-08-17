@@ -4,6 +4,7 @@ import * as $ from "jquery";
 
 import {WebsocketManager} from "./classes/WebsocketManager";
 import {WebsocketEvents} from "./classes/WebsocketEvents";
+import * as IOutboundData from "./classes/IOutboundData";
 
 import {MoocchatSession} from "./classes/MoocchatSession";
 
@@ -34,8 +35,8 @@ import {InvalidLoginStateHandler} from "./state-handlers/invalid-login";
 
 
 // Start Websockets as soon as possible
-const socket = new WebsocketManager();
-socket.open();
+const websocket = new WebsocketManager();
+websocket.open();
 
 
 // On DOM Ready
@@ -46,10 +47,27 @@ $(() => {
     const $content = $("#content");
     const $blackboardOpen = $("#blackboard-open");
 
-    const session = new MoocchatSession<STATE>($content, $taskSections, false).setSocket(socket);
+    const $reconnectMessage = $("#reconnect-message");
+
+    const session = new MoocchatSession<STATE>($content, $taskSections, false).setSocket(websocket);
 
     window.addEventListener("unload", () => {
         session.logout();
+    });
+
+    // Resend sync when [re]connected when we have a session going
+    websocket.on("connect", () => {
+        $reconnectMessage.addClass("hidden");
+
+        if (session.id) {
+            websocket.emitData<IOutboundData.SessionSocketResync>(WebsocketEvents.OUTBOUND.SESSION_SOCKET_RESYNC, {
+                sessionId: session.id
+            });
+        }
+    });
+
+    websocket.on("reconnecting", () => {
+        $reconnectMessage.removeClass("hidden");
     });
 
     // Sections must be defined now before other resources use them

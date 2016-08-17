@@ -7,9 +7,6 @@ export const NoLtiDataStateHandler: IStateHandler<STATE> =
         return {
             onEnter: () => {
                 session.pageManager.loadPage("no-lti-data");
-
-                // End session by closing socket
-                // session.socket.close(true);
                 session.socket.close();
             }
         }
