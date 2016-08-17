@@ -1,4 +1,4 @@
-/// Type definitions for external modules
+/// Type definitions for server
 
 /// <reference path="./typings/index.d.ts" />
 

@@ -6,7 +6,7 @@
 
 var assert = require("chai").assert;
 
-var ClientAnswerPool = require("../../../build/models/ClientAnswerPool");
+var ClientAnswerPool = require("../../../build/server/models/ClientAnswerPool");
 
 
 describe("server/models/ClientAnswerPool", function() {

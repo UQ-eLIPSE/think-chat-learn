@@ -1,6 +1,6 @@
 import {conf} from "../conf";
 
-import {EventBox} from "./EventBox";
+import {EventBox} from "../../../../common/js/classes/EventBox";
 import {StateFlow} from "./StateFlow";
 import {PageManager} from "./PageManager";
 import {CombinedPageManager} from "./CombinedPageManager";

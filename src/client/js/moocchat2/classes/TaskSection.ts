@@ -2,7 +2,7 @@ import {conf} from "../conf";
 
 import {Utils} from "./Utils";
 
-import {EventBox, EventBox_Callback} from "./EventBox";
+import {EventBox, EventBox_Callback} from "../../../../common/js/classes/EventBox";
 
 /**
  * MOOCchat

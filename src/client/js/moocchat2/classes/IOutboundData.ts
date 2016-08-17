@@ -42,3 +42,5 @@ export interface SurveyResponse extends SessionResponse {
 }
 
 export interface Logout extends SessionResponse {}
+
+export interface SessionSocketResync extends SessionResponse {}

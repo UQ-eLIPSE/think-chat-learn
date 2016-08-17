@@ -2,7 +2,7 @@ import * as $ from "jquery";
 
 import {IPageManager_PageLoad} from "./IPageManager";
 
-import {EventBox} from "./EventBox";
+import {EventBox} from "../../../../common/js/classes/EventBox";
 
 /**
  * MOOCchat

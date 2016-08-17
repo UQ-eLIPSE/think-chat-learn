@@ -35,7 +35,7 @@ Group.prototype.addClient = function(client) {
         }
 
         // Join client socket into the same "room" as this group using the group ID
-        clientSocket.join(this.id);
+        // clientSocket.join(this.id);  // Can't do this anymore with PacSeqSocket
 
         this.clients.push(client);
     }
@@ -57,7 +57,7 @@ Group.prototype.removeClient = function(client) {
     var clientIndex = this.getClientIndex(client);
     if (clientIndex > -1) {
         this.clients.splice(clientIndex, 1);
-        client.getSocket().leave(this.id);
+        // client.getSocket().leave(this.id);   // Can't do this anymore with PacSeqSocket
     }
 }
 
@@ -70,7 +70,15 @@ Group.prototype.removeAllClients = function() {
  * @param {any} data Data to pass with the frame
  */
 Group.prototype.broadcastEvent = function(event, data) {
-    io.sockets.in(this.id).emit(event, data);
+    // io.sockets.in(this.id).emit(event, data);    // Can't do this anymore with PacSeqSocket
+
+    this.queue.forEach(function(client) {
+        var clientSocket = client.getSocket();
+
+        if (clientSocket) {
+            clientSocket.emit(event, data);
+        }
+    });
 }
 
 /**
@@ -90,7 +98,7 @@ Group.prototype.emitEvent = function(client, event, data) {
     // ======= Logging starts here =======
 
     var loggedData = [
-        'socket.io' + clientSocket.id,
+        'socket.io/' + clientSocket.id,
         'OUTBOUND',
         '[' + event + ']'
     ];

@@ -10,25 +10,33 @@ import {IDB_QuestionOption} from "./database/QuestionOption";
 import {IDB_QuizSchedule} from "./database/QuizSchedule";
 import {IDB_Survey} from "./database/Survey";
 
+import {PacSeqSocket_Server} from "../../common/js/classes/PacSeqSocket_Server";
+
 export class MoocchatUserSession {
     private static UserSessionStore: MoocchatUserSessionStore = new MoocchatUserSessionStore();
 
     private _userId: string;
     private _sessionId: string;
     private _userSessionData: MoocchatUserSessionData;
-    private _socket: SocketIO.Socket;
-
+    // private _socket: PacSeqSocket_Server;
+    private _sockets: PacSeqSocket_Server[] = [];
 
 
     public static GetSessionIds() {
         return MoocchatUserSession.UserSessionStore.getSessionIds();
     }
 
-    public static GetSession(sessionId: string, socket?: SocketIO.Socket) {
+    public static GetSession(sessionId: string, socket?: PacSeqSocket_Server) {
         const session = MoocchatUserSession.UserSessionStore.getSession(sessionId);
 
-        if (session && socket) {
-            // Update socket reference in case someone has switched/disconnected-connected sockets
+        // Update socket reference in case someone has switched/disconnected-connected sockets
+        if (session && socket && !session.socketAlreadySaved(socket)) {
+            const oldSocket = session.getSocket();
+            const newSocket = socket;
+
+            // Force move the session
+            PacSeqSocket_Server.Copy(oldSocket, newSocket);
+            PacSeqSocket_Server.Destroy(oldSocket);
             session.setSocket(socket);
         }
 
@@ -86,7 +94,7 @@ export class MoocchatUserSession {
 
 
 
-    constructor(socket: SocketIO.Socket, userId: string, sessionId: string) {
+    constructor(socket: PacSeqSocket_Server, userId: string, sessionId: string) {
         this.setSocket(socket);
         this.setUserId(userId);
         this.setId(sessionId);
@@ -134,12 +142,37 @@ export class MoocchatUserSession {
         return this._sessionId;
     }
 
-    private setSocket(socket: SocketIO.Socket) {
-        this._socket = socket;
+    private setSocket(socket: PacSeqSocket_Server) {
+        if (this.socketAlreadySaved(socket)) {
+            // Don't do anything if socket previously set
+            return;
+        }
+
+        this._sockets.push(socket);
     }
 
     public getSocket() {
-        return this._socket;
+        // Return the most up to date socket
+        return this._sockets[this._sockets.length - 1];
+    }
+    
+    private socketPosition(socket: PacSeqSocket_Server) {
+        // Check by matching ID
+        for (let i = 0; i < this._sockets.length; i++) {
+            const _socket = this._sockets[i];
+            
+            if (_socket.id === socket.id) {
+                return i;
+            }
+        }
+
+        return -1;
+
+        // return this._sockets.indexOf(socket);
+    }
+
+    private socketAlreadySaved(socket: PacSeqSocket_Server) {
+        return this.socketPosition(socket) > -1;
     }
 
     private addToStore() {

@@ -31,7 +31,7 @@ BackupClientQueue.prototype.addClient = function(client) {
         }
 
         // Join client socket into the same "room" as this group using the group ID
-        clientSocket.join(this.id);
+        // clientSocket.join(this.id);  // Can't do this anymore with PacSeqSocket
 
         this.queue.push(client);
         this.broadcastUpdate();
@@ -53,7 +53,7 @@ BackupClientQueue.prototype.removeClient = function(client) {
             this.wipeClientOutTray();
         }
 
-        client.getSocket().leave(this.id);
+        // client.getSocket().leave(this.id);       // Can't do this anymore with PacSeqSocket
         this.broadcastUpdate();
 
         return removedClient;
@@ -66,7 +66,15 @@ BackupClientQueue.prototype.removeClient = function(client) {
  * @param {Object} data
  */
 BackupClientQueue.prototype.broadcastEvent = function(event, data) {
-    io.sockets.in(this.id).emit(event, data);
+    // io.sockets.in(this.id).emit(event, data);    // Can't do this anymore with PacSeqSocket
+
+    this.queue.forEach(function(client) {
+        var clientSocket = client.getSocket();
+
+        if (clientSocket) {
+            clientSocket.emit(event, data);
+        }
+    });
 }
 
 BackupClientQueue.prototype.broadcastUpdate = function() {
@@ -183,7 +191,7 @@ BackupClientQueue.prototype.moveOutTrayClientToClientPool = function() {
     pool.addClient(client, answerOptionId);
 
     // Moved clients leave the queue (and join back in after chat if necessary)
-    client.getSocket().leave(this.id);
+    // client.getSocket().leave(this.id);   // Can't do this anymore with PacSeqSocket
 }
 
 

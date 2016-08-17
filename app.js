@@ -27,8 +27,8 @@ var server = http.createServer(app).listen(conf.portNum);
 var io = require('socket.io')(server, { 
     serveClient: false,
 
-    pingInterval: 14000,    // Ping roughly 4 times a minute
-    pingTimeout: 60000      // Timeout must be greater than interval
+    pingInterval: 5000,    // Ping roughly every 5 seconds
+    pingTimeout: 16000      // Timeout must be greater than interval
  });
 
 global.conf = conf;
@@ -37,8 +37,8 @@ global.io = io;
 
 console.log('Socket.io server listening on port ' + conf.portNum);
 
-var database = require('./build/controllers/database');
-var websockets = require('./build/controllers/websockets');
+var database = require('./build/server/controllers/database');
+var websockets = require('./build/server/controllers/websockets');
 
 // Use ejs for templating on pages
 app.set("view engine", "ejs");
