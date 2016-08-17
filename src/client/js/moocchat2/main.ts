@@ -63,6 +63,7 @@ $(() => {
     const $blackboardOpen = $("#blackboard-open");
 
     const $reconnectMessage = $("#reconnect-message");
+    const $sendAttemptMessage = $("#send-attempt-message");
 
     const session = new MoocchatSession<STATE>($content, $taskSections).setSocket(websocket);
 
@@ -100,6 +101,27 @@ $(() => {
 
     websocket.on("reconnecting", () => {
         $reconnectMessage.removeClass("hidden");
+    });
+
+
+    // Show data retransmissions
+    let lastSeqNumber: number = -1;
+
+    session.eventManager.on("PacSeq::InternalEvent::EmitStart", (data: any) => {
+        lastSeqNumber = data.seq;
+
+        if (data.attempt > 1) {
+            $sendAttemptMessage.removeClass("hidden");
+            $("span", $sendAttemptMessage).text(data.attempt);
+        } else {
+            $sendAttemptMessage.addClass("hidden");
+        }
+    });
+
+    session.eventManager.on("PacSeq::InternalEvent::AckReceived", (data: any) => {
+        if (data.seq >= lastSeqNumber) {
+            $sendAttemptMessage.addClass("hidden");
+        }
     });
 
     // Sections must be defined now before other resources use them

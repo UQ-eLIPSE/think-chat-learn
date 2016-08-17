@@ -353,7 +353,7 @@ button.link:active {
 
 /********** Core UI structure **********/
 
-#reconnect-message {
+#top-bar-message {
     font-size: 1.5em;
     text-align: center;
     position: absolute;
@@ -361,6 +361,9 @@ button.link:active {
     top: 0;
     left: 0;
     width: 100%;
+}
+
+#reconnect-message {
     background: #600;
     color: #fff;
     padding: 0.5em;
@@ -379,6 +382,27 @@ button.link:active {
     0%   {background: #600;}
     50%  {background: #a00;}
     100%  {background: #600;}
+}
+
+#send-attempt-message {
+    background: #090;
+    color: #fff;
+    padding: 0.5em;
+
+    animation: send-attempt-message-colourchange 5s infinite ease-in-out;
+    -webkit-animation: send-attempt-message-colourchange 5s infinite ease-in-out;
+}
+
+@keyframes send-attempt-message-colourchange {
+    0%   {background: #030;}
+    50%  {background: #090;}
+    100%  {background: #030;}
+}
+
+@-webkit-keyframes send-attempt-message-colourchange {
+    0%   {background: #030;}
+    50%  {background: #090;}
+    100%  {background: #030;}
 }
 
 #blackboard-open {

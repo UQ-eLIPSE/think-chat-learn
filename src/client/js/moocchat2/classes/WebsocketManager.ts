@@ -25,6 +25,10 @@ export class WebsocketManager {
                 transports: ["websocket"]
             })
         );
+
+        this.on("terminated", () => {
+            alert("You or someone has requested a full termination of all sessions associated with this username.");
+        });
     }
 
     public close() {

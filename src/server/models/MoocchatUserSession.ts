@@ -70,22 +70,28 @@ export class MoocchatUserSession {
         }
 
 
-
         // Wipe user session info - this must be done *AFTER* all other clean ups in other objects
         session._userSessionData = undefined;
         session.setId(undefined);
         session.setUserId(undefined);
 
-        if (session.getSocket()) {
+
+
+        const socket = session.getSocket();
+
+        if (socket) {
             if (sendTerminateMessage) {
-                session.getSocket().emit("terminated");
+                socket.emit("terminated");
             }
 
             // Give a little bit of time before disconnecting
             setTimeout(() => {
-                session.getSocket().disconnect(true);
+                PacSeqSocket_Server.Destroy(socket);
+                session._sockets = [];
             }, 500);
         }
+
+
 
         session.removeFromStore();
 

@@ -61,6 +61,9 @@ export class PacSeqSocket<SocketType> {
         psSocket.pause();
 
         psSocket.nativeSocket.removeAllListeners();
+        psSocket.disconnect(true);
+
+        EventBox.Destroy(psSocket.eventManager);
 
         psSocket.mode = undefined;
         psSocket.sequencer = undefined;
@@ -132,7 +135,7 @@ export class PacSeqSocket<SocketType> {
         // Both server and client Socket.IO events
         const nativeEvents = [
             "error",
-            
+
             "connection",
 
             "connect",
@@ -145,7 +148,7 @@ export class PacSeqSocket<SocketType> {
             "reconnect_failed",
             "reconnect_error",
             "reconnecting",
-            
+
             "disconnect",
 
             "newListener",
@@ -210,6 +213,10 @@ export class PacSeqSocket<SocketType> {
         // Flush queued packets up to and incl. the received ACK number
         this.sequencer.flush(ackReceived);
 
+        EventBox.GlobalDispatch("PacSeq::InternalEvent::AckReceived", {
+            seq: ackReceived
+        });
+
         // Send any queued DATs now
         this.sendQueuedDAT();
     }
@@ -246,17 +253,35 @@ export class PacSeqSocket<SocketType> {
         }
     }
 
-    private sendQueuedDAT() {
+    private sendQueuedDAT(attempt: number = 1) {
         clearTimeout(this.sendTimeoutHandle);
+
+        if (!this.sequencer) {
+            // Can't do anything if no sequencer
+            console.error(`PacSeqSocket/${this.id} ERROR - Attempted to send queued DAT with no sequencer`);
+            return;
+        }
 
         const datPacket: IPacSeqSocketPacket.Packet.DAT = this.sequencer.next();
 
+        if (attempt > 500) {
+            console.error(`PacSeqSocket/${this.id} STOPPING - ATTEMPT LIMIT EXCEEDED - SEQ ${datPacket.seq} ATTEMPT ${attempt}`);
+            return;
+        }
+
         if (datPacket && this.mode === PacSeqSocketMode.QUEUE_AND_SEND) {
+            console.log(`PacSeqSocket/${this.id} SENDING SEQ ${datPacket.seq} ATTEMPT ${attempt}`);
+
+            EventBox.GlobalDispatch("PacSeq::InternalEvent::EmitStart", {
+                seq: datPacket.seq,
+                attempt: attempt
+            });
+
             this.nativeSocket.emit(IPacSeqSocketPacket.EventName.DAT, datPacket);
 
             // TODO: Resolve `any` type to get around possible NodeJS.Timer type conflict
             const timerHandle: any = setTimeout(() => {
-                this.sendQueuedDAT();
+                this.sendQueuedDAT(attempt + 1);
             }, Conf.PacSeqSocket.ResendIntervalMS);
 
             this.sendTimeoutHandle = timerHandle;
