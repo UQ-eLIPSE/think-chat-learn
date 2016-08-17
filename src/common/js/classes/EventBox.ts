@@ -5,8 +5,31 @@
  * Provides a basic event system that doesn't rely on DOM events
  */
 export class EventBox {
+    private static Instances: EventBox[] = [];
+
     private eventCallbacks: { [eventName: string]: EventBox_Callback[] } = {};
     private dispatchedEvents: { [eventName: string]: any } = {};
+
+
+    public static GlobalDispatch(eventName: string, data?: any) {
+        EventBox.Instances.forEach((eventBox) => {
+            eventBox.dispatch(eventName, data);
+        });
+    }
+
+    public static Destroy(eventBox: EventBox) {
+        eventBox.destroy();
+
+        const eventBoxIndex = EventBox.Instances.indexOf(eventBox);
+
+        if (eventBoxIndex > -1) {
+            EventBox.Instances.splice(eventBoxIndex, 1);
+        }
+    }
+
+    constructor() {
+        EventBox.Instances.push(this);
+    }
 
     /**
      * Attaches an event callback.
