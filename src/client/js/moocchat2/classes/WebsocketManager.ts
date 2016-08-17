@@ -20,7 +20,7 @@ export class WebsocketManager {
                 reconnection: true,
                 reconnectionAttempts: Infinity,
                 reconnectionDelay: 1500,
-                reconnectionDelayMax: 5000,
+                reconnectionDelayMax: 2000,
 
                 transports: ["websocket"]
             })

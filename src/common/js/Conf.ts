@@ -1,5 +1,5 @@
 export const Conf = {
     PacSeqSocket: {
-        ResendIntervalMS: 1000
+        ResendIntervalMS: 2000
     }
 }
