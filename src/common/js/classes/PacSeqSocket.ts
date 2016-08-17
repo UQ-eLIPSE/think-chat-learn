@@ -256,6 +256,12 @@ export class PacSeqSocket<SocketType> {
     private sendQueuedDAT(attempt: number = 1) {
         clearTimeout(this.sendTimeoutHandle);
 
+        if (!this.sequencer) {
+            // Can't do anything if no sequencer
+            console.error(`PacSeqSocket/${this.id} ERROR - Attempted to send queued DAT with no sequencer`);
+            return;
+        }
+
         const datPacket: IPacSeqSocketPacket.Packet.DAT = this.sequencer.next();
 
         if (attempt > 500) {
