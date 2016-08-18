@@ -112,13 +112,16 @@ export class EventBox {
     private runCallbacks(eventName: string, data?: any) {
         const callbacks = this.eventCallbacks[eventName];
 
-        if (callbacks) {
-            // This must be in a traditional function(){} block
-            // so that scope is limited to global/window
-            callbacks.forEach(function(callback) {
-                callback(data);
-            });
+        if (!callbacks) {
+            console.error(`EventBox: Attempted to run callbacks on unregistered event: ${eventName}`);
+            return;
         }
+
+        // This must be in a traditional function(){} block
+        // so that scope is limited to global/window
+        callbacks.forEach(function(callback) {
+            callback(data);
+        });
     }
 
     /**

@@ -56,14 +56,16 @@ export class PacSeqSocket<SocketType> {
     }
 
     public static Destroy<T>(psSocket: PacSeqSocket<T>) {
-        console.log(`PacSeqSocket/${psSocket.id} DESTROYING`);
-
         psSocket.pause();
+        
+        console.log(`PacSeqSocket/${psSocket.id} DESTROYING`);
 
         psSocket.nativeSocket.removeAllListeners();
         psSocket.disconnect(true);
 
-        EventBox.Destroy(psSocket.eventManager);
+        // NOTE: ***Do not destroy*** #eventManager as it refers to the same
+        // EventBox which was carried over to the new PacSeqSocket obj when .Copy() is run 
+        // EventBox.Destroy(psSocket.eventManager);
 
         psSocket.mode = undefined;
         psSocket.sequencer = undefined;
@@ -194,10 +196,12 @@ export class PacSeqSocket<SocketType> {
     }
 
     private onACK(ackPacket: IPacSeqSocketPacket.Packet.ACK) {
+        console.log(`PacSeqSocket/${this.id} INCOMING ACK ${ackPacket.ack}`);
         this.processACK(ackPacket.ack);
     }
 
     private onDAT(datPacket: IPacSeqSocketPacket.Packet.DAT) {
+        console.log(`PacSeqSocket/${this.id} INCOMING DAT ${datPacket.seq}`);
         const seqAcknowledged = datPacket.seq;
 
         if (seqAcknowledged > this.lastAcknowledged) {
@@ -230,6 +234,8 @@ export class PacSeqSocket<SocketType> {
             ack: seqAcknowledged
         };
 
+        console.log(`PacSeqSocket/${this.id} OUTGOING ACK ${seqAcknowledged}`);
+
         this.nativeSocket.emit(IPacSeqSocketPacket.EventName.ACK, ackPacket);
     }
 
@@ -246,6 +252,8 @@ export class PacSeqSocket<SocketType> {
 
         // Fill in the sequence number back in to the object
         datPacket.seq = seq;
+
+        console.log(`PacSeqSocket/${this.id} OUTGOING DAT ${datPacket.seq}`);
 
         // If in send mode, attempt send now
         if (this.mode === PacSeqSocketMode.QUEUE_AND_SEND) {

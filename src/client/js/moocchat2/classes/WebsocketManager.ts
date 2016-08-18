@@ -64,4 +64,14 @@ export class WebsocketManager {
     protected get connected() {
         return this.socketProxy.getSocket().connected;
     }
+
+    public restart() {
+        const socket = this.socketProxy.getSocket();
+
+        socket.disconnect();
+
+        setTimeout(() => {
+            socket.connect();
+        }, 1000);
+    }
 }

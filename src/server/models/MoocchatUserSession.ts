@@ -36,8 +36,8 @@ export class MoocchatUserSession {
 
             // Force move the session
             PacSeqSocket_Server.Copy(oldSocket, newSocket);
+            session.setSocket(newSocket);
             PacSeqSocket_Server.Destroy(oldSocket);
-            session.setSocket(socket);
         }
 
         return session;
