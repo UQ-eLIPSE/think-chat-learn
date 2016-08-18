@@ -63,7 +63,9 @@ export class PacSeqSocket<SocketType> {
         psSocket.nativeSocket.removeAllListeners();
         psSocket.disconnect(true);
 
-        EventBox.Destroy(psSocket.eventManager);
+        // NOTE: ***Do not destroy*** #eventManager as it refers to the same
+        // EventBox which was carried over to the new PacSeqSocket obj when .Copy() is run 
+        // EventBox.Destroy(psSocket.eventManager);
 
         psSocket.mode = undefined;
         psSocket.sequencer = undefined;
