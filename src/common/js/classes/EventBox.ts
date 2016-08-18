@@ -112,8 +112,9 @@ export class EventBox {
     private runCallbacks(eventName: string, data?: any) {
         const callbacks = this.eventCallbacks[eventName];
 
+        // Don't run if unregistered event
         if (!callbacks) {
-            console.error(`EventBox: Attempted to run callbacks on unregistered event: ${eventName}`);
+            // console.error(`EventBox: Attempted to run callbacks on unregistered event: ${eventName}`);
             return;
         }
 
