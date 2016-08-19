@@ -29,6 +29,7 @@ export class PacSeqSocket<SocketType> {
 
     private eventManager: EventBox = new EventBox();
 
+    protected enableInternalEventDispatch: boolean = false;
 
 
     public static Copy<T>(fromSocket: PacSeqSocket<T>, toSocket: PacSeqSocket<T>) {
@@ -57,7 +58,7 @@ export class PacSeqSocket<SocketType> {
 
     public static Destroy<T>(psSocket: PacSeqSocket<T>) {
         psSocket.pause();
-        
+
         console.log(`PacSeqSocket/${psSocket.id} DESTROYING`);
 
         psSocket.nativeSocket.removeAllListeners();
@@ -217,9 +218,11 @@ export class PacSeqSocket<SocketType> {
         // Flush queued packets up to and incl. the received ACK number
         this.sequencer.flush(ackReceived);
 
-        EventBox.GlobalDispatch("PacSeq::InternalEvent::AckReceived", {
-            seq: ackReceived
-        });
+        if (this.enableInternalEventDispatch) {
+            EventBox.GlobalDispatch("PacSeq::InternalEvent::AckReceived", {
+                seq: ackReceived
+            });
+        }
 
         // Send any queued DATs now
         this.sendQueuedDAT();
@@ -280,11 +283,13 @@ export class PacSeqSocket<SocketType> {
         if (datPacket && this.mode === PacSeqSocketMode.QUEUE_AND_SEND) {
             console.log(`PacSeqSocket/${this.id} SENDING SEQ ${datPacket.seq} ATTEMPT ${attempt}`);
 
-            EventBox.GlobalDispatch("PacSeq::InternalEvent::EmitStart", {
-                seq: datPacket.seq,
-                attempt: attempt
-            });
-
+            if (this.enableInternalEventDispatch) {
+                EventBox.GlobalDispatch("PacSeq::InternalEvent::EmitStart", {
+                    seq: datPacket.seq,
+                    attempt: attempt
+                });
+            }
+            
             this.nativeSocket.emit(IPacSeqSocketPacket.EventName.DAT, datPacket);
 
             // TODO: Resolve `any` type to get around possible NodeJS.Timer type conflict
