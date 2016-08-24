@@ -1,3 +1,5 @@
+import * as $ from "jquery";
+
 import {EventBox} from "../../../../common/js/classes/EventBox";
 import {TaskSection} from "./TaskSection";
 
