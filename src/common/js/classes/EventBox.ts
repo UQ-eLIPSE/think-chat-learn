@@ -135,6 +135,10 @@ export class EventBox {
     private hasEventBeenDispatched(eventName: string) {
         return (Object.keys(this.dispatchedEvents).indexOf(eventName) > -1);
     }
+
+    public getCallbacksFor(eventName: string) {
+        return this.eventCallbacks[eventName];
+    }
 }
 
 /**
