@@ -86,6 +86,11 @@ function handleChatGroupJoinRequest(data: _UNKNOWN, socket: PacSeqSocket_Server)
         return console.error("Attempted chat group join request with invalid session ID = " + data.sessionId);
     }
 
+    // Can't join into pool if already in chat group
+    if (MoocchatChatGroup.GetChatGroupWith(session)) {
+        return console.error(`Attempted chat group join request with session already in chat group; session ID = ${session.getId()}`);
+    }
+
     var waitPool = MoocchatWaitPool.GetPoolWith(session);
     waitPool.addSession(session);
 
