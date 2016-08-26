@@ -1,3 +1,5 @@
+import * as $ from "jquery";
+
 import {IStateHandler} from "../classes/IStateHandler";
 
 import {MoocchatState as STATE} from "../classes/MoocchatStates";
