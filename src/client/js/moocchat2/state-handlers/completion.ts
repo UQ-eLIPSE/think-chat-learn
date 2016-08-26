@@ -33,7 +33,7 @@ export const CompletionStateHandler: IStateHandler<STATE> =
                             window.print();
                         });
 
-                        page$("#go-to-return-url").on("click", () => {
+                        page$("#go-to-return-url").one("click", () => {
                             window.top.location.href = _LTI_BASIC_LAUNCH_DATA.launch_presentation_return_url;
                         });
 

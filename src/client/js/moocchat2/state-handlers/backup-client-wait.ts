@@ -91,7 +91,7 @@ export const BackupClientWaitStateHandler: IStateHandler<STATE> =
                     // Request information now (once only)
                     session.socket.emitData<IOutboundData.BackupClientStatusRequest>(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_STATUS_REQUEST, { sessionId: session.id });
 
-                    page$("#logout").on("click", () => {
+                    page$("#logout").one("click", () => {
                         session.stateMachine.goTo(STATE.BACKUP_CLIENT_LOGOUT);
                     });
                 });
