@@ -3,14 +3,26 @@ import {IStateHandler} from "../classes/IStateHandler";
 import {MoocchatState as STATE} from "../classes/MoocchatStates";
 import {MoocchatChat} from "../classes/MoocchatChat";
 
+import {OTLock} from "../../../../common/js/classes/OTLock";
+
 export const AwaitGroupFormationStateHandler: IStateHandler<STATE> =
     (session) => {
         const section = session.sectionManager.getSection("await-group-formation");
         
         let tooLongTimeoutHandle: number;
 
+        const chatJoinOneTimeLock = new OTLock();
+
         return {
             onEnter: () => {
+                // Check if lock is already set
+                if (chatJoinOneTimeLock.locked) {
+                    throw new Error("Group formation one time condition violated");
+                }
+
+                // Only one chat join per session
+                chatJoinOneTimeLock.lock();
+
                 const waitStartTime = new Date().getTime();
 
                 session.pageManager.loadPage("await-group-formation", (page$) => {
