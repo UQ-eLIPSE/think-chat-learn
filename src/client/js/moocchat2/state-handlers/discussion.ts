@@ -49,6 +49,8 @@ export const DiscussionStateHandler: IStateHandler<STATE> =
 
 
                     function endChat() {
+                        section.stopTimer();
+
                         chat.terminate();
                         session.analytics.trackEvent("CHAT", "END");
 
