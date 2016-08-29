@@ -20,14 +20,16 @@ export class PacSeqSocket<SocketType> {
 
     private sequencer: PacSeq = new PacSeq();
     private sendTimeoutHandle: number;
-    private sendInfo = {
-        seq: -1,
-        attempts: 0,
-    };
+
+    private inboundLogging: boolean = false;
+    private outboundLogging: boolean = false;
 
     private lastAcknowledged: number = -1;
 
     private eventManager: EventBox = new EventBox();
+
+    /** Holds pointer to new socket from which this socket was copied */
+    private transferredTo: PacSeqSocket<SocketType> = undefined;
 
     protected enableInternalEventDispatch: boolean = false;
 
@@ -42,9 +44,11 @@ export class PacSeqSocket<SocketType> {
 
         // Copy over
         toSocket.sequencer = fromSocket.sequencer;
-        toSocket.sendInfo = fromSocket.sendInfo;
         toSocket.lastAcknowledged = fromSocket.lastAcknowledged;
         toSocket.eventManager = fromSocket.eventManager;
+
+        // Set transferred reference
+        fromSocket.transferredTo = toSocket;
 
         // Return to resume
         if (fromSocketState === PacSeqSocketMode.QUEUE_AND_SEND) {
@@ -70,12 +74,20 @@ export class PacSeqSocket<SocketType> {
 
         psSocket.mode = undefined;
         psSocket.sequencer = undefined;
-        psSocket.sendInfo = undefined;
         psSocket.lastAcknowledged = undefined;
         psSocket.eventManager = undefined;
     }
 
+    /** 
+     * Gets the latest known socket from which given socket was copied to
+     */
+    public static GetLatest<T>(psSocket: PacSeqSocket<T>): PacSeqSocket<T> {
+        if (psSocket.transferredTo) {
+            return PacSeqSocket.GetLatest(psSocket.transferredTo);
+        }
 
+        return psSocket;
+    }
 
     constructor(socket: SocketType) {
         this.nativeSocket = socket;
@@ -97,10 +109,53 @@ export class PacSeqSocket<SocketType> {
 
     public emit(event: string, ...args: any[]) {
         this.resume();
+
+        if (this.outboundLogging) {
+            const loggedData = [
+                `PacSeqServer/${this.id}`,
+                'OUTBOUND',
+                '[' + event + ']'
+            ];
+
+            if (typeof args[0] !== "undefined") {
+                loggedData.push(args[0]);
+            }
+
+            console.log.apply(undefined, loggedData);
+        }
+
         this.sendDAT(event, args[0]);
     }
 
     public on(event: string, fn: (data?: any) => any) {
+        this.eventManager.on(event, (data?: any) => {
+            // This socket session may be transferred; so event handlers don't
+            // have a new reference to the new socket instance
+            const activeSocket = PacSeqSocket.GetLatest(this);
+
+            const callbacksOfEvent = activeSocket.eventManager.getCallbacksFor(event);
+
+            if (!callbacksOfEvent || callbacksOfEvent.length === 0) {
+                activeSocket.eventManager.on(event, (data?: any) => {
+                    if (!activeSocket.inboundLogging) {
+                        return;
+                    }
+
+                    const loggedData = [
+                        `PacSeqServer/${activeSocket.id}`,
+                        'INBOUND',
+                        '[' + event + ']'
+                    ];
+
+                    if (typeof data !== "undefined") {
+                        loggedData.push(data);
+                    }
+
+                    console.log.apply(undefined, loggedData);
+                });
+            }
+        }, false);
+
         this.eventManager.on(event, fn, false);
     }
 
@@ -299,5 +354,21 @@ export class PacSeqSocket<SocketType> {
 
             this.sendTimeoutHandle = timerHandle;
         }
+    }
+
+    public enableInboundLogging() {
+        this.inboundLogging = true;
+    }
+
+    public disableInboundLogging() {
+        this.inboundLogging = false;
+    }
+
+    public enableOutboundLogging() {
+        this.outboundLogging = true;
+    }
+
+    public disableOutboundLogging() {
+        this.outboundLogging = false;
     }
 }
