@@ -40,10 +40,10 @@ export const CompletionStateHandler: IStateHandler<STATE> =
                         const initialAnswer = session.quiz.questionOptions.filter((option) => option._id === session.answers.initial.optionId)[0];
                         const revisedAnswer = session.quiz.questionOptions.filter((option) => option._id === session.answers.revised.optionId)[0];
 
-                        page$("#initial-answer-content").html(initialAnswer.content);
+                        page$("#initial-answer-content").html(initialAnswer ? initialAnswer.content : "[NO OPTION SELECTED]");
                         page$("#initial-answer-justification").text(session.answers.initial.justification);
 
-                        page$("#revised-answer-content").html(revisedAnswer.content);
+                        page$("#revised-answer-content").html(revisedAnswer ? revisedAnswer.content : "[NO OPTION SELECTED]");
                         page$("#revised-answer-justification").text(session.answers.revised.justification);
 
                         // if (virtServerData) {
