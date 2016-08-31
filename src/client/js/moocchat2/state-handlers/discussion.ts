@@ -55,7 +55,8 @@ export const DiscussionStateHandler: IStateHandler<STATE> =
 
                     function endChat() {
                         section.stopTimer();
-
+                        
+                        clearInterval(typingCheckIntervalHandle);
                         chat.sendTypingState(false);
 
                         chat.terminate();
@@ -196,8 +197,6 @@ export const DiscussionStateHandler: IStateHandler<STATE> =
                 section.unsetActive();
                 section.clearTimer();
                 section.hideTimer();
-
-                clearInterval(typingCheckIntervalHandle);
             }
         }
     }
