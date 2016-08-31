@@ -28,5 +28,9 @@ export const conf = {
 
     websockets: {
         disconnectCooloffTimeoutMs: Utils.DateTime.secToMs(0.5)
+    },
+
+    chat: {
+        typingNotificationCheckMs: Utils.DateTime.secToMs(5)
     }
 }

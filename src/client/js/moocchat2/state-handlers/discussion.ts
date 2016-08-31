@@ -1,5 +1,7 @@
 import * as $ from "jquery";
 
+import {conf} from "../conf";
+
 import {IStateHandler} from "../classes/IStateHandler";
 
 import {MoocchatSession} from "../classes/MoocchatSession";
@@ -14,6 +16,9 @@ import * as AnswerComponents from "../shared/AnswerComponents";
 export const DiscussionStateHandler: IStateHandler<STATE> =
     (session: MoocchatSession<STATE>, nextState: STATE = STATE.REVISED_ANSWER) => {
         const section = session.sectionManager.getSection("discussion");
+
+        let typingCheckIntervalHandle: number;
+        let typingState: boolean = false;
 
         return {
             onEnter: (data: IInboundData.ChatGroupFormed) => {
@@ -86,6 +91,9 @@ export const DiscussionStateHandler: IStateHandler<STATE> =
                         }
 
                         chat.sendMessage(message);
+
+                        // Update typing state
+                        typingState = false;
 
                         $chatInput.val("").focus();
                     });
@@ -164,12 +172,30 @@ export const DiscussionStateHandler: IStateHandler<STATE> =
 
                     // Put focus to input field at start of chat so people can get started immediately
                     $chatInput.focus();
+
+
+                    // Typing notifications
+                    typingCheckIntervalHandle = setInterval(() => {
+                        const message = $.trim($chatInput.val());
+
+                        if (message.length === 0 && typingState) {
+                            // Cleared input
+                            typingState = false;
+                            chat.sendTypingState(typingState);
+                        } else if (message.length > 0 && !typingState) {
+                            // Input detected
+                            typingState = true;
+                            chat.sendTypingState(typingState);
+                        }
+                    }, conf.chat.typingNotificationCheckMs);
                 });
             },
             onLeave: () => {
                 section.unsetActive();
                 section.clearTimer();
                 section.hideTimer();
+
+                clearInterval(typingCheckIntervalHandle);
             }
         }
     }

@@ -20,6 +20,7 @@ export class MoocchatChat {
 
     private receiveMessageCallback: (data: IInboundData.ChatGroupMessage) => void;
     private receiveQuitStatusChangeCallback: (data: IInboundData.ChatGroupQuitStatusChange) => void;
+    private receiveTypingNotificationCallback: (data: IInboundData.ChatGroupTypingNotification) => void;
 
     /**
      * @param {MoocchatSession} session MoocchatSession object for the current user
@@ -33,11 +34,15 @@ export class MoocchatChat {
 
         this.attachReceiveMessageHandler();
 
-        this.$chatWindow.attr("data-self-client-id", (this.groupData.clientIndex + 1).toString());
+        this.$chatWindow.attr("data-self-client-id", (this.clientIndex + 1).toString());
     }
 
     public get chatWindow() {
         return this.$chatWindow;
+    }
+
+    public get clientIndex() {
+        return this.groupData.clientIndex;
     }
 
     /**
@@ -85,7 +90,7 @@ export class MoocchatChat {
     public displayMessage(clientId: number, message: string, forceNewBlock: boolean = false) {
         const $message = $("<p>").text(message);
 
-        const $lastPersonBlock = $("blockquote.message", this.$chatWindow).last();
+        const $lastPersonBlock = $("blockquote.message", this.chatWindow).last();
         const lastPersonClientId = $lastPersonBlock.data("client-id");
 
         if (!forceNewBlock &&
@@ -93,15 +98,20 @@ export class MoocchatChat {
             lastPersonClientId.toString() === clientId.toString()) {
             $message.appendTo($lastPersonBlock);
         } else {
-            $("<blockquote>")
+            const newBlockquote = $("<blockquote>")
                 .addClass("message")
                 .attr("data-client-id", clientId.toString())
-                .append($message)
-                .appendTo(this.$chatWindow);
+                .append($message);
+
+            if ($lastPersonBlock.length) {
+                newBlockquote.insertAfter($lastPersonBlock);
+            } else {
+                newBlockquote.prependTo(this.chatWindow);
+            }
         }
 
         // TODO: Don't scroll if window not scrolled to bottom as user might be looking at chat log
-        this.$chatWindow.scrollTop(this.$chatWindow.get(0).scrollHeight);
+        this.chatWindow.scrollTop(this.chatWindow.get(0).scrollHeight);
     }
 
     /**
@@ -112,6 +122,41 @@ export class MoocchatChat {
      */
     public displaySystemMessage(message: string, forceNewBlock: boolean = false) {
         this.displayMessage(-1, message, forceNewBlock);
+    }
+
+    public sendTypingState(isTyping: boolean) {
+        this.session.socket.emitData<IOutboundData.ChatGroupTypingNotification>(WebsocketEvents.OUTBOUND.CHAT_GROUP_TYPING_NOTIFICATION, {
+            groupId: this.groupData.groupId,
+            sessionId: this.session.id,
+            isTyping: isTyping
+        });
+    }
+
+    public displayTypingNotification(clientIndicies: number[]) {
+        let message: string;
+
+        // Remove self from notifications
+        clientIndicies = clientIndicies.filter(clientIndex => clientIndex !== this.clientIndex);
+
+        $("blockquote.typing-notification", this.chatWindow).remove();
+
+        if (clientIndicies.length === 0) {
+            return;
+        }
+
+        if (clientIndicies.length === 1) {
+            message = `#${clientIndicies[0] + 1} is typing...`
+        } else {
+            message = `${clientIndicies.sort().map(clientIndex => `#${clientIndex + 1}`).join(", ")} are typing...`
+        }
+
+        $("<blockquote>")
+            .addClass("typing-notification")
+            .append($("<p>").text(message))
+            .appendTo(this.chatWindow);
+
+        // TODO: Don't scroll if window not scrolled to bottom as user might be looking at chat log
+        this.chatWindow.scrollTop(this.chatWindow.get(0).scrollHeight);
     }
 
     /**
@@ -126,15 +171,21 @@ export class MoocchatChat {
         }
     }
 
+    private receiveTypingNotification(data: IInboundData.ChatGroupTypingNotification) {
+        this.displayTypingNotification(data.clientIndicies);
+    }
+
     /**
      * Attaches the incoming message event handler.
      */
     private attachReceiveMessageHandler() {
         this.receiveMessageCallback = this.receiveMessage.bind(this);
         this.receiveQuitStatusChangeCallback = this.receiveQuitStatusChange.bind(this);
+        this.receiveTypingNotificationCallback = this.receiveTypingNotification.bind(this);
 
         this.session.socket.on<IInboundData.ChatGroupMessage>(WebsocketEvents.INBOUND.CHAT_GROUP_RECEIVE_MESSAGE, this.receiveMessageCallback);
         this.session.socket.on<IInboundData.ChatGroupQuitStatusChange>(WebsocketEvents.INBOUND.CHAT_GROUP_QUIT_STATUS_CHANGE, this.receiveQuitStatusChangeCallback);
+        this.session.socket.on<IInboundData.ChatGroupTypingNotification>(WebsocketEvents.INBOUND.CHAT_GROUP_TYPING_NOTIFICATION, this.receiveTypingNotificationCallback);
     }
 
     /**
@@ -143,6 +194,7 @@ export class MoocchatChat {
     private detachReceiveMessageHandler() {
         this.session.socket.off(WebsocketEvents.INBOUND.CHAT_GROUP_RECEIVE_MESSAGE, this.receiveMessageCallback);
         this.session.socket.off(WebsocketEvents.INBOUND.CHAT_GROUP_QUIT_STATUS_CHANGE, this.receiveQuitStatusChangeCallback);
+        this.session.socket.off(WebsocketEvents.INBOUND.CHAT_GROUP_TYPING_NOTIFICATION, this.receiveTypingNotificationCallback);
     }
 
     /**
