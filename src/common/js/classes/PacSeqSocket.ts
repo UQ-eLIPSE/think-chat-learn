@@ -34,6 +34,15 @@ export class PacSeqSocket<SocketType> {
     protected enableInternalEventDispatch: boolean = false;
 
 
+    /* ===== FOR TESTING PURPOSES ONLY ===== */
+
+    /** Number of times a packet is sent over wire */
+    protected __numberOfTimesToSendOverWirePerEmit: number = 1;
+
+    /** Number of times a socket message will be emitted (as separate messages) */
+    protected __numberOfTimesToRepeatEmit: number = 1;
+
+
     public static Copy<T>(fromSocket: PacSeqSocket<T>, toSocket: PacSeqSocket<T>) {
         const fromSocketState = fromSocket.mode;
         const toSocketState = toSocket.mode;
@@ -112,7 +121,7 @@ export class PacSeqSocket<SocketType> {
 
         if (this.outboundLogging) {
             const loggedData = [
-                `PacSeqServer/${this.id}`,
+                `PacSeqSocket/${this.id}`,
                 'OUTBOUND',
                 '[' + event + ']'
             ];
@@ -124,37 +133,37 @@ export class PacSeqSocket<SocketType> {
             console.log.apply(undefined, loggedData);
         }
 
-        this.sendDAT(event, args[0]);
+        for (let i = 0; i < this.__numberOfTimesToRepeatEmit; ++i) {
+            this.sendDAT(event, args[0]);
+        }
     }
 
     public on(event: string, fn: (data?: any) => any) {
-        this.eventManager.on(event, (data?: any) => {
-            // This socket session may be transferred; so event handlers don't
-            // have a new reference to the new socket instance
-            const activeSocket = PacSeqSocket.GetLatest(this);
+        const callbacksOfEvent = this.eventManager.getCallbacksFor(event);
 
-            const callbacksOfEvent = activeSocket.eventManager.getCallbacksFor(event);
+        if (!callbacksOfEvent || callbacksOfEvent.length === 0) {
+            this.eventManager.on(event, (data?: any) => {
+                // This socket session may be transferred; so event handlers don't
+                // necessarily have the reference to the new PacSeqSocket at run time.
+                const activeSocket = PacSeqSocket.GetLatest(this);
 
-            if (!callbacksOfEvent || callbacksOfEvent.length === 0) {
-                activeSocket.eventManager.on(event, (data?: any) => {
-                    if (!activeSocket.inboundLogging) {
-                        return;
-                    }
+                if (!activeSocket || !activeSocket.inboundLogging) {
+                    return;
+                }
 
-                    const loggedData = [
-                        `PacSeqServer/${activeSocket.id}`,
-                        'INBOUND',
-                        '[' + event + ']'
-                    ];
+                const loggedData = [
+                    `PacSeqSocket/${activeSocket.id}`,
+                    'INBOUND',
+                    '[' + event + ']'
+                ];
 
-                    if (typeof data !== "undefined") {
-                        loggedData.push(data);
-                    }
+                if (typeof data !== "undefined") {
+                    loggedData.push(data);
+                }
 
-                    console.log.apply(undefined, loggedData);
-                });
-            }
-        }, false);
+                console.log.apply(undefined, loggedData);
+            }, false);
+        }
 
         this.eventManager.on(event, fn, false);
     }
@@ -294,7 +303,9 @@ export class PacSeqSocket<SocketType> {
 
         console.log(`PacSeqSocket/${this.id} OUTGOING ACK ${seqAcknowledged}`);
 
-        this.nativeSocket.emit(IPacSeqSocketPacket.EventName.ACK, ackPacket);
+        for (let i = 0; i < this.__numberOfTimesToSendOverWirePerEmit; ++i) {
+            this.nativeSocket.emit(IPacSeqSocketPacket.EventName.ACK, ackPacket);
+        }
     }
 
     private sendDAT(event: string, data: any) {
@@ -344,8 +355,10 @@ export class PacSeqSocket<SocketType> {
                     attempt: attempt
                 });
             }
-            
-            this.nativeSocket.emit(IPacSeqSocketPacket.EventName.DAT, datPacket);
+
+            for (let i = 0; i < this.__numberOfTimesToSendOverWirePerEmit; ++i) {
+                this.nativeSocket.emit(IPacSeqSocketPacket.EventName.DAT, datPacket);
+            }
 
             // TODO: Resolve `any` type to get around possible NodeJS.Timer type conflict
             const timerHandle: any = setTimeout(() => {

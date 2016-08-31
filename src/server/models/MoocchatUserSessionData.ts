@@ -11,7 +11,7 @@ export class MoocchatUserSessionData {
     public quizQuestionOptions: IDB_QuestionOption[];
 
     public survey: IDB_Survey;
-
+    
     public username: string;
 
     // `responseInitial` and `responseFinal` hold the answers as received from client
@@ -19,6 +19,10 @@ export class MoocchatUserSessionData {
         initial: {},
         final: {}
     };
+
+    /** Set when survey flagged as being saved */
+    public surveyTaken: boolean = false;
+    
 
     constructor(
         quizSchedule: IDB_QuizSchedule,

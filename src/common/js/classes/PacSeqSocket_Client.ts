@@ -3,5 +3,5 @@
 import {PacSeqSocket} from "./PacSeqSocket";
 
 export class PacSeqSocket_Client extends PacSeqSocket<SocketIOClient.Socket> {
-    protected enableInternalEventDispatch: boolean = false;
+    protected enableInternalEventDispatch: boolean = true;
 }
