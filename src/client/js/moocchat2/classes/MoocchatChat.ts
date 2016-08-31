@@ -85,7 +85,7 @@ export class MoocchatChat {
     public displayMessage(clientId: number, message: string, forceNewBlock: boolean = false) {
         const $message = $("<p>").text(message);
 
-        const $lastPersonBlock = $("blockquote:last-child", this.$chatWindow);
+        const $lastPersonBlock = $("blockquote.message", this.$chatWindow).last();
         const lastPersonClientId = $lastPersonBlock.data("client-id");
 
         if (!forceNewBlock &&
@@ -94,6 +94,7 @@ export class MoocchatChat {
             $message.appendTo($lastPersonBlock);
         } else {
             $("<blockquote>")
+                .addClass("message")
                 .attr("data-client-id", clientId.toString())
                 .append($message)
                 .appendTo(this.$chatWindow);

@@ -28,7 +28,7 @@ export class MoocchatWaitPool {
     }
 
     /** Slight misnomer - gets pool with same quiz schedule as supplied session. Session may not actually be in wait pool. */
-    public static GetPoolWith(session: MoocchatUserSession) {
+    public static GetPoolWithQuizScheduleFrom(session: MoocchatUserSession) {
         return MoocchatWaitPool.GetPool(session.data.quizSchedule._id.toString(), session.data.quizQuestionOptions);
     }
 
@@ -104,6 +104,22 @@ export class MoocchatWaitPool {
                 }
             }
         }
+    }
+
+    public hasSession(session: MoocchatUserSession) {
+        var arr = Object.keys(this.answerQueues);
+        for (var i = 0; i < arr.length; ++i) {
+            var queueKey = arr[i];
+            var thisAnswerSessionDataArray = this.answerQueues[queueKey];
+
+            for (var j = 0; j < thisAnswerSessionDataArray.length; ++j) {
+                if (thisAnswerSessionDataArray[j].session === session) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private answerQueueKeysWithSessions() {

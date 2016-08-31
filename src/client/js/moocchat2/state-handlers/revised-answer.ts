@@ -47,10 +47,16 @@ export const RevisedAnswerStateHandler: IStateHandler<STATE> =
 
                     // Standard answer submission click
                     $submitAnswer.on("click", () => {
-                        AnswerComponents.ProcessSubmission(
+                        if (AnswerComponents.ProcessSubmission(
                             AnswerComponents.ExtractOptionId($answers),
                             AnswerComponents.ExtractJustification($justification),
-                            submitRevisedAnswerFunc);
+                            submitRevisedAnswerFunc)) {
+
+                            // Must stop timer now to prevent duplicate
+                            // submissions being triggered by button click
+                            // and timer
+                            section.stopTimer();
+                        }
                     });
 
                     // Update char available

@@ -42,10 +42,16 @@ export const InitialAnswerStateHandler: IStateHandler<STATE> =
 
                     // Standard answer submission click
                     $submitAnswer.on("click", () => {
-                        AnswerComponents.ProcessSubmission(
+                        if (AnswerComponents.ProcessSubmission(
                             AnswerComponents.ExtractOptionId($answers),
                             AnswerComponents.ExtractJustification($justification),
-                            submitInitialAnswerFunc);
+                            submitInitialAnswerFunc)) {
+
+                            // Must stop timer now to prevent duplicate
+                            // submissions being triggered by button click
+                            // and timer
+                            section.stopTimer();
+                        }
                     });
 
                     // Answer multiple choice highlighting

@@ -25,7 +25,7 @@ export const WelcomeStateHandler: IStateHandler<STATE> =
                         page$("#not-you-help").toggle();
                     }).trigger("click");
 
-                    page$("#start-session").on("click", () => {
+                    page$("#start-session").one("click", () => {
                         session.stateMachine.goTo(nextState);
                     });
                 });

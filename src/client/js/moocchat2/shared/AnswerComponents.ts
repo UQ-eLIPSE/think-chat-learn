@@ -56,21 +56,24 @@ export function SubmissionFuncFactory<StateTypeEnum>(session: MoocchatSession<St
  * @param {string} optionId
  * @param {string} justification
  * @param {Function} submissionFunc Function to execute to actually commit submission
+ * 
+ * @return {boolean} Whether submission function has been executed
  */
 export function ProcessSubmission(optionId: string, justification: string, submissionFunc: (optionId: string, justification: string) => void) {
     justification = TrimWhitespace(justification);
 
     if (justification.length === 0 || !optionId) {
         alert("You must provide an answer and justification.");
-        return;
+        return false;
     }
 
     if (justification.length > maxJustificationLength) {
         alert("Justification is too long. Reduce your justification length.");
-        return;
+        return false;
     }
 
     submissionFunc(optionId, justification);
+    return true;
 }
 
 /**

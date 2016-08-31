@@ -97,11 +97,19 @@ $(() => {
                 sessionId: session.id
             });
         }
+
+        session.analytics.trackEvent("WEBSOCKET", "Connect");
     });
 
     websocket.on("reconnecting", () => {
         $reconnectMessage.removeClass("hidden");
+        session.analytics.trackEvent("WEBSOCKET", "Reconnecting");
     });
+
+    websocket.on("disconnect", () => {
+        session.analytics.trackEvent("WEBSOCKET", "Disconnect");
+    });
+
 
 
     // Show data retransmissions
@@ -113,6 +121,7 @@ $(() => {
         if (data.attempt > 1) {
             $sendAttemptMessage.removeClass("hidden");
             $("span", $sendAttemptMessage).text(data.attempt);
+            session.analytics.trackEvent("WEBSOCKET", "Retransmit", `Seq ${data.seq}`, data.attempt);
         } else {
             $sendAttemptMessage.addClass("hidden");
         }

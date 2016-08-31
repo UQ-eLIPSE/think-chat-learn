@@ -9,9 +9,11 @@ const io: SocketIO.Server = global.io;
 export class MoocchatChatGroup {
     private static ChatGroups: { [chatGroupId: string]: MoocchatChatGroup } = {};
 
-    private _sessions: MoocchatUserSession[];
+    private _sessions: MoocchatUserSession[] = [];
+    private _quitSessions: MoocchatUserSession[] = [];
+    
     private _id: string;
-
+    
     public static GetChatGroup(chatGroupId: string) {
         return MoocchatChatGroup.ChatGroups[chatGroupId];
     }
@@ -31,10 +33,7 @@ export class MoocchatChatGroup {
     public static Destroy(chatGroup: MoocchatChatGroup) {
         const chatGroupId = chatGroup.getId();
 
-        chatGroup.getSessions().forEach((session) => {
-            console.log(`socket.io(${chatGroupId}) LEAVE Session '${session.getId()}'`);
-            // session.getSocket().leave(chatGroupId);  // Can't do this anymore with PacSeqSocket
-        });
+        console.log(`MoocchatChatGroup(${chatGroupId}) DESTROYING`);
 
         chatGroup._id = undefined;
         chatGroup._sessions = [];
@@ -65,32 +64,18 @@ export class MoocchatChatGroup {
         const chatGroupId = this.getId();
 
         this._sessions.forEach((session) => {
-            console.log(`socket.io(${chatGroupId}) JOIN Session '${session.getId()}'`);
-            // session.getSocket().join(chatGroupId);   // Can't do this anymore with PacSeqSocket
+            console.log(`MoocchatChatGroup(${chatGroupId}) JOIN Session '${session.getId()}'`);
         });
     }
 
     public broadcast(event: string, data: any) {
-        // ======= Logging starts here =======
-
-        var loggedData = [
-            'socket.io(' + this.getId() + ')',
-            'OUTBOUND',
-            '[' + event + ']'
-        ];
-
-        if (typeof data !== "undefined") {
-            loggedData.push(data);
-        }
-
-        console.log.apply(undefined, loggedData);
-
-        // ======= Logging ends here =======
-
-        // io.sockets.in(this.getId()).emit(event, data);   // Can't do this anymore with PacSeqSocket
-
         this.getSessions().forEach((session) => {
-            var sessionSocket = session.getSocket();
+            // Don't broadcast message to those already quit
+            if (this._quitSessions.indexOf(session) > -1) {
+                return;
+            }
+
+            const sessionSocket = session.getSocket();
 
             if (sessionSocket) {
                 sessionSocket.emit(event, data);
@@ -99,7 +84,7 @@ export class MoocchatChatGroup {
     }
 
     public numberOfSessions() {
-        return this._sessions.length;
+        return this._sessions.length - this._quitSessions.length;
     }
 
     private getSessionIndex(session: MoocchatUserSession) {
@@ -116,6 +101,11 @@ export class MoocchatChatGroup {
     }
 
     private broadcastQuit(quittingSession: MoocchatUserSession, quitStatus: boolean = true) {
+        // Don't broadcast quit event when the session has already quit
+        if (this._quitSessions.indexOf(quittingSession) > -1) {
+            return;
+        }
+
         this.broadcast("chatGroupQuitChange", {
             groupId: this.getId(),
             groupSize: this.numberOfSessions(),
@@ -128,8 +118,14 @@ export class MoocchatChatGroup {
     }
 
     public quitSession(quittingSession: MoocchatUserSession) {
-        console.log(`Quitting session '${quittingSession.getId()}' from chat group '${this.getId()}'`);
+        // You must broadcast the quit BEFORE actually quitting
         this.broadcastQuit(quittingSession);
+
+        // If not previously tracked as quitted, add to quit array
+        if (this._quitSessions.indexOf(quittingSession) < 0) {
+            console.log(`MoocchatChatGroup(${this.getId()}) QUIT Session '${quittingSession.getId()}'`);
+            this._quitSessions.push(quittingSession);
+        }
 
         // Self destroy when there are no sessions left
         if (this.numberOfSessions() === 0) {

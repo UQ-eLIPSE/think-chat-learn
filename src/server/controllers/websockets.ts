@@ -1,4 +1,4 @@
-declare type _UNKNOWN = any; 
+declare type _UNKNOWN = any;
 
 import {PacSeqSocket_Server} from "../../common/js/classes/PacSeqSocket_Server";
 
@@ -86,7 +86,18 @@ function handleChatGroupJoinRequest(data: _UNKNOWN, socket: PacSeqSocket_Server)
         return console.error("Attempted chat group join request with invalid session ID = " + data.sessionId);
     }
 
-    var waitPool = MoocchatWaitPool.GetPoolWith(session);
+    // Can't join into pool if already in chat group
+    if (session.chatGroup) {
+        return console.error(`Attempted chat group join request with session already in chat group; session ID = ${session.getId()}`);
+    }
+
+    var waitPool = MoocchatWaitPool.GetPoolWithQuizScheduleFrom(session);
+
+    // Can't join into pool if already in pool
+    if (waitPool.hasSession(session)) {
+        return console.error(`Attempted chat group join request with session already in pool; session ID = ${session.getId()}`);
+    }
+
     waitPool.addSession(session);
 
     broadcastPoolCountToBackupQueue__WaitPool(waitPool);
@@ -169,7 +180,7 @@ function handleChatGroupMessage(data: _UNKNOWN, socket: PacSeqSocket_Server) {
 function handleLoginLti(data: _UNKNOWN, socket: PacSeqSocket_Server) {
     function notifyClientOnError(err: _UNKNOWN) {
         // Reply direct to the user that sent the request as at this point no session is available
-        socketEmitWithLogging(socket, "loginFailure", (err && err.message) ? err.message : "Unexpected error");
+        socket.emit("loginFailure", (err && err.message) ? err.message : "Unexpected error");
     }
 
     // Callback chain
@@ -469,7 +480,7 @@ function handleLoginLti(data: _UNKNOWN, socket: PacSeqSocket_Server) {
 
     function notifyClientOfLogin(throwErr: _UNKNOWN, next: _UNKNOWN) {
         // Complete login by notifying client
-        socketEmitWithLogging(session.getSocket(), 'loginSuccess', {
+        session.getSocket().emit('loginSuccess', {
             sessionId: session.getId(),
             username: ltiUsername,
             quiz: {
@@ -508,7 +519,7 @@ function handleLogout(data: _UNKNOWN, socket: PacSeqSocket_Server) {
                 return console.error(err);
             }
 
-            socketEmitWithLogging(session.getSocket(), "logoutSuccess", {
+            session.getSocket().emit("logoutSuccess", {
                 sessionId: sessionId
             });
 
@@ -548,7 +559,7 @@ function handleTerminateSessions(data: _UNKNOWN, socket: PacSeqSocket_Server) {
             }
 
             // Reply direct to the user that sent the request as at this point no session is available
-            socketEmitWithLogging(socket, "terminateSessionsComplete");
+            socket.emit("terminateSessionsComplete");
         });
 }
 
@@ -579,7 +590,7 @@ function handleResearchConsentSet(data: _UNKNOWN, socket: PacSeqSocket_Server) {
                 return console.error(err);
             }
 
-            socketEmitWithLogging(session.getSocket(), "researchConsentSaved");
+            session.getSocket().emit("researchConsentSaved");
         });
 }
 
@@ -651,6 +662,12 @@ function answerSubmissionHandlerFactory(answerType: _UNKNOWN) {
             return;
         }
 
+        // Check that it hasn't already been saved
+        if (sessionAnswerObj &&
+            sessionAnswerObj._id) {
+            return;
+        }
+
         db_wrapper.questionResponse.create({
             optionId: (optionIdString ? mongojs.ObjectId(optionIdString) : null),
             justification: justification,
@@ -679,7 +696,7 @@ function answerSubmissionHandlerFactory(answerType: _UNKNOWN) {
                         return console.error(err);
                     }
 
-                    socketEmitWithLogging(session.getSocket(), onSuccessWebsocketEvent);
+                    session.getSocket().emit(onSuccessWebsocketEvent);
                 });
         });
     }
@@ -717,6 +734,13 @@ function saveSurvey(data: _UNKNOWN, socket: PacSeqSocket_Server) {
     if (!session) {
         return console.error("Attempted survey submission with invalid session ID = " + data.sessionId);
     }
+
+    // If survey already saved, don't save another
+    if (session.data.surveyTaken) {
+        return;
+    }
+
+    session.data.surveyTaken = true;
 
     db_wrapper.surveyResponse.create({
         sessionId: mongojs.ObjectId(session.getId()),
@@ -800,7 +824,7 @@ function handleBackupClientStatusRequest(data: _UNKNOWN, socket: PacSeqSocket_Se
     if (backupClientQueue) {
         backupClientQueue.broadcastQueueChange();
 
-        var waitPool = MoocchatWaitPool.GetPoolWith(session);
+        var waitPool = MoocchatWaitPool.GetPoolWithQuizScheduleFrom(session);
 
         if (waitPool) {
             broadcastPoolCountToBackupQueue__WaitPool(waitPool);
@@ -826,96 +850,98 @@ function handleSessionSocketResync(data: _UNKNOWN, socket: PacSeqSocket_Server) 
 
 // Socket logging receive/emit proxy functions
 
-function registerSocketEventWithLoggingFactory(socket: PacSeqSocket_Server) {
-    var eventList: _UNKNOWN = [];
+// function registerSocketEventWithLoggingFactory(socket: PacSeqSocket_Server) {
+//     var eventList: _UNKNOWN = [];
 
-    return function(event: _UNKNOWN, handler: _UNKNOWN) {
-        if (eventList.indexOf(event) < 0) {
-            socket.on(event, function(data: _UNKNOWN) {
-                var loggedData = [
-                    'socket.io/' + socket.id,
-                    'INBOUND',
-                    '[' + event + ']'
-                ];
+//     return function(event: _UNKNOWN, handler: _UNKNOWN) {
+//         if (eventList.indexOf(event) < 0) {
+//             socket.on(event, function(data: _UNKNOWN) {
+//                 var loggedData = [
+//                     'socket.io/' + socket.id,
+//                     'INBOUND',
+//                     '[' + event + ']'
+//                 ];
 
-                if (typeof data !== "undefined") {
-                    loggedData.push(data);
-                }
+//                 if (typeof data !== "undefined") {
+//                     loggedData.push(data);
+//                 }
 
-                console.log.apply(undefined, loggedData);
-            });
+//                 console.log.apply(undefined, loggedData);
+//             });
 
-            eventList.push(event);
-        }
+//             eventList.push(event);
+//         }
 
-        socket.on(event, handler);
-    }
-}
+//         socket.on(event, handler);
+//     }
+// }
 
-function socketEmitWithLogging(socket: PacSeqSocket_Server, event: _UNKNOWN, data?: _UNKNOWN) {
-    var loggedData = [
-        'socket.io/' + socket.id,
-        'OUTBOUND',
-        '[' + event + ']'
-    ];
+// function socketEmitWithLogging(socket: PacSeqSocket_Server, event: _UNKNOWN, data?: _UNKNOWN) {
+//     var loggedData = [
+//         'socket.io/' + socket.id,
+//         'OUTBOUND',
+//         '[' + event + ']'
+//     ];
 
-    if (typeof data !== "undefined") {
-        loggedData.push(data);
-    }
+//     if (typeof data !== "undefined") {
+//         loggedData.push(data);
+//     }
 
-    console.log.apply(undefined, loggedData);
+//     console.log.apply(undefined, loggedData);
 
-    socket.emit(event, data);
-}
+//     socket.emit(event, data);
+// }
 
 io.sockets.on('connection', function(_socket: _UNKNOWN) {
     console.log(`socket.io/${_socket.id} CONNECTION`);
 
     // Wrap socket with PacSeqSocket
     const socket = new PacSeqSocket_Server(_socket);
+    socket.enableInboundLogging();
+    socket.enableOutboundLogging();
 
     /// Registration of socket event handlers
-    var registerSocketEventWithLogging = registerSocketEventWithLoggingFactory(socket);
+    // var registerSocketEventWithLogging = registerSocketEventWithLoggingFactory(socket);
 
     /* On websocket disconnect */
-    registerSocketEventWithLogging('disconnect', disconnect);
+    socket.on('disconnect', disconnect);
 
     /* Submission of answers and surveys */
-    registerSocketEventWithLogging("answerSubmissionInitial", function(data: _UNKNOWN) { handleAnswerSubmissionInitial(data, socket); });
-    registerSocketEventWithLogging("answerSubmissionFinal", function(data: _UNKNOWN) { handleAnswerSubmissionFinal(data, socket); });
-    registerSocketEventWithLogging("submitSurvey", function(data: _UNKNOWN) { saveSurvey(data, socket); });
+    socket.on("answerSubmissionInitial", function(data: _UNKNOWN) { handleAnswerSubmissionInitial(data, socket); });
+    socket.on("answerSubmissionFinal", function(data: _UNKNOWN) { handleAnswerSubmissionFinal(data, socket); });
+    socket.on("submitSurvey", function(data: _UNKNOWN) { saveSurvey(data, socket); });
 
     /* Log ins */
-    registerSocketEventWithLogging("loginLti", function(data: _UNKNOWN) { handleLoginLti(data, socket); });
-    registerSocketEventWithLogging("researchConsentSet", function(data: _UNKNOWN) { handleResearchConsentSet(data, socket); });
-    registerSocketEventWithLogging("logout", function(data: _UNKNOWN) { handleLogout(data, socket); });
-    registerSocketEventWithLogging("terminateSessions", function(data: _UNKNOWN) { handleTerminateSessions(data, socket); });
+    socket.on("loginLti", function(data: _UNKNOWN) { handleLoginLti(data, socket); });
+    socket.on("researchConsentSet", function(data: _UNKNOWN) { handleResearchConsentSet(data, socket); });
+    socket.on("logout", function(data: _UNKNOWN) { handleLogout(data, socket); });
+    socket.on("terminateSessions", function(data: _UNKNOWN) { handleTerminateSessions(data, socket); });
     /* Chat group discussion */
-    registerSocketEventWithLogging("chatGroupJoinRequest", function(data: _UNKNOWN) { handleChatGroupJoinRequest(data, socket); });
-    registerSocketEventWithLogging("chatGroupMessage", function(data: _UNKNOWN) { handleChatGroupMessage(data, socket); });
-    registerSocketEventWithLogging("chatGroupQuitStatusChange", function(data: _UNKNOWN) { handleChatGroupQuitStatusChange(data, socket); });
+    socket.on("chatGroupJoinRequest", function(data: _UNKNOWN) { handleChatGroupJoinRequest(data, socket); });
+    socket.on("chatGroupMessage", function(data: _UNKNOWN) { handleChatGroupMessage(data, socket); });
+    socket.on("chatGroupQuitStatusChange", function(data: _UNKNOWN) { handleChatGroupQuitStatusChange(data, socket); });
 
     /* Backup client */
-    // registerSocketEventWithLogging("backupClientLogout", function(data) { handleBackupClientLogout(data, socket); });
-    registerSocketEventWithLogging("backupClientEnterQueue", function(data: _UNKNOWN) { handleBackupClientEnterQueue(data, socket); });
-    registerSocketEventWithLogging("backupClientReturnToQueue", function(data: _UNKNOWN) { handleBackupClientReturnToQueue(data, socket); });
-    registerSocketEventWithLogging("backupClientStatusRequest", function(data: _UNKNOWN) { handleBackupClientStatusRequest(data, socket); });
+    // socket.on("backupClientLogout", function(data) { handleBackupClientLogout(data, socket); });
+    socket.on("backupClientEnterQueue", function(data: _UNKNOWN) { handleBackupClientEnterQueue(data, socket); });
+    socket.on("backupClientReturnToQueue", function(data: _UNKNOWN) { handleBackupClientReturnToQueue(data, socket); });
+    socket.on("backupClientStatusRequest", function(data: _UNKNOWN) { handleBackupClientStatusRequest(data, socket); });
 
 
 
-    registerSocketEventWithLogging("sessionSocketResync", function(data: _UNKNOWN) { handleSessionSocketResync(data, socket); });
+    socket.on("sessionSocketResync", function(data: _UNKNOWN) { handleSessionSocketResync(data, socket); });
 
 
 
     // No longer done here; see MoocchatBackupClientQueue#callToPool()
-    // registerSocketEventWithLogging("backupClientTransferConfirm", function(data) { handleBackupClientTransferConfirm(data, socket); });
+    // socket.on("backupClientTransferConfirm", function(data) { handleBackupClientTransferConfirm(data, socket); });
 
     /* Testing */
     // socket.on('loadTestReq', loadTest);
     // socket.on('saveLoadTestResults', saveLoadTestResults);
 
     // Signal back to client/test framework that socket is connected
-    // socketEmitWithLogging(socket, 'connected');
+    // socket.emit(socket, 'connected');
 
 
 
