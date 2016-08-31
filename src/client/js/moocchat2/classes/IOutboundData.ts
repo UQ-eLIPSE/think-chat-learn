@@ -31,6 +31,9 @@ export interface ChatGroupSendMessage extends ChatGroupResponse {
 export interface ChatGroupQuitStatusChange extends ChatGroupResponse {
     quitStatus: boolean;
 }
+export interface ChatGroupTypingNotification extends ChatGroupResponse {
+    isTyping: boolean;
+}
 
 export interface BackupClientAnswer extends AnswerResponse { }
 export interface BackupClientReturnToQueue extends SessionResponse { }

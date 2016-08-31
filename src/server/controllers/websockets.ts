@@ -108,6 +108,31 @@ function handleChatGroupJoinRequest(data: _UNKNOWN, socket: PacSeqSocket_Server)
  * data = {
  *      groupId {string}
  *      sessionId {string}
+ *      isTyping {boolean}
+ * }
+ * 
+ * @param {any} data
+ */
+function handleChatGroupTypingNotification(data: _UNKNOWN, socket: PacSeqSocket_Server) {
+    var session = MoocchatUserSession.GetSession(data.sessionId, socket);
+
+    if (!session) {
+        return console.error("Attempted chat group typing notification with invalid session ID = " + data.sessionId);
+    }
+
+    var chatGroup = session.chatGroup;
+
+    if (!chatGroup) {
+        return console.error("Could not find chat group for session ID = " + data.sessionId);
+    }
+
+    chatGroup.setTypingState(session, data.isTyping);
+}
+
+/**
+ * data = {
+ *      groupId {string}
+ *      sessionId {string}
  *      quitStatus {boolean}
  * }
  * 
@@ -120,7 +145,11 @@ function handleChatGroupQuitStatusChange(data: _UNKNOWN, socket: PacSeqSocket_Se
         return console.error("Attempted chat group quit request with invalid session ID = " + data.sessionId);
     }
 
-    var chatGroup = MoocchatChatGroup.GetChatGroupWith(session);
+    var chatGroup = session.chatGroup;
+
+    if (!chatGroup) {
+        return console.error("Could not find chat group for session ID = " + data.sessionId);
+    }
 
     if (data.quitStatus) {
         chatGroup.quitSession(session);
@@ -143,7 +172,11 @@ function handleChatGroupMessage(data: _UNKNOWN, socket: PacSeqSocket_Server) {
         return console.error("Attempted chat group message from invalid session ID = " + data.sessionId);
     }
 
-    var chatGroup = MoocchatChatGroup.GetChatGroupWith(session);
+    var chatGroup = session.chatGroup;
+
+    if (!chatGroup) {
+        return console.error("Could not find chat group for session ID = " + data.sessionId);
+    }
 
     db_wrapper.chatMessage.create({
         content: data.message,
@@ -920,6 +953,7 @@ io.sockets.on('connection', function(_socket: _UNKNOWN) {
     socket.on("chatGroupJoinRequest", function(data: _UNKNOWN) { handleChatGroupJoinRequest(data, socket); });
     socket.on("chatGroupMessage", function(data: _UNKNOWN) { handleChatGroupMessage(data, socket); });
     socket.on("chatGroupQuitStatusChange", function(data: _UNKNOWN) { handleChatGroupQuitStatusChange(data, socket); });
+    socket.on("chatGroupTypingNotification", function(data: _UNKNOWN) { handleChatGroupTypingNotification(data, socket); });
 
     /* Backup client */
     // socket.on("backupClientLogout", function(data) { handleBackupClientLogout(data, socket); });

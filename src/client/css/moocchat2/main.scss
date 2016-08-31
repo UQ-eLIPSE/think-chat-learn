@@ -884,7 +884,32 @@ button.link:active {
                 background: $client-3-colour;
             }
         }
+
+        &.typing-notification {
+            color: #777;
+
+            &::after {
+                background: #777;
+                content: "...";
+
+                animation: typing-notification-tripledot-colourchange 3s infinite ease-in-out;
+                -webkit-animation: typing-notification-tripledot-colourchange 3s infinite ease-in-out;
+            }
+        }
     }
+}    
+
+
+@keyframes typing-notification-tripledot-colourchange {
+    0%   {color: rgba(255,255,255,1);}
+    50%  {color: rgba(255,255,255,0);}
+    100%  {color: rgba(255,255,255,1);}
+}
+
+@-webkit-keyframes typing-notification-tripledot-colourchange {
+    0%   {color: rgba(255,255,255,1);}
+    50%  {color: rgba(255,255,255,0);}
+    100%  {color: rgba(255,255,255,1);}
 }
 
 #chat-clone {

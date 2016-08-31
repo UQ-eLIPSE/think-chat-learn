@@ -27,6 +27,9 @@ export const WebsocketEvents = {
         /** IInboundData.ChatGroupQuitStatusChange */
         CHAT_GROUP_QUIT_STATUS_CHANGE: "chatGroupQuitChange",
 
+        /** IInboundData.ChatGroupTypingNotification */
+        CHAT_GROUP_TYPING_NOTIFICATION: "chatGroupTypingNotification",
+
         /** IInboundData.BackupClientEnterQueueState */
         BACKUP_CLIENT_ENTER_QUEUE_STATE: "backupClientEnterQueueState",
 
@@ -64,6 +67,9 @@ export const WebsocketEvents = {
 
         /** IOutboundData.ChatGroupQuitStatusChange */
         CHAT_GROUP_QUIT_STATUS_CHANGE: "chatGroupQuitStatusChange",
+
+        /** IOutboundData.ChatGroupTypingNotification */
+        CHAT_GROUP_TYPING_NOTIFICATION: "chatGroupTypingNotification",
 
         /** IOutboundData.RevisedAnswer */
         REVISED_ANSWER_SUBMISSION: "answerSubmissionFinal",

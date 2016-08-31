@@ -51,6 +51,9 @@ export interface ChatGroupQuitStatusChange {
     clientIndex: number;
     quitStatus: boolean;
 }
+export interface ChatGroupTypingNotification {
+    clientIndicies: number[]
+}
 
 export type BackupClientEnterQueueState = SuccessState;
 export interface ClientPoolCountUpdate {

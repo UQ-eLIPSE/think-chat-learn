@@ -11,9 +11,10 @@ export class MoocchatChatGroup {
 
     private _sessions: MoocchatUserSession[] = [];
     private _quitSessions: MoocchatUserSession[] = [];
-    
+    private _typingSessions: MoocchatUserSession[] = [];
+
     private _id: string;
-    
+
     public static GetChatGroup(chatGroupId: string) {
         return MoocchatChatGroup.ChatGroups[chatGroupId];
     }
@@ -98,6 +99,27 @@ export class MoocchatChatGroup {
             message: message,
             timestamp: Date.now()
         });
+
+        // Remove the session that just sent the message from the typing sessions array
+        this.setTypingState(session, false);
+    }
+
+    public setTypingState(session: MoocchatUserSession, isTyping: boolean) {
+        const sessionIndex = this._typingSessions.indexOf(session);
+
+        if (isTyping && sessionIndex < 0) {
+            this._typingSessions.push(session);
+        } else if (!isTyping && sessionIndex > -1) {
+            this._typingSessions.splice(sessionIndex, 1);
+        }
+
+        this.updateTypingNotifications();
+    }
+
+    private updateTypingNotifications() {
+        this.broadcast("chatGroupTypingNotification", {
+            clientIndicies: this._typingSessions.map(session => this.getSessionIndex(session))
+        });
     }
 
     private broadcastQuit(quittingSession: MoocchatUserSession, quitStatus: boolean = true) {
@@ -118,6 +140,8 @@ export class MoocchatChatGroup {
     }
 
     public quitSession(quittingSession: MoocchatUserSession) {
+        this.setTypingState(quittingSession, false);
+        
         // You must broadcast the quit BEFORE actually quitting
         this.broadcastQuit(quittingSession);
 
