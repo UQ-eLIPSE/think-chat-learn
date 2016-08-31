@@ -330,7 +330,7 @@ export class PacSeqSocket<SocketType> {
 
         const datPacket: IPacSeqSocketPacket.Packet.DAT = this.sequencer.next();
 
-        if (attempt > 500) {
+        if (datPacket && attempt > 500) {
             console.error(`PacSeqSocket/${this.id} STOPPING - ATTEMPT LIMIT EXCEEDED - SEQ ${datPacket.seq} ATTEMPT ${attempt}`);
             return;
         }

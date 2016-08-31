@@ -51,13 +51,13 @@ export class MoocchatUserSession {
         const sessionId = session.getId();
 
         // Remove session from other objects
-        var waitPool = MoocchatWaitPool.GetPoolWith(session);
+        var waitPool = MoocchatWaitPool.GetPoolWithQuizScheduleFrom(session);
 
         if (waitPool) {
             waitPool.removeSession(session);
         }
 
-        var chatGroup = MoocchatChatGroup.GetChatGroupWith(session);
+        var chatGroup = session.chatGroup;
 
         if (chatGroup) {
             chatGroup.quitSession(session);
@@ -187,5 +187,14 @@ export class MoocchatUserSession {
 
     private removeFromStore() {
         MoocchatUserSession.UserSessionStore.remove(this);
+    }
+
+
+
+
+
+
+    public get chatGroup() {
+        return MoocchatChatGroup.GetChatGroupWith(this);
     }
 }

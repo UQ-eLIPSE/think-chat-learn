@@ -87,11 +87,17 @@ function handleChatGroupJoinRequest(data: _UNKNOWN, socket: PacSeqSocket_Server)
     }
 
     // Can't join into pool if already in chat group
-    if (MoocchatChatGroup.GetChatGroupWith(session)) {
+    if (session.chatGroup) {
         return console.error(`Attempted chat group join request with session already in chat group; session ID = ${session.getId()}`);
     }
 
-    var waitPool = MoocchatWaitPool.GetPoolWith(session);
+    var waitPool = MoocchatWaitPool.GetPoolWithQuizScheduleFrom(session);
+
+    // Can't join into pool if already in pool
+    if (waitPool.hasSession(session)) {
+        return console.error(`Attempted chat group join request with session already in pool; session ID = ${session.getId()}`);
+    }
+
     waitPool.addSession(session);
 
     broadcastPoolCountToBackupQueue__WaitPool(waitPool);
@@ -805,7 +811,7 @@ function handleBackupClientStatusRequest(data: _UNKNOWN, socket: PacSeqSocket_Se
     if (backupClientQueue) {
         backupClientQueue.broadcastQueueChange();
 
-        var waitPool = MoocchatWaitPool.GetPoolWith(session);
+        var waitPool = MoocchatWaitPool.GetPoolWithQuizScheduleFrom(session);
 
         if (waitPool) {
             broadcastPoolCountToBackupQueue__WaitPool(waitPool);
