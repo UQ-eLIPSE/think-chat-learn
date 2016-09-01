@@ -63,21 +63,9 @@ export class MoocchatBackupClientQueue {
         this.getSessions().forEach((session) => {
             const socket = session.getSocket();
 
-            // ======= Logging starts here =======
-
-            var loggedData = [
-                'socket.io/' + socket.id,
-                'OUTBOUND',
-                '[' + event + ']'
-            ];
-
-            if (typeof data !== "undefined") {
-                loggedData.push(data);
+            if (!socket) {
+                return;
             }
-
-            console.log.apply(undefined, loggedData);
-
-            // ======= Logging ends here =======
 
             socket.emit(event, data);
         });
@@ -102,6 +90,8 @@ export class MoocchatBackupClientQueue {
             return;
         }
 
+        console.log(`MoocchatBackupClientQueue(${this.getQuizSessionId()}) ADDING Session ${session.getId()}`);
+
         this._sessions.push(session);
 
         this.broadcastQueueChange();
@@ -117,6 +107,8 @@ export class MoocchatBackupClientQueue {
         if (sessionIndex < 0) {
             return;
         }
+
+        console.log(`MoocchatBackupClientQueue(${this.getQuizSessionId()}) REMOVING Session ${session.getId()}`);
 
         const removedSession = this._sessions.splice(sessionIndex, 1)[0];
 
@@ -135,35 +127,52 @@ export class MoocchatBackupClientQueue {
      * @return {boolean} Whether call has been made and we are waiting for a backup client to pop over to the supplied wait pool
      */
     public callToPool(waitPool: MoocchatWaitPool) {
-        if (this.numberOfSessions() === 0) {
-            return false;
-        }
-
         // If already called, then return true while we wait
         if (this.sessionToCall) {
             return true;
         }
 
         // Set session to call
-        this.sessionToCall = this._sessions[0];
+        const sessionToCall = this._sessions[0];
+
+        if (!sessionToCall) {
+            return false;
+        }
+
+        const sessionToCallSocket = sessionToCall.getSocket();
+
+        if (!sessionToCallSocket) {
+            return false;
+        }
+
+        // If we can get the session then store as session to call
+        this.sessionToCall = sessionToCall;
+
 
         const noResponseFunc = () => {
-            const sessionToCall = this.sessionToCall;
+            const sessionToCallSocket = sessionToCall.getSocket();
 
-            if (sessionToCall) {
-                sessionToCall.getSocket().off("backupClientTransferConfirm", responseFunc);
-                sessionToCall.getSocket().emit("backupClientEjected");
-                this.removeSession(sessionToCall);
+            if (sessionToCallSocket) {
+                sessionToCallSocket.off("backupClientTransferConfirm", responseFunc);
+                sessionToCallSocket.emit("backupClientEjected");
             }
+
+            this.removeSession(sessionToCall);
 
             // Run again
             this.callToPool(waitPool);
         }
 
         const responseFunc = () => {
-            const sessionToCall = this.sessionToCall;
+            const sessionToCallSocket = sessionToCall.getSocket();
+            
+            if (sessionToCallSocket) {
+                sessionToCallSocket.off("backupClientTransferConfirm", responseFunc);
+            }
 
             clearTimeout(this.callNoResponseTimeoutHandle);
+
+            console.log(`MoocchatBackupClientQueue(${this.getQuizSessionId()}) MOVING TO POOL Session ${sessionToCall.getId()}`);
 
             this.removeSession(sessionToCall);
             waitPool.addSession(sessionToCall);
@@ -172,9 +181,13 @@ export class MoocchatBackupClientQueue {
         // If no response then timeout handler will run to move backup client queue on
         this.callNoResponseTimeoutHandle = setTimeout(noResponseFunc, global.conf.backupClient.callConfirmTimeoutMs);
 
-        this.sessionToCall.getSocket().once("backupClientTransferConfirm", responseFunc);
+        // Handle confirm response
+        sessionToCallSocket.once("backupClientTransferConfirm", responseFunc);
 
-        this.sessionToCall.getSocket().emit("backupClientTransferCall");
+
+        // Send call out
+        console.log(`MoocchatBackupClientQueue(${this.getQuizSessionId()}) CALLING Session ${sessionToCall.getId()}`);
+        sessionToCallSocket.emit("backupClientTransferCall");
 
         return true;
     }

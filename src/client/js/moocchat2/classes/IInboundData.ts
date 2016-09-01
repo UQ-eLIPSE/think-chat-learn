@@ -57,6 +57,9 @@ export interface ChatGroupTypingNotification {
 
 export type BackupClientEnterQueueState = SuccessState;
 export interface ClientPoolCountUpdate {
+    backupClientQueue: {
+        quizScheduleId: string;
+    };
     numberOfClients: number;
 }
 export interface BackupClientQueueUpdate {

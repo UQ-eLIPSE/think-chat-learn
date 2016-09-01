@@ -36,7 +36,7 @@ export class CombinedPageManager extends PageManager {
 
         this.combinedPageXHR.done(() => {
             // Find the requested page element
-            let requestedPageElem = this.combinedPageDOM[name];
+            const requestedPageElem = this.combinedPageDOM[name];
 
             if (!requestedPageElem) {
                 // throw new Error("Page not found");
@@ -44,7 +44,8 @@ export class CombinedPageManager extends PageManager {
             }
 
             // Render this requested page element from the combined page
-            this.render(name, requestedPageElem, loadStartTime, onDone);
+            // MUST clone the element node, otherwise page reloads point to the same DOM element
+            this.render(name, requestedPageElem.cloneNode(true) as Element, loadStartTime, onDone);
         });
     }
 }

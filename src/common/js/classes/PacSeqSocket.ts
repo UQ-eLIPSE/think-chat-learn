@@ -162,10 +162,10 @@ export class PacSeqSocket<SocketType> {
                 }
 
                 console.log.apply(undefined, loggedData);
-            }, false);
+            });
         }
 
-        this.eventManager.on(event, fn, false);
+        this.eventManager.on(event, fn);
     }
 
     public once(event: string, fn: (data?: any) => any) {

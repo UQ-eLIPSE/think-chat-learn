@@ -635,6 +635,9 @@ function broadcastPoolCountToBackupQueue__WaitPool(waitPool: _UNKNOWN) {
     var backupClientQueue = MoocchatBackupClientQueue.GetQueue(quizSessionId);
 
     backupClientQueue.broadcast("clientPoolCountUpdate", {
+        backupClientQueue: {
+            quizScheduleId: backupClientQueue.getQuizSessionId()
+        },
         numberOfClients: waitPool.getSize()
     });
 }

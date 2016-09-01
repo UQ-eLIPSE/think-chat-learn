@@ -36,9 +36,9 @@ export class EventBox {
      * 
      * @param {string} eventName
      * @param {EventBoxCallback} callback
-     * @param {boolean} runCallbackOnBindIfDispatched Run callback when bound to an event, if event has already previously occurred. Default: `true`.
+     * @param {boolean} runCallbackOnBindIfDispatched Run callback when bound to an event, if event has already previously occurred. Default: `false`.
      */
-    public on(eventName: string, callback: EventBox_Callback, runCallbackOnBindIfDispatched: boolean = true) {
+    public on(eventName: string, callback: EventBox_Callback, runCallbackOnBindIfDispatched: boolean = false) {
         const registeredCallbacks = this.eventCallbacks[eventName];
 
         if (!registeredCallbacks) {
