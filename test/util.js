@@ -4,8 +4,8 @@
  */
 
 var assert = require('chai').assert;
-var db = require('../build/server/controllers/database');
-var util = require('../build/server/helpers/util.js');
+var db = require('../build/server/js/controllers/database');
+var util = require('../build/server/js/helpers/util.js');
 
 describe('Utility', function() {
    describe('objectLength', function() {

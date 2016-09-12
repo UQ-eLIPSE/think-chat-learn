@@ -1,6 +1,6 @@
 declare type _UNKNOWN = any;
 
-import {PacSeqSocket_Server} from "../../common/js/classes/PacSeqSocket_Server";
+import {PacSeqSocket_Server} from "../../../common/js/classes/PacSeqSocket_Server";
 
 import {MoocchatUserSession} from "../models/MoocchatUserSession";
 import {MoocchatWaitPool} from "../models/MoocchatWaitPool";

@@ -1,4 +1,4 @@
-/// <reference path="../../../server/index.d.ts" />
+/// <reference path="../../../server/js/index.d.ts" />
 
 import {PacSeqSocket} from "./PacSeqSocket";
 

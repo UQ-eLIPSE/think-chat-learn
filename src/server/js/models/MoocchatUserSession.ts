@@ -10,7 +10,7 @@ import {IDB_QuestionOption} from "./database/QuestionOption";
 import {IDB_QuizSchedule} from "./database/QuizSchedule";
 import {IDB_Survey} from "./database/Survey";
 
-import {PacSeqSocket_Server} from "../../common/js/classes/PacSeqSocket_Server";
+import {PacSeqSocket_Server} from "../../../common/js/classes/PacSeqSocket_Server";
 
 export class MoocchatUserSession {
     private static UserSessionStore: MoocchatUserSessionStore = new MoocchatUserSessionStore();

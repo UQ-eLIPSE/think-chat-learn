@@ -18,7 +18,7 @@
     "build_client_combined_html": "node ./util/combineHTML.js",
 
     "build_client": "npm run build_client_main && npm run build_client_backup_client && npm run build_client_css && npm run build_client_combined_html",
-    "build_server": "tsc --project ./src/server",
+    "build_server": "tsc --project ./src/server/js",
     "build": "npm run clean && npm run build_client && npm run build_server"
   },
   "author": "eLIPSE",

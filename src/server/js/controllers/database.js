@@ -2,7 +2,7 @@
  * Handles all writing and reading to the database
  * @author eLIPSE
  */
-var conf = require('../../../config/conf.json');
+var conf = require('../../../../config/conf.json');
 
 var collections = [];
 var tables = require("../models/database/Tables").tables;

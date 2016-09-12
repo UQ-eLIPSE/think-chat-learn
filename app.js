@@ -37,8 +37,8 @@ global.io = io;
 
 console.log('Socket.io server listening on port ' + conf.portNum);
 
-var database = require('./build/server/controllers/database');
-var websockets = require('./build/server/controllers/websockets');
+var database = require('./build/server/js/controllers/database');
+var websockets = require('./build/server/js/controllers/websockets');
 
 // Use ejs for templating on pages
 app.set("view engine", "ejs");

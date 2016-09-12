@@ -2,7 +2,7 @@
  * Seeds the database with testing data, used for development
  */
 
-var db = require("../build/server/controllers/database");
+var db = require("../build/server/js/controllers/database");
 var mongojs = require("mongojs");
 
 var dataFolder = "./data";

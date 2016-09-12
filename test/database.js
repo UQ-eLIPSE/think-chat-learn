@@ -3,7 +3,7 @@
  *  can create, read, update and delete
  */
 var assert = require('chai').assert;
-var db = require('../build/server/controllers/database');
+var db = require('../build/server/js/controllers/database');
 
 describe('Database', function() {
 

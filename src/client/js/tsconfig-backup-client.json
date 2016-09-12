@@ -10,7 +10,7 @@
         "outFile": "../../../public/js/moocchat2/backup-client.js"
     },
     "files": [
-        "./typings/index.d.ts",
+        "./index.d.ts",
         "./moocchat2/backup-client.ts"
     ]
 }

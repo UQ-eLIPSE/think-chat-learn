@@ -7,8 +7,8 @@
 var assert = require("chai").assert;
 
 var io = global.io;
-var Client = require("../../../build/server/models/client");
-var BackupClientQueue = require("../../../build/server/models/BackupClientQueue");
+var Client = require("../../../build/server/js/models/client");
+var BackupClientQueue = require("../../../build/server/js/models/BackupClientQueue");
 
 
 describe("server/models/BackupClientQueue", function() {
