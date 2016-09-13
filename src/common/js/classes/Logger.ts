@@ -9,10 +9,13 @@ export class Logger {
     private static LoggerInstance: Logger;
 
 
-    public static Get(enableLogProxy: boolean = true, enableTimestamp: boolean = false) {
+    public static Get(config?: LoggerConfig) {
         if (!Logger.LoggerInstance) {
-            Logger.LoggerInstance = new Logger(enableLogProxy, enableTimestamp);
-            
+            if (!config) {
+                throw new Error("No configuration options given to initialise Logger");
+            }
+
+            Logger.LoggerInstance = new Logger(config.enableLogProxy, config.enableLogInMemory, config.enableTimestamp);
         }
 
         return Logger.LoggerInstance;
@@ -27,12 +30,17 @@ export class Logger {
 
 
     private timestampOn: boolean = false;
+    private logInMemory: boolean = false;
 
     private log: LoggerData[] = [];
 
-    constructor(enableLogProxy: boolean, enableTimestamp: boolean) {
+    constructor(enableLogProxy: boolean = false, enableLogInMemory: boolean = false, enableTimestamp: boolean = false) {
         if (enableLogProxy) {
             this.enableLogProxy();
+        }
+
+        if (enableLogInMemory) {
+            this.enableLogInMemory();
         }
 
         if (enableTimestamp) {
@@ -43,15 +51,17 @@ export class Logger {
     private loggerProxyFactory(func: Function, type: "log" | "error") {
         return (...args: any[]) => {
             // Log arguments as they are
-            this.log.push({
-                data: args,
-                timestamp: new Date(),
-                type: type
-            });
+            if (this.logInMemory) {
+                this.log.push({
+                    data: args,
+                    timestamp: new Date(),
+                    type: type
+                });
+            }
 
             // To prevent the Array#unshift() modifying the `args` array (which would affect the log),
             // it's put through a function apply to unwrap the array.
-            
+
             // Note however that any objects referenced in `args` originally are still at risk of being
             // modified, so the log may still have stuff in it that aren't preserved as it was at the
             // time of logging.
@@ -89,6 +99,16 @@ export class Logger {
         return this;
     }
 
+    public enableLogInMemory() {
+        this.logInMemory = true;
+        return this;
+    }
+
+    public disableLogInMemory() {
+        this.logInMemory = false;
+        return this;
+    }
+
     public enableTimestamp() {
         this.timestampOn = true;
         return this;
@@ -102,10 +122,43 @@ export class Logger {
     public getLog() {
         return this.log;
     }
+
+    public clearLog() {
+        this.log = [];
+        return this;
+    }
 }
 
 export interface LoggerData {
     data: any[];
     timestamp: Date;
     type: "log" | "error";
+}
+
+export interface LoggerConfig {
+    /**
+     * Configures whether Logger should inject itself as proxy in console.log() and .error() functions.
+     * 
+     * @type {boolean}
+     * @memberOf LoggerConfig
+     */
+    enableLogProxy?: boolean;
+
+    /**
+     * Configures whether Logger should keep a copy of its log in memory.
+     * 
+     * @type {boolean}
+     * @memberOf LoggerConfig
+     */
+    enableLogInMemory?: boolean;
+
+    /**
+     * Configures whether Logger should prepend a timestamp for console messages.
+     * 
+     * Note that this may interfere with formatted console output.
+     * 
+     * @type {boolean}
+     * @memberOf LoggerConfig
+     */
+    enableTimestamp?: boolean;
 }

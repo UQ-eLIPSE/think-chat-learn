@@ -8,41 +8,11 @@
         "preserveConstEnums": true,
         "sourceMap": true,
 
-        "allowJs": true,
-
         "outDir": "../../../build",
         "rootDir": "../../"
     },
     "files": [
         "./index.d.ts",
-
-        "./controllers/database.js",
-        "./controllers/websockets.ts",
-
-        "./models/DatabaseWrapper.ts",
-        "./models/ILTIData.ts",
-        "./models/ILTISignatureVerifyInfo.ts",
-        "./models/LTIProcessor.ts",
-        "./models/LTIUtil.ts",
-        "./models/MoocchatBackupClientQueue.ts",
-        "./models/MoocchatChatGroup.ts",
-        "./models/MoocchatUserSession.ts",
-        "./models/MoocchatUserSessionData.ts",
-        "./models/MoocchatUserSessionStore.ts",
-        "./models/MoocchatWaitPool.ts",
-        "./models/NonceStore.ts",
-
-        "./models/database/ChatMessage.ts",
-        "./models/database/Question.ts",
-        "./models/database/QuestionOption.ts",
-        "./models/database/QuestionOptionCorrect.ts",
-        "./models/database/QuestionResponse.ts",
-        "./models/database/QuizSchedule.ts",
-        "./models/database/Survey.ts",
-        "./models/database/SurveyResponse.ts",
-        "./models/database/Tables.ts",
-        "./models/database/User.ts",
-        "./models/database/UserSession.ts",
-        "./models/database/VirtServerBackups.ts"
+        "./main.ts"
     ]    
 }

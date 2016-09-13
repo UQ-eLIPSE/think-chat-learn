@@ -70,7 +70,7 @@ export class DatabaseWrapper<IData> {
      * @param {Object} data
      * @param {Function} callback
      */
-    public update(query: Object, data: IData, callback?: Function) {
+    public update(query: Object, data: IData | IDB_MongoOperations<IData>, callback?: Function) {
         this.table.update(query, data, function(err: any, res: any) {
             if (err) {
                 console.log("Failed to update data: " + err);
@@ -106,4 +106,9 @@ export class DatabaseWrapper<IData> {
     public init(database: any) {
         this.db = database;
     }
+}
+
+
+interface IDB_MongoOperations<IData> {
+    $set?: IData;
 }

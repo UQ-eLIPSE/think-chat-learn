@@ -1,10 +1,4 @@
-declare const global: any;
-
 import {MoocchatUserSession} from "./MoocchatUserSession";
-
-
-const io: SocketIO.Server = global.io;
-
 
 export class MoocchatChatGroup {
     private static ChatGroups: { [chatGroupId: string]: MoocchatChatGroup } = {};

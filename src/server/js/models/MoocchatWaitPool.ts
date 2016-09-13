@@ -1,4 +1,4 @@
-declare const global: any;
+import {ServerConf} from "../classes/conf/ServerConf";
 
 import {IDB_QuestionOption} from "./database/QuestionOption";
 
@@ -9,8 +9,8 @@ import {MoocchatBackupClientQueue} from "./MoocchatBackupClientQueue";
  * Replacement for ClientAnswerPool
  */
 export class MoocchatWaitPool {
-    private static DesiredGroupSize: number = global.conf.chat.groups.desiredSize;
-    private static DesiredMaxWaitTime: number = global.conf.chat.groups.formationTimeoutMs;
+    private static DesiredGroupSize: number = ServerConf.chat.groups.desiredSize;
+    private static DesiredMaxWaitTime: number = ServerConf.chat.groups.formationTimeoutMs;
     private static WaitPools: {[quizSessionId: string]: MoocchatWaitPool} = {};
 
     private _quizSessionId: string;

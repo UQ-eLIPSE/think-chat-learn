@@ -1,4 +1,4 @@
-import {tables} from "./Tables";
+import {tables} from "../../classes/data/Tables";
 import {DatabaseWrapper} from "../DatabaseWrapper";
 
 const tableName = tables.QUESTION;

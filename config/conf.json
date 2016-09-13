@@ -1,6 +1,13 @@
 {
     "portNum": 8080,
     "database": "localhost/moocchatDB",
+    "http": {
+        "maxSockets": 65000
+    },
+    "socketIo": {
+        "pingInterval": 5000,
+        "pingTimeout": 16000
+    },
     "express": {
         "serveStaticContent": true
     },

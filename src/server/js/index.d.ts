@@ -14,3 +14,9 @@ declare module "oauth-signature" {
 }
 
 declare type ObjectId = any;
+
+declare module "mongojs" {
+    // Empty module definition as we don't have proper type definitions for mongojs
+    const _: any;
+    export = _;
+}

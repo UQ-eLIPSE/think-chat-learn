@@ -1,11 +1,7 @@
-declare const global: any;
+import {ServerConf} from "../classes/conf/ServerConf";
 
 import {MoocchatUserSession} from "./MoocchatUserSession";
 import {MoocchatWaitPool} from "./MoocchatWaitPool";
-
-
-const io: SocketIO.Server = global.io;
-
 
 export class MoocchatBackupClientQueue {
     private static BackupClientQueues: { [quizSessionId: string]: MoocchatBackupClientQueue } = {};
@@ -179,7 +175,8 @@ export class MoocchatBackupClientQueue {
         }
 
         // If no response then timeout handler will run to move backup client queue on
-        this.callNoResponseTimeoutHandle = setTimeout(noResponseFunc, global.conf.backupClient.callConfirmTimeoutMs);
+        // TODO: Fix `any` type workaround
+        this.callNoResponseTimeoutHandle = <any>setTimeout(noResponseFunc, ServerConf.backupClient.callConfirmTimeoutMs);
 
         // Handle confirm response
         sessionToCallSocket.once("backupClientTransferConfirm", responseFunc);
