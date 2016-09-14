@@ -5,10 +5,10 @@ import {MoocchatWaitPool} from "./MoocchatWaitPool";
 import {MoocchatChatGroup} from "./MoocchatChatGroup";
 import {MoocchatBackupClientQueue} from "./MoocchatBackupClientQueue";
 
-import {IDB_Question} from "./database/Question";
-import {IDB_QuestionOption} from "./database/QuestionOption";
-import {IDB_QuizSchedule} from "./database/QuizSchedule";
-import {IDB_Survey} from "./database/Survey";
+import {IDB_Question} from "../classes/data/models/Question";
+import {IDB_QuestionOption} from "../classes/data/models/QuestionOption";
+import {IDB_QuizSchedule} from "../classes/data/models/QuizSchedule";
+import {IDB_Survey} from "../classes/data/models/Survey";
 
 import {PacSeqSocket_Server} from "../../../common/js/classes/PacSeqSocket_Server";
 

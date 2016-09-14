@@ -1,8 +1,8 @@
-import {IDB_Question} from "./database/Question";
-import {IDB_QuestionOption} from "./database/QuestionOption";
-import {IDB_QuestionResponse} from "./database/QuestionResponse";
-import {IDB_QuizSchedule} from "./database/QuizSchedule";
-import {IDB_Survey} from "./database/Survey";
+import {IDB_Question} from "../classes/data/models/Question";
+import {IDB_QuestionOption} from "../classes/data/models/QuestionOption";
+import {IDB_QuestionResponse} from "../classes/data/models/QuestionResponse";
+import {IDB_QuizSchedule} from "../classes/data/models/QuizSchedule";
+import {IDB_Survey} from "../classes/data/models/Survey";
 
 export class MoocchatUserSessionData {
     // These hold data from DB for a user session

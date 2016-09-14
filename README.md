@@ -1,13 +1,13 @@
-# MoocChat
+# MOOCchat
 
 ## Setting up
 
 1. Clone repo
-2. Install Nodejs and MongoDB
-3. Start Mongodb, usually the command to run is `mongod`
-4. Run `npm install` from within Moocchat folder
+2. Install Nodejs 0.10.x and MongoDB
+3. Start MongoDB, usually the command to run is `mongod`
+4. Run `npm install` from within MOOCchat folder
 5. Build source: `npm run build`
-6. Seed the database by running `npm run seed` (only needs to be done once)
+6. Seed the database by running `npm run seed` (only needs to be done once and will wipe existing tables)
 7. Ensure `/config/conf.json` file has correct configuration
 8. Run `npm start`
 
@@ -38,19 +38,10 @@ An absolute URL can also supplied.
 
 The site ID can be found in Piwik -> Administration (cog icon in top right) -> Websites.
 
-## Running tests
-Ensure mongo is running; then build; then run `npm run test`.
+## Tests
+All tests are currently broken. You can still find the old tests under `test`.
 
-### Tests available
-* server/
-    * models/*
-* client/
-    * classes/*
-* database^
-* server^
-* util^
-
-Those marked [^] are tests written before the MOOCchat rewrite for older code. Failures are to be expected.
+To execute tests: ensure mongo is running; then build; then run `npm run test`.
 
 ## Database dumps and restores
 `mongodump` is the command to use to dump the entirety of the database as BSON. The default directory is `./dump`, configurable by the `out` flag.

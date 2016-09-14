@@ -1,6 +1,6 @@
 {
     "portNum": 8080,
-    "database": "localhost/moocchatDB",
+    "database": "mongodb://localhost:27017/moocchatDB",
     "http": {
         "maxSockets": 65000
     },

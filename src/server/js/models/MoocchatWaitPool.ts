@@ -1,6 +1,6 @@
 import {ServerConf} from "../classes/conf/ServerConf";
 
-import {IDB_QuestionOption} from "./database/QuestionOption";
+import {IDB_QuestionOption} from "../classes/data/models/QuestionOption";
 
 import {MoocchatUserSession} from "./MoocchatUserSession";
 import {MoocchatBackupClientQueue} from "./MoocchatBackupClientQueue";

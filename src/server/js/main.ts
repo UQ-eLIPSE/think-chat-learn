@@ -1,5 +1,3 @@
-declare type _UNKNOWN = any;
-
 import {ServerConf} from "./classes/conf/ServerConf";
 
 import * as express from "express";

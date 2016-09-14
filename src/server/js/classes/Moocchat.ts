@@ -1,20 +1,33 @@
 declare type _UNKNOWN = any;
 
-import {IMoocchatIdentityInfo} from "../interfaces/IMoocchatIdentityInfo";
+declare type errorThrowFunc = (e: Error) => void;
+declare type nextFunc = () => void;
+declare type callbackChainElem = (throwErr: errorThrowFunc, next: nextFunc) => void;
+
+import {IServerConf} from "./conf/IServerConf";
+import {IMoocchatIdentityInfo} from "./auth/IMoocchatIdentityInfo";
 
 import * as crypto from "crypto";
+import * as mongodb from "mongodb";
 import * as SocketIO from "socket.io";
 
 import {ServerConf} from "./conf/ServerConf";
-import {IServerConf} from "../interfaces/IServerConf";
+import {Database} from "./data/Database";
 
+import {ChatMessage} from "./data/models/ChatMessage";
+import {User} from "./data/models/User";
+import {UserSession} from "./data/models/UserSession";
+import {QuizSchedule, IDB_QuizSchedule} from "./data/models/QuizSchedule";
+import {Question, IDB_Question} from "./data/models/Question";
+import {QuestionOption, IDB_QuestionOption} from "./data/models/QuestionOption";
+import {QuestionResponse, IDB_QuestionResponse} from "./data/models/QuestionResponse";
+import {Survey, IDB_Survey} from "./data/models/Survey";
+import {SurveyResponse} from "./data/models/SurveyResponse";
 
+import {ILTIData} from "./auth/lti/ILTIData";
 
 // This set of imports comes from old websockets.ts file
 // ====== START ======
-import {Databases} from "./data/Databases";
-import * as mongojs from "mongojs";
-
 import {PacSeqSocket_Server} from "../../../common/js/classes/PacSeqSocket_Server";
 
 import {MoocchatUserSession} from "../models/MoocchatUserSession";
@@ -30,18 +43,49 @@ import {LTIProcessor} from "./auth/lti/LTIProcessor";
 export class Moocchat {
     private socketIO: SocketIO.Server;
     private config: IServerConf;
+    private db: mongodb.Db;
 
     constructor(config: IServerConf, socketIO: SocketIO.Server) {
         this.config = config;
         this.socketIO = socketIO;
 
-        this.setupMoocchat();
+        // TODO: This needs to be changed into something easier to read and manage for a sequence of callbacks
+        this.setupDbConnection(this.setupMoocchat.bind(this));
+    }
+
+    private setupDbConnection(next?: Function) {
+        Database.Connect(ServerConf.database, (err, db) => {
+            if (err) {
+                console.error(err.message);
+                return;
+            }
+
+            this.db = db;
+
+            if (next) {
+                next();
+            }
+        });
     }
 
     private setupMoocchat() {
         const conf = ServerConf;
 
-        const db_wrapper = Databases;
+        const db_wrapper = {
+            chatMessage: new ChatMessage(this.db),
+
+            user: new User(this.db),
+            userSession: new UserSession(this.db),
+
+            quizSchedule: new QuizSchedule(this.db),
+
+            question: new Question(this.db),
+            questionOption: new QuestionOption(this.db),
+            questionResponse: new QuestionResponse(this.db),
+
+            survey: new Survey(this.db),
+            surveyResponse: new SurveyResponse(this.db),
+        }
 
         // LTI processor for incoming logins
         var ltiProcessor = new LTIProcessor(conf.lti.signingInfo);
@@ -53,14 +97,14 @@ export class Moocchat {
         // Recurring task
         var chatGroupFormationLoop = (function() {
             var timeBetweenChecks = conf.chat.groups.formationIntervalMs;
-            var timeoutHandles: _UNKNOWN = {};
+            var timeoutHandles: {[poolQuizSessionId: string]: NodeJS.Timer} = {};
 
             /**
              * Runs another round of the loop, or starts the loop if not already active.
              * 
              * @param {MoocchatWaitPool} waitPool
              */
-            function run(waitPool: _UNKNOWN) {
+            function run(waitPool: MoocchatWaitPool) {
                 clearTimeout(timeoutHandles[waitPool.getQuizSessionId()]);
 
                 var sessionsInGroup = waitPool.tryFormGroup();
@@ -70,10 +114,10 @@ export class Moocchat {
                     var newChatGroup = new MoocchatChatGroup(sessionsInGroup);
 
                     // Record
-                    newChatGroup.getSessions().forEach(function(session: _UNKNOWN) {
-                        db_wrapper.userSession.update(
+                    newChatGroup.getSessions().forEach((session) => {
+                        db_wrapper.userSession.updateOne(
                             {
-                                _id: mongojs.ObjectId(session.getId())
+                                _id: new Database.ObjectId(session.getId())
                             },
                             {
                                 $set: {
@@ -204,9 +248,9 @@ export class Moocchat {
                 return console.error("Could not find chat group for session ID = " + data.sessionId);
             }
 
-            db_wrapper.chatMessage.create({
+            db_wrapper.chatMessage.insertOne({
                 content: data.message,
-                sessionId: mongojs.ObjectId(session.getId()),
+                sessionId: new Database.ObjectId(session.getId()),
                 timestamp: new Date()
             });
 
@@ -237,7 +281,7 @@ export class Moocchat {
          * }
          */
         function handleLoginLti(data: _UNKNOWN, socket: PacSeqSocket_Server) {
-            function notifyClientOnError(err: _UNKNOWN) {
+            function notifyClientOnError(err: Error) {
                 // Reply direct to the user that sent the request as at this point no session is available
                 socket.emit("loginFailure", (err && err.message) ? err.message : "Unexpected error");
             }
@@ -260,11 +304,11 @@ export class Moocchat {
 
 
             // Callback chain and synchronisation
-            function runCallbackChain(errorThrowFunc: _UNKNOWN, callbackChain: _UNKNOWN) {
+            function runCallbackChain(errorThrowFunc: errorThrowFunc, callbackChain: callbackChainElem[]) {
                 var chainIndex = -1;
                 var errorThrown = false;
 
-                var throwErr = function(err: _UNKNOWN) {
+                var throwErr = function(err: Error) {
                     errorThrown = true;
                     errorThrowFunc(err);
                     return;
@@ -280,7 +324,7 @@ export class Moocchat {
                 callbackChainer();
             }
 
-            function callbackSyncFactory(n: _UNKNOWN, done: _UNKNOWN) {
+            function callbackSyncFactory(n: number, done: () => void) {
                 return function() {
                     if (--n === 0) {
                         done();
@@ -294,36 +338,36 @@ export class Moocchat {
             // Variables in serialised callback chain
 
             /** {ILTIData} */
-            var ltiObject: _UNKNOWN;
+            var ltiObject: ILTIData;
 
             /** {string} */
-            var ltiUsername: _UNKNOWN;
+            var ltiUsername: string;
 
             /** {Mongo.ObjectId()} */
-            var userObjectId: _UNKNOWN;
+            var userObjectId: mongodb.ObjectID;
 
             /** {IDB_QuizSchedule} */
-            var quizSchedule: _UNKNOWN;
+            var quizSchedule: IDB_QuizSchedule;
 
             /** {IDB_Question} */
-            var question: _UNKNOWN;
+            var question: IDB_Question;
 
             /** {IDB_QuestionOption[]} */
-            var questionOptions: _UNKNOWN;
+            var questionOptions: IDB_QuestionOption[];
 
             /** {IDB_Survey} */
-            var survey: _UNKNOWN;
+            var survey: IDB_Survey;
 
             /** {Client} */
             // var client;
 
             /** {MoocchatUserSession} */
-            var session: _UNKNOWN;
+            var session: MoocchatUserSession;
 
             /** {boolean} */
-            var researchConsentUnknown: _UNKNOWN;
+            var researchConsentUnknown: boolean;
 
-            function processLtiObject(throwErr: _UNKNOWN, next: _UNKNOWN) {
+            function processLtiObject(throwErr: errorThrowFunc, next: nextFunc) {
                 try {
                     ltiObject = ltiProcessor.verifyAndReturnLTIObj(data);
                 } catch (e) {
@@ -333,7 +377,7 @@ export class Moocchat {
                 next();
             }
 
-            function checkUserId(throwErr: _UNKNOWN, next: _UNKNOWN) {
+            function checkUserId(throwErr: errorThrowFunc, next: nextFunc) {
                 ltiUsername = ltiObject.user_id;
 
                 if (!ltiUsername) {
@@ -343,8 +387,8 @@ export class Moocchat {
                 next();
             }
 
-            function retrieveUserId(throwErr: _UNKNOWN, next: _UNKNOWN) {
-                db_wrapper.user.read({ username: ltiUsername }, function(err: _UNKNOWN, result: _UNKNOWN) {
+            function retrieveUserId(throwErr: errorThrowFunc, next: nextFunc) {
+                db_wrapper.user.readAsArray({ username: ltiUsername }, function(err, result) {
                     if (err) {
                         return throwErr(err);
                     }
@@ -358,20 +402,20 @@ export class Moocchat {
                         var ltiFirstName = ltiObject.lis_person_name_given || "";
                         var ltiLastName = ltiObject.lis_person_name_family || "";
 
-                        db_wrapper.user.create({
-                            _id: mongojs.ObjectId(crypto.randomBytes(12).toString('hex')),   // MongoDB ObjectIDs are 12 bytes only!
+                        db_wrapper.user.insertOne({
+                            _id: new Database.ObjectId(crypto.randomBytes(12).toString('hex')),   // MongoDB ObjectIDs are 12 bytes only!
                             username: ltiUsername,
 
                             firstName: ltiFirstName,
                             lastName: ltiLastName,
 
                             researchConsent: null
-                        }, function(err: _UNKNOWN, result: _UNKNOWN) {
+                        }, function(err, result) {
                             if (err) {
                                 return throwErr(err);
                             }
 
-                            userObjectId = result._id;
+                            userObjectId = result.insertedId;
                             researchConsentUnknown = true;
                             next();
                         });
@@ -393,7 +437,7 @@ export class Moocchat {
                 });
             }
 
-            function checkNoActiveSession(throwErr: _UNKNOWN, next: _UNKNOWN) {
+            function checkNoActiveSession(throwErr: errorThrowFunc, next: nextFunc) {
                 var session = MoocchatUserSession.GetSessionWith(userObjectId.toString());
 
                 if (session) {
@@ -403,13 +447,13 @@ export class Moocchat {
                 next();
             }
 
-            function findScheduledQuiz(throwErr: _UNKNOWN, next: _UNKNOWN) {
+            function findScheduledQuiz(throwErr: errorThrowFunc, next: nextFunc) {
                 var now = new Date();
 
-                db_wrapper.quizSchedule.read({
+                db_wrapper.quizSchedule.readAsArray({
                     "availableStart": { "$lte": now },
                     "availableEnd": { "$gte": now }
-                }, function(err: _UNKNOWN, result: _UNKNOWN) {
+                }, function(err, result) {
                     if (err) {
                         return throwErr(err);
                     }
@@ -425,16 +469,16 @@ export class Moocchat {
                 });
             }
 
-            function checkQuizSessionNotTaken(throwErr: _UNKNOWN, next: _UNKNOWN) {
+            function checkQuizSessionNotTaken(throwErr: errorThrowFunc, next: nextFunc) {
                 // A session is considered to have been taken if a user
                 // successfully fills in an initial AND final answer response
                 // for this quiz session
-                db_wrapper.userSession.read({
+                db_wrapper.userSession.readAsArray({
                     userId: userObjectId,
                     quizScheduleId: quizSchedule._id,
                     responseInitialId: { $ne: null },
                     responseFinalId: { $ne: null }
-                }, function(err: _UNKNOWN, result: _UNKNOWN) {
+                }, function(err, result) {
                     if (err) {
                         return throwErr(err);
                     }
@@ -447,13 +491,13 @@ export class Moocchat {
                 });
             }
 
-            function loadQuestionData(throwErr: _UNKNOWN, next: _UNKNOWN) {
+            function loadQuestionData(throwErr: errorThrowFunc, next: nextFunc) {
                 // Sync on n = 2 (question + question options)
                 var callbackSync = callbackSyncFactory(2, next);
 
-                db_wrapper.question.read({
+                db_wrapper.question.readAsArray({
                     "_id": quizSchedule.questionId
-                }, function(err: _UNKNOWN, result: _UNKNOWN) {
+                }, function(err, result) {
                     if (err) {
                         return throwErr(err);
                     }
@@ -466,9 +510,9 @@ export class Moocchat {
                     callbackSync();
                 });
 
-                db_wrapper.questionOption.read({
+                db_wrapper.questionOption.readAsArray({
                     "questionId": quizSchedule.questionId
-                }, function(err: _UNKNOWN, result: _UNKNOWN) {
+                }, function(err, result) {
                     if (err) {
                         return throwErr(err);
                     }
@@ -482,12 +526,12 @@ export class Moocchat {
                 });
             }
 
-            function findSurvey(throwErr: _UNKNOWN, next: _UNKNOWN) {
+            function findSurvey(throwErr: errorThrowFunc, next: nextFunc) {
                 var now = new Date();
 
-                db_wrapper.survey.read({
+                db_wrapper.survey.readAsArray({
                     "availableStart": { "$lte": now }
-                }, function(err: _UNKNOWN, result: _UNKNOWN) {
+                }, function(err, result) {
                     if (err) {
                         return throwErr(err);
                     }
@@ -503,9 +547,9 @@ export class Moocchat {
                 });
             }
 
-            function writeSessionToDb(throwErr: _UNKNOWN, next: _UNKNOWN) {
-                db_wrapper.userSession.create({
-                    _id: mongojs.ObjectId(crypto.randomBytes(12).toString('hex')),   // MongoDB ObjectIDs are 12 bytes only!
+            function writeSessionToDb(throwErr: errorThrowFunc, next: nextFunc) {
+                db_wrapper.userSession.insertOne({
+                    _id: new Database.ObjectId(crypto.randomBytes(12).toString('hex')),   // MongoDB ObjectIDs are 12 bytes only!
                     userId: userObjectId,
 
                     timestampStart: new Date(),
@@ -516,12 +560,12 @@ export class Moocchat {
 
                     responseInitialId: null,
                     responseFinalId: null
-                }, function(err: _UNKNOWN, result: _UNKNOWN) {
+                }, function(err, result) {
                     if (err) {
                         return throwErr(err);
                     }
 
-                    var sessionIdString = result._id.toString();
+                    var sessionIdString = result.insertedId.toHexString();
 
                     // Set up session
                     session = new MoocchatUserSession(socket, userObjectId.toString(), sessionIdString);
@@ -537,7 +581,7 @@ export class Moocchat {
                 });
             }
 
-            function notifyClientOfLogin(throwErr: _UNKNOWN, next: _UNKNOWN) {
+            function notifyClientOfLogin(throwErr: errorThrowFunc, next: nextFunc) {
                 // Complete login by notifying client
                 session.getSocket().emit('loginSuccess', {
                     sessionId: session.getId(),
@@ -564,16 +608,16 @@ export class Moocchat {
 
             var sessionId = session.getId();
 
-            db_wrapper.userSession.update(
+            db_wrapper.userSession.updateOne(
                 {
-                    _id: mongojs.ObjectId(sessionId)
+                    _id: new Database.ObjectId(sessionId)
                 },
                 {
                     $set: {
                         timestampEnd: new Date()
                     }
                 },
-                function(err: _UNKNOWN, result: _UNKNOWN) {
+                function(err, result) {
                     if (err) {
                         return console.error(err);
                     }
@@ -594,11 +638,11 @@ export class Moocchat {
                 return;
             }
 
-            db_wrapper.user.read(
+            db_wrapper.user.readAsArray(
                 {
                     username: username
                 },
-                function(err: _UNKNOWN, result: _UNKNOWN) {
+                function(err, result) {
                     if (err) {
                         return;
                     }
@@ -612,7 +656,7 @@ export class Moocchat {
 
                     console.log("Destroying all sessions with username '" + username + "'; user ID '" + userIdString + "'");
 
-                    var session: _UNKNOWN;
+                    var session: MoocchatUserSession;
                     while (session = MoocchatUserSession.GetSessionWith(userIdString)) {
                         MoocchatUserSession.Destroy(session, true);
                     }
@@ -635,16 +679,16 @@ export class Moocchat {
                 return;
             }
 
-            db_wrapper.user.update(
+            db_wrapper.user.updateOne(
                 {
-                    _id: mongojs.ObjectId(session.getUserId())
+                    _id: new Database.ObjectId(session.getUserId())
                 },
                 {
                     $set: {
                         researchConsent: researchConsent
                     }
                 },
-                function(err: _UNKNOWN, result: _UNKNOWN) {
+                function(err, result) {
                     if (err) {
                         return console.error(err);
                     }
@@ -655,7 +699,7 @@ export class Moocchat {
 
         // ===== Student client pool =====
 
-        function broadcastPoolCountToBackupQueue__WaitPool(waitPool: _UNKNOWN) {
+        function broadcastPoolCountToBackupQueue__WaitPool(waitPool: MoocchatWaitPool) {
             var quizSessionId = waitPool.getQuizSessionId();
 
             var backupClientQueue = MoocchatBackupClientQueue.GetQueue(quizSessionId);
@@ -671,7 +715,7 @@ export class Moocchat {
 
         // ===== Question + answer =====
 
-        function answerSubmissionHandlerFactory(answerType: _UNKNOWN) {
+        function answerSubmissionHandlerFactory(answerType: "initial" | "final") {
             return function(data: _UNKNOWN, socket: PacSeqSocket_Server) {
                 var session = MoocchatUserSession.GetSession(data.sessionId, socket);
 
@@ -683,19 +727,19 @@ export class Moocchat {
                 var justification = data.justification;
 
                 /** Holds reference to the answer object (depends on `answerType`) */
-                var sessionAnswerObj: _UNKNOWN;
+                var sessionAnswerObj: IDB_QuestionResponse;
 
                 /** String for websocket event to be sent on success */
-                var onSuccessWebsocketEvent: _UNKNOWN;
+                var onSuccessWebsocketEvent: string;
 
                 /** Function for generating the update set depending on `answerType` */
-                var generateUpdateSet: _UNKNOWN;
+                var generateUpdateSet: (id: mongodb.ObjectID) => Object;
 
                 switch (answerType) {
                     case "initial":
                         sessionAnswerObj = session.data.response.initial;
                         onSuccessWebsocketEvent = "answerSubmissionInitialSaved";
-                        generateUpdateSet = function(questionResponseObjectId: _UNKNOWN) {
+                        generateUpdateSet = function(questionResponseObjectId) {
                             return {
                                 responseInitialId: questionResponseObjectId
                             }
@@ -705,7 +749,7 @@ export class Moocchat {
                     case "final":
                         sessionAnswerObj = session.data.response.final;
                         onSuccessWebsocketEvent = "answerSubmissionFinalSaved";
-                        generateUpdateSet = function(questionResponseObjectId: _UNKNOWN) {
+                        generateUpdateSet = function(questionResponseObjectId) {
                             return {
                                 responseFinalId: questionResponseObjectId
                             }
@@ -719,7 +763,7 @@ export class Moocchat {
                 // Check that option ID is valid for session
                 if (optionIdString &&
                     session.data.quizQuestionOptions
-                        .map(function(option: _UNKNOWN) { return option._id.toString(); })
+                        .map(function(option) { return option._id.toString(); })
                         .indexOf(optionIdString) < 0) {
                     return;
                 }
@@ -730,30 +774,30 @@ export class Moocchat {
                     return;
                 }
 
-                db_wrapper.questionResponse.create({
-                    optionId: (optionIdString ? mongojs.ObjectId(optionIdString) : null),
+                db_wrapper.questionResponse.insertOne({
+                    optionId: (optionIdString ? new Database.ObjectId(optionIdString) : null),
                     justification: justification,
                     timestamp: new Date()
-                }, function(err: _UNKNOWN, result: _UNKNOWN) {
+                }, function(err, result) {
                     if (err) {
                         return console.error(err);
                     }
 
-                    var questionResponseObjectId = result._id;
+                    var questionResponseObjectId = result.insertedId;
 
                     // Sets the OBJECT that is being held in session.data.response.*
                     sessionAnswerObj._id = questionResponseObjectId;
-                    sessionAnswerObj.optionId = mongojs.ObjectId(optionIdString);
+                    sessionAnswerObj.optionId = new Database.ObjectId(optionIdString);
                     sessionAnswerObj.justification = justification;
 
-                    db_wrapper.userSession.update(
+                    db_wrapper.userSession.updateOne(
                         {
-                            _id: mongojs.ObjectId(session.getId())
+                            _id: new Database.ObjectId(session.getId())
                         },
                         {
                             $set: generateUpdateSet(questionResponseObjectId)
                         },
-                        function(err: _UNKNOWN, result: _UNKNOWN) {
+                        function(err, result) {
                             if (err) {
                                 return console.error(err);
                             }
@@ -804,9 +848,9 @@ export class Moocchat {
 
             session.data.surveyTaken = true;
 
-            db_wrapper.surveyResponse.create({
-                sessionId: mongojs.ObjectId(session.getId()),
-                surveyId: mongojs.ObjectId(session.data.survey._id),
+            db_wrapper.surveyResponse.insertOne({
+                sessionId: new Database.ObjectId(session.getId()),
+                surveyId: session.data.survey._id,
                 timestamp: new Date(),
                 content: data.content
             });
@@ -833,7 +877,7 @@ export class Moocchat {
             }
 
             // Fake a database entry with question response data
-            session.data.response.initial.optionId = mongojs.ObjectId(data.optionId);
+            session.data.response.initial.optionId = new Database.ObjectId(data.optionId);
             session.data.response.initial.justification = data.justification;
 
             // Add the client to the backup queue here, only *after* we
@@ -906,55 +950,7 @@ export class Moocchat {
         }
 
 
-
-
-
-
-        // Socket logging receive/emit proxy functions
-
-        // function registerSocketEventWithLoggingFactory(socket: PacSeqSocket_Server) {
-        //     var eventList: _UNKNOWN = [];
-
-        //     return function(event: _UNKNOWN, handler: _UNKNOWN) {
-        //         if (eventList.indexOf(event) < 0) {
-        //             socket.on(event, function(data: _UNKNOWN) {
-        //                 var loggedData = [
-        //                     'socket.io/' + socket.id,
-        //                     'INBOUND',
-        //                     '[' + event + ']'
-        //                 ];
-
-        //                 if (typeof data !== "undefined") {
-        //                     loggedData.push(data);
-        //                 }
-
-        //                 console.log.apply(undefined, loggedData);
-        //             });
-
-        //             eventList.push(event);
-        //         }
-
-        //         socket.on(event, handler);
-        //     }
-        // }
-
-        // function socketEmitWithLogging(socket: PacSeqSocket_Server, event: _UNKNOWN, data?: _UNKNOWN) {
-        //     var loggedData = [
-        //         'socket.io/' + socket.id,
-        //         'OUTBOUND',
-        //         '[' + event + ']'
-        //     ];
-
-        //     if (typeof data !== "undefined") {
-        //         loggedData.push(data);
-        //     }
-
-        //     console.log.apply(undefined, loggedData);
-
-        //     socket.emit(event, data);
-        // }
-
-        this.socketIO.sockets.on('connection', function(_socket: _UNKNOWN) {
+        this.socketIO.sockets.on('connection', function(_socket) {
             console.log(`socket.io/${_socket.id} CONNECTION`);
 
             // Wrap socket with PacSeqSocket

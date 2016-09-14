@@ -7,11 +7,10 @@ import {MoocchatAuth} from "../MoocchatAuth";
 export class LTIAuth extends MoocchatAuth {
     private static Processor = new LTIProcessor(ServerConf.lti.signingInfo);
 
-    protected authName = "LTI";
     private ltiData: ILTIData;
 
     constructor(ltiData: ILTIData) {
-        super();
+        super("LTI");
         this.ltiData = ltiData;
     }
 

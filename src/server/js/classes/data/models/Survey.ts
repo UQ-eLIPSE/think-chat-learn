@@ -1,17 +1,15 @@
-import {tables} from "../../classes/data/Tables";
-import {DatabaseWrapper} from "../DatabaseWrapper";
+import * as mongodb from "mongodb";
 
-const tableName = tables.SURVEY;
+import {Database} from "../Database";
 
-export class Survey extends DatabaseWrapper<IDB_Survey> {
-    constructor(database: any) {
-        super(tableName);
-        this.init(database);
+export class Survey extends Database<IDB_Survey> {
+    constructor(db: mongodb.Db) {
+        super(db, "uq_survey");
     }
 }
 
 export interface IDB_Survey {
-    _id?: ObjectId;
+    _id?: mongodb.ObjectID;
     availableStart?: Date;
     content?: IDB_Survey_Content[];
 }

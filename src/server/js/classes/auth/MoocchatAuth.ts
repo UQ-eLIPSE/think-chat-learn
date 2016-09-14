@@ -1,5 +1,5 @@
-import {IMoocchatIdentityInfo} from "../../interfaces/IMoocchatIdentityInfo";
-import {IMoocchatAuthProcessReturn} from "../../interfaces/IMoocchatAuthProcessReturn";
+import {IMoocchatIdentityInfo} from "./IMoocchatIdentityInfo";
+import {IMoocchatAuthProcessReturn} from "./IMoocchatAuthProcessReturn";
 
 /**
  * 
@@ -9,7 +9,7 @@ import {IMoocchatAuthProcessReturn} from "../../interfaces/IMoocchatAuthProcessR
  * @class MoocchatAuth
  */
 export abstract class MoocchatAuth {
-    protected authName: string;
+    private authName: string;
 
     /**
      * Creates an instance of MoocchatAuth.
@@ -18,7 +18,9 @@ export abstract class MoocchatAuth {
      * 
      * @memberOf MoocchatAuth
      */
-    constructor(...args: any[]) {}
+    constructor(authName: string) {
+        this.authName = authName;
+    }
 
 
     public abstract isValid(): IMoocchatAuthProcessReturn;

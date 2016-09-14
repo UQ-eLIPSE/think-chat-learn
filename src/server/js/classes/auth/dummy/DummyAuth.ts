@@ -1,15 +1,14 @@
-import {IMoocchatIdentityInfo} from "../../../interfaces/IMoocchatIdentityInfo";
+import {IMoocchatIdentityInfo} from "../IMoocchatIdentityInfo";
 
 import * as crypto from "crypto";
 
 import {MoocchatAuth} from "../MoocchatAuth";
 
 export class DummyAuth extends MoocchatAuth {
-    protected authName = "Dummy";
     private identity: IMoocchatIdentityInfo;
 
     constructor() {
-        super();
+        super("Dummy");
         this.setRandomIdentity();
     }
 
@@ -41,7 +40,7 @@ export class DummyAuth extends MoocchatAuth {
             },
             authName: this.getAuthName(),
             course: "DummyCourse",
-            roles: ["Student"],
+            roles: ["Student", "Instructor"],
         };
     }
 }
