@@ -1,16 +1,16 @@
 import {MoocchatUserSessionData} from "./MoocchatUserSessionData";
 import {MoocchatUserSessionStore} from "./MoocchatUserSessionStore";
 
-import {MoocchatWaitPool} from "./MoocchatWaitPool";
-import {MoocchatChatGroup} from "./MoocchatChatGroup";
-import {MoocchatBackupClientQueue} from "./MoocchatBackupClientQueue";
+import {MoocchatWaitPool} from "../queue/MoocchatWaitPool";
+import {MoocchatChatGroup} from "../chat/MoocchatChatGroup";
+import {MoocchatBackupClientQueue} from "../queue/MoocchatBackupClientQueue";
 
-import {IDB_Question} from "../classes/data/models/Question";
-import {IDB_QuestionOption} from "../classes/data/models/QuestionOption";
-import {IDB_QuizSchedule} from "../classes/data/models/QuizSchedule";
-import {IDB_Survey} from "../classes/data/models/Survey";
+import {IDB_Question} from "../data/models/Question";
+import {IDB_QuestionOption} from "../data/models/QuestionOption";
+import {IDB_QuizSchedule} from "../data/models/QuizSchedule";
+import {IDB_Survey} from "../data/models/Survey";
 
-import {PacSeqSocket_Server} from "../../../common/js/classes/PacSeqSocket_Server";
+import {PacSeqSocket_Server} from "../../../../common/js/classes/PacSeqSocket_Server";
 
 export class MoocchatUserSession {
     private static UserSessionStore: MoocchatUserSessionStore = new MoocchatUserSessionStore();
@@ -51,19 +51,19 @@ export class MoocchatUserSession {
         const sessionId = session.getId();
 
         // Remove session from other objects
-        var waitPool = MoocchatWaitPool.GetPoolWithQuizScheduleFrom(session);
+        const waitPool = MoocchatWaitPool.GetPoolWithQuizScheduleFrom(session);
 
         if (waitPool) {
             waitPool.removeSession(session);
         }
 
-        var chatGroup = session.chatGroup;
+        const chatGroup = session.chatGroup;
 
         if (chatGroup) {
             chatGroup.quitSession(session);
         }
 
-        var backupClientQueue = MoocchatBackupClientQueue.GetQueueWith(session);
+        const backupClientQueue = MoocchatBackupClientQueue.GetQueueWithQuizScheduleFrom(session);
 
         if (backupClientQueue) {
             backupClientQueue.removeSession(session);

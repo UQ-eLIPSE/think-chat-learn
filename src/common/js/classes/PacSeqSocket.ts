@@ -138,6 +138,10 @@ export class PacSeqSocket<SocketType> {
         }
     }
 
+    public emitData<T>(event: string, data: T) {
+        return this.emit(event, data);
+    }
+
     public on(event: string, fn: (data?: any) => any) {
         const callbacksOfEvent = this.eventManager.getCallbacksFor(event);
 

@@ -1,7 +1,7 @@
-module.exports = function(mongojs) {
+module.exports = function(db) {
     return [
         {
-            "_id": mongojs.ObjectId("5785aa08396914150e536c8d"),
+            "_id": db.ObjectId("5785aa08396914150e536c8d"),
             "availableStart": new Date("2016-07-01T00:00:00.000Z"),
             "content": [
                 {

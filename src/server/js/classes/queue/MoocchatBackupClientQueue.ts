@@ -1,6 +1,6 @@
-import {ServerConf} from "../classes/conf/ServerConf";
+import {ServerConf} from "../conf/ServerConf";
 
-import {MoocchatUserSession} from "./MoocchatUserSession";
+import {MoocchatUserSession} from "../user/MoocchatUserSession";
 import {MoocchatWaitPool} from "./MoocchatWaitPool";
 
 export class MoocchatBackupClientQueue {
@@ -21,8 +21,15 @@ export class MoocchatBackupClientQueue {
         return MoocchatBackupClientQueue.BackupClientQueues[quizSessionId];
     }
 
-    /** Slight misnomer - gets queue with same quiz schedule as supplied session. Session may not actually be in wait pool. */
-    public static GetQueueWith(session: MoocchatUserSession) {
+    /**
+     * Gets queue with same quiz schedule as supplied session.
+     * Session may not actually be in queue.
+     * 
+     * @static
+     * @param {MoocchatUserSession} session
+     * @returns
+     */
+    public static GetQueueWithQuizScheduleFrom(session: MoocchatUserSession) {
         return MoocchatBackupClientQueue.GetQueue(session.data.quizSchedule._id.toString());
     }
 
@@ -32,8 +39,6 @@ export class MoocchatBackupClientQueue {
 
         delete MoocchatBackupClientQueue.BackupClientQueues[chatGroup.getQuizSessionId()];
     }
-
-
 
 
 
@@ -74,6 +79,22 @@ export class MoocchatBackupClientQueue {
                     username: session.data.username
                 }
             })
+        });
+    }
+
+    public broadcastWaitPoolCount() {
+        const waitPool = MoocchatWaitPool.GetPoolWithQuizSessionId(this.getQuizSessionId());
+
+        // If there is no wait pool, stop
+        if (!waitPool) {
+            return;
+        }
+
+        this.broadcast("clientPoolCountUpdate", {
+            backupClientQueue: {
+                quizScheduleId: this.getQuizSessionId()
+            },
+            numberOfClients: waitPool.getSize()
         });
     }
 
@@ -161,7 +182,7 @@ export class MoocchatBackupClientQueue {
 
         const responseFunc = () => {
             const sessionToCallSocket = sessionToCall.getSocket();
-            
+
             if (sessionToCallSocket) {
                 sessionToCallSocket.off("backupClientTransferConfirm", responseFunc);
             }

@@ -12,14 +12,16 @@ import {NonceStore} from "./NonceStore";
 export class LTIProcessor {
     private nonceStore: NonceStore;
     private signingInfo: ILTISignatureVerifyInfo;
-    private testMode: boolean = false;
+    private testMode: boolean;
 
-    constructor(signingInfo: ILTISignatureVerifyInfo, enableNonceStore: boolean = true) {
+    constructor(signingInfo: ILTISignatureVerifyInfo, enableNonceStore: boolean = true, testMode: boolean = false) {
         this.signingInfo = signingInfo;
 
         if (enableNonceStore) {
             this.nonceStore = new NonceStore();
         }
+
+        this.setTestMode(testMode);
     }
 
     public setTestMode(value: boolean) {

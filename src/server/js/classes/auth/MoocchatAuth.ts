@@ -1,13 +1,6 @@
 import {IMoocchatIdentityInfo} from "./IMoocchatIdentityInfo";
 import {IMoocchatAuthProcessReturn} from "./IMoocchatAuthProcessReturn";
 
-/**
- * 
- * 
- * @export
- * @abstract
- * @class MoocchatAuth
- */
 export abstract class MoocchatAuth {
     private authName: string;
 
@@ -15,8 +8,6 @@ export abstract class MoocchatAuth {
      * Creates an instance of MoocchatAuth.
      * 
      * @param {...any[]} args
-     * 
-     * @memberOf MoocchatAuth
      */
     constructor(authName: string) {
         this.authName = authName;
@@ -27,23 +18,8 @@ export abstract class MoocchatAuth {
 
     public abstract isAuthenticated(): IMoocchatAuthProcessReturn;
 
-    /**
-     * 
-     * 
-     * @abstract
-     * @returns {IMoocchatIdentityInfo}
-     * 
-     * @memberOf MoocchatAuth
-     */
     public abstract getIdentity(): IMoocchatIdentityInfo;
 
-    /**
-     * 
-     * 
-     * @returns {string}
-     * 
-     * @memberOf MoocchatAuth
-     */
     public getAuthName() {
         return this.authName;
     }

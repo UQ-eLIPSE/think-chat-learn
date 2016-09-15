@@ -104,4 +104,4 @@ app.get("/", function(req, res) {
 
 
 console.log("Launching MOOCchat...");
-new Moocchat(conf, io);
+new Moocchat(io);

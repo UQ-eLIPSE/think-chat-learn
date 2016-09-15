@@ -5,7 +5,7 @@ import {LTIProcessor} from "./LTIProcessor";
 import {MoocchatAuth} from "../MoocchatAuth";
 
 export class LTIAuth extends MoocchatAuth {
-    private static Processor = new LTIProcessor(ServerConf.lti.signingInfo);
+    private static Processor = new LTIProcessor(ServerConf.lti.signingInfo, true, ServerConf.lti.testMode);
 
     private ltiData: ILTIData;
 

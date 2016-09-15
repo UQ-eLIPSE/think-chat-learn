@@ -61,14 +61,7 @@ export abstract class Database<CollectionData> {
     }
 
     private fetchCollection() {
-        Database.Collection(this.getDatabase(), this.getCollectionName(), (err, collection) => {
-            if (err) {
-                console.error(err.message);
-                return;
-            }
-
-            this.collection = collection;
-        });
+        this.collection = this.db.collection(this.getCollectionName()); 
     }
 
     private getCollection() {

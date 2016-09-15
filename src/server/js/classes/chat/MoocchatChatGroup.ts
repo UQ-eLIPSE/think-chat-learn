@@ -1,4 +1,4 @@
-import {MoocchatUserSession} from "./MoocchatUserSession";
+import {MoocchatUserSession} from "../user/MoocchatUserSession";
 
 export class MoocchatChatGroup {
     private static ChatGroups: { [chatGroupId: string]: MoocchatChatGroup } = {};

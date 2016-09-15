@@ -13,6 +13,8 @@
     },
     "files": [
         "./index.d.ts",
-        "./main.ts"
+        "./main.ts",
+ 
+        "./classes/data/models/QuestionOptionCorrect.ts"
     ]    
 }

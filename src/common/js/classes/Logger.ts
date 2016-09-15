@@ -140,7 +140,6 @@ export interface LoggerConfig {
      * Configures whether Logger should inject itself as proxy in console.log() and .error() functions.
      * 
      * @type {boolean}
-     * @memberOf LoggerConfig
      */
     enableLogProxy?: boolean;
 
@@ -148,7 +147,6 @@ export interface LoggerConfig {
      * Configures whether Logger should keep a copy of its log in memory.
      * 
      * @type {boolean}
-     * @memberOf LoggerConfig
      */
     enableLogInMemory?: boolean;
 
@@ -158,7 +156,6 @@ export interface LoggerConfig {
      * Note that this may interfere with formatted console output.
      * 
      * @type {boolean}
-     * @memberOf LoggerConfig
      */
     enableTimestamp?: boolean;
 }

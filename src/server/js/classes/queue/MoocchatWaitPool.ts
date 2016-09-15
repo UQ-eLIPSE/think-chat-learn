@@ -1,17 +1,14 @@
-import {ServerConf} from "../classes/conf/ServerConf";
+import {ServerConf} from "../conf/ServerConf";
 
-import {IDB_QuestionOption} from "../classes/data/models/QuestionOption";
+import {IDB_QuestionOption} from "../data/models/QuestionOption";
 
-import {MoocchatUserSession} from "./MoocchatUserSession";
+import {MoocchatUserSession} from "../user/MoocchatUserSession";
 import {MoocchatBackupClientQueue} from "./MoocchatBackupClientQueue";
 
-/**
- * Replacement for ClientAnswerPool
- */
 export class MoocchatWaitPool {
     private static DesiredGroupSize: number = ServerConf.chat.groups.desiredSize;
     private static DesiredMaxWaitTime: number = ServerConf.chat.groups.formationTimeoutMs;
-    private static WaitPools: {[quizSessionId: string]: MoocchatWaitPool} = {};
+    private static WaitPools: { [quizSessionId: string]: MoocchatWaitPool } = {};
 
     private _quizSessionId: string;
 
@@ -19,15 +16,38 @@ export class MoocchatWaitPool {
 
 
     public static GetPool(quizSessionId: string, quizQuestionOptions: IDB_QuestionOption[]) {
-        if (!MoocchatWaitPool.WaitPools.hasOwnProperty(quizSessionId)) {
+        const waitPool = MoocchatWaitPool.GetPoolWithQuizSessionId(quizSessionId);
+        
+        if (!waitPool) {
             // Create new wait pool
             return new MoocchatWaitPool(quizSessionId, quizQuestionOptions);
         }
 
+        return waitPool;
+    }
+
+    /**
+     * Gets pool with specified quiz session ID.
+     * 
+     * ***Do not*** use this method unless you do not want a new pool to be created.
+     * You should generally use .GetPool() instead.
+     * 
+     * @static
+     * @param {string} quizSessionId
+     * @returns
+     */
+    public static GetPoolWithQuizSessionId(quizSessionId: string) {
         return MoocchatWaitPool.WaitPools[quizSessionId];
     }
 
-    /** Slight misnomer - gets pool with same quiz schedule as supplied session. Session may not actually be in wait pool. */
+    /**
+     * Gets pool with same quiz schedule as supplied session.
+     * Session may not actually be in wait pool.
+     * 
+     * @static
+     * @param {MoocchatUserSession} session
+     * @returns
+     */
     public static GetPoolWithQuizScheduleFrom(session: MoocchatUserSession) {
         return MoocchatWaitPool.GetPool(session.data.quizSchedule._id.toString(), session.data.quizQuestionOptions);
     }
@@ -35,7 +55,7 @@ export class MoocchatWaitPool {
     public static Destroy(pool: MoocchatWaitPool) {
         pool._quizSessionId = undefined;
         pool.answerQueues = {};
-        
+
         delete MoocchatWaitPool.WaitPools[pool.getQuizSessionId()];
     }
 
@@ -199,7 +219,7 @@ export class MoocchatWaitPool {
 
             if (totalPoolSize < MoocchatWaitPool.DesiredGroupSize) {
                 const backupClientQueue = MoocchatBackupClientQueue.GetQueue(this.getQuizSessionId());
-                
+
                 if (backupClientQueue &&
                     totalPoolSize === 1 &&
                     backupClientQueue.callToPool(this)) {
