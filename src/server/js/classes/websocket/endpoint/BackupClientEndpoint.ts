@@ -83,14 +83,14 @@ export class BackupClientEndpoint extends WSEndpoint {
     }
 
     public get onReturnToQueue() {
-        return (data: IWSToServerData.BackupClientAnswer) => {
+        return (data: IWSToServerData.BackupClientReturnToQueue) => {
             BackupClientEndpoint.HandleReturnToQueue(this.getSocket(), data);
         };
     }
 
     public get onStatusRequest() {
-        return (data: IWSToServerData.BackupClientAnswer) => {
-            BackupClientEndpoint.HandleEnterQueue(this.getSocket(), data);
+        return (data: IWSToServerData.BackupClientStatusRequest) => {
+            BackupClientEndpoint.HandleStatusRequest(this.getSocket(), data);
         };
     }
 
