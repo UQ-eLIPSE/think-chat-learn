@@ -47,3 +47,6 @@ build
 
 # SASS cache directory
 .sass-cache
+
+# Tests are compiled from `test`
+test-build

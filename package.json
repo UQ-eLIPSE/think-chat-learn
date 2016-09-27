@@ -2,23 +2,24 @@
   "name": "moocchat",
   "version": "2.3.0",
   "description": "",
-  "main": "build/server/js/main.js",
+  "main": "build/server/main.js",
   "scripts": {
-    "start": "node build/server/js/main.js",
+    "start": "node build/server/main.js",
     "seed": "node util/db_seed.js",
-    "test": "mocha",
 
-    "clean_client": "rimraf public/css/moocchat2 public/js/moocchat2 public/combined-html",
-    "clean_server": "rimraf build",
-    "clean": "npm run clean_client && npm run clean_server",
+    "test_compile": "tsc --project ./test",
+    "test_run": "mocha \"test-build/test/**/*.js\"",
+    "test": "npm run clean_tests && npm run test_compile && npm run test_run",
 
-    "build_client_main": "tsc --project ./src/client/js",
-    "build_client_backup_client": "tsc --project ./src/client/js/tsconfig-backup-client.json",
-    "build_client_css": "node-sass -q ./src/client/css/moocchat2/main.scss ./public/css/moocchat2/main.css",
+    "clean": "rimraf build",
+
+    "build_client_main": "tsc --project ./client/tsconfig.json",
+    "build_client_backup_client": "tsc --project ./client/tsconfig-backup-client.json",
+    "build_client_css": "node-sass -q ./client/css/main.scss ./build/client/css/moocchat/main.css",
     "build_client_combined_html": "node ./util/combineHTML.js",
-
+    
     "build_client": "npm run build_client_main && npm run build_client_backup_client && npm run build_client_css && npm run build_client_combined_html",
-    "build_server": "tsc --project ./src/server/js",
+    "build_server": "tsc --project ./server/tsconfig.json",
     "build": "npm run clean && npm run build_client && npm run build_server"
   },
   "author": "eLIPSE",
@@ -41,7 +42,7 @@
     "node-sass": "^3.8.0",
     "php-express": "0.0.3",
     "rimraf": "^2.5.3",
-    "typescript": "^1.8.0",
+    "typescript": "^2.0.3",
     "typings": "^1.3.0"
   }
 }

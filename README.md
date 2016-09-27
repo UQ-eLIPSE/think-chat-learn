@@ -6,9 +6,12 @@
 2. Install Nodejs 0.10.x and MongoDB
 3. Start MongoDB, usually the command to run is `mongod`
 4. Run `npm install` from within MOOCchat folder
-5. Build source: `npm run build`
-6. Seed the database by running `npm run seed` (only needs to be done once and will wipe existing tables)
-7. Ensure `/config/conf.json` file has correct configuration
+5. Ensure configuration files are set up correctly:
+   * `common/config/Conf.ts` - shared configuration (PacSeqSocket, section timings, answers etc.)
+   * `client/config/Conf.ts` - client config
+   * `server/config/Conf.ts` - server config
+6. Build source: `npm run build`
+7. Seed the database by running `npm run seed` (only needs to be done once and will wipe existing tables)
 8. Run `npm start`
 
 ## Compiling code
