@@ -286,6 +286,7 @@ export class UserLoginEndpoint extends WSEndpoint {
         }
 
         function setupChatGroupFormationLoop(throwErr: CBC.ErrorThrowFunc, next: CBC.NextFunc) {
+            const quizSessionId = session.data.quizSchedule._id.toHexString();
             const loop = ChatGroupFormationLoop.GetChatGroupFormationLoopWithQuizScheduleFrom(session);
 
             if (!loop.hasStarted) {
@@ -304,11 +305,9 @@ export class UserLoginEndpoint extends WSEndpoint {
 
                 loop.registerOnChatGroupFormed((newChatGroup) => {
                     console.log(`Updating backup queue`);
-                    const backupClientQueue = MoocchatBackupClientQueue.GetQueueWithQuizScheduleFrom(session);
+                    const backupClientQueue = MoocchatBackupClientQueue.GetQueue(quizSessionId);
                     backupClientQueue.broadcastWaitPoolCount();
                 });
-
-                console.log("Setup chat formation loop handlers");
 
                 loop.start();
             }

@@ -81,7 +81,7 @@ export class ChatGroupFormationLoop {
      * 
      * @private
      */
-    private run = () => {
+    private run() {
         clearTimeout(this.timerHandle);
 
         const sessionsInGroup = this.waitPool.tryFormGroup();
@@ -95,17 +95,25 @@ export class ChatGroupFormationLoop {
                 newChatGroup.getSessions().forEach((session) => {
                     this.onSessionAssignedChatGroup(newChatGroup, session);
                 });
+            } else {
+                console.error(`No onSessionAssignedChatGroup`);
             }
 
             // Run onChatGroupFormed
             if (this.onChatGroupFormed) {
                 this.onChatGroupFormed(newChatGroup);
+            } else {
+                console.error(`No onChatGroupFormed`);
             }
 
             // Process next group at next available timeslot
-            setImmediate(this.run);
+            setImmediate(() => {
+                this.run();
+            });
         } else {
-            this.timerHandle = setTimeout(this.run, ChatGroupFormationLoop.TimeBetweenChecks);
+            this.timerHandle = setTimeout(() => {
+                this.run();
+            }, ChatGroupFormationLoop.TimeBetweenChecks);
         }
     }
 }
