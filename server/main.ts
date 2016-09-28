@@ -45,7 +45,7 @@ console.log(`socket.io listening on ${Conf.portNum}`);
 
 // Use ejs for templating on pages
 app.set("view engine", "ejs");
-app.set("views", __dirname + "/views");
+app.set("views", __dirname + "/static/views");
 
 
 // POST body parsing (required for LTI incoming data)
@@ -62,7 +62,7 @@ console.log("Setting up endpoints...");
 // If static content delivery by Express is enabled,
 // everything under URL/static/* will be statically delivered from PROJECT/build/client/*
 if (Conf.express && Conf.express.serveStaticContent) {
-    app.use("/static", express.static(__dirname + "/../client"));
+    app.use("/static", express.static(__dirname + "/../client/static"));
 }
 
 // LTI launcher page only available in test mode

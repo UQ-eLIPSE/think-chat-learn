@@ -25,6 +25,8 @@ export class MoocchatUserSessionStore {
                 return userSession;
             }
         }
+
+        return undefined;
     }
 
     public getSessionByUserId(userId: string) {
@@ -35,11 +37,13 @@ export class MoocchatUserSessionStore {
                 return userSession;
             }
         }
+
+        return undefined;
     }
 
     public add(session: MoocchatUserSession) {
         if (this.has(session)) {
-            return;
+            return undefined;
         }
 
         return this.store.push(session);
@@ -49,6 +53,8 @@ export class MoocchatUserSessionStore {
         if (this.has(session)) {
             return this.store.splice(this.indexOf(session), 1)[0];
         }
+
+        return undefined;
     }
 
 }

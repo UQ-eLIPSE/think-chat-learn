@@ -122,7 +122,7 @@ export class MoocchatBackupClientQueue {
         const sessionIndex = this._sessions.indexOf(session);
 
         if (sessionIndex < 0) {
-            return;
+            return undefined;
         }
 
         console.log(`MoocchatBackupClientQueue(${this.getQuizSessionId()}) REMOVING Session ${session.getId()}`);

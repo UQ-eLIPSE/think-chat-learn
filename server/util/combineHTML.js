@@ -6,8 +6,8 @@ var mkdirp = require("mkdirp");
 var fs = require("fs");
 
 
-var srcDir = __dirname + "/../public/html/";
-var outDir = __dirname + "/../public/combined-html/";
+var srcDir = __dirname + "/../../client/static/html/";
+var outDir = __dirname + "/../../build/client/static/combined-html/";
 
 var outFilename = "all-pages.html";
 

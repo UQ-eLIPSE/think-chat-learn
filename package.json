@@ -5,42 +5,43 @@
   "main": "build/server/main.js",
   "scripts": {
     "start": "node build/server/main.js",
-    "seed": "node util/db_seed.js",
-
+    "seed": "node server/util/db_seed.js",
     "test_compile": "tsc --project ./test",
     "test_run": "mocha \"test-build/test/**/*.js\"",
     "test": "npm run clean_tests && npm run test_compile && npm run test_run",
-
     "clean": "rimraf build",
 
     "build_client_main": "tsc --project ./client/tsconfig.json",
     "build_client_backup_client": "tsc --project ./client/tsconfig-backup-client.json",
-    "build_client_css": "node-sass -q ./client/css/main.scss ./build/client/css/moocchat/main.css",
-    "build_client_combined_html": "node ./util/combineHTML.js",
-    
-    "build_client": "npm run build_client_main && npm run build_client_backup_client && npm run build_client_css && npm run build_client_combined_html",
-    "build_server": "tsc --project ./server/tsconfig.json",
+    "build_client_css": "node-sass -q ./client/css/main.scss ./build/client/static/css/moocchat/main.css",
+    "build_client_combined_html": "node ./server/util/combineHTML.js",
+    "build_client_copy_static": "copyfiles ./client/static/** ./build",
+    "build_client": "npm run build_client_main && npm run build_client_backup_client && npm run build_client_css && npm run build_client_combined_html && npm run build_client_copy_static",
+
+    "build_server_main": "tsc --project ./server/tsconfig.json",
+    "build_server_copy_static": "copyfiles ./server/static/** ./build",
+    "build_server": "npm run build_server_main && npm run build_server_copy_static",
+
     "build": "npm run clean && npm run build_client && npm run build_server"
   },
   "author": "eLIPSE",
   "license": "MIT",
   "dependencies": {
     "body-parser": "1.15.2",
-    "concat-files": "0.1.0",
     "ejs": "2.4.2",
     "express": "4.13.4",
-    "mkdirp": "0.5.1",
     "mongodb": "2.2.9",
     "mongojs": "2.3.0",
     "oauth-signature": "1.3.1",
-    "requirejs": "2.2.0",
     "socket.io": "1.4.5"
   },
   "devDependencies": {
     "chai": "^3.5.0",
+    "concat-files": "0.1.0",
+    "copyfiles": "1.0.0",
+    "mkdirp": "0.5.1",
     "mocha": "^2.5.3",
     "node-sass": "^3.8.0",
-    "php-express": "0.0.3",
     "rimraf": "^2.5.3",
     "typescript": "^2.0.3",
     "typings": "^1.3.0"

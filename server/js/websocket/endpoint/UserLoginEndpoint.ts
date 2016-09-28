@@ -290,6 +290,7 @@ export class UserLoginEndpoint extends WSEndpoint {
 
             if (!loop.hasStarted) {
                 loop.registerOnSessionAssignedChatGroup((newChatGroup, session) => {
+                    console.log(`Writing chat group ${newChatGroup.getId()} to user session ${session.getId()}`);
                     dbUserSession.updateOne(
                         {
                             _id: new Database.ObjectId(session.getId())
@@ -302,9 +303,12 @@ export class UserLoginEndpoint extends WSEndpoint {
                 });
 
                 loop.registerOnChatGroupFormed((newChatGroup) => {
+                    console.log(`Updating backup queue`);
                     const backupClientQueue = MoocchatBackupClientQueue.GetQueueWithQuizScheduleFrom(session);
                     backupClientQueue.broadcastWaitPoolCount();
                 });
+
+                console.log("Setup chat formation loop handlers");
 
                 loop.start();
             }

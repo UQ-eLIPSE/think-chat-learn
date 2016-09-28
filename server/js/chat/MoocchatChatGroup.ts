@@ -23,6 +23,8 @@ export class MoocchatChatGroup {
                 return chatGroup;
             }
         }
+
+        return undefined;
     }
 
     public static Destroy(chatGroup: MoocchatChatGroup) {

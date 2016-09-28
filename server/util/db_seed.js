@@ -2,19 +2,19 @@
  * Seeds the database with testing data, used for development
  */
 
-var ServerConf = require("../build/server/js/classes/conf/ServerConf").ServerConf;
-var Database = require("../build/server/js/classes/data/Database").Database;
+var Conf = require("../../build/server/config/Conf").Conf;
+var Database = require("../../build/server/js/data/Database").Database;
 
-var Question = require("../build/server/js/classes/data/models/Question").Question;
-var QuestionOption = require("../build/server/js/classes/data/models/QuestionOption").QuestionOption;
-var QuestionOptionCorrect = require("../build/server/js/classes/data/models/QuestionOptionCorrect").QuestionOptionCorrect;
-var QuizSchedule = require("../build/server/js/classes/data/models/QuizSchedule").QuizSchedule;
-var Survey = require("../build/server/js/classes/data/models/Survey").Survey;
+var Question = require("../../build/server/js/data/models/Question").Question;
+var QuestionOption = require("../../build/server/js/data/models/QuestionOption").QuestionOption;
+var QuestionOptionCorrect = require("../../build/server/js/data/models/QuestionOptionCorrect").QuestionOptionCorrect;
+var QuizSchedule = require("../../build/server/js/data/models/QuizSchedule").QuizSchedule;
+var Survey = require("../../build/server/js/data/models/Survey").Survey;
 
 var dataFolder = "./data";
 
 // Connect to DB and set up data classes
-Database.Connect(ServerConf.database, function(err, db) {
+Database.Connect(Conf.database, function(err, db) {
     if (err) {
         return console.error(err.message);
     }

@@ -9,7 +9,7 @@
         "sourceMap": false,
 
         "outDir": "../build/client",
-        "outFile": "../build/client/js/moocchat/main.js"
+        "outFile": "../build/client/static/js/moocchat/main.js"
     },
     "files": [
         "./index.d.ts",

@@ -4,11 +4,23 @@
         "module": "commonjs",
 
         "noImplicitAny": true,
+        "noImplicitThis": true,
+        "noImplicitReturns": true,
+        // "strictNullChecks": true,
+
         "removeComments": true,
         "preserveConstEnums": true,
         "sourceMap": true,
 
         "outDir": "../build",
         "rootDir": "../"
-    }
+    },
+    "files": [
+        "./index.d.ts",
+        "./main.ts",
+
+        // Below are files that don't get discovered
+        // when compiling `main` but are required elsewhere
+        "./js/data/models/QuestionOptionCorrect"
+    ]
 }

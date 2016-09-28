@@ -111,12 +111,13 @@ export class MoocchatWaitPool {
 
     public removeSession(session: MoocchatUserSession) {
         // Need to search through the entire pool to remove
-        var arr = Object.keys(this.answerQueues);
-        for (var i = 0; i < arr.length; ++i) {
-            var queueKey = arr[i];
-            var thisAnswerSessionDataArray = this.answerQueues[queueKey];
+        const arr = Object.keys(this.answerQueues);
 
-            for (var j = 0; j < thisAnswerSessionDataArray.length; ++j) {
+        for (let i = 0; i < arr.length; ++i) {
+            const queueKey = arr[i];
+            const thisAnswerSessionDataArray = this.answerQueues[queueKey];
+
+            for (let j = 0; j < thisAnswerSessionDataArray.length; ++j) {
                 if (thisAnswerSessionDataArray[j].session === session) {
                     // Remove the client out and return it
                     console.log(`Removing session '${session.getId()}' from wait pool '${this.getQuizSessionId()}'`);
@@ -124,15 +125,18 @@ export class MoocchatWaitPool {
                 }
             }
         }
+
+        return undefined;
     }
 
     public hasSession(session: MoocchatUserSession) {
-        var arr = Object.keys(this.answerQueues);
-        for (var i = 0; i < arr.length; ++i) {
-            var queueKey = arr[i];
-            var thisAnswerSessionDataArray = this.answerQueues[queueKey];
+        const arr = Object.keys(this.answerQueues);
+        
+        for (let i = 0; i < arr.length; ++i) {
+            const queueKey = arr[i];
+            const thisAnswerSessionDataArray = this.answerQueues[queueKey];
 
-            for (var j = 0; j < thisAnswerSessionDataArray.length; ++j) {
+            for (let j = 0; j < thisAnswerSessionDataArray.length; ++j) {
                 if (thisAnswerSessionDataArray[j].session === session) {
                     return true;
                 }
@@ -254,11 +258,11 @@ export class MoocchatWaitPool {
         // Compile the queues with sessions that we can pop into a new group
         queueKeyCompilationLoop:
         while (true) {
-            var intendedQueueKeysStartSize = intendedQueueKeys.length;
+            const intendedQueueKeysStartSize = intendedQueueKeys.length;
 
-            for (var i = 0; i < queueKeys.length; ++i) {
-                var queueKey = queueKeys[i];
-                var queueSize = queueSizes[queueKey];
+            for (let i = 0; i < queueKeys.length; ++i) {
+                const queueKey = queueKeys[i];
+                const queueSize = queueSizes[queueKey];
 
                 if (queueSize <= 0) {
                     continue;
