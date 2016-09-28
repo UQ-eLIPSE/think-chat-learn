@@ -84,7 +84,7 @@ export class Logger {
             console.log = this.loggerProxyFactory(Logger.Console.Log, "log");
         }
 
-        if (console.error === Logger.Console.Log) {
+        if (console.error === Logger.Console.Error) {
             console.error = this.loggerProxyFactory(Logger.Console.Error, "error");
         }
 
