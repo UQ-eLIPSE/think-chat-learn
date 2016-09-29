@@ -12,6 +12,7 @@ export interface IDB_Survey {
     _id?: mongodb.ObjectID;
     availableStart?: Date;
     content?: IDB_Survey_Content[];
+    course?: string;
 }
 
 export type IDB_Survey_ContentType = "HEADING" | "TEXT_SHORT" | "MULTIPLECHOICE_INLINE" | "MULTIPLECHOICE_LIST"; 

@@ -17,8 +17,8 @@ export class SurveyEndpoint extends WSEndpoint {
             return console.error("Attempted survey submission with invalid session ID = " + data.sessionId);
         }
 
-        // If survey already saved, don't save another
-        if (session.data.surveyTaken) {
+        // If no survey or survey already saved, don't save another
+        if (!session.data.survey || session.data.surveyTaken) {
             return;
         }
 

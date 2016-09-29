@@ -11,7 +11,7 @@ import * as mongodb from "mongodb";
 import {Database} from "../../data/Database";
 import {ChatMessage} from "../../data/models/ChatMessage";
 
-import {ChatGroupFormationLoop} from "../../chat/chatGroupFormationLoop";
+import {ChatGroupFormationLoop} from "../../chat/ChatGroupFormationLoop";
 
 export class ChatEndpoint extends WSEndpoint {
     private static HandleJoinRequest(socket: PacSeqSocket_Server, data: IWSToServerData.ChatGroupJoin) {

@@ -3,6 +3,7 @@ module.exports = function(db) {
         {
             "_id": db.ObjectId("5785aa08396914150e536c8d"),
             "availableStart": new Date("2016-07-01T00:00:00.000Z"),
+            "course": "ENGG1200N_6660_00001",
             "content": [
                 {
                     "type": "HEADING",

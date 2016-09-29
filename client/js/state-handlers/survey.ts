@@ -11,6 +11,11 @@ export const SurveyStateHandler: IStateHandler<STATE> =
 
         return {
             onEnter: () => {
+                if (!session.survey) {
+                    session.stateMachine.goTo(STATE.COMPLETION);
+                    return;
+                }
+
                 session.pageManager.loadPage("survey", (page$) => {
                     section.setActive();
 

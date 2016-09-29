@@ -74,16 +74,13 @@ export class ChatGroupFormationLoop {
     }
 
     /**
-     * Runs a loop round.
-     * 
-     * Note that this is a property NOT on the prototype chain.
-     * This is to ensure the `this` binding stays with the class.
+     * Runs one round of the loop, and automatically continues to do so.
      * 
      * @private
      */
     private run() {
         clearTimeout(this.timerHandle);
-
+         
         const sessionsInGroup = this.waitPool.tryFormGroup();
 
         if (sessionsInGroup && sessionsInGroup.length > 0) {

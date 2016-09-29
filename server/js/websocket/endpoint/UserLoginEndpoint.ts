@@ -23,7 +23,7 @@ import {ChatGroupFormationLoop} from "../../chat/ChatGroupFormationLoop";
 import {MoocchatBackupClientQueue} from "../../queue/MoocchatBackupClientQueue";
 
 import {LTIAuth} from "../../auth/lti/LTIAuth";
-import {IMoocchatIdentityInfo} from "../../auth/IMOOCchatIdentityInfo";
+import {IMoocchatIdentityInfo} from "../../auth/IMoocchatIdentityInfo";
 
 
 export class UserLoginEndpoint extends WSEndpoint {
@@ -235,18 +235,20 @@ export class UserLoginEndpoint extends WSEndpoint {
             const now = new Date();
 
             dbSurvey.readAsArray({
-                "availableStart": { "$lte": now }
+                availableStart: { $lte: now },
+                course: identity.course,
             }, function(err, result) {
                 if (err) {
                     return throwErr(err);
                 }
 
-                // Find first available survey at this time session
+                // Surveys are optional, if found
                 if (result.length === 0) {
-                    return throwErr(new Error("[52] No survey available at this time. Survey required for MOOCchat to operate."));
+                    survey = null;
+                } else {
+                    survey = result[0];
                 }
 
-                survey = result[0];
 
                 next();
             });

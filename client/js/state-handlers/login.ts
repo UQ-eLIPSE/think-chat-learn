@@ -22,8 +22,13 @@ export const LoginStateHandler: IStateHandler<STATE> =
                     session
                         .setId(data.sessionId)
                         .setQuiz(new MoocchatQuiz(data.quiz))
-                        .setSurvey(new MoocchatSurvey(data.survey))
                         .setUser(user);
+
+                    if (data.survey) {
+                        session.setSurvey(new MoocchatSurvey(data.survey))
+                    } else {
+                        session.sectionManager.getSection("survey").elem.remove();
+                    }
 
                     if (data.researchConsentRequired) {
                         session.stateMachine.goTo(researchConsentRequiredNextState);

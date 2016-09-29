@@ -13,6 +13,8 @@
 
         "removeComments": true,
         "preserveConstEnums": true,
+        "forceConsistentCasingInFileNames": true,
+        
         "sourceMap": true,
 
         "outDir": "../build",
