@@ -1,7 +1,6 @@
 import {WSEndpoint} from "../WSEndpoint";
 
 import * as IWSToServerData from "../../../../common/interfaces/IWSToServerData";
-import * as IWSToClientData from "../../../../common/interfaces/IWSToClientData";
 import {PacSeqSocket_Server} from "../../../../common/js/PacSeqSocket_Server";
 
 import {MoocchatUserSession} from "../../user/MoocchatUserSession";

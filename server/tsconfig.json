@@ -8,6 +8,9 @@
         "noImplicitReturns": true,
         // "strictNullChecks": true,
 
+        "noUnusedLocals": true,
+        // "noUnusedParameters": true,
+
         "removeComments": true,
         "preserveConstEnums": true,
         "sourceMap": true,
@@ -21,6 +24,7 @@
 
         // Below are files that don't get discovered
         // when compiling `main` but are required elsewhere
-        "./js/data/models/QuestionOptionCorrect"
+        "./js/data/models/QuestionOptionCorrect",
+        "./js/data/models/VirtServerBackups"
     ]
 }

@@ -68,10 +68,10 @@ export class MoocchatAnalytics extends MoocchatAnalyticsCore {
         this.setupSetUserId();
     }
 
-    private setupHeartBeatTimer() {
-        // Have page view time analytics to a 5 second granularity
-        _paq.push(["enableHeartBeatTimer", 5]);
-    }
+    // private setupHeartBeatTimer() {
+    //     // Have page view time analytics to a 5 second granularity
+    //     _paq.push(["enableHeartBeatTimer", 5]);
+    // }
 
     private setupTrackPageView() {
         this.session.eventManager.on(PageManager_Events.PAGE_LOAD, this.trackPageView);

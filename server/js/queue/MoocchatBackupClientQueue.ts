@@ -98,10 +98,6 @@ export class MoocchatBackupClientQueue {
         });
     }
 
-    private numberOfSessions() {
-        return this._sessions.length;
-    }
-
     public addSession(session: MoocchatUserSession) {
         if (this._sessions.indexOf(session) > -1) {
             return;

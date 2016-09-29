@@ -1,12 +1,8 @@
-import * as $ from "jquery";
+import { Conf } from "../../config/Conf";
 
-import {Conf} from "../../config/Conf";
+import { IStateHandler, MoocchatState as STATE } from "../MoocchatStates";
 
-// import {VirtServerComms} from "../classes/VirtServerComms";
-
-import {IStateHandler, MoocchatState as STATE} from "../MoocchatStates";
-
-import {ILTIData} from "../../../common/interfaces/ILTIData";
+import { ILTIData } from "../../../common/interfaces/ILTIData";
 
 declare const _LTI_BASIC_LAUNCH_DATA: ILTIData;
 
@@ -44,14 +40,6 @@ export const CompletionStateHandler: IStateHandler<STATE> =
 
                         page$("#revised-answer-content").html(revisedAnswer ? revisedAnswer.content : "[NO OPTION SELECTED]");
                         page$("#revised-answer-justification").text(session.answers.revised.justification);
-
-                        // if (virtServerData) {
-                        //     const $virtServerBackupFail = page$("#virtserver-backup-fail");
-                        //     $virtServerBackupFail.removeClass("hidden");
-                        //     $("p", $virtServerBackupFail).text(virtServerData);
-                        //     alert(`Server synchronisation failed. Please copy the contents of the page and send this to your course representative.`);
-                        // }
-
                     });
 
                     // Log out now
@@ -62,23 +50,7 @@ export const CompletionStateHandler: IStateHandler<STATE> =
                     });
                 }
 
-                // if (session.socket instanceof VirtServerComms) {
-                //     const syncXHR = (<VirtServerComms>session.socket).syncWithRealServer(session.id);
-
-                //     if (syncXHR) {
-                //         syncXHR.xhr
-                //             .done(() => {
-                //                 loadFunc();
-                //             })
-                //             .fail(() => {
-                //                 loadFunc(syncXHR.data);
-                //             });
-                //     } else {
-                //         loadFunc();
-                //     }
-                // } else {
-                    loadFunc();
-                // }
+                loadFunc();
             }
         }
     }

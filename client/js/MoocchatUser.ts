@@ -1,5 +1,3 @@
-import * as socket from "socket.io-client";
-
 import {EventBox} from "../../common/js/EventBox";
 import {WebsocketManager} from "./WebsocketManager";
 
@@ -15,8 +13,6 @@ import {ILTIData} from "../../common/interfaces/ILTIData";
  * Handles user info and logging in.
  */
 export class MoocchatUser {
-    private _username: string;
-
     private ltiData: ILTIData;
 
     private sharedEventManager: EventBox;

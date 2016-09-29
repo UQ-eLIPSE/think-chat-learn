@@ -2,10 +2,8 @@ import * as $ from "jquery";
 
 import {IStateHandler, MoocchatState as STATE} from "../MoocchatStates";
 
-import {WebsocketManager} from "../WebsocketManager";
 import {WebsocketEvents} from "../WebsocketEvents";
 import * as IWSToServerData from "../../../common/interfaces/IWSToServerData";
-import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
 
 export const SurveyStateHandler: IStateHandler<STATE> =
     (session) => {

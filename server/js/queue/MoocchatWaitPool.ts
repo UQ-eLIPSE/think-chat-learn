@@ -162,17 +162,17 @@ export class MoocchatWaitPool {
         return queueSizes;
     }
 
-    private answerQueueFrontWait() {
-        return Object.keys(this.answerQueues).map((queueKey) => {
-            const firstQueueSessionData = this.answerQueues[queueKey][0];
+    // private answerQueueFrontWait() {
+    //     return Object.keys(this.answerQueues).map((queueKey) => {
+    //         const firstQueueSessionData = this.answerQueues[queueKey][0];
 
-            if (!firstQueueSessionData) {
-                return 0;
-            }
+    //         if (!firstQueueSessionData) {
+    //             return 0;
+    //         }
 
-            return Date.now() - firstQueueSessionData.timestamp;
-        })
-    }
+    //         return Date.now() - firstQueueSessionData.timestamp;
+    //     })
+    // }
 
     private waitTimeoutReached() {
         return Object.keys(this.answerQueues).some((queueKey) => {
@@ -271,7 +271,7 @@ export class MoocchatWaitPool {
                 intendedQueueKeys.push(queueKey);
                 --queueSizes[queueKey];
 
-                if (intendedQueueKeys.length === size) {
+                if (intendedQueueKeysStartSize === size) {
                     break queueKeyCompilationLoop;
                 }
             }
@@ -297,7 +297,7 @@ export interface MoocchatWaitPoolAnswerQueueData {
  */
 function shuffle<IData>(a: IData[]) {
     let j: number, x: IData, i: number;
-    for (let i = a.length; i; i -= 1) {
+    for (i = a.length; i; i -= 1) {
         j = Math.floor(Math.random() * i);
         x = a[i - 1];
         a[i - 1] = a[j];

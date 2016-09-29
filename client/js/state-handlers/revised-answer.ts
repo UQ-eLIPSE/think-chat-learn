@@ -5,7 +5,6 @@ import {IStateHandler, MoocchatState as STATE} from "../MoocchatStates";
 import {MoocchatChat} from "../MoocchatChat";
 
 import {WebsocketEvents} from "../WebsocketEvents";
-import * as IWSToServerData from "../../../common/interfaces/IWSToServerData";
 
 import * as AnswerComponents from "../AnswerComponents";
 
@@ -94,6 +93,7 @@ export const RevisedAnswerStateHandler: IStateHandler<STATE> =
                             $(elem).addClass("selected");
                             return false;
                         }
+                        return undefined;
                     });
 
                     // Set pre-/post-edit-enable elements

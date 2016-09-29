@@ -41,7 +41,7 @@ websocket.open();
 
 // On DOM Ready
 $(() => {
-    const $header = $("#header");
+    // const $header = $("#header");
     const $courseName = $("#course-name");
     const $taskSections = $("#task-sections");
     const $content = $("#content");

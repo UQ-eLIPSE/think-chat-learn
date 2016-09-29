@@ -87,15 +87,15 @@ export class StateFlow<StateEnumType> {
      * 
      * @return {IStateFlow_State}
      */
-    private getCurrentState() {
-        const historyData = this.getCurrentStateHistoryData();
+    // private getCurrentState() {
+    //     const historyData = this.getCurrentStateHistoryData();
         
-        if (!historyData) {
-            return;
-        }
+    //     if (!historyData) {
+    //         return;
+    //     }
 
-        return historyData.stateData;
-    }
+    //     return historyData.stateData;
+    // }
 
     /**
      * Gets the history data for the current state.
@@ -104,7 +104,7 @@ export class StateFlow<StateEnumType> {
      */
     private getCurrentStateHistoryData() {
         if (this.history.length === 0) {
-            return;
+            return undefined;
         }
 
         return this.history[this.history.length - 1];

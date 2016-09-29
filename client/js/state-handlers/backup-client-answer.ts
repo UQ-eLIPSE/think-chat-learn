@@ -4,7 +4,6 @@ import {IStateHandler, MoocchatState as STATE} from "../MoocchatStates";
 
 import {WebsocketEvents} from "../WebsocketEvents";
 import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
-import * as IWSToServerData from "../../../common/interfaces/IWSToServerData";
 
 import * as AnswerComponents from "../AnswerComponents";
 

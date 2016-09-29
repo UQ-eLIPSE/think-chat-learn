@@ -24,11 +24,11 @@ export abstract class Database<CollectionData> {
         collection.find(query).toArray(callback);
     }
 
-    public static UpdateOne<CollectionData>(collection: mongodb.Collection, filter: Object, update: Object, callback?: mongodb.MongoCallback<mongodb.UpdateWriteOpResult>) {
+    public static UpdateOne(collection: mongodb.Collection, filter: Object, update: Object, callback?: mongodb.MongoCallback<mongodb.UpdateWriteOpResult>) {
         collection.updateOne(filter, update, callback);
     }
 
-    public static Delete<CollectionData>(collection: mongodb.Collection, filter: Object, callback?: mongodb.MongoCallback<mongodb.DeleteWriteOpResultObject>) {
+    public static Delete(collection: mongodb.Collection, filter: Object, callback?: mongodb.MongoCallback<mongodb.DeleteWriteOpResultObject>) {
         collection.deleteOne(filter, callback);
     }
 
@@ -93,7 +93,7 @@ export abstract class Database<CollectionData> {
     }
 
     public updateOne(filter: Object, update: Object, callback?: mongodb.MongoCallback<mongodb.UpdateWriteOpResult>) {
-        Database.UpdateOne<CollectionData>(this.getCollection(), filter, update, callback);
+        Database.UpdateOne(this.getCollection(), filter, update, callback);
     }
 
     public delete(filter: Object, callback?: mongodb.MongoCallback<mongodb.DeleteWriteOpResultObject>) {

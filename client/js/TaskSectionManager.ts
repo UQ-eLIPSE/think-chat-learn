@@ -1,5 +1,3 @@
-import * as $ from "jquery";
-
 import {EventBox} from "../../common/js/EventBox";
 import {TaskSection} from "./TaskSection";
 

@@ -1,12 +1,9 @@
 import * as mongodb from "mongodb";
-import * as SocketIO from "socket.io";
+// import * as SocketIO from "socket.io";
 
 import {Conf} from "../config/Conf";
 import {Database} from "./data/Database";
 
-import {ChatGroupFormationLoop} from "./chat/ChatGroupFormationLoop";
-
-import {WSEndpoint} from "./websocket/WSEndpoint";
 import {ChatEndpoint} from "./websocket/endpoint/ChatEndpoint";
 import {UserLoginEndpoint} from "./websocket/endpoint/UserLoginEndpoint";
 import {AnswerSubmissionEndpoint} from "./websocket/endpoint/AnswerSubmissionEndpoint";
