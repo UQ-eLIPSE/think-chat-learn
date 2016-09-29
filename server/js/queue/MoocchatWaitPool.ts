@@ -258,8 +258,6 @@ export class MoocchatWaitPool {
         // Compile the queues with sessions that we can pop into a new group
         queueKeyCompilationLoop:
         while (true) {
-            const intendedQueueKeysStartSize = intendedQueueKeys.length;
-
             for (let i = 0; i < queueKeys.length; ++i) {
                 const queueKey = queueKeys[i];
                 const queueSize = queueSizes[queueKey];
@@ -271,7 +269,7 @@ export class MoocchatWaitPool {
                 intendedQueueKeys.push(queueKey);
                 --queueSizes[queueKey];
 
-                if (intendedQueueKeysStartSize === size) {
+                if (intendedQueueKeys.length === size) {
                     break queueKeyCompilationLoop;
                 }
             }
