@@ -34,11 +34,12 @@ export class DummyAuth extends MoocchatAuth {
         const hash = crypto.randomBytes(20).toString("hex");
 
         this.identity = {
+            _authName: this.getAuthName(),
+            
             identityId: hash,
             name: {
                 full: hash,
             },
-            authName: this.getAuthName(),
             course: "DummyCourse",
             roles: ["Student", "Instructor"],
         };

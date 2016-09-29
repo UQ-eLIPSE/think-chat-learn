@@ -39,13 +39,14 @@ export class LTIAuth extends MoocchatAuth {
 
     public getIdentity() {
         return {
+            _authName: this.getAuthName(),
+
             identityId: this.ltiData.user_id,
             name: {
                 full: this.ltiData.lis_person_name_full || "",
                 given: this.ltiData.lis_person_name_given || "",
                 family: this.ltiData.lis_person_name_family || "",
             },
-            authName: this.getAuthName(),
             course: this.ltiData.context_label || "",
             roles: this.ltiData.roles.split(","),
         }

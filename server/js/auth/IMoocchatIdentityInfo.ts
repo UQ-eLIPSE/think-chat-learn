@@ -1,5 +1,10 @@
 export interface IMoocchatIdentityInfo {
     /**
+     * Original authentication method or protocol that produced this identity.
+     */
+    _authName: string;
+
+    /**
      * An identifier of the identity given by the auth source data.
      * 
      * This can be: username, student ID, record number as string etc.
@@ -17,11 +22,6 @@ export interface IMoocchatIdentityInfo {
         given?: string;
         family?: string;
     };
-
-    /**
-     * Original authentication method or protocol that produced this identity.
-     */
-    authName: string;
 
     /**
      * Course in which this identity sits (e.g. ENGG1200.)

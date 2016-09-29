@@ -154,7 +154,8 @@ export class UserLoginEndpoint extends WSEndpoint {
 
             dbQuizSchedule.readAsArray({
                 availableStart: { $lte: now },
-                availableEnd: { $gte: now }
+                availableEnd: { $gte: now },
+                course: identity.course,
             }, function(err, result) {
                 if (err) {
                     return throwErr(err);
