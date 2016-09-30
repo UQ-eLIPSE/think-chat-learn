@@ -16,6 +16,28 @@ export const Utils = {
         },
 
         /**
+         * Converts minutes to milliseconds.
+         * 
+         * @param {number} minutes
+         * 
+         * @return {number} Value of input in milliseconds
+         */
+        minToMs: (minutes: number) => {
+            return Utils.DateTime.secToMs(minutes * 60);
+        },
+
+        /**
+         * Converts hours to milliseconds.
+         * 
+         * @param {number} hours
+         * 
+         * @return {number} Value of input in milliseconds
+         */
+        hrsToMs: (hours: number) => {
+            return Utils.DateTime.minToMs(hours * 60);
+        },
+
+        /**
          * Format a time interval as mm:ss.
          * 
          * Minute is variable length, seconds is always 2 places.

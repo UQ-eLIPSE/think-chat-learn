@@ -13,6 +13,8 @@
         
         "removeComments": true,
         "preserveConstEnums": true,
+        "forceConsistentCasingInFileNames": true,
+        
         "sourceMap": false,
 
         "outDir": "../build/client",

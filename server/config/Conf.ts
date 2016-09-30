@@ -1,3 +1,5 @@
+import { Utils } from "../../common/js/Utils";
+
 /**
  * MOOCchat server configuration file
  */
@@ -39,7 +41,10 @@ export const Conf: IConf = {
     },
     backupClient: {
         callConfirmTimeoutMs: 15000
-    }
+    },
+    session: {
+        timeoutMs: Utils.DateTime.hrsToMs(1),
+    },
 }
 
 
@@ -85,5 +90,8 @@ interface IConf {
     },
     backupClient: {
         callConfirmTimeoutMs: number
+    },
+    session: {
+        timeoutMs: number,
     }
 }
