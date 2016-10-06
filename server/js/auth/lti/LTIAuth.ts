@@ -1,4 +1,5 @@
 import {ILTIData} from "../../../../common/interfaces/ILTIData";
+import {IMoocchatAuthProcessReturn} from "../IMoocchatAuthProcessReturn";
 
 import {Conf} from "../../../config/Conf";
 import {LTIProcessor} from "./LTIProcessor";
@@ -16,24 +17,22 @@ export class LTIAuth extends MoocchatAuth {
 
     public isValid() {
         return {
-            result: true,
-            message: ""
+            success: true
         };
     }
 
-    public isAuthenticated() {
+    public isAuthenticated(): IMoocchatAuthProcessReturn {
         try {
             LTIAuth.Processor.verifyAndReturnLTIObj(this.ltiData);
         } catch (e) {
             return {
-                result: false,
+                success: false,
                 message: e.message,
             };
         }
 
         return {
-            result: true,
-            message: ""
+            success: true
         };
     }
 

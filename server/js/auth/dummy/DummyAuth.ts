@@ -14,15 +14,13 @@ export class DummyAuth extends MoocchatAuth {
 
     public isValid() {
         return {
-            result: true,
-            message: ""
+            success: true
         };
     }
 
     public isAuthenticated() {
         return {
-            result: true,
-            message: ""
+            success: true
         };
     }
 

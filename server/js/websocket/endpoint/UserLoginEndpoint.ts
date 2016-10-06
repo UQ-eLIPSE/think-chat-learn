@@ -77,7 +77,7 @@ export class UserLoginEndpoint extends WSEndpoint {
 
             const authResult = ltiAuth.authenticate();
 
-            if (!authResult.result) {
+            if (!authResult.success) {
                 return throwErr(new Error(authResult.message));
             }
 

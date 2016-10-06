@@ -2,7 +2,7 @@ import { Conf } from "../../config/Conf";
 
 import { KVStore } from "../../../common/js/KVStore";
 
-import {User} from "../user/User";
+import { User } from "../user/User";
 
 /**
  * Keeps track of user sessions and validates them 
@@ -11,13 +11,16 @@ import {User} from "../user/User";
  * @class Session
  */
 export class Session {
-    private static Timeout = Conf.session.timeoutMs;
+    public static readonly Timeout = Conf.session.timeoutMs;
+
     private static SingletonStore = new KVStore<Session>();
 
     private readonly id: string;
     private readonly user: User;
-
+    private readonly store: KVStore<any>;
+    
     private lastActive: number;
+    private destroyed: boolean;
 
     /**
      * Gets all active session objects.
@@ -57,6 +60,8 @@ export class Session {
      * @param {Session} session
      */
     public static Destroy(session: Session) {
+        session.destroyed = true;
+
         const id = session.getId();
         Session.SingletonStore.delete(id);
     }
@@ -80,20 +85,47 @@ export class Session {
         Session.GetSessions().forEach(session => Session.Destroy(session));
     }
 
-    constructor(id: string, user: User) {
-        // If existing session exists, then return that
+    /**
+     * Cleans sessions that are no longer valid.
+     * 
+     * @static
+     */
+    public static CleanSessions() {
+        Session.GetSessions()
+            .filter(session => !session.isValid())
+            .forEach(session => Session.Destroy(session));
+    }
+
+    constructor(id: string, user?: User) {
         const existingSession = Session.SingletonStore.get(id);
 
-        if (existingSession) {
-            if (existingSession.getUser() !== user) {
-                throw new Error(`Existing session "${existingSession.getId()}" not associated with user "${user.getId()}"`);
+        // If no user supplied, we are retrieving a session
+        if (!user) {
+            if (!existingSession) {
+                throw new Error(`Session with ID "${id}" is not valid, has expired, or has been destroyed`);
             }
+
+            // Check session is valid
+            if (!existingSession.isValid()) {
+                throw new Error(`Session with ID "${existingSession.getId()}" is not valid, has expired, or has been destroyed`);
+            }
+
+            // Update activity time to keep session alive/prevent timeout
+            existingSession.updateActivityTime();
+
             return existingSession;
+        }
+
+        // If session already exists when attempting to create a new session object,
+        // stop as we should not be able to overwrite an existing session
+        if (existingSession) {
+            throw new Error(`Session with ID "${existingSession.getId()}" exists and cannot be overwritten`);
         }
 
         // Set up session
         this.id = id;
         this.user = user;
+        this.store = new KVStore<any>();
 
         this.updateActivityTime();
 
@@ -118,6 +150,13 @@ export class Session {
     }
 
     /**
+     * @returns {KVStore} Store associated with session
+     */
+    public getStore() {
+        return this.store;
+    }
+
+    /**
      * @returns {number} Inactivity time in milliseconds
      */
     public getInactivityTime() {
@@ -133,6 +172,11 @@ export class Session {
     }
 
     public isValid() {
+
+        // Session invalid if set "destroyed"
+        if (this.destroyed) {
+            return false;
+        }
 
         // Check timeout
         if (this.getInactivityTime() > Session.Timeout) {

@@ -1,13 +1,14 @@
-import {Conf} from "./config/Conf";
+import { Conf } from "./config/Conf";
 
 import * as express from "express";
 import * as http from "http";
 import * as SocketIO from "socket.io";
 import * as bodyParser from "body-parser";
 
-import {Logger} from "../common/js/Logger";
+import { Logger } from "../common/js/Logger";
 
-import {Moocchat} from "./js/Moocchat";
+import { Moocchat } from "./js/Moocchat";
+import { Api, ApiHandlerBase } from "./js/api/Api";
 
 // Initialise logger proxy for timestamping console output
 Logger.Init({
@@ -48,8 +49,9 @@ app.set("view engine", "ejs");
 app.set("views", __dirname + "/static/views");
 
 
-// POST body parsing (required for LTI incoming data)
-app.use(bodyParser.urlencoded({
+// POST body parsing
+app.use(bodyParser.json());         // JSON-encoded for MOOCchat API
+app.use(bodyParser.urlencoded({     // URL-encoded for LTI
     extended: true
 }));
 
@@ -90,16 +92,78 @@ app.get("/backup-client", function(req, res) {
     res.render("backup-client.ejs");
 });
 
+
+
+
+
+
+
+
+
+
+
+
+console.log("Launching MOOCchat...");
+const moocchat = new Moocchat(io);
+
+
+
 // MOOCchat standard client
-app.post("/", function(req, res) {
+app.post("/", (req, res) => {
     res.render("index.ejs", { conf: Conf, postData: req.body });
 });
 
-app.get("/", function(req, res) {
+app.get("/", (req, res) => {
     res.render("index.ejs", { conf: Conf });
 });
 
 
 
-console.log("Launching MOOCchat...");
-new Moocchat(io);
+
+AssociatePOSTEndpoint("/api/client/login/lti", Api.ClientLoginLti);
+
+AssociateGETEndpoint("/api/client/quiz", Api.ClientQuiz);
+AssociateGETEndpoint("/api/client/question", Api.ClientQuestion);
+AssociateGETEndpoint("/api/client/question/:questionId/options", Api.ClientQuestion_Options);
+AssociateGETEndpoint("/api/client/question/:questionId/correctOptions", Api.ClientQuestion_Options);
+
+function AssociatePOSTEndpoint<PayloadType>(url: string, endpointHandler: ApiHandlerBase<any, PayloadType>) {
+    app.post(url, (req, res) => {
+        // Session ID value comes from the header
+        const sessionId = req.get("Moocchat-Session-Id");
+
+        // Request body is the data we want
+        // This would have been processed into a JS object via. Express
+        const data = req.body || {};
+
+        // Merge URL request params and session ID into body data
+        Object.keys(req.params).forEach(key => data[key] = req.params[key]);
+
+        if (sessionId) {
+            data["sessionId"] = sessionId;
+        } else {
+            delete data["sessionId"];
+        }
+
+        // Run endpoint handler, with the response request being JSON
+        endpointHandler(moocchat, p => res.json(p), data);
+    });
+}
+
+function AssociateGETEndpoint<PayloadType>(url: string, endpointHandler: ApiHandlerBase<any, PayloadType>) {
+    app.get(url, (req, res) => {
+        // Session ID value comes from the header
+        const sessionId = req.get("Moocchat-Session-Id");
+
+        const data: {[key: string]: any} = req.params;
+
+        if (sessionId) {
+            data["sessionId"] = sessionId;
+        } else {
+            delete data["sessionId"];
+        }
+
+        // Run endpoint handler, with the response request being JSON
+        endpointHandler(moocchat, p => res.json(p), data);
+    });
+}

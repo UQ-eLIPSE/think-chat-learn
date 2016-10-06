@@ -26,18 +26,17 @@ export abstract class MoocchatAuth {
 
     public authenticate(): IMoocchatAuthProcessReturn {
         const validCheckResult = this.isValid();
-        if (!validCheckResult.result) {
+        if (!validCheckResult.success) {
             return validCheckResult;
         }
 
-        const authResult = this.isValid();
-        if (!authResult.result) {
+        const authResult = this.isAuthenticated();
+        if (!authResult.success) {
             return authResult;
         }
 
         return {
-            result: true,
-            message: ""
+            success: true
         };
     }
 }

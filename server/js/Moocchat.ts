@@ -1,18 +1,16 @@
 import * as mongodb from "mongodb";
-// import * as SocketIO from "socket.io";
 
-import {Conf} from "../config/Conf";
-import {Database} from "./data/Database";
+import { Conf } from "../config/Conf";
+import { Database } from "./data/Database";
 
-import {ChatEndpoint} from "./websocket/endpoint/ChatEndpoint";
-import {UserLoginEndpoint} from "./websocket/endpoint/UserLoginEndpoint";
-import {AnswerSubmissionEndpoint} from "./websocket/endpoint/AnswerSubmissionEndpoint";
-import {SurveyEndpoint} from "./websocket/endpoint/SurveyEndpoint";
-import {BackupClientEndpoint} from "./websocket/endpoint/BackupClientEndpoint";
-import {SocketResyncEndpoint} from "./websocket/endpoint/SocketResyncEndpoint";
+import { ChatEndpoint } from "./websocket/endpoint/ChatEndpoint";
+import { UserLoginEndpoint } from "./websocket/endpoint/UserLoginEndpoint";
+import { AnswerSubmissionEndpoint } from "./websocket/endpoint/AnswerSubmissionEndpoint";
+import { SurveyEndpoint } from "./websocket/endpoint/SurveyEndpoint";
+import { BackupClientEndpoint } from "./websocket/endpoint/BackupClientEndpoint";
+import { SocketResyncEndpoint } from "./websocket/endpoint/SocketResyncEndpoint";
 
-import {PacSeqSocket_Server} from "../../common/js/PacSeqSocket_Server";
-
+import { PacSeqSocket_Server } from "../../common/js/PacSeqSocket_Server";
 
 export class Moocchat {
     private socketIO: SocketIO.Server;
@@ -70,5 +68,9 @@ export class Moocchat {
 
             console.log("MOOCchat set up complete");
         });
+    }
+
+    public getDb() {
+        return this.db;
     }
 }
