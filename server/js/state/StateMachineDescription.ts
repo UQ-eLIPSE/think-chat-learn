@@ -21,8 +21,16 @@ export class StateMachineDescription {
     }
 
     public addTransition(label: string, fromState: string, toState: string, onBeforeTransition?: OnTransitionFunction, onAfterTransition?: OnTransitionFunction) {
+        if (label === "*") {
+            throw new Error(`Label value "${label}" is reserved`);
+        }
+
         if (this.getTransition(label)) {
             throw new Error(`Transition with label "${label}" already exists`);
+        }
+
+        if (toState === "*") {
+            throw new Error(`Transitions cannot have ambiguous resultant state`);
         }
 
         this.transitions.push({
@@ -47,7 +55,10 @@ export class StateMachineDescription {
     }
 
     public getPossibleTransitions(fromState: string) {
-        return this.transitions.filter(transition => transition.fromState === fromState);
+        return this.transitions.filter(
+            transition =>
+                (transition.fromState === fromState) || (transition.fromState === "*")
+        );
     }
 
     public getInitialState() {
