@@ -1,3 +1,4 @@
+import * as mongodb from "mongodb";
 import * as crypto from "crypto";
 
 import { Moocchat } from "../Moocchat";
@@ -17,7 +18,111 @@ import { QuestionOptionCorrect as DBQuestionOptionCorrect, IDB_QuestionOptionCor
 // import { Survey as DBSurvey, IDB_Survey } from "../data/models/Survey";
 
 export class Api {
-    public static ClientLoginLti(moocchat: Moocchat, res: ApiResponseCallback<IMoocchatApiToClientLoginResponsePayload>, data: ILTIData): void {
+
+    @ApplySession
+    public static GetClientQuiz(moocchat: Moocchat, res: ApiResponseCallback<IDB_QuizSchedule[]>, data: IMoocchatApiToServerStandardRequestBase, session?: Session): void {
+        const course = session.getUser().getIdentity().course;
+
+        // Look up quizzes under course
+        const db = moocchat.getDb();
+        const now = new Date();
+
+        new DBQuizSchedule(db).readAsArray({
+            course,
+            availableStart: { $lte: now },
+            availableEnd: { $gte: now },
+        }, (err, result) => {
+            if (handleMongoError(err, res)) { return; }
+
+            return res({
+                success: true,
+                payload: result,
+            });
+        });
+    }
+
+    @ApplySession
+    public static GetClientQuestions(moocchat: Moocchat, res: ApiResponseCallback<IDB_Question[]>, data: IMoocchatApiToServerStandardRequestBase, session?: Session): void {
+        const course = session.getUser().getIdentity().course;
+
+        // Look up question under course
+        const db = moocchat.getDb();
+
+        new DBQuestion(db).readAsArray({
+            course,
+        }, (err, result) => {
+            if (handleMongoError(err, res)) { return; }
+
+            return res({
+                success: true,
+                payload: result,
+            });
+        });
+    }
+
+    @ApplySession
+    @LimitQuestionIdToSession
+    public static GetClientQuestion(moocchat: Moocchat, res: ApiResponseCallback<IDB_Question>, data: IMoocchatApiToServerQuestionId, session?: Session): void {
+        const db = moocchat.getDb();
+
+        new DBQuestion(db).readAsArray({
+            questionId: new Database.ObjectId(data.questionId)
+        }, (err, result) => {
+            if (handleMongoError(err, res)) { return; }
+
+            // No need to check for question existence; @LimitQuestionIdToSession already covers that
+
+            const fetchedQuestion = result[0];
+
+            return res({
+                success: true,
+                payload: fetchedQuestion,
+            });
+        });
+    }
+
+    @ApplySession
+    @LimitQuestionIdToSession
+    public static GetClientQuestion_Options(moocchat: Moocchat, res: ApiResponseCallback<IDB_QuestionOption[]>, data: IMoocchatApiToServerQuestionId, session?: Session): void {
+        const db = moocchat.getDb();
+
+        new DBQuestionOption(db).readAsArray({
+            questionId: new Database.ObjectId(data.questionId)
+        }, (err, result) => {
+            if (handleMongoError(err, res)) { return; }
+
+            return res({
+                success: true,
+                payload: result,
+            });
+        });
+    }
+
+    @ApplySession
+    @LimitQuestionIdToSession
+    public static GetClientQuestion_CorrectOptions(moocchat: Moocchat, res: ApiResponseCallback<IDB_QuestionOptionCorrect[]>, data: IMoocchatApiToServerQuestionId, session?: Session): void {
+        const db = moocchat.getDb();
+
+        new DBQuestionOptionCorrect(db).readAsArray({
+            questionId: new Database.ObjectId(data.questionId)
+        }, (err, result) => {
+            if (handleMongoError(err, res)) { return; }
+
+            return res({
+                success: true,
+                payload: result,
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+    public static PostClientLoginLti(moocchat: Moocchat, res: ApiResponseCallback<IMoocchatApiToClientLoginResponsePayload>, data: ILTIData): void {
         // Run auth
         const authObj = new LTIAuth(data);
         const authResult = authObj.authenticate();
@@ -52,102 +157,82 @@ export class Api {
     }
 
     @ApplySession
-    public static ClientQuiz(moocchat: Moocchat, res: ApiResponseCallback<IDB_QuizSchedule[]>, data: IMoocchatApiToServerStandardRequestBase, session?: Session): void {
+    public static PostClientQuestion(moocchat: Moocchat, res: ApiResponseCallback<IMoocchatApiToClientInsertionIdResponse>, data: IMoocchatApiToServerStandardRequestBase & IDB_Question, session?: Session): void {
+        const db = moocchat.getDb();
         const course = session.getUser().getIdentity().course;
 
-        // Look up quizzes under course
-        const db = moocchat.getDb();
-        const now = new Date();
-
-        new DBQuizSchedule(db).readAsArray({
+        new DBQuestion(db).insertOne({
+            content: data.content,
             course,
-            availableStart: { $lte: now },
-            availableEnd: { $gte: now },
         }, (err, result) => {
-            if (err) {
-                console.error(err);
-                return res({
-                    success: false,
-                    message: err.message,
-                });
-            }
+            if (handleMongoError(err, res)) { return; }
 
             return res({
                 success: true,
-                payload: result,
+                payload: {
+                    questionId: result.insertedId.toHexString(),
+                }
             });
         });
     }
 
-    @ApplySession
-    public static ClientQuestion(moocchat: Moocchat, res: ApiResponseCallback<IDB_Question[]>, data: IMoocchatApiToServerStandardRequestBase, session?: Session): void {
-        const course = session.getUser().getIdentity().course;
 
-        // Look up question under course
-        const db = moocchat.getDb();
 
-        new DBQuestion(db).readAsArray({
-            course,
-        }, (err, result) => {
-            if (err) {
-                console.error(err);
-                return res({
-                    success: false,
-                    message: err.message,
-                });
-            }
 
-            return res({
-                success: true,
-                payload: result,
-            });
-        });
-    }
+
+
+
+
 
     @ApplySession
     @LimitQuestionIdToSession
-    public static ClientQuestion_Options(moocchat: Moocchat, res: ApiResponseCallback<IDB_QuestionOption[]>, data: IMoocchatApiToServerQuestionId, session?: Session): void {
+    public static PutClientQuestion(moocchat: Moocchat, res: ApiResponseCallback<void>, data: IMoocchatApiToServerQuestionId & IDB_Question, session?: Session): void {
         const db = moocchat.getDb();
+        const questionId = data.questionId;
 
-        new DBQuestionOption(db).readAsArray({
-            questionId: new Database.ObjectId(data.questionId)
-        }, (err, result) => {
-            if (err) {
-                console.error(err);
+        new DBQuestion(db).updateOne(
+            {
+                _id: new Database.ObjectId(questionId),
+            },
+            {
+                $set: {
+                    content: data.content,
+                }
+            },
+            (err, result) => {
+                if (handleMongoError(err, res)) { return; }
+
                 return res({
-                    success: false,
-                    message: err.message,
+                    success: true,
                 });
-            }
-
-            return res({
-                success: true,
-                payload: result,
             });
-        });
     }
+
+
+
+
+
+
+
+
 
     @ApplySession
     @LimitQuestionIdToSession
-    public static ClientQuestion_CorrectOptions(moocchat: Moocchat, res: ApiResponseCallback<IDB_QuestionOptionCorrect[]>, data: IMoocchatApiToServerQuestionId, session?: Session): void {
+    public static DeleteClientQuestion(moocchat: Moocchat, res: ApiResponseCallback<void>, data: IMoocchatApiToServerQuestionId, session?: Session): void {
         const db = moocchat.getDb();
+        const questionId = data.questionId;
 
-        new DBQuestionOptionCorrect(db).readAsArray({
-            questionId: new Database.ObjectId(data.questionId)
-        }, (err, result) => {
-            if (err) {
-                console.error(err);
+        new DBQuestion(db).delete(
+            {
+                _id: new Database.ObjectId(questionId),
+            },
+            (err, result) => {
+                if (handleMongoError(err, res)) { return; }
+
                 return res({
-                    success: false,
-                    message: err.message,
+                    success: true,
                 });
-            }
-
-            return res({
-                success: true,
-                payload: result,
             });
-        });
     }
 }
 
@@ -201,20 +286,14 @@ function LimitQuestionIdToSession<Target, InputType extends IMoocchatApiToServer
             _id: new Database.ObjectId(questionId),
             course,
         }, (err, result) => {
-            if (err) {
-                console.error(err);
-                return res({
-                    success: false,
-                    message: err.message,
-                });
-            }
+            if (handleMongoError(err, res)) { return; }
 
             // If result blank, that means either question does not exist or
             // is not within the course requested in this session 
             if (result.length === 0) {
                 return res({
                     success: false,
-                    message: `Question ID "${questionId}" does not exist for this course`
+                    message: `Question ID "${questionId}" cannot be found or is not available for the course associated with your current session`
                 });
             }
 
@@ -226,6 +305,20 @@ function LimitQuestionIdToSession<Target, InputType extends IMoocchatApiToServer
     return descriptor;
 }
 
+function handleMongoError<PayloadType>(err: mongodb.MongoError, res: ApiResponseCallback<PayloadType>) {
+    if (err) {
+        console.error(err);
+
+        res({
+            success: false,
+            message: err.message,
+        });
+
+        return true;
+    }
+
+    return false;
+}
 
 // export type IMoocchatApiHandler<PayloadType> = (data: IMoocchatApiToServerBase, session?: Session) => IMoocchatApiResponseBase<PayloadType>;
 
@@ -250,4 +343,8 @@ export interface IMoocchatApiToServerStandardRequestBase {
 
 export interface IMoocchatApiToServerQuestionId extends IMoocchatApiToServerStandardRequestBase {
     questionId: string,
+}
+
+export interface IMoocchatApiToClientInsertionIdResponse {
+    [key: string]: string,
 }

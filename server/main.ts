@@ -120,12 +120,50 @@ app.get("/", (req, res) => {
 
 
 
-AssociatePOSTEndpoint("/api/client/login/lti", Api.ClientLoginLti);
+// GETs
+AssociateGETEndpoint("/api/client/quiz", Api.GetClientQuiz);
 
-AssociateGETEndpoint("/api/client/quiz", Api.ClientQuiz);
-AssociateGETEndpoint("/api/client/question", Api.ClientQuestion);
-AssociateGETEndpoint("/api/client/question/:questionId/options", Api.ClientQuestion_Options);
-AssociateGETEndpoint("/api/client/question/:questionId/correctOptions", Api.ClientQuestion_Options);
+AssociateGETEndpoint("/api/client/question", Api.GetClientQuestions);
+AssociateGETEndpoint("/api/client/question/:questionId", Api.GetClientQuestion);
+AssociateGETEndpoint("/api/client/question/:questionId/option", Api.GetClientQuestion_Options);
+AssociateGETEndpoint("/api/client/question/:questionId/correctOption", Api.GetClientQuestion_CorrectOptions);
+
+
+
+// POSTs
+AssociatePOSTEndpoint("/api/client/login/lti", Api.PostClientLoginLti);
+
+AssociatePOSTEndpoint("/api/client/question", Api.PostClientQuestion);
+
+
+
+// PUTs
+AssociatePUTEndpoint("/api/client/question/:questionId", Api.PutClientQuestion);
+
+
+
+// DELETEs
+AssociateDELETEEndpoint("/api/client/question/:questionId", Api.DeleteClientQuestion);
+
+
+
+function AssociateGETEndpoint<PayloadType>(url: string, endpointHandler: ApiHandlerBase<any, PayloadType>) {
+    app.get(url, (req, res) => {
+        // Session ID value comes from the header
+        const sessionId = req.get("Moocchat-Session-Id");
+
+        const data: {[key: string]: any} = req.params;
+
+        if (sessionId) {
+            data["sessionId"] = sessionId;
+        } else {
+            delete data["sessionId"];
+        }
+
+        // Run endpoint handler, with the response request being JSON
+        endpointHandler(moocchat, p => res.json(p), data);
+    });
+}
 
 function AssociatePOSTEndpoint<PayloadType>(url: string, endpointHandler: ApiHandlerBase<any, PayloadType>) {
     app.post(url, (req, res) => {
@@ -150,8 +188,31 @@ function AssociatePOSTEndpoint<PayloadType>(url: string, endpointHandler: ApiHan
     });
 }
 
-function AssociateGETEndpoint<PayloadType>(url: string, endpointHandler: ApiHandlerBase<any, PayloadType>) {
-    app.get(url, (req, res) => {
+function AssociatePUTEndpoint<PayloadType>(url: string, endpointHandler: ApiHandlerBase<any, PayloadType>) {
+    app.put(url, (req, res) => {
+        // Session ID value comes from the header
+        const sessionId = req.get("Moocchat-Session-Id");
+
+        // Request body is the data we want
+        // This would have been processed into a JS object via. Express
+        const data = req.body || {};
+
+        // Merge URL request params and session ID into body data
+        Object.keys(req.params).forEach(key => data[key] = req.params[key]);
+
+        if (sessionId) {
+            data["sessionId"] = sessionId;
+        } else {
+            delete data["sessionId"];
+        }
+
+        // Run endpoint handler, with the response request being JSON
+        endpointHandler(moocchat, p => res.json(p), data);
+    });
+}
+
+function AssociateDELETEEndpoint<PayloadType>(url: string, endpointHandler: ApiHandlerBase<any, PayloadType>) {
+    app.delete(url, (req, res) => {
         // Session ID value comes from the header
         const sessionId = req.get("Moocchat-Session-Id");
 
