@@ -6,7 +6,7 @@ export class StateMachine {
 
     constructor(descriptor: StateMachineDescription) {
         this.descriptor = descriptor;
-        this.updateCurrentState(this.descriptor.getInitialState())
+        this.updateCurrentState(this.descriptor.getInitialState());
     }
 
     public getCurrentState() {
@@ -17,7 +17,7 @@ export class StateMachine {
         this.currentState = newState;
     }
 
-    private executeTransition(label: string, ...args: any[]) {
+    public executeTransition(label: string, ...args: any[]) {
         const transition = this.descriptor.getTransition(label);
 
         if (!transition) {
@@ -25,10 +25,10 @@ export class StateMachine {
         }
 
         const oldState = this.getCurrentState();
-        const newState = transition.toState;
+        const newState = transition.toState.toString();
         
-        const onLeaveOldState = this.descriptor.getStateChangeHandlers(oldState).onLeave;
-        const onEnterNewState = this.descriptor.getStateChangeHandlers(newState).onEnter;
+        const onLeaveOldState = (this.descriptor.getStateChangeHandlers(oldState) || {}).onLeave;
+        const onEnterNewState = (this.descriptor.getStateChangeHandlers(newState) || {}).onEnter;
 
         // Transit
         (function() {

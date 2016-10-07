@@ -1,15 +1,12 @@
-import { KVStore } from "../../../common/js/KVStore";
+import { KVStore } from "./KVStore";
 
 export class StateMachineDescription {
-
-    private description: Object;
-
     private readonly initialState: string;
     private readonly transitions: IStateMachineDescriptionTransition[] = [];
     private readonly stateChangeHandlers = new KVStore<StateChangeHandlerInfo>();
 
-    constructor(initialState: string, transitions?: IStateMachineDescriptionTransition[]) {
-        this.initialState = initialState;
+    constructor(initialState: StateLabel, transitions?: IStateMachineDescriptionTransition[]) {
+        this.initialState = initialState.toString();
 
         if (transitions) {
             this.addTransitions(transitions);
@@ -17,10 +14,10 @@ export class StateMachineDescription {
     }
 
     public addTransitions(transitions: IStateMachineDescriptionTransition[]) {
-        this.transitions.forEach(t => this.addTransition(t.label, t.fromState, t.toState));
+        transitions.forEach(t => this.addTransition(t.label, t.fromState, t.toState, t.onBeforeTransition, t.onAfterTransition));
     }
 
-    public addTransition(label: string, fromState: string, toState: string, onBeforeTransition?: OnTransitionFunction, onAfterTransition?: OnTransitionFunction) {
+    public addTransition(label: string, fromState: StateLabel, toState: StateLabel, onBeforeTransition?: OnTransitionFunction, onAfterTransition?: OnTransitionFunction) {
         if (label === "*") {
             throw new Error(`Label value "${label}" is reserved`);
         }
@@ -42,22 +39,22 @@ export class StateMachineDescription {
         });
     }
 
-    public addStateChangeHandlers(state: string, changeHandlers: StateChangeHandlerInfo) {
-        this.stateChangeHandlers.put(state, changeHandlers);
+    public addStateChangeHandlers(state: StateLabel, changeHandlers: StateChangeHandlerInfo) {
+        this.stateChangeHandlers.put(state.toString(), changeHandlers);
     }
 
-    public getStateChangeHandlers(state: string) {
-        return this.stateChangeHandlers.get(state);
+    public getStateChangeHandlers(state: StateLabel) {
+        return this.stateChangeHandlers.get(state.toString());
     }
 
     public getTransition(label: string) {
         return this.transitions.filter(transition => transition.label === label)[0];
     }
 
-    public getPossibleTransitions(fromState: string) {
+    public getPossibleTransitions(fromState: StateLabel) {
         return this.transitions.filter(
             transition =>
-                (transition.fromState === fromState) || (transition.fromState === "*")
+                (transition.fromState === fromState.toString()) || (transition.fromState === "*")
         );
     }
 
@@ -65,8 +62,8 @@ export class StateMachineDescription {
         return this.initialState;
     }
 
-    public isTerminalState(state: string) {
-        return this.getPossibleTransitions(state).length === 0;
+    public isTerminalState(state: StateLabel) {
+        return this.getPossibleTransitions(state.toString()).length === 0;
     }
 
 
@@ -82,9 +79,11 @@ export type StateChangeHandlerInfo = {
 export interface IStateMachineDescriptionTransition {
     label: string,
 
-    fromState: string,
-    toState: string,
+    fromState: StateLabel,
+    toState: StateLabel,
 
     onBeforeTransition?: OnTransitionFunction,
     onAfterTransition?: OnTransitionFunction,
 }
+
+export type StateLabel = string | number;

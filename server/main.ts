@@ -117,6 +117,11 @@ app.get("/", (req, res) => {
     res.render("index.ejs", { conf: Conf });
 });
 
+// Admin client
+app.post("/admin", function(req, res) {
+    res.render("admin.ejs", { postData: req.body });
+});
+
 
 
 
