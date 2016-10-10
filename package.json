@@ -13,7 +13,7 @@
 
     "build_client_main": "tsc --project ./client/tsconfig.json",
     "build_client_backup_client": "tsc --project ./client/tsconfig-backup-client.json",
-    "build_client_admin_client": "tsc --project ./client/tsconfig-admin.json",
+    "build_client_admin_client": "tsc --project ./client/project/admin/tsconfig.json",
     "build_client_css": "node-sass -q ./client/css/main.scss ./build/client/static/css/moocchat/main.css",
     "build_client_combined_html": "node ./server/util/combineHTML.js",
     "build_client_copy_static": "copyfiles ./client/static/** ./build",

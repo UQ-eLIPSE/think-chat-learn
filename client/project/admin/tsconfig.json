@@ -6,10 +6,10 @@
         "noImplicitAny": true,
         "noImplicitThis": true,
         "noImplicitReturns": true,
-        // "strictNullChecks": true,
+        "strictNullChecks": true,
 
         "noUnusedLocals": true,
-        // "noUnusedParameters": true,
+        "noUnusedParameters": true,
         
         "removeComments": true,
         "preserveConstEnums": true,
@@ -17,11 +17,11 @@
         
         "sourceMap": false,
 
-        "outDir": "../build/client",
-        "outFile": "../build/client/static/js/moocchat/admin.js"
+        "outDir": "../../../build/client",
+        "outFile": "../../../build/client/static/js/moocchat/admin.js"
     },
     "files": [
-        "./index.d.ts",
-        "./admin.ts"
+        "../../index.d.ts",
+        "./main.ts"
     ]
 }

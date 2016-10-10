@@ -21,7 +21,6 @@
         var roles = postData.roles.toLowerCase().split(",");
 
         if (roles.indexOf("instructor") > -1 ||
-            roles.indexOf("mentor") > -1 ||
             roles.indexOf("teachingassistant") > -1 ||
             roles.indexOf("administrator") > -1) {
             offerBackupClient = true;

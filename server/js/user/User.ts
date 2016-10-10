@@ -80,4 +80,17 @@ export class User {
     public getId() {
         return this.getIdentity().identityId;
     }
+
+    public isAdmin() {
+        return this.getIdentity().roles.some((role) => {
+            switch (role) {
+                case "TeachingAssistant":
+                case "Instructor":
+                case "Administrator":
+                    return true;
+            }
+
+            return false;
+        });
+    }
 }

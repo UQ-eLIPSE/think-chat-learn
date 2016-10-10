@@ -3,6 +3,7 @@ import * as crypto from "crypto";
 
 import { Moocchat } from "../Moocchat";
 
+import * as IMoocchatApi from "../../../common/interfaces/IMoocchatApi";
 import { ILTIData } from "../../../common/interfaces/ILTIData";
 import { LTIAuth } from "../auth/lti/LTIAuth";
 import { User } from "../user/User";
@@ -20,17 +21,17 @@ import { QuestionOptionCorrect as DBQuestionOptionCorrect, IDB_QuestionOptionCor
 export class Api {
 
     @ApplySession
-    public static GetClientQuiz(moocchat: Moocchat, res: ApiResponseCallback<IDB_QuizSchedule[]>, data: IMoocchatApiToServerStandardRequestBase, session?: Session): void {
+    public static GetClientQuizzes(moocchat: Moocchat, res: ApiResponseCallback<IDB_QuizSchedule[]>, data: IMoocchatApi.ToServerStandardRequestBase, session?: Session): void {
         const course = session.getUser().getIdentity().course;
 
         // Look up quizzes under course
         const db = moocchat.getDb();
-        const now = new Date();
+        // const now = new Date();
 
         new DBQuizSchedule(db).readAsArray({
             course,
-            availableStart: { $lte: now },
-            availableEnd: { $gte: now },
+            // availableStart: { $lte: now },
+            // availableEnd: { $gte: now },
         }, (err, result) => {
             if (handleMongoError(err, res)) { return; }
 
@@ -42,7 +43,7 @@ export class Api {
     }
 
     @ApplySession
-    public static GetClientQuestions(moocchat: Moocchat, res: ApiResponseCallback<IDB_Question[]>, data: IMoocchatApiToServerStandardRequestBase, session?: Session): void {
+    public static GetClientQuestions(moocchat: Moocchat, res: ApiResponseCallback<IDB_Question[]>, data: IMoocchatApi.ToServerStandardRequestBase, session?: Session): void {
         const course = session.getUser().getIdentity().course;
 
         // Look up question under course
@@ -62,11 +63,11 @@ export class Api {
 
     @ApplySession
     @LimitQuestionIdToSession
-    public static GetClientQuestion(moocchat: Moocchat, res: ApiResponseCallback<IDB_Question>, data: IMoocchatApiToServerQuestionId, session?: Session): void {
+    public static GetClientQuestion(moocchat: Moocchat, res: ApiResponseCallback<IDB_Question>, data: IMoocchatApi.ToServerQuestionId, session?: Session): void {
         const db = moocchat.getDb();
 
         new DBQuestion(db).readAsArray({
-            questionId: new Database.ObjectId(data.questionId)
+            _id: new Database.ObjectId(data.questionId)
         }, (err, result) => {
             if (handleMongoError(err, res)) { return; }
 
@@ -83,7 +84,7 @@ export class Api {
 
     @ApplySession
     @LimitQuestionIdToSession
-    public static GetClientQuestion_Options(moocchat: Moocchat, res: ApiResponseCallback<IDB_QuestionOption[]>, data: IMoocchatApiToServerQuestionId, session?: Session): void {
+    public static GetClientQuestion_Options(moocchat: Moocchat, res: ApiResponseCallback<IDB_QuestionOption[]>, data: IMoocchatApi.ToServerQuestionId, session?: Session): void {
         const db = moocchat.getDb();
 
         new DBQuestionOption(db).readAsArray({
@@ -100,7 +101,7 @@ export class Api {
 
     @ApplySession
     @LimitQuestionIdToSession
-    public static GetClientQuestion_CorrectOptions(moocchat: Moocchat, res: ApiResponseCallback<IDB_QuestionOptionCorrect[]>, data: IMoocchatApiToServerQuestionId, session?: Session): void {
+    public static GetClientQuestion_CorrectOptions(moocchat: Moocchat, res: ApiResponseCallback<IDB_QuestionOptionCorrect[]>, data: IMoocchatApi.ToServerQuestionId, session?: Session): void {
         const db = moocchat.getDb();
 
         new DBQuestionOptionCorrect(db).readAsArray({
@@ -122,13 +123,18 @@ export class Api {
 
 
 
-    public static PostClientLoginLti(moocchat: Moocchat, res: ApiResponseCallback<IMoocchatApiToClientLoginResponsePayload>, data: ILTIData): void {
+    public static PostClientLoginLti(moocchat: Moocchat, res: ApiResponseCallback<IMoocchatApi.ToClientLoginResponsePayload>, data: ILTIData): void {
         // Run auth
         const authObj = new LTIAuth(data);
         const authResult = authObj.authenticate();
 
         if (!authResult.success) {
-            return res(authResult);
+            authResult
+            return res({
+                success: false,
+                code: "AUTHENTICATION_FAILED",
+                message: authResult.message,
+            });
         }
 
         // Set up user object
@@ -143,6 +149,7 @@ export class Api {
         } catch (e) {
             return res({
                 success: false,
+                code: "SESSION_INITIALISATION_FAILED",
                 message: e.message,
             });
         }
@@ -157,7 +164,8 @@ export class Api {
     }
 
     @ApplySession
-    public static PostClientQuestion(moocchat: Moocchat, res: ApiResponseCallback<IMoocchatApiToClientInsertionIdResponse>, data: IMoocchatApiToServerStandardRequestBase & IDB_Question, session?: Session): void {
+    @AdminOnly
+    public static PostClientQuestion(moocchat: Moocchat, res: ApiResponseCallback<IMoocchatApi.ToClientInsertionIdResponse>, data: IMoocchatApi.ToServerStandardRequestBase & IDB_Question, session?: Session): void {
         const db = moocchat.getDb();
         const course = session.getUser().getIdentity().course;
 
@@ -185,8 +193,9 @@ export class Api {
 
 
     @ApplySession
+    @AdminOnly
     @LimitQuestionIdToSession
-    public static PutClientQuestion(moocchat: Moocchat, res: ApiResponseCallback<void>, data: IMoocchatApiToServerQuestionId & IDB_Question, session?: Session): void {
+    public static PutClientQuestion(moocchat: Moocchat, res: ApiResponseCallback<void>, data: IMoocchatApi.ToServerQuestionId & IDB_Question, session?: Session): void {
         const db = moocchat.getDb();
         const questionId = data.questionId;
 
@@ -204,6 +213,7 @@ export class Api {
 
                 return res({
                     success: true,
+                    payload: undefined,
                 });
             });
     }
@@ -217,8 +227,9 @@ export class Api {
 
 
     @ApplySession
+    @AdminOnly
     @LimitQuestionIdToSession
-    public static DeleteClientQuestion(moocchat: Moocchat, res: ApiResponseCallback<void>, data: IMoocchatApiToServerQuestionId, session?: Session): void {
+    public static DeleteClientQuestion(moocchat: Moocchat, res: ApiResponseCallback<void>, data: IMoocchatApi.ToServerQuestionId, session?: Session): void {
         const db = moocchat.getDb();
         const questionId = data.questionId;
 
@@ -231,8 +242,19 @@ export class Api {
 
                 return res({
                     success: true,
+                    payload: undefined,
                 });
             });
+    }
+
+    @ApplySession
+    public static DeleteClientSession(moocchat: Moocchat, res: ApiResponseCallback<void>, data: IMoocchatApi.ToServerStandardRequestBase, session?: Session): void {
+        Session.Destroy(session);
+
+        return res({
+            success: true,
+            payload: undefined,
+        });
     }
 }
 
@@ -243,7 +265,7 @@ export class Api {
  * Decorates API endpoints by supplying session as the last parameter where available
  * or automatically responding with a session failure message if not
  */
-function ApplySession<Target, InputType extends IMoocchatApiToServerStandardRequestBase, PayloadType>(target: Target, propertyKey: string, descriptor: TypedPropertyDescriptor<ApiHandlerWithSession<InputType, PayloadType>>) {
+function ApplySession<Target, InputType extends IMoocchatApi.ToServerStandardRequestBase, PayloadType>(target: Target, propertyKey: string, descriptor: TypedPropertyDescriptor<ApiHandlerWithSession<InputType, PayloadType>>) {
     const originalMethod = descriptor.value;
 
     descriptor.value = function(this: Target, moocchat: Moocchat, res: ApiResponseCallback<PayloadType>, data: InputType) {
@@ -255,6 +277,7 @@ function ApplySession<Target, InputType extends IMoocchatApiToServerStandardRequ
         } catch (e) {
             return res({
                 success: false,
+                code: "SESSION_INITIALISATION_FAILED",
                 message: e.message,
             });
         }
@@ -271,7 +294,7 @@ function ApplySession<Target, InputType extends IMoocchatApiToServerStandardRequ
  * Decorates API endpoints by checking that the session should have access to a question
  * with given ID
  */
-function LimitQuestionIdToSession<Target, InputType extends IMoocchatApiToServerQuestionId, PayloadType>(target: Target, propertyKey: string, descriptor: TypedPropertyDescriptor<ApiHandlerWithSession<InputType, PayloadType>>) {
+function LimitQuestionIdToSession<Target, InputType extends IMoocchatApi.ToServerQuestionId, PayloadType>(target: Target, propertyKey: string, descriptor: TypedPropertyDescriptor<ApiHandlerWithSession<InputType, PayloadType>>) {
     const originalMethod = descriptor.value;
 
     descriptor.value = function(this: Target, moocchat: Moocchat, res: ApiResponseCallback<PayloadType>, data: InputType, session: Session) {
@@ -293,6 +316,7 @@ function LimitQuestionIdToSession<Target, InputType extends IMoocchatApiToServer
             if (result.length === 0) {
                 return res({
                     success: false,
+                    code: "QUESTION_NOT_FOUND_OR_NOT_ACCESSIBLE",
                     message: `Question ID "${questionId}" cannot be found or is not available for the course associated with your current session`
                 });
             }
@@ -305,12 +329,34 @@ function LimitQuestionIdToSession<Target, InputType extends IMoocchatApiToServer
     return descriptor;
 }
 
+/**
+ * Decorates API endpoints by checking that the session user is authorised with admin rights 
+ */
+function AdminOnly<Target, InputType extends IMoocchatApi.ToServerStandardRequestBase, PayloadType>(target: Target, propertyKey: string, descriptor: TypedPropertyDescriptor<ApiHandlerWithSession<InputType, PayloadType>>) {
+    const originalMethod = descriptor.value;
+
+    descriptor.value = function(this: Target, moocchat: Moocchat, res: ApiResponseCallback<PayloadType>, data: InputType, session: Session) {
+        if (!session.getUser().isAdmin()) {
+            return res({
+                success: false,
+                code: "UNAUTHORISED",
+                message: `Session ID "${session.getId()}" is unauthorised to access this endpoint`,
+            });
+        }
+
+        originalMethod.apply(this, [moocchat, res, data, session]);
+    }
+
+    return descriptor;
+}
+
 function handleMongoError<PayloadType>(err: mongodb.MongoError, res: ApiResponseCallback<PayloadType>) {
     if (err) {
         console.error(err);
 
         res({
             success: false,
+            code: "DATABASE_ERROR",
             message: err.message,
         });
 
@@ -320,31 +366,8 @@ function handleMongoError<PayloadType>(err: mongodb.MongoError, res: ApiResponse
     return false;
 }
 
-// export type IMoocchatApiHandler<PayloadType> = (data: IMoocchatApiToServerBase, session?: Session) => IMoocchatApiResponseBase<PayloadType>;
+// export type IMoocchatApiHandler<PayloadType> = (data: IMoocchatApi.ToServerBase, session?: Session) => IMoocchatApi.ResponseBase<PayloadType>;
 
-export type ApiResponseCallback<T> = (response: IMoocchatApiResponseBase<T>) => void;
-export type ApiHandlerBase<InputType extends IMoocchatApiToServerStandardRequestBase, PayloadType> = (moocchat: Moocchat, res: ApiResponseCallback<PayloadType>, data: InputType) => void;
-export type ApiHandlerWithSession<InputType extends IMoocchatApiToServerStandardRequestBase, PayloadType> = (moocchat: Moocchat, res: ApiResponseCallback<PayloadType>, data: InputType, session: Session) => void;
-
-export interface IMoocchatApiResponseBase<PayloadType> {
-    success: boolean,
-    message?: string,
-    payload?: PayloadType,
-}
-
-export interface IMoocchatApiToClientLoginResponsePayload {
-    sessionId: string,
-    timeout: number,
-}
-
-export interface IMoocchatApiToServerStandardRequestBase {
-    sessionId: string,
-}
-
-export interface IMoocchatApiToServerQuestionId extends IMoocchatApiToServerStandardRequestBase {
-    questionId: string,
-}
-
-export interface IMoocchatApiToClientInsertionIdResponse {
-    [key: string]: string,
-}
+export type ApiResponseCallback<T> = (response: IMoocchatApi.ToClientResponseBase<T>) => void;
+export type ApiHandlerBase<InputType extends ToServerStandardRequestBase, PayloadType> = (moocchat: Moocchat, res: ApiResponseCallback<PayloadType>, data: InputType) => void;
+export type ApiHandlerWithSession<InputType extends IMoocchatApi.ToServerStandardRequestBase, PayloadType> = (moocchat: Moocchat, res: ApiResponseCallback<PayloadType>, data: InputType, session: Session) => void;

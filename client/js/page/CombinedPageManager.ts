@@ -2,14 +2,12 @@ import {PageManager} from "./PageManager";
 
 import * as $ from "jquery";
 
-import {EventBox} from "../../common/js/EventBox";
-
 export class CombinedPageManager extends PageManager {
     private combinedPageXHR: JQueryXHR;
     private combinedPageDOM: {[name: string]: Element} = {};
 
-    constructor(sharedEventManager: EventBox, $contentElem: JQuery, combinedPageUrl: string) {
-        super(sharedEventManager, $contentElem);
+    constructor($contentElem: JQuery, combinedPageUrl: string) {
+        super($contentElem);
 
         this.combinedPageXHR = $.ajax({
             url: combinedPageUrl,

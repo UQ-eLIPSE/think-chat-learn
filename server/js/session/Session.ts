@@ -18,7 +18,7 @@ export class Session {
     private readonly id: string;
     private readonly user: User;
     private readonly store: KVStore<any>;
-    
+
     private lastActive: number;
     private destroyed: boolean;
 

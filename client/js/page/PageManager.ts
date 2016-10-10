@@ -1,9 +1,5 @@
 import * as $ from "jquery";
 
-import {IPageManager_PageLoad} from "../../common/interfaces/IPageManager";
-
-import {EventBox} from ".././../common/js/EventBox";
-
 /**
  * MOOCchat
  * Page manager class module
@@ -12,14 +8,12 @@ import {EventBox} from ".././../common/js/EventBox";
  */
 export class PageManager {
     protected $contentElem: JQuery;
-    private sharedEventManager: EventBox;
 
     /**
      * @param {JQuery} $contentElem JQuery wrapped element serving as the container for page content where pages are to be swapped in/out
      */
-    constructor(sharedEventManager: EventBox, $contentElem: JQuery) {
+    constructor($contentElem: JQuery) {
         this.$contentElem = $contentElem;
-        this.sharedEventManager = sharedEventManager;
     }
 
     /**
@@ -59,14 +53,7 @@ export class PageManager {
         });
     }
 
-    /**
-     * Fires page load event to the shared event manager for others to catch.
-     */
-    protected dispatchOnPageLoad(data: IPageManager_PageLoad) {
-        this.sharedEventManager.dispatch(PageManager_Events.PAGE_LOAD, data);
-    }
-
-    protected render(name: string, elem: string | Element, loadStartTime: number, onDone?: (page$: (selector?: string) => JQuery) => void) {
+    protected render(name: string, elem: string | Element, loadStartTime: number, onDone?: (page$?: (selector?: string) => JQuery) => void) {
         const loadEndTime = new Date().getTime();
 
         if (typeof elem === "string") {
@@ -77,11 +64,6 @@ export class PageManager {
 
         // Scroll to top to ensure clean start at top on every page load
         this.$contentElem.scrollTop(0);
-
-        this.dispatchOnPageLoad({
-            name: name,
-            loadTimeMs: (loadEndTime - loadStartTime)
-        });
 
         if (onDone) {
             onDone(this.page$.bind(this));

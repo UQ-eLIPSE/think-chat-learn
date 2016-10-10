@@ -3,10 +3,15 @@ import { StateMachineDescription } from "./StateMachineDescription";
 export class StateMachine {
     private readonly descriptor: StateMachineDescription;
     private currentState: string;
+    private halted: boolean = false;
 
     constructor(descriptor: StateMachineDescription) {
         this.descriptor = descriptor;
         this.updateCurrentState(this.descriptor.getInitialState());
+    }
+
+    public halt() {
+        this.halted = true;
     }
 
     public getCurrentState() {
@@ -14,10 +19,18 @@ export class StateMachine {
     }
 
     private updateCurrentState(newState: string) {
+        if (this.halted) {
+            return;
+        }
+        
         this.currentState = newState;
     }
 
     public executeTransition(label: string, ...args: any[]) {
+        if (this.halted) {
+            return;
+        }
+
         const transition = this.descriptor.getTransition(label);
 
         if (!transition) {

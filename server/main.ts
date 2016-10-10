@@ -126,7 +126,7 @@ app.post("/admin", function(req, res) {
 
 
 // GETs
-AssociateGETEndpoint("/api/client/quiz", Api.GetClientQuiz);
+AssociateGETEndpoint("/api/client/quiz", Api.GetClientQuizzes);
 
 AssociateGETEndpoint("/api/client/question", Api.GetClientQuestions);
 AssociateGETEndpoint("/api/client/question/:questionId", Api.GetClientQuestion);
@@ -136,7 +136,7 @@ AssociateGETEndpoint("/api/client/question/:questionId/correctOption", Api.GetCl
 
 
 // POSTs
-AssociatePOSTEndpoint("/api/client/login/lti", Api.PostClientLoginLti);
+AssociatePOSTEndpoint("/api/client/session/lti", Api.PostClientLoginLti);
 
 AssociatePOSTEndpoint("/api/client/question", Api.PostClientQuestion);
 
@@ -148,8 +148,9 @@ AssociatePUTEndpoint("/api/client/question/:questionId", Api.PutClientQuestion);
 
 
 // DELETEs
-AssociateDELETEEndpoint("/api/client/question/:questionId", Api.DeleteClientQuestion);
+AssociateDELETEEndpoint("/api/client/session", Api.DeleteClientSession);
 
+AssociateDELETEEndpoint("/api/client/question/:questionId", Api.DeleteClientQuestion);
 
 
 function AssociateGETEndpoint<PayloadType>(url: string, endpointHandler: ApiHandlerBase<any, PayloadType>) {

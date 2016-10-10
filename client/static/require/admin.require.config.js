@@ -4,12 +4,12 @@ requirejs.config({
 
     // All references to external resources
     paths: {
-        "client/admin": "./moocchat/admin",
+        "client/project/admin/main": "./moocchat/admin",
 
         "jquery": "./jquery/3.0.0/jquery.min",
         "socket.io-client": "./socket.io/1.4.6/socket.io.min"
     },
 
     // App entry point
-    deps: ["client/admin"]
+    deps: ["client/project/admin/main"]
 });
