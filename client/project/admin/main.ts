@@ -108,11 +108,10 @@ $(() => {
     ]);
 
     fsmDesc.addStateChangeHandlers(STATE.ERROR, {
-        onEnter: (_label, oldState, _newState, ...args) => {
-            alert(`== ERROR! ==
-Error reached from previous state "${STATE[+oldState]}"
-
-Reason: ${args[0]}`);
+        onEnter: (_label, _oldState, _newState, ...args) => {
+            pageManager.loadPage("error", (page$) => {
+                page$("#reason").text(args[0]);
+            });
 
             fsm.halt();
         }
