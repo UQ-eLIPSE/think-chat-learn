@@ -24,8 +24,12 @@ export interface ToServerQuestionId extends ToServerStandardRequestBase {
     questionId: string,
 }
 
+export interface ToServerQuizId extends ToServerStandardRequestBase {
+    quizId: string,
+}
+
 export interface ToClientInsertionIdResponse {
-    [key: string]: string,
+    id: string,
 }
 
 export type ToClientResponseFailCode =
@@ -37,6 +41,11 @@ export type ToClientResponseFailCode =
 
     "UNAUTHORISED" |
 
-    "QUESTION_NOT_FOUND_OR_NOT_ACCESSIBLE" | 
+    "RESOURCE_NOT_FOUND_OR_NOT_ACCESSIBLE" | 
     
+    "QUIZ_AVAILABILITY_DATE_ORDER_INVALID" |
+    "QUIZ_AVAILABILITY_DATE_CONFLICT" |
+
+    "MISSING_PARAMETERS" |
+
     "UNKNOWN_ERROR";

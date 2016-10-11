@@ -22,7 +22,7 @@ export class StateMachine {
         if (this.halted) {
             return;
         }
-        
+
         this.currentState = newState;
     }
 
@@ -39,23 +39,45 @@ export class StateMachine {
 
         const oldState = this.getCurrentState();
         const newState = transition.toState.toString();
-        
+
         const onLeaveOldState = (this.descriptor.getStateChangeHandlers(oldState) || {}).onLeave;
         const onEnterNewState = (this.descriptor.getStateChangeHandlers(newState) || {}).onEnter;
 
         // Transit
-        (function() {
-            transition.onBeforeTransition ? transition.onBeforeTransition(label, oldState, newState, ...args) : 0;
-            onLeaveOldState ? onLeaveOldState(label, oldState, newState, ...args) : 0;
-        })();
+        // Each level can stop the transition by returning false
+        try {
+            (function() {
+                if (transition.onBeforeTransition ? (transition.onBeforeTransition(label, oldState, newState, ...args) === false) : 0) {
+                    throw new TransitionBreak(`Stopped transition "${label}" after onBeforeTransition`);
+                }
 
-        this.updateCurrentState(newState);
+                if (onLeaveOldState ? (onLeaveOldState(label, oldState, newState, ...args) === false) : 0) {
+                    throw new TransitionBreak(`Stopped transition "${label}" after onLeaveOldState`);
+                }
+            })();
 
-        (function() {
-            onEnterNewState ? onEnterNewState(label, oldState, newState, ...args) : 0;
-            transition.onAfterTransition ? transition.onAfterTransition(label, oldState, newState, ...args) : 0;
-        })();
+            this.updateCurrentState(newState);
+
+            (function() {
+                if (onEnterNewState ? (onEnterNewState(label, oldState, newState, ...args) === false) : 0) {
+                    throw new TransitionBreak(`Stopped transition "${label}" after onEnterNewState`);
+                }
+
+                if (transition.onAfterTransition ? (transition.onAfterTransition(label, oldState, newState, ...args) === false) : 0) {
+                    throw new TransitionBreak(`Stopped transition "${label}" after onAfterTransition`);
+                }
+            })();
+        } catch (e) {
+            if (e instanceof TransitionBreak) {
+                console.log(e.message);
+            } else {
+                throw e;
+            }
+        }
     }
+}
 
-
+class TransitionBreak {
+    constructor (public message: string) {}
+    toString() { return this.message; }
 }

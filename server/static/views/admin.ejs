@@ -21,12 +21,21 @@
     <script data-main="./static/require/admin.require.config" src="./static/js/require.js/2.2.0/require.min.js"></script>
 </head>
 
-<body>
+<body class="admin-panel">
     <div id="header">
         <div id="logo"></div>
         <h1 id="moocchat-name">MOOCchat</h1>
         <div id="course-name"></div>
-        <ul id="task-sections"></ul>
+        <ul id="task-sections">
+            <li data-section="main"><a id="go-to-home">Home</a></li>
+            <li data-section="quizzes"><a id="go-to-quizzes">Quizzes</a></li>
+            <li data-section="marking"><a id="go-to-marking">Marking</a></li>
+            <li data-section="users"><a id="go-to-users">Users &amp; Sessions</a></li>
+            <li class="separator"></li>
+            <li data-section="system"><a id="go-to-system">System</a></li>
+            <li class="separator"></li>
+            <li><a id="log-out">Log Out</a></li>
+        </ul>
     </div>
     <div id="content">
     </div>

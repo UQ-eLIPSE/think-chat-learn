@@ -20,8 +20,12 @@ export abstract class Database<CollectionData> {
         collection.insertMany(dataArray, callback);
     }
 
-    public static ReadAsArray<CollectionData>(collection: mongodb.Collection, query?: Object, callback?: mongodb.MongoCallback<CollectionData[]>) {
-        collection.find(query).toArray(callback);
+    public static CursorToArray<CollectionData>(cursor: mongodb.Cursor, callback?: mongodb.MongoCallback<CollectionData[]>) {
+        cursor.toArray(callback);
+    }
+
+    public static ReadWithCursor(collection: mongodb.Collection, query?: Object) {
+        return collection.find(query);
     }
 
     public static UpdateOne(collection: mongodb.Collection, filter: Object, update: Object, callback?: mongodb.MongoCallback<mongodb.UpdateWriteOpResult>) {
@@ -35,8 +39,6 @@ export abstract class Database<CollectionData> {
     public static Close(db: mongodb.Db, callback?: mongodb.MongoCallback<void>) {
         db.close(callback);
     }
-
-
 
 
 
@@ -89,7 +91,11 @@ export abstract class Database<CollectionData> {
     }
 
     public readAsArray(query?: Object, callback?: mongodb.MongoCallback<CollectionData[]>) {
-        Database.ReadAsArray<CollectionData>(this.getCollection(), query, callback);
+        Database.CursorToArray(this.readWithCursor(query), callback);
+    }
+
+    public readWithCursor(query?: Object) {
+        return Database.ReadWithCursor(this.getCollection(), query);
     }
 
     public updateOne(filter: Object, update: Object, callback?: mongodb.MongoCallback<mongodb.UpdateWriteOpResult>) {

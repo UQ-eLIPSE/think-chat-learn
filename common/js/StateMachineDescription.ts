@@ -69,7 +69,7 @@ export class StateMachineDescription {
 
 }
 
-export type OnTransitionFunction = (label: string, fromState: string, toState: string, ...args: any[]) => void;
+export type OnTransitionFunction = (label: string, fromState: string, toState: string, ...args: any[]) => void | boolean;
 
 export type StateChangeHandlerInfo = {
     onEnter?: OnTransitionFunction,

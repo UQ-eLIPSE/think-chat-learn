@@ -1046,7 +1046,30 @@ button.link:active {
 
 
 
+/********** Admin panel **********/
+.admin-panel {
+    #header {
+        background: $uq-colour-A2;
+    }
 
+    #task-sections li {
+        &, &:first-child, &:last-child {
+            background-image: none;
+            padding-left: 2rem;
+        }
+
+        &.active {
+            background: rgba(255,255,255,0.2);
+        }
+
+        &.separator {
+            border-top: 1px solid rgba(255,255,255,0.3);
+            height: 0;
+            padding: 0;
+            margin: 0.5rem 1rem;
+        }
+    }
+}
 
 
 

@@ -138,6 +138,8 @@ AssociateGETEndpoint("/api/client/question/:questionId/correctOption", Api.GetCl
 // POSTs
 AssociatePOSTEndpoint("/api/client/session/lti", Api.PostClientLoginLti);
 
+AssociatePOSTEndpoint("/api/client/quiz", Api.PostClientQuiz);
+
 AssociatePOSTEndpoint("/api/client/question", Api.PostClientQuestion);
 
 
@@ -149,6 +151,8 @@ AssociatePUTEndpoint("/api/client/question/:questionId", Api.PutClientQuestion);
 
 // DELETEs
 AssociateDELETEEndpoint("/api/client/session", Api.DeleteClientSession);
+
+AssociateDELETEEndpoint("/api/client/quiz/:quizId", Api.DeleteClientQuiz);
 
 AssociateDELETEEndpoint("/api/client/question/:questionId", Api.DeleteClientQuestion);
 

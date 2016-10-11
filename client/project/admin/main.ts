@@ -41,6 +41,13 @@ enum STATE {
 let sessionId: string | undefined;
 let lti: AuthDataWrapperLTI;
 
+function setSectionActive(section?: string) {
+    $("#task-sections li.active").removeClass("active");
+    if (section) {
+        $(`#task-sections li[data-section="${section}"]`).addClass("active");
+    }
+}
+
 $(() => {
     const $content = $("#content");
     const eventBox = new EventBox();
@@ -60,6 +67,19 @@ $(() => {
                 lti = new AuthDataWrapperLTI(_LTI_BASIC_LAUNCH_DATA);
 
                 $("#course-name").text(`${lti.getCourseName()} Admin`);
+
+                // Set up the sidebar links 
+                $("#log-out").on("click", () => {
+                    fsm.executeTransition("logout");
+                });
+
+                $("#go-to-home").on("click", () => {
+                    fsm.executeTransition("load-main");
+                });
+
+                $("#go-to-quizzes").on("click", () => {
+                    fsm.executeTransition("load-quiz-schedules");
+                });
 
                 fsm.executeTransition("login");
             },
@@ -110,6 +130,7 @@ $(() => {
     fsmDesc.addStateChangeHandlers(STATE.ERROR, {
         onEnter: (_label, _oldState, _newState, ...args) => {
             pageManager.loadPage("error", (page$) => {
+                setSectionActive();
                 page$("#reason").text(args[0]);
             });
 
@@ -190,6 +211,8 @@ $(() => {
     fsmDesc.addStateChangeHandlers(STATE.MAIN_PAGE, {
         onEnter: () => {
             pageManager.loadPage("admin-main", (page$) => {
+                setSectionActive("main");
+
                 page$("#name").text(lti.getData().lis_person_name_full || "[name unknown]");
 
                 page$("#view-quiz-schedules").on("click", (e) => {
@@ -203,12 +226,6 @@ $(() => {
 
                     fsm.executeTransition("load-questions");
                 });
-
-                page$("#log-out").on("click", (e) => {
-                    e.preventDefault();
-
-                    fsm.executeTransition("logout");
-                });
             });
         }
     });
@@ -219,11 +236,7 @@ $(() => {
         fsmDesc.addStateChangeHandlers(STATE.QUIZ_SCHEDULES_PAGE, {
             onEnter: () => {
                 pageManager.loadPage("admin-quiz-schedules", (page$) => {
-                    page$("#back-to-main").on("click", (e) => {
-                        e.preventDefault();
-
-                        fsm.executeTransition("load-main");
-                    });
+                    setSectionActive("quizzes");
 
                     page$("#quiz-schedule-list")
                         .append($("<li>").text("Loading..."));
@@ -277,11 +290,7 @@ $(() => {
         fsmDesc.addStateChangeHandlers(STATE.QUESTIONS_PAGE, {
             onEnter: () => {
                 pageManager.loadPage("admin-questions", (page$) => {
-                    page$("#back-to-main").on("click", (e) => {
-                        e.preventDefault();
-
-                        fsm.executeTransition("load-main");
-                    });
+                    setSectionActive("quizzes");
 
                     page$("#create-question").on("click", (e) => {
                         e.preventDefault();
@@ -337,14 +346,15 @@ $(() => {
 
     {
         let createQuestionXhr: JQueryXHR | undefined;
+        let inputChanged: boolean = false;
 
         fsmDesc.addStateChangeHandlers(STATE.QUESTION_CREATION_PAGE, {
             onEnter: () => {
                 pageManager.loadPage("admin-question-creation", (page$) => {
-                    page$("#back-to-main").on("click", (e) => {
-                        e.preventDefault();
+                    setSectionActive("quizzes");
 
-                        fsm.executeTransition("load-main");
+                    page$("#question-content").one("input propertychange paste", () => {
+                        inputChanged = true;
                     });
 
                     page$("#create").one("click", (e) => {
@@ -381,7 +391,15 @@ $(() => {
             },
 
             onLeave: () => {
+                if (inputChanged) {
+                    if (!confirm("Form content will be lost. Confirm leave?")) {
+                        return false;
+                    }
+                }
+
                 createQuestionXhr && createQuestionXhr.abort();
+
+                return;
             }
         });
     }
@@ -391,19 +409,20 @@ $(() => {
         let loadQuestionDetailsXhr: JQueryXHR | undefined;
         let updateQuestionXhr: JQueryXHR | undefined;
         let deleteQuestionXhr: JQueryXHR | undefined;
+        let inputChanged: boolean = false;
 
         fsmDesc.addStateChangeHandlers(STATE.QUESTION_DETAILS_PAGE, {
             onEnter: (_label: string, _fromState: string, _toState: string, questionId: string) => {
                 pageManager.loadPage("admin-question-details", (page$) => {
-                    page$("#back-to-main").on("click", (e) => {
-                        e.preventDefault();
+                    setSectionActive("quizzes");
 
-                        fsm.executeTransition("load-main");
+                    page$("#question-content").one("input propertychange paste", () => {
+                        inputChanged = true;
                     });
 
                     page$("#discard-changes").on("click", (e) => {
                         e.preventDefault();
-
+                        inputChanged = false;
                         fsm.executeTransition("load-questions");
                     });
 
@@ -487,9 +506,17 @@ $(() => {
             },
 
             onLeave: () => {
+                if (inputChanged) {
+                    if (!confirm("Form content will be lost. Confirm leave?")) {
+                        return false;
+                    }
+                }
+
                 loadQuestionDetailsXhr && loadQuestionDetailsXhr.abort();
                 updateQuestionXhr && updateQuestionXhr.abort();
                 deleteQuestionXhr && deleteQuestionXhr.abort();
+
+                return;
             }
         });
     }
