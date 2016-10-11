@@ -216,7 +216,7 @@ export class Api {
             questionId = new Database.ObjectId(data.questionId as any as string);
             availableStart = new Date(data.availableStart as any as string);
             availableEnd = new Date(data.availableEnd as any as string);
-            blackboardColumnId = data.blackboardColumnId;
+            blackboardColumnId = (+data.blackboardColumnId | 0) || undefined;
         } catch (e) {
             return res({
                 success: false,

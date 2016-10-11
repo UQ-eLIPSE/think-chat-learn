@@ -2,7 +2,10 @@
 <section data-name="admin-quiz-schedule-creation">
     <h1>Create Quiz Schedule</h1>
     <p>
-        Content: <textarea id="question-content"></textarea>
+        Question: <select id="question-id" style="max-width: 100%;"></select><br>
+        Available Start: <input type="datetime-local" id="available-start" /><br>
+        Available End: <input type="datetime-local" id="available-end" /><br>
+        Blackboard Column ID: <input type="number" id="blackboard-column-id" />
     </p>
     <button id="create" class="positive">Create</button>
 </section>

@@ -29,7 +29,11 @@ enum STATE {
     LOGOUT,
 
     MAIN_PAGE,
+
     QUIZ_SCHEDULES_PAGE,
+    QUIZ_SCHEDULE_DETAILS_PAGE,
+    QUIZ_SCHEDULE_CREATION_PAGE,
+
     QUESTIONS_PAGE,
     QUESTION_DETAILS_PAGE,
     QUESTION_CREATION_PAGE,
@@ -108,6 +112,16 @@ $(() => {
             label: "load-quiz-schedules",
             fromState: "*",
             toState: STATE.QUIZ_SCHEDULES_PAGE,
+        },
+        {
+            label: "load-quiz-schedule-details",
+            fromState: "*",
+            toState: STATE.QUIZ_SCHEDULE_DETAILS_PAGE,
+        },
+        {
+            label: "load-quiz-schedule-creation",
+            fromState: "*",
+            toState: STATE.QUIZ_SCHEDULE_CREATION_PAGE,
         },
         {
             label: "load-questions",
@@ -235,23 +249,30 @@ $(() => {
 
         fsmDesc.addStateChangeHandlers(STATE.QUIZ_SCHEDULES_PAGE, {
             onEnter: () => {
+                loadQuizScheduleXhr = $.ajax({
+                    method: "GET",
+                    url: "/api/client/quiz",
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    headers: {
+                        "Moocchat-Session-Id": sessionId,
+                    }
+                });
+
                 pageManager.loadPage("admin-quiz-schedules", (page$) => {
                     setSectionActive("quizzes");
+
+                    page$("#create-quiz-schedule").on("click", (e) => {
+                        e.preventDefault();
+                        fsm.executeTransition("load-quiz-schedule-creation");
+                    });
 
                     page$("#quiz-schedule-list")
                         .append($("<li>").text("Loading..."));
 
-                    loadQuizScheduleXhr = $.ajax({
-                        method: "GET",
-                        url: "/api/client/quiz",
-                        contentType: "application/json; charset=utf-8",
-                        dataType: "json",
-                        headers: {
-                            "Moocchat-Session-Id": sessionId,
-                        }
-                    });
 
-                    loadQuizScheduleXhr
+
+                    loadQuizScheduleXhr!
                         .done((data: IMoocchatApi.ToClientResponseBase<IDB_QuizSchedule[]>) => {
                             // Must check success flag
                             if (!data.success) {
@@ -286,9 +307,238 @@ $(() => {
 
     {
         let loadQuestionsXhr: JQueryXHR | undefined;
+        let createQuizXhr: JQueryXHR | undefined;
+        let inputChanged: boolean = false;
+
+        fsmDesc.addStateChangeHandlers(STATE.QUIZ_SCHEDULE_CREATION_PAGE, {
+            onEnter: () => {
+                loadQuestionsXhr = $.ajax({
+                    method: "GET",
+                    url: "/api/client/question",
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    headers: {
+                        "Moocchat-Session-Id": sessionId,
+                    }
+                });
+
+                pageManager.loadPage("admin-quiz-schedule-creation", (page$) => {
+                    setSectionActive("quizzes");
+
+                    page$("input, select").one("input propertychange paste", () => {
+                        inputChanged = true;
+                    });
+
+                    loadQuestionsXhr!
+                        .done((data: IMoocchatApi.ToClientResponseBase<IDB_Question[]>) => {
+                            // Must check success flag
+                            if (!data.success) {
+                                // Something went wrong - check message
+                                return fsm.executeTransition("error", data.message);
+                            }
+
+                            page$("#question-id").append(
+                                data.payload.map((question) => {
+                                    return $("<option>")
+                                        .prop({
+                                            value: question._id,
+                                        })
+                                        .text(question.content || "?");
+                                })
+                            );
+
+                        });
+
+
+                    page$("#create").one("click", (e) => {
+                        e.preventDefault();
+
+                        const questionId: string = page$("#question-id").val();
+                        const availableStart: string = page$("#available-start").val();
+                        const availableEnd: string = page$("#available-end").val();
+                        const blackboardColumnId: string = page$("#blackboard-column-id").val();
+
+                        createQuizXhr = $.ajax({
+                            method: "POST",
+                            url: "/api/client/quiz",
+                            contentType: "application/json; charset=utf-8",
+                            data: JSON.stringify({
+                                questionId,
+                                availableStart,
+                                availableEnd,
+                                blackboardColumnId,
+                            }),
+                            dataType: "json",
+                            headers: {
+                                "Moocchat-Session-Id": sessionId,
+                            }
+                        });
+
+                        createQuizXhr
+                            .done((data: IMoocchatApi.ToClientResponseBase<IMoocchatApi.ToClientInsertionIdResponse>) => {
+                                // Must check success flag
+                                if (!data.success) {
+                                    // Something went wrong - check message
+                                    return fsm.executeTransition("error", data.message);
+                                }
+
+                                inputChanged = false;
+                                fsm.executeTransition("load-quiz-schedules");
+                            });
+                    });
+                });
+            },
+
+            onLeave: () => {
+                if (inputChanged) {
+                    if (!confirm("Form content will be lost. Confirm leave?")) {
+                        return false;
+                    }
+                }
+
+                abortXhr([
+                    loadQuestionsXhr,
+                    createQuizXhr,
+                ]);
+
+                return;
+            }
+        });
+    }
+
+
+    {
+        let loadQuestionDetailsXhr: JQueryXHR | undefined;
+        let updateQuestionXhr: JQueryXHR | undefined;
+        let deleteQuestionXhr: JQueryXHR | undefined;
+        let inputChanged: boolean = false;
+
+        fsmDesc.addStateChangeHandlers(STATE.QUESTION_DETAILS_PAGE, {
+            onEnter: (_label: string, _fromState: string, _toState: string, questionId: string) => {
+                loadQuestionDetailsXhr = $.ajax({
+                    method: "GET",
+                    url: `/api/client/question/${questionId}`,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    headers: {
+                        "Moocchat-Session-Id": sessionId,
+                    }
+                });
+
+                pageManager.loadPage("admin-question-details", (page$) => {
+                    setSectionActive("quizzes");
+
+                    page$("#question-content").one("input propertychange paste", () => {
+                        inputChanged = true;
+                    });
+
+                    page$("#discard-changes").on("click", (e) => {
+                        e.preventDefault();
+                        inputChanged = false;
+                        fsm.executeTransition("load-questions");
+                    });
+
+                    loadQuestionDetailsXhr!
+                        .done((data: IMoocchatApi.ToClientResponseBase<IDB_Question>) => {
+                            // Must check success flag
+                            if (!data.success) {
+                                // Something went wrong - check message
+                                return fsm.executeTransition("error", data.message);
+                            }
+
+                            page$("#question-id").text(data.payload._id || "?");
+                            page$("#question-content").val(data.payload.content || "");
+                        });
+
+                    page$("#save-changes").one("click", (e) => {
+                        e.preventDefault();
+
+                        const questionContent: string = page$("#question-content").val();
+
+                        updateQuestionXhr = $.ajax({
+                            method: "PUT",
+                            url: `/api/client/question/${questionId}`,
+                            contentType: "application/json; charset=utf-8",
+                            data: JSON.stringify({
+                                content: questionContent,
+                            }),
+                            dataType: "json",
+                            headers: {
+                                "Moocchat-Session-Id": sessionId,
+                            }
+                        });
+
+                        updateQuestionXhr.done((data: IMoocchatApi.ToClientResponseBase<void>) => {
+                            // Must check success flag
+                            if (!data.success) {
+                                // Something went wrong - check message
+                                return fsm.executeTransition("error", data.message);
+                            }
+
+                            fsm.executeTransition("load-questions");
+                        });
+                    });
+
+
+                    page$("#delete").one("click", (e) => {
+                        e.preventDefault();
+
+                        deleteQuestionXhr = $.ajax({
+                            method: "DELETE",
+                            url: `/api/client/question/${questionId}`,
+                            contentType: "application/json; charset=utf-8",
+                            dataType: "json",
+                            headers: {
+                                "Moocchat-Session-Id": sessionId,
+                            }
+                        });
+
+                        deleteQuestionXhr.done((data: IMoocchatApi.ToClientResponseBase<void>) => {
+                            // Must check success flag
+                            if (!data.success) {
+                                // Something went wrong - check message
+                                return fsm.executeTransition("error", data.message);
+                            }
+
+                            fsm.executeTransition("load-questions");
+                        });
+                    });
+
+                });
+            },
+
+            onLeave: () => {
+                if (inputChanged) {
+                    if (!confirm("Form content will be lost. Confirm leave?")) {
+                        return false;
+                    }
+                }
+
+                loadQuestionDetailsXhr && loadQuestionDetailsXhr.abort();
+                updateQuestionXhr && updateQuestionXhr.abort();
+                deleteQuestionXhr && deleteQuestionXhr.abort();
+
+                return;
+            }
+        });
+    }
+
+
+    {
+        let loadQuestionsXhr: JQueryXHR | undefined;
 
         fsmDesc.addStateChangeHandlers(STATE.QUESTIONS_PAGE, {
             onEnter: () => {
+                loadQuestionsXhr = $.ajax({
+                    method: "GET",
+                    url: "/api/client/question",
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    headers: {
+                        "Moocchat-Session-Id": sessionId,
+                    }
+                });
+
                 pageManager.loadPage("admin-questions", (page$) => {
                     setSectionActive("quizzes");
 
@@ -301,17 +551,7 @@ $(() => {
                     page$("#question-list")
                         .append($("<li>").text("Loading..."));
 
-                    loadQuestionsXhr = $.ajax({
-                        method: "GET",
-                        url: "/api/client/question",
-                        contentType: "application/json; charset=utf-8",
-                        dataType: "json",
-                        headers: {
-                            "Moocchat-Session-Id": sessionId,
-                        }
-                    });
-
-                    loadQuestionsXhr
+                    loadQuestionsXhr!
                         .done((data: IMoocchatApi.ToClientResponseBase<IDB_Question[]>) => {
                             // Must check success flag
                             if (!data.success) {
@@ -413,6 +653,16 @@ $(() => {
 
         fsmDesc.addStateChangeHandlers(STATE.QUESTION_DETAILS_PAGE, {
             onEnter: (_label: string, _fromState: string, _toState: string, questionId: string) => {
+                loadQuestionDetailsXhr = $.ajax({
+                    method: "GET",
+                    url: `/api/client/question/${questionId}`,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    headers: {
+                        "Moocchat-Session-Id": sessionId,
+                    }
+                });
+
                 pageManager.loadPage("admin-question-details", (page$) => {
                     setSectionActive("quizzes");
 
@@ -426,17 +676,7 @@ $(() => {
                         fsm.executeTransition("load-questions");
                     });
 
-                    loadQuestionDetailsXhr = $.ajax({
-                        method: "GET",
-                        url: `/api/client/question/${questionId}`,
-                        contentType: "application/json; charset=utf-8",
-                        dataType: "json",
-                        headers: {
-                            "Moocchat-Session-Id": sessionId,
-                        }
-                    });
-
-                    loadQuestionDetailsXhr
+                    loadQuestionDetailsXhr!
                         .done((data: IMoocchatApi.ToClientResponseBase<IDB_Question>) => {
                             // Must check success flag
                             if (!data.success) {
@@ -525,6 +765,17 @@ $(() => {
     fsm.executeTransition("startup");
 
 });
+
+
+
+
+function abortXhr(xhrArray: (JQueryXHR | undefined)[]) {
+    xhrArray.forEach((xhr) => {
+        xhr && xhr.abort();
+    });
+}
+
+
 
 interface IDB_QuizSchedule {
     _id?: string;
