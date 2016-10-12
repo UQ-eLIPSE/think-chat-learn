@@ -177,7 +177,31 @@ $(() => {
 
                     sessionId = data.payload.sessionId;
 
-                    fsm.executeTransition("load-main");
+                    // Check admin test
+                    $.ajax({
+                        method: "GET",
+                        url: "/api/client/admin-test",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        headers: {
+                            "Moocchat-Session-Id": sessionId,
+                        }
+                    })
+                        .done((data: IMoocchatApi.ToClientResponseBase<void>) => {
+                            // Must check success flag
+                            if (!data.success) {
+                                // Something went wrong - check message
+                                return fsm.executeTransition("error", data.message);
+                            }
+
+                            fsm.executeTransition("load-main");
+
+                        })
+                        .fail((_jqXHR, textStatus, errorThrown) => {
+                            // Something really wrong with request or server
+                            console.error(textStatus);
+                            console.error(errorThrown);
+                        });
                 })
                 .fail((_jqXHR, textStatus, errorThrown) => {
                     // Something really wrong with request or server

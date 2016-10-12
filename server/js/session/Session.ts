@@ -2,7 +2,7 @@ import { Conf } from "../../config/Conf";
 
 import { KVStore } from "../../../common/js/KVStore";
 
-import { User } from "../user/User";
+import { IMoocchatIdentityInfo } from "../auth/IMoocchatIdentityInfo";
 
 /**
  * Keeps track of user sessions and validates them 
@@ -16,7 +16,7 @@ export class Session {
     private static SingletonStore = new KVStore<Session>();
 
     private readonly id: string;
-    private readonly user: User;
+    private readonly identity: IMoocchatIdentityInfo;
     private readonly store: KVStore<any>;
 
     private lastActive: number;
@@ -46,11 +46,22 @@ export class Session {
      * Gets session objects associated with user.
      * 
      * @static
-     * @param {User} user
-     * @returns {Session[]}
+     * @param {string} identityId
+     * @returns
      */
-    public static GetSessionsOfUser(user: User) {
-        return Session.GetSessions().filter(session => session.getUser() === user);
+    public static GetSessionsOfUser(identityId: string) {
+        return Session.GetSessions().filter(session => session.getIdentityId() === identityId);
+    }
+
+    /**
+     * Gets session objects associated with course.
+     * 
+     * @static
+     * @param {string} course
+     * @returns
+     */
+    public static GetSessionsOfCourse(course: string) {
+        return Session.GetSessions().filter(session => session.getCourse() === course);
     }
 
     /**
@@ -70,10 +81,10 @@ export class Session {
      * Destroys session objects associated with user.
      * 
      * @static
-     * @param {User} user
+     * @param {string} identityId
      */
-    public static DestroySessionsOfUser(user: User) {
-        Session.GetSessionsOfUser(user).forEach(session => Session.Destroy(session));
+    public static DestroySessionsOfUser(identityId: string) {
+        Session.GetSessionsOfUser(identityId).forEach(session => Session.Destroy(session));
     }
 
     /**
@@ -96,11 +107,11 @@ export class Session {
             .forEach(session => Session.Destroy(session));
     }
 
-    constructor(id: string, user?: User) {
+    constructor(id: string, identity?: IMoocchatIdentityInfo) {
         const existingSession = Session.SingletonStore.get(id);
 
         // If no user supplied, we are retrieving a session
-        if (!user) {
+        if (!identity) {
             if (!existingSession) {
                 throw new Error(`Session with ID "${id}" is not valid, has expired, or has been destroyed`);
             }
@@ -124,7 +135,7 @@ export class Session {
 
         // Set up session
         this.id = id;
-        this.user = user;
+        this.identity = identity;
         this.store = new KVStore<any>();
 
         this.updateActivityTime();
@@ -143,10 +154,10 @@ export class Session {
     }
 
     /**
-     * @returns {User} User associated with session
+     * @returns {IMoocchatIdentityInfo} Identity information associated with session
      */
-    public getUser() {
-        return this.user;
+    public getIdentity() {
+        return this.identity;
     }
 
     /**
@@ -184,5 +195,30 @@ export class Session {
         }
 
         return true;
+    }
+
+    public getIdentityId() {
+        return this.getIdentity().identityId;
+    }
+
+    public isAdmin() {
+        return this.getRoles().some((role) => {
+            switch (role) {
+                case "TeachingAssistant":
+                case "Instructor":
+                case "Administrator":
+                    return true;
+            }
+
+            return false;
+        });
+    }
+
+    public getRoles() {
+        return this.getIdentity().roles;
+    }
+
+    public getCourse() {
+        return this.getIdentity().course;
     }
 }

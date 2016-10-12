@@ -6,7 +6,6 @@ import { Moocchat } from "../Moocchat";
 import * as IMoocchatApi from "../../../common/interfaces/IMoocchatApi";
 import { ILTIData } from "../../../common/interfaces/ILTIData";
 import { LTIAuth } from "../auth/lti/LTIAuth";
-import { User } from "../user/User";
 import { Session } from "../session/Session";
 
 import { Database } from "../data/Database";
@@ -21,8 +20,19 @@ import { QuestionOptionCorrect as DBQuestionOptionCorrect, IDB_QuestionOptionCor
 export class Api {
 
     @ApplySession
+    @AdminOnly
+    public static GetClientAdminTest(moocchat: Moocchat, res: ApiResponseCallback<void>, data: IMoocchatApi.ToServerStandardRequestBase, session?: Session): void {
+        // @AdminOnly automatically returns unauthorised response if user not admin
+        // The response below only occurs if user is admin
+        return res({
+            success: true,
+            payload: undefined,
+        });
+    }
+
+    @ApplySession
     public static GetClientQuizzes(moocchat: Moocchat, res: ApiResponseCallback<IDB_QuizSchedule[]>, data: IMoocchatApi.ToServerStandardRequestBase, session?: Session): void {
-        const course = session.getUser().getIdentity().course;
+        const course = session.getIdentity().course;
 
         // Look up quizzes under course
         const db = moocchat.getDb();
@@ -44,7 +54,7 @@ export class Api {
 
     @ApplySession
     public static GetClientQuestions(moocchat: Moocchat, res: ApiResponseCallback<IDB_Question[]>, data: IMoocchatApi.ToServerStandardRequestBase, session?: Session): void {
-        const course = session.getUser().getIdentity().course;
+        const course = session.getIdentity().course;
 
         // Look up question under course
         const db = moocchat.getDb();
@@ -137,15 +147,12 @@ export class Api {
             });
         }
 
-        // Set up user object
-        const user = new User(authObj.getIdentity());
-
         // Set up session
         const newSessionId = crypto.randomBytes(16).toString("hex");
         let session: Session;
 
         try {
-            session = new Session(newSessionId, user);
+            session = new Session(newSessionId, authObj.getIdentity());
         } catch (e) {
             return res({
                 success: false,
@@ -167,7 +174,7 @@ export class Api {
     @AdminOnly
     public static PostClientQuestion(moocchat: Moocchat, res: ApiResponseCallback<IMoocchatApi.ToClientInsertionIdResponse>, data: IMoocchatApi.ToServerStandardRequestBase & IDB_Question, session?: Session): void {
         const db = moocchat.getDb();
-        const course = session.getUser().getIdentity().course;
+        const course = session.getIdentity().course;
 
         new DBQuestion(db).insertOne({
             content: data.content || "",
@@ -188,7 +195,7 @@ export class Api {
     @AdminOnly
     public static PostClientQuiz(moocchat: Moocchat, res: ApiResponseCallback<IMoocchatApi.ToClientInsertionIdResponse>, data: IMoocchatApi.ToServerStandardRequestBase & IDB_QuizSchedule, session?: Session): void {
         const db = moocchat.getDb();
-        const course = session.getUser().getIdentity().course;
+        const course = session.getIdentity().course;
 
         // Check valid data
         let questionId: mongodb.ObjectID;
@@ -499,7 +506,7 @@ function AdminOnly<Target, InputType extends IMoocchatApi.ToServerStandardReques
     const originalMethod = descriptor.value;
 
     descriptor.value = function(this: Target, moocchat: Moocchat, res: ApiResponseCallback<PayloadType>, data: InputType, session: Session) {
-        if (!session.getUser().isAdmin()) {
+        if (!session.isAdmin()) {
             return res({
                 success: false,
                 code: "UNAUTHORISED",
@@ -531,7 +538,7 @@ function handleMongoError<PayloadType>(err: mongodb.MongoError, res: ApiResponse
 
 function checkQuestionId(moocchat: Moocchat, session: Session, questionId: string | mongodb.ObjectID, callback: mongodb.MongoCallback<IDB_Question[]>) {
     // Check question ID falls within the course of the session identity
-    const course = session.getUser().getIdentity().course;
+    const course = session.getIdentity().course;
 
     // Look up question under course
     const db = moocchat.getDb();
@@ -548,7 +555,7 @@ function checkQuestionId(moocchat: Moocchat, session: Session, questionId: strin
 
 function checkQuizId(moocchat: Moocchat, session: Session, quizId: string | mongodb.ObjectID, callback: mongodb.MongoCallback<IDB_QuizSchedule[]>) {
     // Check question ID falls within the course of the session identity
-    const course = session.getUser().getIdentity().course;
+    const course = session.getIdentity().course;
 
     // Look up question under course
     const db = moocchat.getDb();

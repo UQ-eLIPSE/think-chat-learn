@@ -126,6 +126,8 @@ app.post("/admin", function(req, res) {
 
 
 // GETs
+AssociateGETEndpoint("/api/client/admin-test", Api.GetClientAdminTest);
+
 AssociateGETEndpoint("/api/client/quiz", Api.GetClientQuizzes);
 
 AssociateGETEndpoint("/api/client/question", Api.GetClientQuestions);
