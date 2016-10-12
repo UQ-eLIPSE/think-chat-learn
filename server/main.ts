@@ -129,6 +129,8 @@ app.post("/admin", function(req, res) {
 AssociateGETEndpoint("/api/client/admin-test", Api.GetClientAdminTest);
 
 AssociateGETEndpoint("/api/client/quiz", Api.GetClientQuizzes);
+AssociateGETEndpoint("/api/client/quiz/:quizId", Api.GetClientQuiz);
+
 
 AssociateGETEndpoint("/api/client/question", Api.GetClientQuestions);
 AssociateGETEndpoint("/api/client/question/:questionId", Api.GetClientQuestion);
@@ -147,6 +149,8 @@ AssociatePOSTEndpoint("/api/client/question", Api.PostClientQuestion);
 
 
 // PUTs
+AssociatePUTEndpoint("/api/client/quiz/:quizId", Api.PutClientQuiz);
+
 AssociatePUTEndpoint("/api/client/question/:questionId", Api.PutClientQuestion);
 
 

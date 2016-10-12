@@ -1,0 +1,14 @@
+<!-- All pages must specify <section data-name="..." /> as root element, with name **equal to the file name** -->
+<section data-name="admin-quiz-schedule-details">
+    <h1>Quiz Schedule details</h1>
+    <p>
+        ID: <span id="quiz-id" /><br>
+        Question: <select id="question-id" style="max-width: 100%;"></select><br>
+        Available Start: <input type="datetime-local" id="available-start" /><br>
+        Available End: <input type="datetime-local" id="available-end" /><br>
+        Blackboard Column ID: <input type="number" id="blackboard-column-id" />
+    </p>
+    <button id="save-changes" class="positive">Save Changes</button>
+    <button id="discard-changes">Discard Changes</button>
+    <button id="delete" class="negative">Delete</button>
+</section>

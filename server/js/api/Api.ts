@@ -31,8 +31,9 @@ export class Api {
     }
 
     @ApplySession
+    @AdminOnly
     public static GetClientQuizzes(moocchat: Moocchat, res: ApiResponseCallback<IDB_QuizSchedule[]>, data: IMoocchatApi.ToServerStandardRequestBase, session?: Session): void {
-        const course = session.getIdentity().course;
+        const course = session.getCourse();
 
         // Look up quizzes under course
         const db = moocchat.getDb();
@@ -53,8 +54,29 @@ export class Api {
     }
 
     @ApplySession
+    @LimitQuizIdToSession
+    public static GetClientQuiz(moocchat: Moocchat, res: ApiResponseCallback<IDB_QuizSchedule>, data: IMoocchatApi.ToServerQuizId, session?: Session): void {
+        const db = moocchat.getDb();
+
+        new DBQuizSchedule(db).readAsArray({
+            _id: new Database.ObjectId(data.quizId)
+        }, (err, result) => {
+            if (handleMongoError(err, res)) { return; }
+
+            // No need to check for quiz existence; @LimitQuizIdToSession already covers that
+
+            const fetchedQuiz = result[0];
+
+            return res({
+                success: true,
+                payload: fetchedQuiz,
+            });
+        });
+    }
+
+    @ApplySession
     public static GetClientQuestions(moocchat: Moocchat, res: ApiResponseCallback<IDB_Question[]>, data: IMoocchatApi.ToServerStandardRequestBase, session?: Session): void {
-        const course = session.getIdentity().course;
+        const course = session.getCourse();
 
         // Look up question under course
         const db = moocchat.getDb();
@@ -174,7 +196,7 @@ export class Api {
     @AdminOnly
     public static PostClientQuestion(moocchat: Moocchat, res: ApiResponseCallback<IMoocchatApi.ToClientInsertionIdResponse>, data: IMoocchatApi.ToServerStandardRequestBase & IDB_Question, session?: Session): void {
         const db = moocchat.getDb();
-        const course = session.getIdentity().course;
+        const course = session.getCourse();
 
         new DBQuestion(db).insertOne({
             content: data.content || "",
@@ -194,104 +216,27 @@ export class Api {
     @ApplySession
     @AdminOnly
     public static PostClientQuiz(moocchat: Moocchat, res: ApiResponseCallback<IMoocchatApi.ToClientInsertionIdResponse>, data: IMoocchatApi.ToServerStandardRequestBase & IDB_QuizSchedule, session?: Session): void {
-        const db = moocchat.getDb();
-        const course = session.getIdentity().course;
+        precheckQuizScheduleInsert(moocchat, session, res, data, (questionId, availableStart, availableEnd, blackboardColumnId) => {
+            const db = moocchat.getDb();
+            const course = session.getCourse();
 
-        // Check valid data
-        let questionId: mongodb.ObjectID;
-        let availableStart: Date;
-        let availableEnd: Date;
-        let blackboardColumnId: number;
-
-        let missingParameters: string[] = [];
-
-        !data.questionId && missingParameters.push("questionId");
-        !data.availableStart && missingParameters.push("availableStart");
-        !data.availableEnd && missingParameters.push("availableEnd");
-
-        if (missingParameters.length > 0) {
-            return res({
-                success: false,
-                code: "MISSING_PARAMETERS",
-                message: `Input missing parameters: ${missingParameters.join(", ")}`
-            });
-        }
-
-        try {
-            // Note that JSON data only has bare primitives, so complex objects and Dates do not exist and must be converted from strings
-            // TODO: Need to create a common set of interfaces that is shared for server-side (database) and client-side (JSON)
-            questionId = new Database.ObjectId(data.questionId as any as string);
-            availableStart = new Date(data.availableStart as any as string);
-            availableEnd = new Date(data.availableEnd as any as string);
-            blackboardColumnId = (+data.blackboardColumnId | 0) || undefined;
-        } catch (e) {
-            return res({
-                success: false,
-                code: "UNKNOWN_ERROR",  // TODO: Classify error
-                message: e.message,
-            });
-        }
-
-        // Available start and end dates must not be reversed
-        if (availableStart > availableEnd) {
-            return res({
-                success: false,
-                code: "QUIZ_AVAILABILITY_DATE_ORDER_INVALID",
-                message: `Start availability date must precede end availability date`,
-            });
-        }
-
-        // Check for scheduling conflicts
-        new DBQuizSchedule(db).readWithCursor({
-            availableStart: { $lte: availableEnd },
-            availableEnd: { $gte: availableStart },
-            course,
-        }).count(false, (err, result) => {
-            if (handleMongoError(err, res)) { return; }
-
-            if (result > 0) {
-                return res({
-                    success: false,
-                    code: "QUIZ_AVAILABILITY_DATE_CONFLICT",
-                    message: `Selected quiz availablility date conflicts with existing quiz schedules`
-                });
-            }
-
-            // Check question ID is usable by course
-            checkQuestionId(moocchat, session, questionId, (err, result) => {
+            new DBQuizSchedule(db).insertOne({
+                questionId,
+                course,
+                availableStart,
+                availableEnd,
+                blackboardColumnId,
+            }, (err, result) => {
                 if (handleMongoError(err, res)) { return; }
 
-                // If result blank, that means either question does not exist or
-                // is not within the course requested in this session 
-                if (result.length === 0) {
-                    return res({
-                        success: false,
-                        code: "RESOURCE_NOT_FOUND_OR_NOT_ACCESSIBLE",
-                        message: `Question ID "${questionId}" cannot be found or is not available for the course associated with your current session`
-                    });
-                }
-
-                // Insert if all conditions pass
-                new DBQuizSchedule(db).insertOne({
-                    questionId,
-                    course,
-                    availableStart,
-                    availableEnd,
-                    blackboardColumnId,
-                }, (err, result) => {
-                    if (handleMongoError(err, res)) { return; }
-
-                    return res({
-                        success: true,
-                        payload: {
-                            id: result.insertedId.toHexString(),
-                        }
-                    });
+                return res({
+                    success: true,
+                    payload: {
+                        id: result.insertedId.toHexString(),
+                    }
                 });
             });
         });
-
-
     }
 
 
@@ -328,6 +273,36 @@ export class Api {
             });
     }
 
+    @ApplySession
+    @AdminOnly
+    @LimitQuizIdToSession
+    public static PutClientQuiz(moocchat: Moocchat, res: ApiResponseCallback<void>, data: IMoocchatApi.ToServerQuizId & IDB_QuizSchedule, session?: Session): void {
+        precheckQuizScheduleUpdate(moocchat, session, res, data, (questionId, availableStart, availableEnd, blackboardColumnId) => {
+            const db = moocchat.getDb();
+            const quizId = data.quizId;
+
+            new DBQuizSchedule(db).updateOne(
+                {
+                    _id: new Database.ObjectId(quizId),
+                },
+                {
+                    $set: {
+                        questionId,
+                        availableStart,
+                        availableEnd,
+                        blackboardColumnId,
+                    }
+                },
+                (err, result) => {
+                    if (handleMongoError(err, res)) { return; }
+
+                    return res({
+                        success: true,
+                        payload: undefined,
+                    });
+                });
+        });
+    }
 
 
 
@@ -538,7 +513,7 @@ function handleMongoError<PayloadType>(err: mongodb.MongoError, res: ApiResponse
 
 function checkQuestionId(moocchat: Moocchat, session: Session, questionId: string | mongodb.ObjectID, callback: mongodb.MongoCallback<IDB_Question[]>) {
     // Check question ID falls within the course of the session identity
-    const course = session.getIdentity().course;
+    const course = session.getCourse();
 
     // Look up question under course
     const db = moocchat.getDb();
@@ -555,7 +530,7 @@ function checkQuestionId(moocchat: Moocchat, session: Session, questionId: strin
 
 function checkQuizId(moocchat: Moocchat, session: Session, quizId: string | mongodb.ObjectID, callback: mongodb.MongoCallback<IDB_QuizSchedule[]>) {
     // Check question ID falls within the course of the session identity
-    const course = session.getIdentity().course;
+    const course = session.getCourse();
 
     // Look up question under course
     const db = moocchat.getDb();
@@ -568,6 +543,194 @@ function checkQuizId(moocchat: Moocchat, session: Session, quizId: string | mong
         _id: quizId,
         course,
     }, callback);
+}
+
+function precheckQuizScheduleInsert(moocchat: Moocchat, session: Session, res: ApiResponseCallback<IMoocchatApi.ToClientInsertionIdResponse>, data: IMoocchatApi.ToServerStandardRequestBase & IDB_QuizSchedule, callback: (questionId: mongodb.ObjectID, availableStart: Date, availableEnd: Date, blackboardColumnId: number) => void) {
+    const db = moocchat.getDb();
+    const course = session.getCourse();
+
+    // Check valid data
+    let questionId: mongodb.ObjectID;
+    let availableStart: Date;
+    let availableEnd: Date;
+    let blackboardColumnId: number;
+
+    let missingParameters: string[] = [];
+
+    !data.questionId && missingParameters.push("questionId");
+    !data.availableStart && missingParameters.push("availableStart");
+    !data.availableEnd && missingParameters.push("availableEnd");
+
+    if (missingParameters.length > 0) {
+        return res({
+            success: false,
+            code: "MISSING_PARAMETERS",
+            message: `Input missing parameters: ${missingParameters.join(", ")}`
+        });
+    }
+
+    try {
+        // Note that JSON data only has bare primitives, so complex objects and Dates do not exist and must be converted from strings
+        // TODO: Need to create a common set of interfaces that is shared for server-side (database) and client-side (JSON)
+        questionId = new Database.ObjectId(data.questionId as any as string);
+        availableStart = new Date(data.availableStart as any as string);
+        availableEnd = new Date(data.availableEnd as any as string);
+        blackboardColumnId = (+data.blackboardColumnId | 0) || undefined;
+    } catch (e) {
+        return res({
+            success: false,
+            code: "UNKNOWN_ERROR",  // TODO: Classify error
+            message: e.message,
+        });
+    }
+
+    // Available start and end dates must not be reversed
+    if (availableStart > availableEnd) {
+        return res({
+            success: false,
+            code: "QUIZ_AVAILABILITY_DATE_ORDER_INVALID",
+            message: `Start availability date must precede end availability date`,
+        });
+    }
+
+    // Check for scheduling conflicts
+    new DBQuizSchedule(db).readWithCursor({
+        availableStart: { $lte: availableEnd },
+        availableEnd: { $gte: availableStart },
+        course,
+    }).count(false, (err, result) => {
+        if (handleMongoError(err, res)) { return; }
+
+        if (result > 0) {
+            return res({
+                success: false,
+                code: "QUIZ_AVAILABILITY_DATE_CONFLICT",
+                message: `Selected quiz availablility date conflicts with existing quiz schedules`
+            });
+        }
+
+        // Check question ID is usable by course
+        checkQuestionId(moocchat, session, questionId, (err, result) => {
+            if (handleMongoError(err, res)) { return; }
+
+            // If result blank, that means either question does not exist or
+            // is not within the course requested in this session 
+            if (result.length === 0) {
+                return res({
+                    success: false,
+                    code: "RESOURCE_NOT_FOUND_OR_NOT_ACCESSIBLE",
+                    message: `Question ID "${questionId}" cannot be found or is not available for the course associated with your current session`
+                });
+            }
+
+            // Run callback if conditions pass
+            callback(
+                questionId,
+                availableStart,
+                availableEnd,
+                blackboardColumnId
+            );
+        });
+    });
+}
+
+function precheckQuizScheduleUpdate(moocchat: Moocchat, session: Session, res: ApiResponseCallback<void>, data: IMoocchatApi.ToServerQuizId & IDB_QuizSchedule, callback: (questionId: mongodb.ObjectID, availableStart: Date, availableEnd: Date, blackboardColumnId: number) => void) {
+    const db = moocchat.getDb();
+    const course = session.getCourse();
+
+    // Check valid data
+    const quizId: mongodb.ObjectID = new Database.ObjectId(data.quizId);
+    let questionId: mongodb.ObjectID;
+    let availableStart: Date;
+    let availableEnd: Date;
+    let blackboardColumnId: number;
+
+    try {
+        // Note that JSON data only has bare primitives, so complex objects and Dates do not exist and must be converted from strings
+        // TODO: Need to create a common set of interfaces that is shared for server-side (database) and client-side (JSON)
+        questionId = new Database.ObjectId(data.questionId as any as string);
+        availableStart = new Date(data.availableStart as any as string);
+        availableEnd = new Date(data.availableEnd as any as string);
+
+        if (data.blackboardColumnId as any as string === "") {
+            blackboardColumnId = null;
+        } else if (data.blackboardColumnId !== null) {
+            blackboardColumnId = ((+data.blackboardColumnId | 0) || undefined);
+        }
+    } catch (e) {
+        return res({
+            success: false,
+            code: "UNKNOWN_ERROR",  // TODO: Classify error
+            message: e.message,
+        });
+    }
+
+    // Read existing data
+    new DBQuizSchedule(db).readAsArray({
+        _id: quizId,
+    }, (err, result) => {
+        if (handleMongoError(err, res)) { return; }
+
+        const existingQuizSchedule = result[0];
+
+        // Update where given
+        !questionId && (questionId = existingQuizSchedule.questionId);
+        !availableStart && (availableStart = existingQuizSchedule.availableStart);
+        !availableEnd && (availableEnd = existingQuizSchedule.availableEnd);
+        (blackboardColumnId === undefined) && (blackboardColumnId = existingQuizSchedule.blackboardColumnId);
+
+        // Available start and end dates must not be reversed
+        if (availableStart > availableEnd) {
+            return res({
+                success: false,
+                code: "QUIZ_AVAILABILITY_DATE_ORDER_INVALID",
+                message: `Start availability date must precede end availability date`,
+            });
+        }
+
+        // Check for scheduling conflicts
+        new DBQuizSchedule(db).readAsArray({
+            _id: {
+                $ne: quizId        // Should not check against self
+            },
+            availableStart: { $lte: availableEnd },
+            availableEnd: { $gte: availableStart },
+            course,
+        }, (err, result) => {
+            if (handleMongoError(err, res)) { return; }
+
+            if (result.length > 0) {
+                return res({
+                    success: false,
+                    code: "QUIZ_AVAILABILITY_DATE_CONFLICT",
+                    message: `Selected quiz availablility date conflicts with existing quiz schedules`
+                });
+            }
+
+            // Check question ID is usable by course
+            checkQuestionId(moocchat, session, questionId, (err, result) => {
+                if (handleMongoError(err, res)) { return; }
+
+                // If result blank, that means either question does not exist or
+                // is not within the course requested in this session 
+                if (result.length === 0) {
+                    return res({
+                        success: false,
+                        code: "RESOURCE_NOT_FOUND_OR_NOT_ACCESSIBLE",
+                        message: `Question ID "${questionId}" cannot be found or is not available for the course associated with your current session`
+                    });
+                }
+
+                // Run callback if conditions pass
+                callback(
+                    questionId,
+                    availableStart,
+                    availableEnd,
+                    blackboardColumnId
+                );
+            });
+        });
+    });
 }
 
 // export type IMoocchatApiHandler<PayloadType> = (data: IMoocchatApi.ToServerBase, session?: Session) => IMoocchatApi.ResponseBase<PayloadType>;
