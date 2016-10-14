@@ -66,7 +66,7 @@ export abstract class Database<CollectionData> {
         this.collection = this.db.collection(this.getCollectionName()); 
     }
 
-    private getCollection() {
+    public getCollection() {
         if (!this.collection) {
             throw new Error("No collection");
         }

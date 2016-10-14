@@ -161,7 +161,7 @@ $(() => {
             pageManager.loadPage("logging-in");
 
             // Request login with session ID
-            ajaxPost("/api/client/session/lti", lti.stringify(), false)
+            ajaxPost("/api/client/loginSession/lti", lti.stringify(), false)
                 .done((data: IMoocchatApi.ToClientResponseBase<IMoocchatApi.ToClientLoginResponsePayload>) => {
                     // Must check success flag
                     if (!data.success) {
@@ -172,7 +172,7 @@ $(() => {
                     sessionId = data.payload.sessionId;
 
                     // Check admin test
-                    ajaxGet("/api/client/admin-test")
+                    ajaxGet("/api/client/admin/test")
                         .done((data: IMoocchatApi.ToClientResponseBase<void>) => {
                             // Must check success flag
                             if (!data.success) {
@@ -199,7 +199,7 @@ $(() => {
 
     fsmDesc.addStateChangeHandlers(STATE.LOGOUT, {
         onEnter: () => {
-            ajaxDelete("/api/client/session")
+            ajaxDelete("/api/client/loginSession")
                 .done((data: IMoocchatApi.ToClientResponseBase<void>) => {
                     // Must check success flag
                     if (!data.success) {
@@ -625,6 +625,7 @@ $(() => {
 
     {
         let loadQuestionDetailsXhr: JQueryXHR | undefined;
+        let loadQuestionOptionsXhr: JQueryXHR | undefined;
         let updateQuestionXhr: JQueryXHR | undefined;
         let deleteQuestionXhr: JQueryXHR | undefined;
         let inputChanged: boolean = false;
@@ -632,6 +633,7 @@ $(() => {
         fsmDesc.addStateChangeHandlers(STATE.QUESTION_DETAILS_PAGE, {
             onEnter: (_label: string, _fromState: string, _toState: string, questionId: string) => {
                 loadQuestionDetailsXhr = ajaxGet(`/api/client/question/${questionId}`);
+                loadQuestionOptionsXhr = ajaxGet(`/api/client/question/${questionId}/option`);
 
                 pageManager.loadPage("admin-question-details", (page$) => {
                     setSectionActive("quizzes");
@@ -656,6 +658,27 @@ $(() => {
 
                             page$("#question-id").text(data.payload._id || "?");
                             page$("#question-content").val(data.payload.content || "");
+                        });
+
+                    loadQuestionOptionsXhr!
+                        .done((data: IMoocchatApi.ToClientResponseBase<IDB_QuestionOption[]>) => {
+                            // Must check success flag
+                            if (!data.success) {
+                                // Something went wrong - check message
+                                return fsm.executeTransition("error", data.message);
+                            }
+
+                            page$("#question-options").append(
+                                data.payload.sort((a, b) => {
+                                    if (a.sequence === b.sequence) {
+                                        return 0;
+                                    }
+
+                                    return (a.sequence < b.sequence) ? -1 : 1;
+                                }).map((questionOption) => {
+                                    return $("<p>").html(`ID: ${questionOption._id}<br>Content: ${questionOption.content}`)
+                                })
+                            );
                         });
 
                     page$("#save-changes").one("click", (e) => {
@@ -856,4 +879,10 @@ interface IDB_Question {
     _id?: string,
     content?: string,
     course?: string,
+}
+interface IDB_QuestionOption {
+    _id?: string,
+    questionId?: string,
+    sequence?: number,
+    content?: string
 }
