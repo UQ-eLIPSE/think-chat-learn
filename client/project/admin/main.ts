@@ -2,6 +2,7 @@ import { Conf } from "../../config/Conf";
 // import { Conf as CommonConf } from "../common/config/Conf";
 
 import * as $ from "jquery";
+import * as ckeditor from "ckeditor";
 
 import { StateMachine } from "../../../common/js/StateMachine";
 import { StateMachineDescription } from "../../../common/js/StateMachineDescription";
@@ -574,11 +575,14 @@ $(() => {
     {
         let createQuestionXhr: JQueryXHR | undefined;
         let inputChanged: boolean = false;
+        let questionContentEditor: ckeditor.editor | undefined;
 
         fsmDesc.addStateChangeHandlers(STATE.QUESTION_CREATION_PAGE, {
             onEnter: () => {
                 pageManager.loadPage("admin-question-creation", (page$) => {
                     setSectionActive("quizzes");
+
+                    questionContentEditor = ckeditor.replace($("#question-content")[0] as HTMLTextAreaElement);
 
                     page$("#question-content").one("input propertychange paste", () => {
                         inputChanged = true;
@@ -587,7 +591,7 @@ $(() => {
                     page$("#create").one("click", (e) => {
                         e.preventDefault();
 
-                        const questionContent: string = page$("#question-content").val();
+                        const questionContent: string = questionContentEditor!.getData();
 
                         createQuestionXhr = ajaxPost("/api/client/question", {
                             content: questionContent,
@@ -609,13 +613,14 @@ $(() => {
             },
 
             onLeave: () => {
-                if (inputChanged) {
+                if (inputChanged || (questionContentEditor && questionContentEditor.checkDirty())) {
                     if (!confirm("Form content will be lost. Confirm leave?")) {
                         return false;
                     }
                 }
 
                 createQuestionXhr && createQuestionXhr.abort();
+                questionContentEditor && questionContentEditor.destroy(true);
 
                 return;
             }
@@ -629,6 +634,7 @@ $(() => {
         let updateQuestionXhr: JQueryXHR | undefined;
         let deleteQuestionXhr: JQueryXHR | undefined;
         let inputChanged: boolean = false;
+        let questionContentEditor: ckeditor.editor | undefined;
 
         fsmDesc.addStateChangeHandlers(STATE.QUESTION_DETAILS_PAGE, {
             onEnter: (_label: string, _fromState: string, _toState: string, questionId: string) => {
@@ -637,6 +643,8 @@ $(() => {
 
                 pageManager.loadPage("admin-question-details", (page$) => {
                     setSectionActive("quizzes");
+
+                    questionContentEditor = ckeditor.replace($("#question-content")[0] as HTMLTextAreaElement);
 
                     page$("#question-content").one("input propertychange paste", () => {
                         inputChanged = true;
@@ -684,7 +692,7 @@ $(() => {
                     page$("#save-changes").one("click", (e) => {
                         e.preventDefault();
 
-                        const questionContent: string = page$("#question-content").val();
+                        const questionContent: string = questionContentEditor!.getData();
 
                         updateQuestionXhr = ajaxPut(`/api/client/question/${questionId}`, {
                             content: questionContent,
@@ -722,7 +730,7 @@ $(() => {
             },
 
             onLeave: () => {
-                if (inputChanged) {
+                if (inputChanged || (questionContentEditor && questionContentEditor.checkDirty())) {
                     if (!confirm("Form content will be lost. Confirm leave?")) {
                         return false;
                     }
@@ -731,7 +739,7 @@ $(() => {
                 loadQuestionDetailsXhr && loadQuestionDetailsXhr.abort();
                 updateQuestionXhr && updateQuestionXhr.abort();
                 deleteQuestionXhr && deleteQuestionXhr.abort();
-
+                questionContentEditor && questionContentEditor.destroy(true);
                 return;
             }
         });
