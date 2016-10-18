@@ -1,5 +1,6 @@
 import * as mongodb from "mongodb";
 import * as crypto from "crypto";
+import * as os from "os";
 
 import * as ApiDecorators from "./ApiDecorators";
 
@@ -12,7 +13,7 @@ import { Session } from "../session/Session";
 
 import { Database } from "../data/Database";
 import { User as DBUser, IDB_User } from "../data/models/User";
-import { UserSession as DBUserSession } from "../data/models/UserSession";
+import { UserSession as DBUserSession, IDB_UserSession } from "../data/models/UserSession";
 import { QuizSchedule as DBQuizSchedule, IDB_QuizSchedule } from "../data/models/QuizSchedule";
 import { Question as DBQuestion, IDB_Question } from "../data/models/Question";
 import { QuestionOption as DBQuestionOption, IDB_QuestionOption } from "../data/models/QuestionOption";
@@ -275,7 +276,7 @@ export namespace Api {
         @ApiDecorators.ApplySession
         @ApiDecorators.AdminOnly
         @ApiDecorators.LimitQuestionIdToSession
-        public static Gets_Question(moocchat: Moocchat, res: ApiResponseCallback<IDB_QuestionOption[]>, data: IMoocchatApi.ToServerQuestionId, session?: Session): void {
+        public static Gets_WithQuestionId(moocchat: Moocchat, res: ApiResponseCallback<IDB_QuestionOption[]>, data: IMoocchatApi.ToServerQuestionId, session?: Session): void {
             const db = moocchat.getDb();
 
             new DBQuestionOption(db).readAsArray({
@@ -295,7 +296,7 @@ export namespace Api {
         @ApiDecorators.ApplySession
         @ApiDecorators.AdminOnly
         @ApiDecorators.LimitQuestionIdToSession
-        public static Gets_Question(moocchat: Moocchat, res: ApiResponseCallback<IDB_QuestionOptionCorrect[]>, data: IMoocchatApi.ToServerQuestionId, session?: Session): void {
+        public static Gets_WithQuestionId(moocchat: Moocchat, res: ApiResponseCallback<IDB_QuestionOptionCorrect[]>, data: IMoocchatApi.ToServerQuestionId, session?: Session): void {
             const db = moocchat.getDb();
 
             new DBQuestionOptionCorrect(db).readAsArray({
@@ -312,6 +313,28 @@ export namespace Api {
     }
 
     export class User {
+        @ApiDecorators.ApplySession
+        @ApiDecorators.AdminOnly
+        @ApiDecorators.LimitUserIdToSession
+        public static Get(moocchat: Moocchat, res: ApiResponseCallback<IDB_User>, data: IMoocchatApi.ToServerUserId, session?: Session): void {
+            const db = moocchat.getDb();
+
+            new DBUser(db).readAsArray({
+                _id: new Database.ObjectId(data.userId)
+            }, (err, result) => {
+                if (handleMongoError(err, res)) { return; }
+
+                // No need to check for existence; @ApiDecorators.LimitUserIdToSession already covers that
+
+                const fetchedUser = result[0];
+
+                return res({
+                    success: true,
+                    payload: fetchedUser,
+                });
+            });
+        }
+
         @ApiDecorators.ApplySession
         @ApiDecorators.AdminOnly
         public static Gets(moocchat: Moocchat, res: ApiResponseCallback<IDB_User[]>, data: IMoocchatApi.ToServerStandardRequestBase, session?: Session): void {
@@ -364,6 +387,27 @@ export namespace Api {
         }
     }
 
+    export class UserSession {
+        @ApiDecorators.ApplySession
+        @ApiDecorators.AdminOnly
+        @ApiDecorators.LimitUserIdToSession
+        public static Gets_WithUserId(moocchat: Moocchat, res: ApiResponseCallback<IDB_UserSession[]>, data: IMoocchatApi.ToServerUserId, session?: Session): void {
+            const db = moocchat.getDb();
+
+            new DBUserSession(db)
+                .readAsArray({
+                    userId: new Database.ObjectId(data.userId)
+                }, (err, result) => {
+                    if (handleMongoError(err, res)) { return; }
+
+                    return res({
+                        success: true,
+                        payload: result,
+                    });
+                });
+        }
+    }
+
     export class LoginSession {
         public static Post_Lti(moocchat: Moocchat, res: ApiResponseCallback<IMoocchatApi.ToClientLoginResponsePayload>, data: ILTIData): void {
             // Run auth
@@ -412,6 +456,36 @@ export namespace Api {
             });
         }
     }
+
+    export class System {
+        @ApiDecorators.ApplySession
+        @ApiDecorators.AdminOnly
+        public static Get_Info(moocchat: Moocchat, res: ApiResponseCallback<SysInfo>, data: IMoocchatApi.ToServerStandardRequestBase, session?: Session): void {
+            const freeMem = os.freemem();
+            const totalMem = os.totalmem();
+
+            const cpuInfo = os.cpus();
+            const cpuLoad = os.loadavg();
+
+            return res({
+                success: true,
+                payload: {
+                    memory: {
+                        free: freeMem,
+                        total: totalMem,
+                    },
+                    cpu: {
+                        num: cpuInfo.length,
+                        load: {
+                            minute1: cpuLoad[0],
+                            minute5: cpuLoad[1],
+                            minute15: cpuLoad[2],
+                        },
+                    },
+                },
+            });
+        }
+    }
 }
 
 
@@ -451,10 +525,10 @@ export function checkQuestionId(moocchat: Moocchat, session: Session, questionId
 }
 
 export function checkQuizId(moocchat: Moocchat, session: Session, quizId: string | mongodb.ObjectID, callback: mongodb.MongoCallback<IDB_QuizSchedule[]>) {
-    // Check question ID falls within the course of the session identity
+    // Check quiz ID falls within the course of the session identity
     const course = session.getCourse();
 
-    // Look up question under course
+    // Look up quiz under course
     const db = moocchat.getDb();
 
     if (typeof quizId === "string") {
@@ -465,6 +539,45 @@ export function checkQuizId(moocchat: Moocchat, session: Session, quizId: string
         _id: quizId,
         course,
     }, callback);
+}
+
+export function checkUserId(moocchat: Moocchat, session: Session, userId: string | mongodb.ObjectID, callback: mongodb.MongoCallback<IDB_User[]>) {
+    // Check user ID falls within the course of the session identity
+    const course = session.getCourse();
+
+    // Look up user under course
+    const db = moocchat.getDb();
+
+    if (typeof userId === "string") {
+        userId = new Database.ObjectId(userId);
+    }
+
+    new DBQuizSchedule(db)
+        .readWithCursor({
+            course,
+        })
+        .project({
+            _id: 1,
+        })
+        .toArray((err, result) => {
+            // TODO: What to do about handling errors?
+            //       Probably needs to be held off until Promises are rolled into the codebase
+            // if (handleMongoError(err, res)) { return; }
+            if (err) {
+                console.log(err);
+                return;
+            }
+
+            const quizIds = result.map((result: { _id: mongodb.ObjectID }) => result._id);
+
+            new DBUserSession(db)
+                .readAsArray({
+                    quizScheduleId: {
+                        $in: quizIds,
+                    },
+                    userId,
+                }, callback);
+        });
 }
 
 export function precheckQuizScheduleInsert(moocchat: Moocchat, session: Session, res: ApiResponseCallback<IMoocchatApi.ToClientInsertionIdResponse>, data: IMoocchatApi.ToServerStandardRequestBase & IDB_QuizSchedule, callback: (questionId: mongodb.ObjectID, availableStart: Date, availableEnd: Date, blackboardColumnId: number) => void) {
@@ -665,3 +778,18 @@ export function precheckQuizScheduleUpdate(moocchat: Moocchat, session: Session,
 export type ApiResponseCallback<T> = (response: IMoocchatApi.ToClientResponseBase<T>) => void;
 export type ApiHandlerBase<InputType extends ToServerStandardRequestBase, PayloadType> = (moocchat: Moocchat, res: ApiResponseCallback<PayloadType>, data: InputType) => void;
 export type ApiHandlerWithSession<InputType extends IMoocchatApi.ToServerStandardRequestBase, PayloadType> = (moocchat: Moocchat, res: ApiResponseCallback<PayloadType>, data: InputType, session: Session) => void;
+
+interface SysInfo {
+    memory: {
+        free: number,
+        total: number,
+    },
+    cpu: {
+        num: number,
+        load: {
+            minute1: number,
+            minute5: number,
+            minute15: number,
+        }
+    }
+}

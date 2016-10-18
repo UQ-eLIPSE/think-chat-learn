@@ -28,6 +28,10 @@ export interface ToServerQuizId extends ToServerStandardRequestBase {
     quizId: string,
 }
 
+export interface ToServerUserId extends ToServerStandardRequestBase {
+    userId: string,
+}
+
 export interface ToClientInsertionIdResponse {
     id: string,
 }

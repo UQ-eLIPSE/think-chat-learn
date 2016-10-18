@@ -134,14 +134,17 @@ AssociateGETEndpoint("/api/client/quiz/:quizId/session", undefined);
 
 AssociateGETEndpoint("/api/client/question", Api.Question.Gets);
 AssociateGETEndpoint("/api/client/question/:questionId", Api.Question.Get);
-AssociateGETEndpoint("/api/client/question/:questionId/option", Api.QuestionOption.Gets_Question);
-AssociateGETEndpoint("/api/client/question/:questionId/correctOption", Api.QuestionOptionCorrect.Gets_Question);
+AssociateGETEndpoint("/api/client/question/:questionId/option", Api.QuestionOption.Gets_WithQuestionId);
+AssociateGETEndpoint("/api/client/question/:questionId/correctOption", Api.QuestionOptionCorrect.Gets_WithQuestionId);
 
 AssociateGETEndpoint("/api/client/questionOption", undefined);
 AssociateGETEndpoint("/api/client/questionOption/:questionOptionId", undefined);
 
 AssociateGETEndpoint("/api/client/user", Api.User.Gets);
+AssociateGETEndpoint("/api/client/user/:userId", Api.User.Get);
+AssociateGETEndpoint("/api/client/user/:userId/session", Api.UserSession.Gets_WithUserId);
 
+AssociateGETEndpoint("/api/client/system/info", Api.System.Get_Info);
 
 
 // POSTs

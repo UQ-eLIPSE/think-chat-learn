@@ -40,6 +40,7 @@ export class CombinedPageManager extends PageManager {
 
             if (!requestedPageElem) {
                 // throw new Error("Page not found");
+                console.error(`Page "${name}"" not found`);
                 return;
             }
 

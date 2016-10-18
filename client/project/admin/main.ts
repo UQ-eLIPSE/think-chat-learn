@@ -39,6 +39,10 @@ enum STATE {
     QUESTION_DETAILS_PAGE,
     QUESTION_CREATION_PAGE,
 
+    USERS_PAGE,
+    USER_DETAILS_PAGE,
+
+    SYSTEM_INFO_PAGE,
 
 }
 
@@ -84,6 +88,14 @@ $(() => {
 
                 $("#go-to-quizzes").on("click", () => {
                     fsm.executeTransition("load-quiz-schedules");
+                });
+
+                $("#go-to-users").on("click", () => {
+                    fsm.executeTransition("load-users");
+                });
+
+                $("#go-to-system").on("click", () => {
+                    fsm.executeTransition("load-system-info");
                 });
 
                 fsm.executeTransition("login");
@@ -139,7 +151,22 @@ $(() => {
             fromState: "*",
             toState: STATE.QUESTION_CREATION_PAGE,
         },
+        {
+            label: "load-users",
+            fromState: "*",
+            toState: STATE.USERS_PAGE,
+        },
+        {
+            label: "load-user-details",
+            fromState: "*",
+            toState: STATE.USER_DETAILS_PAGE,
+        },
 
+        {
+            label: "load-system-info",
+            fromState: "*",
+            toState: STATE.SYSTEM_INFO_PAGE,
+        },
     ]);
 
     fsmDesc.addStateChangeHandlers(STATE.ERROR, {
@@ -242,6 +269,18 @@ $(() => {
                     e.preventDefault();
 
                     fsm.executeTransition("load-questions");
+                });
+
+                page$("#view-users").on("click", (e) => {
+                    e.preventDefault();
+
+                    fsm.executeTransition("load-users");
+                });
+
+                page$("#view-sys-info").on("click", (e) => {
+                    e.preventDefault();
+
+                    fsm.executeTransition("load-system-info");
                 });
             });
         }
@@ -644,8 +683,6 @@ $(() => {
                 pageManager.loadPage("admin-question-details", (page$) => {
                     setSectionActive("quizzes");
 
-                    questionContentEditor = ckeditor.replace($("#question-content")[0] as HTMLTextAreaElement);
-
                     page$("#question-content").one("input propertychange paste", () => {
                         inputChanged = true;
                     });
@@ -666,6 +703,8 @@ $(() => {
 
                             page$("#question-id").text(data.payload._id || "?");
                             page$("#question-content").val(data.payload.content || "");
+                            
+                            questionContentEditor = ckeditor.replace($("#question-content")[0] as HTMLTextAreaElement);
                         });
 
                     loadQuestionOptionsXhr!
@@ -741,6 +780,143 @@ $(() => {
                 deleteQuestionXhr && deleteQuestionXhr.abort();
                 questionContentEditor && questionContentEditor.destroy(true);
                 return;
+            }
+        });
+    }
+
+
+    {
+        let loadUsersXhr: JQueryXHR | undefined;
+
+        fsmDesc.addStateChangeHandlers(STATE.USERS_PAGE, {
+            onEnter: () => {
+                loadUsersXhr = ajaxGet("/api/client/user");
+
+                pageManager.loadPage("admin-users", (page$) => {
+                    setSectionActive("users");
+
+                    page$("#user-list")
+                        .append($("<li>").text("Loading..."));
+
+                    loadUsersXhr!
+                        .done((data: IMoocchatApi.ToClientResponseBase<IDB_User[]>) => {
+                            // Must check success flag
+                            if (!data.success) {
+                                // Something went wrong - check message
+                                return fsm.executeTransition("error", data.message);
+                            }
+
+                            const userListElems = data.payload.map((user) => {
+                                return $("<li>").html(`User ID: <a href="#" class="view-user">${user._id}</a><br>Name: ${user.lastName}, ${user.firstName}`);
+                            });
+
+                            page$("#user-list")
+                                .empty()
+                                .append(userListElems)
+                                .on("click", "a.view-user", (e) => {
+                                    e.preventDefault();
+
+                                    const userId = $(e.currentTarget).text();
+
+                                    fsm.executeTransition("load-user-details", userId);
+                                });
+                        });
+                });
+            },
+
+            onLeave: () => {
+                loadUsersXhr && loadUsersXhr.abort();
+            }
+        });
+    }
+
+    {
+        let loadUserDetailsXhr: JQueryXHR | undefined;
+        let loadUserSessionsXhr: JQueryXHR | undefined;
+
+        fsmDesc.addStateChangeHandlers(STATE.USER_DETAILS_PAGE, {
+            onEnter: (_label: string, _fromState: string, _toState: string, questionId: string) => {
+                loadUserDetailsXhr = ajaxGet(`/api/client/user/${questionId}`);
+                loadUserSessionsXhr = ajaxGet(`/api/client/user/${questionId}/session`);
+
+                pageManager.loadPage("admin-user-details", (page$) => {
+                    setSectionActive("users");
+
+                    loadUserDetailsXhr!
+                        .done((data: IMoocchatApi.ToClientResponseBase<IDB_User>) => {
+                            // Must check success flag
+                            if (!data.success) {
+                                // Something went wrong - check message
+                                return fsm.executeTransition("error", data.message);
+                            }
+
+                            page$("#user-id").text(data.payload._id || "?");
+                            page$("#user-username").text(data.payload.username || "?");
+                            page$("#user-first-name").text(data.payload.firstName || "?");
+                            page$("#user-last-name").text(data.payload.lastName || "?");
+                            page$("#user-research-consent").text(data.payload.researchConsent!);
+                        });
+
+                    loadUserSessionsXhr!
+                        .done((data: IMoocchatApi.ToClientResponseBase<IDB_UserSession[]>) => {
+                            // Must check success flag
+                            if (!data.success) {
+                                // Something went wrong - check message
+                                return fsm.executeTransition("error", data.message);
+                            }
+
+                            $("#user-sessions").append(
+                                data.payload.map(userSession => {
+                                    return $("<p>").html(`User Session ID: ${userSession._id}<br>Quiz ID: <a class="view-quiz">${userSession.quizScheduleId}</a><br>Chat Group ID: ${userSession.chatGroupId}<br>Timestamp start: ${userSession.timestampStart}<br>Timestamp end: ${userSession.timestampEnd}`);
+                                })
+                            ).on("click", "a.view-quiz", (e) => {
+                                e.preventDefault();
+
+                                const quizId = $(e.currentTarget).text();
+
+                                fsm.executeTransition("load-quiz-schedule-details", quizId);
+                            });
+                        });
+                });
+            },
+
+            onLeave: () => {
+
+                loadUserDetailsXhr && loadUserDetailsXhr.abort();
+                loadUserSessionsXhr && loadUserSessionsXhr.abort();
+
+                return;
+            }
+        });
+    }
+
+    {
+        let loadSysInfoXhr: JQueryXHR | undefined;
+
+        fsmDesc.addStateChangeHandlers(STATE.SYSTEM_INFO_PAGE, {
+            onEnter: () => {
+                loadSysInfoXhr = ajaxGet("/api/client/system/info");
+
+                pageManager.loadPage("admin-system-info", (page$) => {
+                    setSectionActive("system");
+
+                    loadSysInfoXhr!
+                        .done((data: IMoocchatApi.ToClientResponseBase<any>) => {
+                            // Must check success flag
+                            if (!data.success) {
+                                // Something went wrong - check message
+                                return fsm.executeTransition("error", data.message);
+                            }
+
+                            page$("#sys-info").text(JSON.stringify(data.payload, null, "  "));
+                        });
+
+                    page$("#reload").on("click", () => { fsm.executeTransition("load-system-info"); });
+                });
+            },
+
+            onLeave: () => {
+                loadSysInfoXhr && loadSysInfoXhr.abort();
             }
         });
     }
@@ -893,4 +1069,21 @@ interface IDB_QuestionOption {
     questionId?: string,
     sequence?: number,
     content?: string
+}
+interface IDB_User {
+    _id?: string;
+    username?: string;
+    firstName?: string;
+    lastName?: string;
+    researchConsent?: boolean;
+}
+interface IDB_UserSession {
+    _id?: string,
+    userId?: string,
+    quizScheduleId?: string,
+    timestampStart?: string,
+    timestampEnd?: string,
+    responseInitialId?: string,
+    responseFinalId?: string,
+    chatGroupId?: string
 }
