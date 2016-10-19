@@ -638,6 +638,9 @@ $(() => {
 
                         createQuestionXhr
                             .done((data: IMoocchatApi.ToClientResponseBase<IMoocchatApi.ToClientInsertionIdResponse>) => {
+                                inputChanged = false;
+                                questionContentEditor!.resetDirty();
+
                                 // Must check success flag
                                 if (!data.success) {
                                     // Something went wrong - check message
@@ -645,7 +648,6 @@ $(() => {
                                 }
 
                                 fsm.executeTransition("load-questions");
-
                             });
                     });
                 });
@@ -678,7 +680,6 @@ $(() => {
         fsmDesc.addStateChangeHandlers(STATE.QUESTION_DETAILS_PAGE, {
             onEnter: (_label: string, _fromState: string, _toState: string, questionId: string) => {
                 loadQuestionDetailsXhr = ajaxGet(`/api/client/question/${questionId}`);
-                loadQuestionOptionsXhr = ajaxGet(`/api/client/question/${questionId}/option`);
 
                 pageManager.loadPage("admin-question-details", (page$) => {
                     setSectionActive("quizzes");
@@ -703,30 +704,41 @@ $(() => {
 
                             page$("#question-id").text(data.payload._id || "?");
                             page$("#question-content").val(data.payload.content || "");
-                            
+
                             questionContentEditor = ckeditor.replace($("#question-content")[0] as HTMLTextAreaElement);
                         });
 
-                    loadQuestionOptionsXhr!
-                        .done((data: IMoocchatApi.ToClientResponseBase<IDB_QuestionOption[]>) => {
-                            // Must check success flag
-                            if (!data.success) {
-                                // Something went wrong - check message
-                                return fsm.executeTransition("error", data.message);
-                            }
+                    const loadQuestionDetails = () => {
+                        loadQuestionOptionsXhr = ajaxGet(`/api/client/question/${questionId}/option`);
 
-                            page$("#question-options").append(
-                                data.payload.sort((a, b) => {
-                                    if (a.sequence === b.sequence) {
-                                        return 0;
-                                    }
+                        loadQuestionOptionsXhr!
+                            .done((data: IMoocchatApi.ToClientResponseBase<IDB_QuestionOption[]>) => {
+                                // Must check success flag
+                                if (!data.success) {
+                                    // Something went wrong - check message
+                                    return fsm.executeTransition("error", data.message);
+                                }
 
-                                    return (a.sequence < b.sequence) ? -1 : 1;
-                                }).map((questionOption) => {
-                                    return $("<p>").html(`ID: ${questionOption._id}<br>Content: ${questionOption.content}`)
-                                })
-                            );
-                        });
+                                page$("#question-options").empty().append(
+                                    data.payload.sort((a, b) => {
+                                        if (a.sequence === b.sequence) {
+                                            return 0;
+                                        }
+
+                                        return (a.sequence < b.sequence) ? -1 : 1;
+                                    }).map((questionOption) => {
+                                        return $("<p>")
+                                            .data("questionOption", questionOption)
+                                            .html(`
+                                        ID: ${questionOption._id} <a class="question-option-delete">Delete</a><br>
+                                        Content: <span class="question-option-content">${questionOption.content}</span> <a class="question-option-content-edit">Edit</a><br>
+                                        Sequence: ${questionOption.sequence} <a class="question-option-up">Up</a> <a class="question-option-down">Down</a>`);
+                                    })
+                                );
+                            });
+                    }
+
+                    loadQuestionDetails();
 
                     page$("#save-changes").one("click", (e) => {
                         e.preventDefault();
@@ -748,7 +760,6 @@ $(() => {
                         });
                     });
 
-
                     page$("#delete").one("click", (e) => {
                         e.preventDefault();
 
@@ -765,6 +776,173 @@ $(() => {
                         });
                     });
 
+                    page$("#create-question-option").on("click", (e) => {
+                        const $elem = $(e.currentTarget);
+
+                        // Hide button while form open
+                        $elem.hide();
+
+                        const lastQuestionOptionData: IDB_QuestionOption = page$("#question-options").children().last().data("questionOption");
+
+                        const $contentField = $("<span>").addClass("question-option-content").text("<Type question option here>").prop("contenteditable", true).css("outline", "1px solid orange");
+                        const $insertionForm = $("<p>")
+                            .append([
+                                "Content: ",
+                                $contentField,
+                                $("<a>").text("Save").one("click", () => {
+                                    ajaxPost(`/api/client/question/${questionId}/option`, {
+                                        content: $contentField.html(),
+                                        sequence: lastQuestionOptionData.sequence + 1,
+                                    })
+                                        .done((data: IMoocchatApi.ToClientResponseBase<IMoocchatApi.ToClientInsertionIdResponse>) => {
+                                            // Must check success flag
+                                            if (!data.success) {
+                                                // Something went wrong - check message
+                                                return fsm.executeTransition("error", data.message);
+                                            }
+
+                                            loadQuestionDetails();
+                                            $insertionForm.remove();
+                                            $elem.show();
+                                        });
+                                }),
+                                " ",
+                                $("<a>").text("Cancel").one("click", () => {
+                                    $insertionForm.remove();
+                                    $elem.show();
+                                }),
+                            ]
+                            )
+
+                        $elem.before($insertionForm);
+                    });
+
+                    page$().on("click", "a.question-option-content-edit", (e) => {
+                        const $elem = $(e.currentTarget);
+                        const $contentElem = $elem.siblings(".question-option-content");
+
+                        // Make content field editable
+                        $contentElem.prop("contenteditable", true).css("outline", "1px solid orange");
+
+                        const currentData: IDB_QuestionOption = $elem.parent().data("questionOption");
+
+                        $elem.hide().after([
+                            $("<a>").text("Save").one("click", () => {
+                                ajaxPut(`/api/client/question/${questionId}/option/${currentData._id}`, {
+                                    content: $contentElem.html()
+                                })
+                                    .done((data: IMoocchatApi.ToClientResponseBase<void>) => {
+                                        // Must check success flag
+                                        if (!data.success) {
+                                            // Something went wrong - check message
+                                            return fsm.executeTransition("error", data.message);
+                                        }
+
+                                        loadQuestionDetails();
+                                    });
+                            }),
+                            " ",
+                            $("<a>").text("Cancel").one("click", () => {
+                                loadQuestionDetails();
+                            }),
+                        ]);
+
+
+                    });
+
+                    page$().on("click", "a.question-option-delete", (e) => {
+                        e.preventDefault();
+
+                        const $questionOptionElem = $(e.currentTarget).parent();
+
+                        const currentData: IDB_QuestionOption = $questionOptionElem.data("questionOption");
+
+                        ajaxDelete(`/api/client/question/${questionId}/option/${currentData._id}`)
+                            .done((data: IMoocchatApi.ToClientResponseBase<void>) => {
+                                // Must check success flag
+                                if (!data.success) {
+                                    // Something went wrong - check message
+                                    return fsm.executeTransition("error", data.message);
+                                }
+
+                                loadQuestionDetails();
+                            });
+                    });
+
+                    page$().on("click", "a.question-option-up", (e) => {
+                        e.preventDefault();
+
+                        const $questionOptionElem = $(e.currentTarget).parent();
+
+                        // Swap with one above
+                        const $questionOptionElemAbove = $questionOptionElem.prev();
+
+                        // Stop if no element above
+                        if ($questionOptionElemAbove.length === 0) {
+                            return;
+                        }
+
+                        const currentData: IDB_QuestionOption = $questionOptionElem.data("questionOption");
+                        const aboveData: IDB_QuestionOption = $questionOptionElemAbove.data("questionOption");
+
+                        $.when(
+                            ajaxPut(`/api/client/question/${questionId}/option/${currentData._id}`, {
+                                sequence: aboveData.sequence,
+                            }),
+                            ajaxPut(`/api/client/question/${questionId}/option/${aboveData._id}`, {
+                                sequence: currentData.sequence,
+                            })
+                        )
+                            .done((updateCurrentData, updateAboveData) => {
+                                // Must check success flag
+                                if (!updateCurrentData[0].success || !updateAboveData[0].success) {
+                                    // Something went wrong - check message
+                                    return fsm.executeTransition("error",
+                                        (updateCurrentData[0].message || "") + "\n" + (updateAboveData[0].message || "")
+                                    );
+                                }
+
+                                loadQuestionDetails();
+                            });
+                    });
+
+                    page$().on("click", "a.question-option-down", (e) => {
+                        e.preventDefault();
+
+                        const $questionOptionElem = $(e.currentTarget).parent();
+
+                        // Swap with one above
+                        const $questionOptionElemBelow = $questionOptionElem.next();
+
+                        // Stop if no element below
+                        if ($questionOptionElemBelow.length === 0) {
+                            return;
+                        }
+
+                        const currentData: IDB_QuestionOption = $questionOptionElem.data("questionOption");
+                        const belowData: IDB_QuestionOption = $questionOptionElemBelow.data("questionOption");
+
+                        $.when(
+                            ajaxPut(`/api/client/question/${questionId}/option/${currentData._id}`, {
+                                sequence: belowData.sequence,
+                            }),
+                            ajaxPut(`/api/client/question/${questionId}/option/${belowData._id}`, {
+                                sequence: currentData.sequence,
+                            })
+                        )
+                            .done((updateCurrentData, updateBelowData) => {
+                                // Must check success flag
+                                if (!updateCurrentData[0].success || !updateBelowData[0].success) {
+                                    // Something went wrong - check message
+                                    return fsm.executeTransition("error",
+                                        (updateCurrentData[0].message || "") + "\n" + (updateBelowData[0].message || "")
+                                    );
+                                }
+
+                                loadQuestionDetails();
+                            });
+
+                    });
                 });
             },
 

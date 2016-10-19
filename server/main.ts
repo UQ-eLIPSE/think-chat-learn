@@ -130,15 +130,15 @@ AssociateGETEndpoint("/api/client/admin/test", Api.Admin.Get_Test);
 
 AssociateGETEndpoint("/api/client/quiz", Api.Quiz.Gets);
 AssociateGETEndpoint("/api/client/quiz/:quizId", Api.Quiz.Get);
-AssociateGETEndpoint("/api/client/quiz/:quizId/session", undefined);
+// AssociateGETEndpoint("/api/client/quiz/:quizId/session", undefined);
 
 AssociateGETEndpoint("/api/client/question", Api.Question.Gets);
 AssociateGETEndpoint("/api/client/question/:questionId", Api.Question.Get);
 AssociateGETEndpoint("/api/client/question/:questionId/option", Api.QuestionOption.Gets_WithQuestionId);
 AssociateGETEndpoint("/api/client/question/:questionId/correctOption", Api.QuestionOptionCorrect.Gets_WithQuestionId);
 
-AssociateGETEndpoint("/api/client/questionOption", undefined);
-AssociateGETEndpoint("/api/client/questionOption/:questionOptionId", undefined);
+// AssociateGETEndpoint("/api/client/questionOption", undefined);
+// AssociateGETEndpoint("/api/client/questionOption/:questionOptionId", undefined);
 
 AssociateGETEndpoint("/api/client/user", Api.User.Gets);
 AssociateGETEndpoint("/api/client/user/:userId", Api.User.Get);
@@ -151,14 +151,14 @@ AssociateGETEndpoint("/api/client/system/info", Api.System.Get_Info);
 AssociatePOSTEndpoint("/api/client/loginSession/lti", Api.LoginSession.Post_Lti);
 AssociatePOSTEndpoint("/api/client/quiz", Api.Quiz.Post);
 AssociatePOSTEndpoint("/api/client/question", Api.Question.Post);
-AssociatePOSTEndpoint("/api/client/questionOption", undefined);
+AssociatePOSTEndpoint("/api/client/question/:questionId/option", Api.QuestionOption.Post_WithQuestionId);
 
 
 
 // PUTs
 AssociatePUTEndpoint("/api/client/quiz/:quizId", Api.Quiz.Put);
 AssociatePUTEndpoint("/api/client/question/:questionId", Api.Question.Put);
-AssociatePUTEndpoint("/api/client/questionOption/:questionOptionId", undefined);
+AssociatePUTEndpoint("/api/client/question/:questionId/option/:questionOptionId", Api.QuestionOption.Put_WithQuestionId);
 
 
 
@@ -166,7 +166,7 @@ AssociatePUTEndpoint("/api/client/questionOption/:questionOptionId", undefined);
 AssociateDELETEEndpoint("/api/client/loginSession", Api.LoginSession.Delete);
 AssociateDELETEEndpoint("/api/client/quiz/:quizId", Api.Quiz.Delete);
 AssociateDELETEEndpoint("/api/client/question/:questionId", Api.Question.Delete);
-AssociateDELETEEndpoint("/api/client/questionOption/:questionOptionId", undefined);
+AssociateDELETEEndpoint("/api/client/question/:questionId/option/:questionOptionId", Api.QuestionOption.Delete_WithQuestionId);
 
 
 function AssociateGETEndpoint<PayloadType>(url: string, endpointHandler: ApiHandlerBase<any, PayloadType>) {

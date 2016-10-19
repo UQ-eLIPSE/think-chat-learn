@@ -151,6 +151,49 @@ export function LimitUserIdToSession<Target, InputType extends IMoocchatApi.ToSe
 }
 
 /**
+ * Decorates API endpoints by checking that the question option is related to the question
+ */
+export function LimitQuestionOptionIdToQuestionId<Target, InputType extends IMoocchatApi.ToServerQuestionId & IMoocchatApi.ToServerQuestionOptionId, PayloadType>(target: Target, propertyKey: string, descriptor: TypedPropertyDescriptor<Api.ApiHandlerWithSession<InputType, PayloadType>>) {
+    const originalMethod = descriptor.value;
+
+    descriptor.value = function(this: Target, moocchat: Moocchat, res: Api.ApiResponseCallback<PayloadType>, data: InputType, session: Session) {
+        const questionId = data.questionId;
+        const questionOptionId = data.questionOptionId;
+
+        let missingParameters: string[] = [];
+
+        !questionId && missingParameters.push("questionId");
+        !questionOptionId && missingParameters.push("questionOptionId");
+
+        if (missingParameters.length > 0) {
+            return res({
+                success: false,
+                code: "MISSING_PARAMETERS",
+                message: `Input missing parameters: ${missingParameters.join(", ")}`
+            });
+        }
+
+        Api.checkQuestionOptionIdToQuestionId(moocchat, questionId, questionOptionId, (err, result) => {
+            if (Api.handleMongoError(err, res)) { return; }
+
+            // If result blank, that means either question option does not exist or
+            // is not related to question ID
+            if (result.length === 0) {
+                return res({
+                    success: false,
+                    code: "RESOURCE_NOT_FOUND_OR_NOT_ACCESSIBLE",
+                    message: `Question option ID "${questionOptionId}" cannot be found or is not associated to question ID "${questionId}"`
+                });
+            }
+
+            // If question option exists, then 
+            originalMethod.apply(this, [moocchat, res, data, session]);
+        });
+    }
+
+    return descriptor;
+}
+/**
  * Decorates API endpoints by checking that the session user is authorised with admin rights 
  */
 export function AdminOnly<Target, InputType extends IMoocchatApi.ToServerStandardRequestBase, PayloadType>(target: Target, propertyKey: string, descriptor: TypedPropertyDescriptor<Api.ApiHandlerWithSession<InputType, PayloadType>>) {

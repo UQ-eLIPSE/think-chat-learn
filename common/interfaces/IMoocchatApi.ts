@@ -32,6 +32,10 @@ export interface ToServerUserId extends ToServerStandardRequestBase {
     userId: string,
 }
 
+export interface ToServerQuestionOptionId extends ToServerStandardRequestBase {
+    questionOptionId: string,
+}
+
 export interface ToClientInsertionIdResponse {
     id: string,
 }

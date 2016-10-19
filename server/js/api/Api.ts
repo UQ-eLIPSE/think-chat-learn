@@ -290,6 +290,78 @@ export namespace Api {
                 });
             });
         }
+
+        @ApiDecorators.ApplySession
+        @ApiDecorators.AdminOnly
+        @ApiDecorators.LimitQuestionIdToSession
+        public static Post_WithQuestionId(moocchat: Moocchat, res: ApiResponseCallback<IMoocchatApi.ToClientInsertionIdResponse>, data: IMoocchatApi.ToServerQuestionId & IDB_QuestionOption, session?: Session): void {
+            const db = moocchat.getDb();
+
+            new DBQuestionOption(db).insertOne({
+                content: data.content || "",
+                questionId: new Database.ObjectId(data.questionId),
+                sequence: data.sequence,
+            }, (err, result) => {
+                if (handleMongoError(err, res)) { return; }
+
+                return res({
+                    success: true,
+                    payload: {
+                        id: result.insertedId.toHexString(),
+                    }
+                });
+            });
+        }
+
+        @ApiDecorators.ApplySession
+        @ApiDecorators.AdminOnly
+        @ApiDecorators.LimitQuestionIdToSession
+        @ApiDecorators.LimitQuestionOptionIdToQuestionId
+        public static Put_WithQuestionId(moocchat: Moocchat, res: ApiResponseCallback<void>, data: IMoocchatApi.ToServerQuestionId & IMoocchatApi.ToServerQuestionOptionId & IDB_QuestionOption, session?: Session): void {
+            precheckQuestionOptionUpdate(moocchat, session, res, data, (content, sequence) => {
+                const db = moocchat.getDb();
+
+                new DBQuestionOption(db).updateOne(
+                    {
+                        _id: new Database.ObjectId(data.questionOptionId),
+                    },
+                    {
+                        $set: {
+                            content,
+                            sequence,
+                        }
+                    },
+                    (err, result) => {
+                        if (handleMongoError(err, res)) { return; }
+
+                        return res({
+                            success: true,
+                            payload: undefined,
+                        });
+                    });
+            });
+        }
+
+        @ApiDecorators.ApplySession
+        @ApiDecorators.AdminOnly
+        @ApiDecorators.LimitQuestionIdToSession
+        @ApiDecorators.LimitQuestionOptionIdToQuestionId
+        public static Delete_WithQuestionId(moocchat: Moocchat, res: ApiResponseCallback<void>, data: IMoocchatApi.ToServerQuestionId & IMoocchatApi.ToServerQuestionOptionId, session?: Session): void {
+            const db = moocchat.getDb();
+
+            new DBQuestionOption(db).delete(
+                {
+                    _id: new Database.ObjectId(data.questionOptionId),
+                },
+                (err, result) => {
+                    if (handleMongoError(err, res)) { return; }
+
+                    return res({
+                        success: true,
+                        payload: undefined,
+                    });
+                });
+        }
     }
 
     export class QuestionOptionCorrect {
@@ -580,6 +652,24 @@ export function checkUserId(moocchat: Moocchat, session: Session, userId: string
         });
 }
 
+export function checkQuestionOptionIdToQuestionId(moocchat: Moocchat, questionId: string | mongodb.ObjectID, questionOptionId: string | mongodb.ObjectID, callback: mongodb.MongoCallback<IDB_Question[]>) {
+    // Look up question under course
+    const db = moocchat.getDb();
+
+    if (typeof questionId === "string") {
+        questionId = new Database.ObjectId(questionId);
+    }
+
+    if (typeof questionOptionId === "string") {
+        questionOptionId = new Database.ObjectId(questionOptionId);
+    }
+
+    new DBQuestionOption(db).readAsArray({
+        _id: questionOptionId,
+        questionId,
+    }, callback);
+}
+
 export function precheckQuizScheduleInsert(moocchat: Moocchat, session: Session, res: ApiResponseCallback<IMoocchatApi.ToClientInsertionIdResponse>, data: IMoocchatApi.ToServerStandardRequestBase & IDB_QuizSchedule, callback: (questionId: mongodb.ObjectID, availableStart: Date, availableEnd: Date, blackboardColumnId: number) => void) {
     const db = moocchat.getDb();
     const course = session.getCourse();
@@ -690,7 +780,12 @@ export function precheckQuizScheduleUpdate(moocchat: Moocchat, session: Session,
         if (data.blackboardColumnId as any as string === "") {
             blackboardColumnId = null;
         } else if (data.blackboardColumnId !== null) {
-            blackboardColumnId = ((+data.blackboardColumnId | 0) || undefined);
+            // Values are cast into int32 or set to undefined (indicating no value set by request)
+            if (typeof data.blackboardColumnId !== "number") {
+                blackboardColumnId = undefined;
+            } else {
+                blackboardColumnId = +data.blackboardColumnId | 0;
+            }
         }
     } catch (e) {
         return res({
@@ -769,6 +864,62 @@ export function precheckQuizScheduleUpdate(moocchat: Moocchat, session: Session,
 }
 
 
+export function precheckQuestionOptionUpdate(moocchat: Moocchat, session: Session, res: ApiResponseCallback<void>, data: IMoocchatApi.ToServerQuestionOptionId & IMoocchatApi.ToServerQuestionId & IDB_QuestionOption, callback: (content: string, sequence: number) => void) {
+    const db = moocchat.getDb();
+
+    // Check valid data
+    const questionOptionId: mongodb.ObjectID = new Database.ObjectId(data.questionOptionId);
+    const questionId: mongodb.ObjectID = new Database.ObjectId(data.questionId);
+    let content: string;
+    let sequence: number;
+
+    try {
+        // Note that JSON data only has bare primitives, so complex objects and Dates do not exist and must be converted from strings
+        // TODO: Need to create a common set of interfaces that is shared for server-side (database) and client-side (JSON)
+        if (data.content === "") {
+            content = null;
+        } else {
+            content = data.content;
+        }
+
+        if (data.sequence as any as string === "") {
+            sequence = null;
+        } else if (data.sequence !== null) {
+            // Values are cast into int32 or set to undefined (indicating no value set by request)
+            if (typeof data.sequence !== "number") {
+                sequence = undefined;
+            } else {
+                sequence = +data.sequence | 0;
+            }
+        }
+    } catch (e) {
+        return res({
+            success: false,
+            code: "UNKNOWN_ERROR",  // TODO: Classify error
+            message: e.message,
+        });
+    }
+
+    // Read existing data
+    new DBQuestionOption(db).readAsArray({
+        _id: questionOptionId,
+        questionId,
+    }, (err, result) => {
+        if (handleMongoError(err, res)) { return; }
+
+        const existingQuestionOption = result[0];
+
+        // Update where given
+        !content && (content = existingQuestionOption.content);
+        (sequence === undefined) && (sequence = existingQuestionOption.sequence);
+
+        // Run callback if conditions pass
+        callback(
+            content,
+            sequence,
+        );
+    });
+}
 
 
 
