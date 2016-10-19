@@ -282,6 +282,12 @@ $(() => {
 
                     fsm.executeTransition("load-system-info");
                 });
+
+                page$("#log-out").on("click", (e) => {
+                    e.preventDefault();
+
+                    fsm.executeTransition("logout");
+                });
             });
         }
     });
