@@ -376,7 +376,7 @@ $(() => {
                                         .prop({
                                             value: question._id,
                                         })
-                                        .text(question.content || "?");
+                                        .text(`${question._id} | ${(question.content && question.content.substr(0, 100)) || "?"}`);
                                 })
                             );
 
@@ -470,7 +470,7 @@ $(() => {
                                         .prop({
                                             value: question._id,
                                         })
-                                        .text(question.content || "?");
+                                        .text(`${question._id} | ${(question.content && question.content.substr(0, 100)) || "?"}`);
                                 })
                             );
 
@@ -782,7 +782,7 @@ $(() => {
                         // Hide button while form open
                         $elem.hide();
 
-                        const lastQuestionOptionData: IDB_QuestionOption = page$("#question-options").children().last().data("questionOption");
+                        const lastQuestionOptionData: IDB_QuestionOption | undefined = page$("#question-options").children().last().data("questionOption");
 
                         const $contentField = $("<span>").addClass("question-option-content").text("<Type question option here>").prop("contenteditable", true).css("outline", "1px solid orange");
                         const $insertionForm = $("<p>")
@@ -792,7 +792,7 @@ $(() => {
                                 $("<a>").text("Save").one("click", () => {
                                     ajaxPost(`/api/client/question/${questionId}/option`, {
                                         content: $contentField.html(),
-                                        sequence: lastQuestionOptionData.sequence + 1,
+                                        sequence: lastQuestionOptionData ? lastQuestionOptionData.sequence + 1 : 0,
                                     })
                                         .done((data: IMoocchatApi.ToClientResponseBase<IMoocchatApi.ToClientInsertionIdResponse>) => {
                                             // Must check success flag
