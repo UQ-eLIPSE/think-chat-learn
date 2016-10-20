@@ -393,8 +393,8 @@ $(() => {
                         e.preventDefault();
 
                         const questionId: string = page$("#question-id").val();
-                        const availableStart: string = page$("#available-start").val();
-                        const availableEnd: string = page$("#available-end").val();
+                        const availableStart: string = rfc3339LocalToDate(page$("#available-start").val()).toISOString();
+                        const availableEnd: string = rfc3339LocalToDate(page$("#available-end").val()).toISOString();
                         const blackboardColumnId: string = page$("#blackboard-column-id").val();
 
                         createQuizXhr = ajaxPost("/api/client/quiz", {
