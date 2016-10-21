@@ -24,7 +24,7 @@ export namespace Api {
     export class Admin {
         @ApiDecorators.ApplySession
         @ApiDecorators.AdminOnly
-        public static Get_Test(moocchat: Moocchat, res: ApiResponseCallback<void>, data: IMoocchatApi.ToServerStandardRequestBase, session?: Session): void {
+        public static Get_PermissionTest(moocchat: Moocchat, res: ApiResponseCallback<void>, data: IMoocchatApi.ToServerStandardRequestBase, session?: Session): void {
             // @ApiDecorators.AdminOnly automatically returns unauthorised response if user not admin
             // The response below only occurs if user is admin
             return res({
