@@ -189,7 +189,7 @@ $(() => {
             pageManager.loadPage("logging-in");
 
             // Request login with session ID
-            ajaxPost("/api/client/loginSession/lti", lti.stringify(), false)
+            ajaxPost("/api/session/lti", lti.stringify(), false)
                 .done((data: IMoocchatApi.ToClientResponseBase<IMoocchatApi.ToClientLoginResponsePayload>) => {
                     // Must check success flag
                     if (!data.success) {
@@ -200,7 +200,7 @@ $(() => {
                     sessionId = data.payload.sessionId;
 
                     // Check admin test
-                    ajaxGet("/api/client/admin/test")
+                    ajaxGet("/api/admin/permissionTest")
                         .done((data: IMoocchatApi.ToClientResponseBase<void>) => {
                             // Must check success flag
                             if (!data.success) {
@@ -227,7 +227,7 @@ $(() => {
 
     fsmDesc.addStateChangeHandlers(STATE.LOGOUT, {
         onEnter: () => {
-            ajaxDelete("/api/client/loginSession")
+            ajaxDelete("/api/session")
                 .done((data: IMoocchatApi.ToClientResponseBase<void>) => {
                     // Must check success flag
                     if (!data.success) {
@@ -297,7 +297,7 @@ $(() => {
 
         fsmDesc.addStateChangeHandlers(STATE.QUIZ_SCHEDULES_PAGE, {
             onEnter: () => {
-                loadQuizScheduleXhr = ajaxGet("/api/client/quiz");
+                loadQuizScheduleXhr = ajaxGet("/api/admin/quiz");
 
                 pageManager.loadPage("admin-quiz-schedules", (page$) => {
                     setSectionActive("quizzes");
@@ -359,7 +359,7 @@ $(() => {
 
         fsmDesc.addStateChangeHandlers(STATE.QUIZ_SCHEDULE_CREATION_PAGE, {
             onEnter: () => {
-                loadQuestionsXhr = ajaxGet("/api/client/question");
+                loadQuestionsXhr = ajaxGet("/api/admin/question");
 
                 pageManager.loadPage("admin-quiz-schedule-creation", (page$) => {
                     setSectionActive("quizzes");
@@ -397,7 +397,7 @@ $(() => {
                         const availableEnd: string = rfc3339LocalToDate(page$("#available-end").val()).toISOString();
                         const blackboardColumnId: string = page$("#blackboard-column-id").val();
 
-                        createQuizXhr = ajaxPost("/api/client/quiz", {
+                        createQuizXhr = ajaxPost("/api/admin/quiz", {
                             questionId,
                             availableStart,
                             availableEnd,
@@ -446,8 +446,8 @@ $(() => {
 
         fsmDesc.addStateChangeHandlers(STATE.QUIZ_SCHEDULE_DETAILS_PAGE, {
             onEnter: (_label: string, _fromState: string, _toState: string, quizId: string) => {
-                loadQuestionsXhr = ajaxGet("/api/client/question");
-                loadQuizDetailsXhr = ajaxGet(`/api/client/quiz/${quizId}`);
+                loadQuestionsXhr = ajaxGet("/api/admin/question");
+                loadQuizDetailsXhr = ajaxGet(`/api/admin/quiz/${quizId}`);
 
                 pageManager.loadPage("admin-quiz-schedule-details", (page$) => {
                     setSectionActive("quizzes");
@@ -506,7 +506,7 @@ $(() => {
                         const availableEnd: string = rfc3339LocalToDate(page$("#available-end").val()).toISOString();
                         const blackboardColumnId: string = page$("#blackboard-column-id").val();
 
-                        updateQuizXhr = ajaxPut(`/api/client/quiz/${quizId}`, {
+                        updateQuizXhr = ajaxPut(`/api/admin/quiz/${quizId}`, {
                             questionId,
                             availableStart,
                             availableEnd,
@@ -530,7 +530,7 @@ $(() => {
                     page$("#delete").one("click", (e) => {
                         e.preventDefault();
 
-                        deleteQuizXhr = ajaxDelete(`/api/client/quiz/${quizId}`);
+                        deleteQuizXhr = ajaxDelete(`/api/admin/quiz/${quizId}`);
 
                         deleteQuizXhr.done((data: IMoocchatApi.ToClientResponseBase<void>) => {
                             inputChanged = false;
@@ -570,7 +570,7 @@ $(() => {
 
         fsmDesc.addStateChangeHandlers(STATE.QUESTIONS_PAGE, {
             onEnter: () => {
-                loadQuestionsXhr = ajaxGet("/api/client/question");
+                loadQuestionsXhr = ajaxGet("/api/admin/question");
 
                 pageManager.loadPage("admin-questions", (page$) => {
                     setSectionActive("quizzes");
@@ -638,7 +638,7 @@ $(() => {
 
                         const questionContent: string = questionContentEditor!.getData();
 
-                        createQuestionXhr = ajaxPost("/api/client/question", {
+                        createQuestionXhr = ajaxPost("/api/admin/question", {
                             content: questionContent,
                         });
 
@@ -685,7 +685,7 @@ $(() => {
 
         fsmDesc.addStateChangeHandlers(STATE.QUESTION_DETAILS_PAGE, {
             onEnter: (_label: string, _fromState: string, _toState: string, questionId: string) => {
-                loadQuestionDetailsXhr = ajaxGet(`/api/client/question/${questionId}`);
+                loadQuestionDetailsXhr = ajaxGet(`/api/admin/question/${questionId}`);
 
                 pageManager.loadPage("admin-question-details", (page$) => {
                     setSectionActive("quizzes");
@@ -715,7 +715,7 @@ $(() => {
                         });
 
                     const loadQuestionDetails = () => {
-                        loadQuestionOptionsXhr = ajaxGet(`/api/client/question/${questionId}/option`);
+                        loadQuestionOptionsXhr = ajaxGet(`/api/admin/question/${questionId}/option`);
 
                         loadQuestionOptionsXhr!
                             .done((data: IMoocchatApi.ToClientResponseBase<IDB_QuestionOption[]>) => {
@@ -751,7 +751,7 @@ $(() => {
 
                         const questionContent: string = questionContentEditor!.getData();
 
-                        updateQuestionXhr = ajaxPut(`/api/client/question/${questionId}`, {
+                        updateQuestionXhr = ajaxPut(`/api/admin/question/${questionId}`, {
                             content: questionContent,
                         });
 
@@ -769,7 +769,7 @@ $(() => {
                     page$("#delete").one("click", (e) => {
                         e.preventDefault();
 
-                        deleteQuestionXhr = ajaxDelete(`/api/client/question/${questionId}`);
+                        deleteQuestionXhr = ajaxDelete(`/api/admin/question/${questionId}`);
 
                         deleteQuestionXhr.done((data: IMoocchatApi.ToClientResponseBase<void>) => {
                             // Must check success flag
@@ -796,7 +796,7 @@ $(() => {
                                 "Content: ",
                                 $contentField,
                                 $("<a>").text("Save").one("click", () => {
-                                    ajaxPost(`/api/client/question/${questionId}/option`, {
+                                    ajaxPost(`/api/admin/question/${questionId}/option`, {
                                         content: $contentField.html(),
                                         sequence: lastQuestionOptionData ? lastQuestionOptionData.sequence + 1 : 0,
                                     })
@@ -834,7 +834,7 @@ $(() => {
 
                         $elem.hide().after([
                             $("<a>").text("Save").one("click", () => {
-                                ajaxPut(`/api/client/question/${questionId}/option/${currentData._id}`, {
+                                ajaxPut(`/api/admin/question/${questionId}/option/${currentData._id}`, {
                                     content: $contentElem.html()
                                 })
                                     .done((data: IMoocchatApi.ToClientResponseBase<void>) => {
@@ -863,7 +863,7 @@ $(() => {
 
                         const currentData: IDB_QuestionOption = $questionOptionElem.data("questionOption");
 
-                        ajaxDelete(`/api/client/question/${questionId}/option/${currentData._id}`)
+                        ajaxDelete(`/api/admin/question/${questionId}/option/${currentData._id}`)
                             .done((data: IMoocchatApi.ToClientResponseBase<void>) => {
                                 // Must check success flag
                                 if (!data.success) {
@@ -892,10 +892,10 @@ $(() => {
                         const aboveData: IDB_QuestionOption = $questionOptionElemAbove.data("questionOption");
 
                         $.when(
-                            ajaxPut(`/api/client/question/${questionId}/option/${currentData._id}`, {
+                            ajaxPut(`/api/admin/question/${questionId}/option/${currentData._id}`, {
                                 sequence: aboveData.sequence,
                             }),
-                            ajaxPut(`/api/client/question/${questionId}/option/${aboveData._id}`, {
+                            ajaxPut(`/api/admin/question/${questionId}/option/${aboveData._id}`, {
                                 sequence: currentData.sequence,
                             })
                         )
@@ -929,10 +929,10 @@ $(() => {
                         const belowData: IDB_QuestionOption = $questionOptionElemBelow.data("questionOption");
 
                         $.when(
-                            ajaxPut(`/api/client/question/${questionId}/option/${currentData._id}`, {
+                            ajaxPut(`/api/admin/question/${questionId}/option/${currentData._id}`, {
                                 sequence: belowData.sequence,
                             }),
-                            ajaxPut(`/api/client/question/${questionId}/option/${belowData._id}`, {
+                            ajaxPut(`/api/admin/question/${questionId}/option/${belowData._id}`, {
                                 sequence: currentData.sequence,
                             })
                         )
@@ -974,7 +974,7 @@ $(() => {
 
         fsmDesc.addStateChangeHandlers(STATE.USERS_PAGE, {
             onEnter: () => {
-                loadUsersXhr = ajaxGet("/api/client/user");
+                loadUsersXhr = ajaxGet("/api/admin/user");
 
                 pageManager.loadPage("admin-users", (page$) => {
                     setSectionActive("users");
@@ -1020,8 +1020,8 @@ $(() => {
 
         fsmDesc.addStateChangeHandlers(STATE.USER_DETAILS_PAGE, {
             onEnter: (_label: string, _fromState: string, _toState: string, questionId: string) => {
-                loadUserDetailsXhr = ajaxGet(`/api/client/user/${questionId}`);
-                loadUserSessionsXhr = ajaxGet(`/api/client/user/${questionId}/session`);
+                loadUserDetailsXhr = ajaxGet(`/api/admin/user/${questionId}`);
+                loadUserSessionsXhr = ajaxGet(`/api/admin/user/${questionId}/session`);
 
                 pageManager.loadPage("admin-user-details", (page$) => {
                     setSectionActive("users");
@@ -1079,7 +1079,7 @@ $(() => {
 
         fsmDesc.addStateChangeHandlers(STATE.SYSTEM_INFO_PAGE, {
             onEnter: () => {
-                loadSysInfoXhr = ajaxGet("/api/client/system/info");
+                loadSysInfoXhr = ajaxGet("/api/admin/system/info");
 
                 pageManager.loadPage("admin-system-info", (page$) => {
                     setSectionActive("system");
