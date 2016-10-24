@@ -154,6 +154,11 @@ AssociateDELETEEndpoint("/api/admin/question/:questionId", Api.Question.Delete);
 AssociateDELETEEndpoint("/api/admin/question/:questionId/option/:questionOptionId", Api.QuestionOption.Delete_WithQuestionId);
 
 
+// MOOCchat
+AssociatePOSTEndpoint("/api/moocchat/start", undefined);
+AssociatePOSTEndpoint("/api/moocchat/fsm/transit", undefined);
+
+
 // Sessions
 
 AssociatePOSTEndpoint("/api/session/lti", Api.LoginSession.Post_Lti);

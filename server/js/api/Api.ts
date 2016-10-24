@@ -20,6 +20,8 @@ import { QuestionOption as DBQuestionOption, IDB_QuestionOption } from "../data/
 import { QuestionOptionCorrect as DBQuestionOptionCorrect, IDB_QuestionOptionCorrect } from "../data/models/QuestionOptionCorrect";
 // import { Survey as DBSurvey, IDB_Survey } from "../data/models/Survey";
 
+import { QuizAttempt, QuizAttemptExistsInSessionError, QuizAttemptDoesNotExistError, QuizAttemptFSMDoesNotExistError } from "../quiz/QuizAttempt";
+
 export namespace Api {
     export class Admin {
         @ApiDecorators.ApplySession
@@ -555,6 +557,78 @@ export namespace Api {
                         },
                     },
                 },
+            });
+        }
+    }
+
+
+
+
+
+    export class MoocchatAttemptApi {
+        @ApiDecorators.ApplySession
+        public static Post_Start(moocchat: Moocchat, res: ApiResponseCallback<void>, data: IMoocchatApi.ToServerStandardRequestBase, session?: Session): void {
+            let attempt: QuizAttempt;
+
+            try {
+                attempt = new QuizAttempt(session, true);
+            } catch (e) {
+                if (e instanceof QuizAttemptExistsInSessionError) {
+                    return res({
+                        success: false,
+                        code: "QUIZ_ATTEMPT_EXISTS_IN_SESSION",
+                        message: `Session ID "${session.getId()}" has in-progress or completed quiz attempt; new user session required for new attempt`,
+                    });
+                }
+
+                throw e;
+            }
+
+            return res({
+                success: true,
+                payload: undefined,
+            });
+        }
+
+        @ApiDecorators.ApplySession
+        public static Post_FSMTransit(moocchat: Moocchat, res: ApiResponseCallback<void>, data: IMoocchatApi.ToServerMoocchatFSMTransition, session?: Session): void {
+            let attempt: QuizAttempt;
+
+            try {
+                attempt = new QuizAttempt(session);
+            } catch (e) {
+                if (e instanceof QuizAttemptDoesNotExistError) {
+                    return res({
+                        success: false,
+                        code: "QUIZ_ATTEMPT_DOES_NOT_EXIST",
+                        message: `Session ID "${session.getId()}" does not have associated quiz attempt`,
+                    });
+                }
+
+                if (e instanceof QuizAttemptFSMDoesNotExistError) {
+                    return res({
+                        success: false,
+                        code: "QUIZ_ATTEMPT_ERROR",
+                        message: `Session ID "${session.getId()}" quiz attempt does not have FSM`,
+                    });
+                }
+
+                throw e;
+            }
+
+            // TODO: 
+            // Perform the transition, then return the resultant state.
+            // The result is important, and also if there is something that causes the transition to stop.
+            // Any result should be expected to be returned to the client 
+            attempt.executeTransition(data.transition);
+
+            // How to get transition result/error?
+
+            attempt.getCurrentState();
+
+            return res({
+                success: true,
+                payload: undefined,
             });
         }
     }

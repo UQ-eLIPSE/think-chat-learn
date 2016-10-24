@@ -13,7 +13,7 @@ import { IMoocchatIdentityInfo } from "../auth/IMoocchatIdentityInfo";
 export class Session {
     public static readonly Timeout = Conf.session.timeoutMs;
 
-    private static SingletonStore = new KVStore<Session>();
+    private static readonly SingletonStore = new KVStore<Session>();
 
     private readonly id: string;
     private readonly identity: IMoocchatIdentityInfo;
