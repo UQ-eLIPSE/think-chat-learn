@@ -89,7 +89,7 @@ $(() => {
                 });
 
                 $("#go-to-quizzes").on("click", () => {
-                    fsm.executeTransition("load-quiz-schedules");
+                    fsm.executeTransition("load-quizzes");
                 });
 
                 $("#go-to-marking").on("click", () => {
@@ -128,7 +128,7 @@ $(() => {
             toState: STATE.MAIN_PAGE,
         },
         {
-            label: "load-quiz-schedules",
+            label: "load-quizzes",
             fromState: "*",
             toState: STATE.QUIZ_SCHEDULES_PAGE,
         },
@@ -142,11 +142,11 @@ $(() => {
             fromState: "*",
             toState: STATE.QUIZ_SCHEDULE_CREATION_PAGE,
         },
-        {
-            label: "load-questions",
-            fromState: "*",
-            toState: STATE.QUESTIONS_PAGE,
-        },
+        // {
+        //     label: "load-questions",
+        //     fromState: "*",
+        //     toState: STATE.QUESTIONS_PAGE,
+        // },
         {
             label: "load-question-details",
             fromState: "*",
@@ -270,35 +270,35 @@ $(() => {
 
                 page$("#name").text(lti.getData().lis_person_name_full || "[name unknown]");
 
-                page$("#view-quiz-schedules").on("click", (e) => {
-                    e.preventDefault();
+                // page$("#view-quiz-schedules").on("click", (e) => {
+                //     e.preventDefault();
 
-                    fsm.executeTransition("load-quiz-schedules");
-                });
+                //     fsm.executeTransition("load-quizzes");
+                // });
 
-                page$("#view-question-bank").on("click", (e) => {
-                    e.preventDefault();
+                // page$("#view-question-bank").on("click", (e) => {
+                //     e.preventDefault();
 
-                    fsm.executeTransition("load-questions");
-                });
+                //     fsm.executeTransition("load-questions");
+                // });
 
-                page$("#view-users").on("click", (e) => {
-                    e.preventDefault();
+                // page$("#view-users").on("click", (e) => {
+                //     e.preventDefault();
 
-                    fsm.executeTransition("load-users");
-                });
+                //     fsm.executeTransition("load-users");
+                // });
 
-                page$("#view-sys-info").on("click", (e) => {
-                    e.preventDefault();
+                // page$("#view-sys-info").on("click", (e) => {
+                //     e.preventDefault();
 
-                    fsm.executeTransition("load-system-info");
-                });
+                //     fsm.executeTransition("load-system-info");
+                // });
 
-                page$("#log-out").on("click", (e) => {
-                    e.preventDefault();
+                // page$("#log-out").on("click", (e) => {
+                //     e.preventDefault();
 
-                    fsm.executeTransition("logout");
-                });
+                //     fsm.executeTransition("logout");
+                // });
             });
         }
     });
@@ -513,7 +513,7 @@ $(() => {
                                 }
 
                                 inputChanged = false;
-                                fsm.executeTransition("load-quiz-schedules");
+                                fsm.executeTransition("load-quizzes");
                             });
                     });
                 });
@@ -559,7 +559,7 @@ $(() => {
                     page$("#discard-changes").on("click", (e) => {
                         e.preventDefault();
                         inputChanged = false;
-                        fsm.executeTransition("load-quiz-schedules");
+                        fsm.executeTransition("load-quizzes");
                     });
 
                     loadQuestionsXhr!
@@ -622,7 +622,7 @@ $(() => {
                                 return fsm.executeTransition("error", data.message);
                             }
 
-                            fsm.executeTransition("load-quiz-schedules");
+                            fsm.executeTransition("load-quizzes");
                         });
                     });
 
@@ -641,7 +641,7 @@ $(() => {
                                 return fsm.executeTransition("error", data.message);
                             }
 
-                            fsm.executeTransition("load-quiz-schedules");
+                            fsm.executeTransition("load-quizzes");
                         });
                     });
 
@@ -753,7 +753,7 @@ $(() => {
                                     return fsm.executeTransition("error", data.message);
                                 }
 
-                                fsm.executeTransition("load-questions");
+                                fsm.executeTransition("load-quizzes");
                             });
                     });
                 });
@@ -797,7 +797,8 @@ $(() => {
                     page$("#discard-changes").on("click", (e) => {
                         e.preventDefault();
                         inputChanged = false;
-                        fsm.executeTransition("load-questions");
+                        questionContentEditor!.resetDirty();
+                        fsm.executeTransition("load-quizzes");
                     });
 
                     loadQuestionDetailsXhr!
@@ -856,13 +857,16 @@ $(() => {
                         });
 
                         updateQuestionXhr.done((data: IMoocchatApi.ToClientResponseBase<void>) => {
+                            inputChanged = false;
+                            questionContentEditor!.resetDirty();
+
                             // Must check success flag
                             if (!data.success) {
                                 // Something went wrong - check message
                                 return fsm.executeTransition("error", data.message);
                             }
 
-                            fsm.executeTransition("load-questions");
+                            fsm.executeTransition("load-quizzes");
                         });
                     });
 
@@ -878,7 +882,7 @@ $(() => {
                                 return fsm.executeTransition("error", data.message);
                             }
 
-                            fsm.executeTransition("load-questions");
+                            fsm.executeTransition("load-quizzes");
                         });
                     });
 
