@@ -304,11 +304,33 @@ $(() => {
     });
 
     {
-        let loadQuizScheduleXhr: JQueryXHR | undefined;
+        let loadQuizSchedulesXhr: JQueryXHR | undefined;
+        let loadQuestionsXhr: JQueryXHR | undefined;
+
+        let quizScheduleViewMode: "all" | "upcoming" = "upcoming";
 
         fsmDesc.addStateChangeHandlers(STATE.QUIZ_SCHEDULES_PAGE, {
             onEnter: () => {
-                loadQuizScheduleXhr = ajaxGet("/api/admin/quiz");
+                const loadUpcomingQuizzes = () => {
+                    loadQuizSchedulesXhr && loadQuizSchedulesXhr.abort();
+                    loadQuizSchedulesXhr = ajaxGet("/api/admin/quiz/upcoming");
+                }
+
+                const loadAllQuizzes = () => {
+                    loadQuizSchedulesXhr && loadQuizSchedulesXhr.abort();
+                    loadQuizSchedulesXhr = ajaxGet("/api/admin/quiz");
+                }
+
+                const loadQuizzes = () => {
+                    if (quizScheduleViewMode === "upcoming") {
+                        loadUpcomingQuizzes();
+                    } else {
+                        loadAllQuizzes();
+                    }
+                }
+
+                loadQuizzes();
+                loadQuestionsXhr = ajaxGet("/api/admin/question");
 
                 pageManager.loadPage("admin-quiz-schedules", (page$) => {
                     setSectionActive("quizzes");
@@ -318,46 +340,113 @@ $(() => {
                         fsm.executeTransition("load-quiz-schedule-creation");
                     });
 
-                    page$("#quiz-schedule-list")
+                    page$("#view-all-quiz-schedules").on("click", (e) => {
+                        e.preventDefault();
+                        $(e.currentTarget).parent().children(".view-filter-links").toggleClass("hidden");
+                        quizScheduleViewMode = "all";
+                        page$("#quiz-schedule-list-title").text("All Quizzes");
+                        loadQuizzes();
+                        proccessQuizXhr();
+                    });
+
+                    page$("#view-upcoming-quiz-schedules").on("click", (e) => {
+                        e.preventDefault();
+                        $(e.currentTarget).parent().children(".view-filter-links").toggleClass("hidden");
+                        quizScheduleViewMode = "upcoming";
+                        page$("#quiz-schedule-list-title").text("Ongoing/Upcoming Quizzes");
+                        loadQuizzes();
+                        proccessQuizXhr();
+                    });
+
+                    // page$("#view-all-questions").on("click", (e) => {
+                    //     e.preventDefault();
+                    //     fsm.executeTransition("load-questions");
+                    // });
+
+                    page$("#create-question").on("click", (e) => {
+                        e.preventDefault();
+                        fsm.executeTransition("load-question-creation");
+                    });
+
+                    const proccessQuizXhr = () => {
+                        page$("#quiz-schedule-list")
+                            .empty()
+                            .append($("<li>").text("Loading..."));
+
+                        loadQuizSchedulesXhr!
+                            .done((data: IMoocchatApi.ToClientResponseBase<IDB_QuizSchedule[]>) => {
+                                // Must check success flag
+                                if (!data.success) {
+                                    // Something went wrong - check message
+                                    return fsm.executeTransition("error", data.message);
+                                }
+
+                                const $quizScheduleListElems = data.payload.map((quizSchedule) => {
+                                    return $("<li>").html(`ID: <a href="#" class="view-quiz">${quizSchedule._id}</a><br>Question ID: <a href="#" class="view-question">${quizSchedule.questionId}</a><br>Starts: ${new Date(quizSchedule.availableStart!)}<br>Ends: ${new Date(quizSchedule.availableEnd!)}<br>Blackboard Column ID: ${quizSchedule.blackboardColumnId}`);
+                                });
+
+                                page$("#quiz-schedule-list")
+                                    .empty()
+                                    .append($quizScheduleListElems)
+                                    .off("click")
+                                    .on("click", "a.view-question", (e) => {
+                                        e.preventDefault();
+
+                                        const questionId = $(e.currentTarget).text();
+
+                                        fsm.executeTransition("load-question-details", questionId);
+                                    })
+                                    .on("click", "a.view-quiz", (e) => {
+                                        e.preventDefault();
+
+                                        const quizId = $(e.currentTarget).text();
+
+                                        fsm.executeTransition("load-quiz-schedule-details", quizId);
+                                    });
+
+                                if (data.payload.length === 0) {
+                                    page$("#quiz-schedule-list")
+                                        .append($("<li>").text(`No ${quizScheduleViewMode === "upcoming" ? "ongoing or upcoming " : ""}quizzes found`));
+                                }
+                            });
+                    }
+
+                    proccessQuizXhr();
+
+
+
+
+                    page$("#question-list")
                         .append($("<li>").text("Loading..."));
 
-
-
-                    loadQuizScheduleXhr!
-                        .done((data: IMoocchatApi.ToClientResponseBase<IDB_QuizSchedule[]>) => {
+                    loadQuestionsXhr!
+                        .done((data: IMoocchatApi.ToClientResponseBase<IDB_Question[]>) => {
                             // Must check success flag
                             if (!data.success) {
                                 // Something went wrong - check message
                                 return fsm.executeTransition("error", data.message);
                             }
 
-                            const $quizScheduleListElems = data.payload.map((quizSchedule) => {
-                                return $("<li>").html(`ID: <a href="#" class="view-quiz">${quizSchedule._id}</a><br>Question ID: <a href="#" class="view-question">${quizSchedule.questionId}</a><br>Starts: ${new Date(quizSchedule.availableStart!)}<br>Ends: ${new Date(quizSchedule.availableEnd!)}<br>Blackboard Column ID: ${quizSchedule.blackboardColumnId}`);
+                            const $questionListElems = data.payload.map((question) => {
+                                return $("<li>").prop("draggable", true).text(question.content ? question.content.substr(0,100) : "?").prepend(`Question ID: <a href="#" class="view-question">${question._id}</a><br>Content: `);
                             });
 
-                            page$("#quiz-schedule-list")
+                            page$("#question-list")
                                 .empty()
-                                .append($quizScheduleListElems)
+                                .append($questionListElems)
                                 .on("click", "a.view-question", (e) => {
                                     e.preventDefault();
 
                                     const questionId = $(e.currentTarget).text();
 
                                     fsm.executeTransition("load-question-details", questionId);
-                                })
-                                .on("click", "a.view-quiz", (e) => {
-                                    e.preventDefault();
-
-                                    const quizId = $(e.currentTarget).text();
-
-                                    fsm.executeTransition("load-quiz-schedule-details", quizId);
                                 });
                         });
                 });
             },
 
             onLeave: () => {
-                loadQuizScheduleXhr && loadQuizScheduleXhr.abort();
+                loadQuizSchedulesXhr && loadQuizSchedulesXhr.abort();
             }
         });
     }

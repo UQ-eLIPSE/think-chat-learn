@@ -132,6 +132,7 @@ app.post("/admin", function(req, res) {
 // GETs
 AssociateGETEndpoint("/api/admin/permissionTest", Api.Admin.Get_PermissionTest);
 AssociateGETEndpoint("/api/admin/quiz", Api.Quiz.Gets);
+AssociateGETEndpoint("/api/admin/quiz/upcoming", Api.Quiz.Gets_NowFuture);
 AssociateGETEndpoint("/api/admin/quiz/:quizId", Api.Quiz.Get);
 // AssociateGETEndpoint("/api/admin/quiz/:quizId/session", undefined);
 AssociateGETEndpoint("/api/admin/question", Api.Question.Gets);
