@@ -1,6 +1,13 @@
 <!-- All pages must specify <section data-name="..." /> as root element, with name **equal to the file name** -->
-<section data-name="admin-quiz-schedules">
-	<h1>Quiz schedules</h1>
-	<ul id="quiz-schedule-list"></ul>
-	<button id="create-quiz-schedule">Create Quiz Schedule</button>
+<section data-name="admin-quiz-schedules" class="flex-container h-pad-items">
+	<div class="flex-grow flex-shrink flex-basis-0 flex-container flex-column" style="max-width: 50%;">
+		<h1 id="quiz-schedule-list-title" class="flex-no-shrink">Ongoing/Upcoming Quizzes</h1>
+		<ul id="quiz-schedule-list" class="flex-grow margin-0 overflow-y-auto"></ul>
+		<div class="flex-no-shrink toolbar-bg text-right"><a id="view-all-quiz-schedules" class="view-filter-links">View all</a><a id="view-upcoming-quiz-schedules" class="view-filter-links hidden">View ongoing/upcoming</a> | <a id="create-quiz-schedule">Schedule new quiz</a></div>
+	</div>
+	<div class="flex-grow flex-shrink flex-basis-0 flex-container flex-column" style="max-width: 50%;">
+		<h1 id="question-list-title" class="flex-no-shrink">Question Bank</h1>
+		<ul id="question-list" class="flex-grow margin-0 overflow-y-auto"></ul>
+		<div class="flex-no-shrink toolbar-bg text-right"><!--<a id="view-all-questions">View all</a> | -->Export questions | <a id="create-question">Add new question</a></div>
+	</div>
 </section>

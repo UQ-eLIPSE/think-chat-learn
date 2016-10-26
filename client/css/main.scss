@@ -123,6 +123,10 @@ html, body {
     text-align: right;
 }
 
+.margin-0 {
+    margin: 0;
+}
+
 .margin-top-0 {
     margin-top: 0;
 }
@@ -263,6 +267,53 @@ button.thin {
 
 .main-colour-fg {
     color: fg-on-bg($mc-colour-1);
+}
+
+.text-right {
+    text-align: right;
+}
+
+.flex-container {
+    display: flex;
+
+    &.h-pad-items {
+        & > * {
+            margin-left: 1em;
+            margin-right: 1em;
+        }
+
+        & > :first-child {
+            margin-left: 0;
+        }
+
+        & > :last-child {
+            margin-right: 0;
+        }
+    }
+}
+
+.flex-column {
+    flex-direction: column;
+}
+
+.flex-grow {
+    flex-grow: 1;
+}
+
+.flex-shrink {
+    flex-shrink: 1;
+}
+
+.flex-no-shrink {
+    flex-shrink: 0;
+}
+
+.flex-basis-0 {
+    flex-basis: 0%;
+}
+
+.overflow-y-auto {
+    overflow-y: auto;
 }
 
 p {
@@ -466,12 +517,20 @@ button.link:active {
     padding: $mc-sidebar-padding-tb*2;
 }
 
+#content > .flex-container {
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+    right: 2rem;
+    bottom: 2rem;
+}
+
 // This is the page content that is loaded dynamically
 #content > section {
-    & > h1:first-child,
-    & > h2:first-child,
-    & > h3:first-child,
-    & > h4:first-child {
+    h1:first-child,
+    h2:first-child,
+    h3:first-child,
+    h4:first-child {
         margin-top: 0;
     }
 }
@@ -1061,8 +1120,10 @@ button.link:active {
 
 /********** Admin panel **********/
 .admin-panel {
+    $mc-colour-1: $uq-colour-A2;
+
     #header {
-        background: $uq-colour-A2;
+        background: $mc-colour-1;
     }
 
     #task-sections li {
@@ -1081,6 +1142,12 @@ button.link:active {
             padding: 0;
             margin: 0.5rem 1rem;
         }
+    }
+
+    .toolbar-bg {
+        padding: 0.6em 0.8em;
+        background: transparentize($mc-colour-1, 0.8);
+        margin-top: 0.4em;
     }
 }
 

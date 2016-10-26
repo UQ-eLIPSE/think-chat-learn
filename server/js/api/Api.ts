@@ -62,6 +62,29 @@ export namespace Api {
 
         @ApiDecorators.ApplySession
         @ApiDecorators.AdminOnly
+        public static Gets_NowFuture(moocchat: Moocchat, res: ApiResponseCallback<IDB_QuizSchedule[]>, data: IMoocchatApi.ToServerStandardRequestBase, session?: Session): void {
+            const course = session.getCourse();
+
+            // Look up quizzes under course
+            const db = moocchat.getDb();
+            const now = new Date();
+
+            new DBQuizSchedule(db).readAsArray({
+                course,
+                // availableStart: { $lte: now },
+                availableEnd: { $gte: now },
+            }, (err, result) => {
+                if (handleMongoError(err, res)) { return; }
+
+                return res({
+                    success: true,
+                    payload: result,
+                });
+            });
+        }
+
+        @ApiDecorators.ApplySession
+        @ApiDecorators.AdminOnly
         @ApiDecorators.LimitQuizIdToSession
         public static Get(moocchat: Moocchat, res: ApiResponseCallback<IDB_QuizSchedule>, data: IMoocchatApi.ToServerQuizId, session?: Session): void {
             const db = moocchat.getDb();
