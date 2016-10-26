@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>MOOCchat</title>
+
+    <link rel="stylesheet" href="./static/css/normalize/4.1.1/normalize.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,700" />
+    <link rel="stylesheet" href="./static/css/moocchat/main.css" />
+    
+    <!-- Piwik code must sit BEFORE require.js loads in main code -->
+    <%- include("./piwik", { url: conf.piwik.url, siteId: conf.piwik.siteId }); %>
+
+    <style>
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        form {
+            max-width: 35em;
+            max-height: 25em;
+            height: 60%;
+            width: 70%;
+            padding: 2em;
+
+            overflow-y: auto;
+        }
+
+        form > h1 {
+            margin: 0;
+            font-size: 2.7em;
+        }
+
+        #bg-logo {
+            position: absolute;
+            width: 100%;
+            height: 3rem;
+            bottom: 3em;
+        }
+
+        .button-center {
+            text-align: center;
+        }
+
+        .thin-condensed {
+            font-weight: 100;
+            letter-spacing: -0.05em;
+        }
+
+    </style>
+
+
+
+
+    <script src="./static/js/jquery/3.0.0/jquery.min.js"></script>
+    <script>
+        $(function() {
+            var $form = $("form");
+            var $inputField = $("<input>").prop({
+                                    type: "hidden"
+                                });
+            
+            var $givenName = $("#given-name");
+            var $familyName = $("#family-name");
+            var $email = $("#email");
+
+            var $submitButton;
+
+            $("button", $form).on("click", function(e) {
+                $submitButton = $(e.currentTarget);
+            });
+
+            $form.on("submit", function(e) {
+                var roles = ($submitButton.data("mode") === "admin") ? "Instructor" : "Student";
+                
+                var givenName = $givenName.val();
+                var familyName = $familyName.val();
+                var email = $email.val();
+
+                // Disable fields to prevent changes and
+                // block them from being sent to server 
+                $("input", $form).prop("disabled", true);
+
+                // Construct LTI login object to POST
+                $form.append([
+                    {
+                        name: "lti_message_type",
+                        value: "basic-lti-launch-request"
+                    },
+                    {
+                        name: "user_id",
+                        value: "DEMO_" + email
+                    },
+                    {
+                        name: "launch_presentation_return_url",
+                        value: "https://www.elipse.uq.edu.au/moocchat"
+                    },
+                    {
+                        name: "lis_person_name_full",
+                        value: givenName + " " + familyName
+                    },
+                    {
+                        name: "lis_person_name_given",
+                        value: givenName
+                    },
+                    {
+                        name: "lis_person_name_family",
+                        value: familyName
+                    },
+                    {
+                        name: "lis_person_contact_email_primary",
+                        value: email
+                    },
+                    {
+                        name: "context_label",
+                        value: "MC-DEMO"
+                    },
+                    {
+                        name: "roles",
+                        value: roles
+                    }
+                ].map(function(elem) {
+                    return $inputField.clone().attr(elem);
+                }));
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <form action="." method="POST" class="main-colour-bg main-colour-fg">
+        <h1>MOOCchat <span class="thin-condensed">demo</span></h1>
+        <p>To begin, enter your name and email address, and select either Student or Admin Mode.</p>
+        <label>Given name: <input type="text" id="given-name" class="mc-box-pad pad-equal pad-thin" required></input></label><br>
+        <label>Family name: <input type="text" id="family-name" class="mc-box-pad pad-equal pad-thin" required></input></label><br>
+        <label>Email address: <input type="email" id="email" class="mc-box-pad pad-equal pad-thin" required></input></label>
+        <div class="button-center">
+            <button formaction="/" class="positive" data-mode="student">Student Mode</button>
+            <button formaction="/admin" class="negative" data-mode="admin">Admin Mode</button>
+        </div>
+    </form>
+
+    <div id="bg-logo" class="uq-logo" />
+
+    <!--
+    <div id="header">
+        <div id="logo"></div>
+        <h1 id="moocchat-name">MOOCchat</h1>
+        <div id="course-name"></div>
+        <ul id="task-sections"></ul>
+    </div>
+    <div id="content">
+
+    </div>
+    -->
+</body>
+
+</html>

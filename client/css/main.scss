@@ -252,6 +252,14 @@ button.thin {
     margin: 1.2em 0;
 }
 
+.main-colour-bg {
+    background: $mc-colour-1;
+}
+
+.main-colour-fg {
+    color: fg-on-bg($mc-colour-1);
+}
+
 p {
     @extend .p-block;
 }
