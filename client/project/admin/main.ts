@@ -39,6 +39,8 @@ enum STATE {
     QUESTION_DETAILS_PAGE,
     QUESTION_CREATION_PAGE,
 
+    MARKING_PAGE,
+
     USERS_PAGE,
     USER_DETAILS_PAGE,
 
@@ -88,6 +90,10 @@ $(() => {
 
                 $("#go-to-quizzes").on("click", () => {
                     fsm.executeTransition("load-quiz-schedules");
+                });
+
+                $("#go-to-marking").on("click", () => {
+                    fsm.executeTransition("load-marking");
                 });
 
                 $("#go-to-users").on("click", () => {
@@ -150,6 +156,11 @@ $(() => {
             label: "load-question-creation",
             fromState: "*",
             toState: STATE.QUESTION_CREATION_PAGE,
+        },
+        {
+            label: "load-marking",
+            fromState: "*",
+            toState: STATE.MARKING_PAGE,
         },
         {
             label: "load-users",
@@ -1013,6 +1024,14 @@ $(() => {
             }
         });
     }
+
+    fsmDesc.addStateChangeHandlers(STATE.MARKING_PAGE, {
+        onEnter: (_label: string, _fromState: string, _toState: string) => {
+            pageManager.loadPage("admin-marking", () => {
+                setSectionActive("marking");
+            });
+        },
+    });
 
     {
         let loadUserDetailsXhr: JQueryXHR | undefined;
