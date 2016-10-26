@@ -209,6 +209,10 @@ button.thin {
         & > * {
             display: table-cell;
             vertical-align: top;
+
+            &.v-mid {
+                vertical-align: middle;
+            }
         }
     }
 }
@@ -249,6 +253,7 @@ button.thin {
 }
 
 .p-block {
+    display: block;
     margin: 1.2em 0;
 }
 

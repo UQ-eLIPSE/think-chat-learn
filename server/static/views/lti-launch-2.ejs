@@ -26,13 +26,16 @@
         }
 
         form {
-            max-width: 35em;
-            max-height: 25em;
-            height: 60%;
-            width: 70%;
+            max-width: 40em;
+            max-height: 28em;
+            height: 70%;
+            width: 80%;
             padding: 2em;
 
             overflow-y: auto;
+
+            position: relative;
+            z-index: 1;
         }
 
         form > h1 {
@@ -45,6 +48,7 @@
             width: 100%;
             height: 3rem;
             bottom: 3em;
+            z-index: 0;
         }
 
         .button-center {
@@ -139,10 +143,13 @@
 <body>
     <form action="." method="POST" class="main-colour-bg main-colour-fg">
         <h1>MOOCchat <span class="thin-condensed">demo</span></h1>
-        <p>To begin, enter your name and email address, and select either Student or Admin Mode.</p>
-        <label>Given name: <input type="text" id="given-name" class="mc-box-pad pad-equal pad-thin" required></input></label><br>
-        <label>Family name: <input type="text" id="family-name" class="mc-box-pad pad-equal pad-thin" required></input></label><br>
-        <label>Email address: <input type="email" id="email" class="mc-box-pad pad-equal pad-thin" required></input></label>
+        <p>To begin, enter your name and email address, then select either Student or Admin Mode.</p>
+        <div class="table">
+            <label class="row"><span class="v-mid">Given name:</span><span class="mc-box-pad pad-thin"><input type="text" id="given-name" class="mc-box-pad pad-equal pad-thin width-full" required></input></span></label>
+            <label class="row"><span class="v-mid">Family name:</span><span class="mc-box-pad pad-thin"><input type="text" id="family-name" class="mc-box-pad pad-equal pad-thin width-full" required></input></span></label>
+            <label class="row"><span class="v-mid">Email address:</span><span class="mc-box-pad pad-thin"><input type="email" id="email" class="mc-box-pad pad-equal pad-thin width-full" required></input></span></label>
+        </div>
+        <br>
         <div class="button-center">
             <button formaction="/" class="positive" data-mode="student">Student Mode</button>
             <button formaction="/admin" class="negative" data-mode="admin">Admin Mode</button>
