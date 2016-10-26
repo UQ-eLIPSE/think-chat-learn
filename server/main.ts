@@ -72,6 +72,10 @@ if (Conf.lti && Conf.lti.testMode) {
     app.get("/lti-launch", function(req, res) {
         res.render("lti-launch.ejs");
     });
+
+    app.get("/demo-login", function(req, res) {
+        res.render("lti-launch-2.ejs", { conf: Conf });
+    });
 }
 
 // LTI intermediary (for incoming requests from Blackboard)
