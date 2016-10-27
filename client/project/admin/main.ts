@@ -384,24 +384,43 @@ $(() => {
                                 }
 
                                 const $quizScheduleListElems = data.payload.map((quizSchedule) => {
-                                    return $("<li>").html(`ID: <a href="#" class="view-quiz">${quizSchedule._id}</a><br>Question ID: <a href="#" class="view-question">${quizSchedule.questionId}</a><br>Starts: ${new Date(quizSchedule.availableStart!)}<br>Ends: ${new Date(quizSchedule.availableEnd!)}<br>Blackboard Column ID: ${quizSchedule.blackboardColumnId}`);
+                                    const startDate = new Date(quizSchedule.availableStart!);
+                                    const endDate = new Date(quizSchedule.availableEnd!);
+
+                                    return $("<li>")
+                                        .addClass("quiz-schedule-item")
+                                        .data("id", quizSchedule._id)
+                                        .html(`
+                                        <div class="table">
+                                            <div class="row">
+                                                <div class="info-left">
+                                                    <div class="question-title">##TITLE## Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</div>
+                                                </div>
+                                                <div class="info-right">
+                                                    <div class="date">${startDate.getDate()}/${startDate.getMonth() + 1}<br>${startDate.getHours()}:${startDate.getMinutes()}</div>
+                                                    <div class="date">${endDate.getDate()}/${endDate.getMonth() + 1}<br>${endDate.getHours()}:${endDate.getMinutes()}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="id">${quizSchedule._id}</div>
+                                        `);
                                 });
 
                                 page$("#quiz-schedule-list")
                                     .empty()
                                     .append($quizScheduleListElems)
                                     .off("click")
-                                    .on("click", "a.view-question", (e) => {
+                                    // .on("click", "a.view-question", (e) => {
+                                    //     e.preventDefault();
+
+                                    //     const questionId = $(e.currentTarget).text();
+
+                                    //     fsm.executeTransition("load-question-details", questionId);
+                                    // })
+                                    .on("click", ".quiz-schedule-item", (e) => {
                                         e.preventDefault();
 
-                                        const questionId = $(e.currentTarget).text();
-
-                                        fsm.executeTransition("load-question-details", questionId);
-                                    })
-                                    .on("click", "a.view-quiz", (e) => {
-                                        e.preventDefault();
-
-                                        const quizId = $(e.currentTarget).text();
+                                        const quizId: string = $(e.currentTarget).data("id");
 
                                         fsm.executeTransition("load-quiz-schedule-details", quizId);
                                     });
@@ -430,16 +449,29 @@ $(() => {
                             }
 
                             const $questionListElems = data.payload.map((question) => {
-                                return $("<li>").prop("draggable", true).text(question.content ? question.content.substr(0,100) : "?").prepend(`Question ID: <a href="#" class="view-question">${question._id}</a><br>Content: `);
+                                return $("<li>")
+                                    .addClass("question-item")
+                                    .prop("draggable", true)
+                                    .data("id", question._id)
+                                    .html(`
+                                        <div class="table">
+                                            <div class="row">
+                                                <div>
+                                                    <div class="question-title">##TITLE## Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="id">${question._id}</div>
+                                        `);
                             });
 
                             page$("#question-list")
                                 .empty()
                                 .append($questionListElems)
-                                .on("click", "a.view-question", (e) => {
+                                .on("click", ".question-item", (e) => {
                                     e.preventDefault();
 
-                                    const questionId = $(e.currentTarget).text();
+                                    const questionId: string = $(e.currentTarget).data("id");
 
                                     fsm.executeTransition("load-question-details", questionId);
                                 });
