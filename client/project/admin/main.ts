@@ -387,14 +387,14 @@ $(() => {
                                     const startDate = new Date(quizSchedule.availableStart!);
                                     const endDate = new Date(quizSchedule.availableEnd!);
 
-                                    return $("<li>")
+                                    const $elem = $("<li>")
                                         .addClass("quiz-schedule-item")
                                         .data("id", quizSchedule._id)
                                         .html(`
                                         <div class="table">
                                             <div class="row">
                                                 <div class="info-left">
-                                                    <div class="question-title">##TITLE## Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</div>
+                                                    <div class="question-title">...</div>
                                                 </div>
                                                 <div class="info-right">
                                                     <div class="date">${startDate.getDate()}/${startDate.getMonth() + 1}<br>${startDate.getHours()}:${startDate.getMinutes()}</div>
@@ -404,6 +404,20 @@ $(() => {
                                         </div>
                                         <div class="id">${quizSchedule._id}</div>
                                         `);
+
+
+                                    // TODO: Really inefficient, since we go through the whole response data over and over again, for each question title to fetch
+                                    loadQuestionsXhr!.done((data: IMoocchatApi.ToClientResponseBase<IDB_Question[]>) => {
+                                        // Must check success flag
+                                        if (!data.success) {
+                                            // Something went wrong - check message
+                                            return fsm.executeTransition("error", data.message);
+                                        }
+
+                                        $(".question-title", $elem).text(data.payload.filter(question => question._id === quizSchedule.questionId)[0].title || "?");
+                                    });
+
+                                    return $elem;
                                 });
 
                                 page$("#quiz-schedule-list")
@@ -457,7 +471,7 @@ $(() => {
                                         <div class="table">
                                             <div class="row">
                                                 <div>
-                                                    <div class="question-title">##TITLE## Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</div>
+                                                    <div class="question-title">${question.title}</div>
                                                 </div>
                                             </div>
                                         </div>
