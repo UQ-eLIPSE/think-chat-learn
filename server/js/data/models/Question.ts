@@ -10,6 +10,7 @@ export class Question extends Database<IDB_Question> {
 
 export interface IDB_Question {
     _id?: mongodb.ObjectID,
+    title?: string,
     content?: string,
     course?: string,
 }
