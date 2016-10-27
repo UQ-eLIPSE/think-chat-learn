@@ -1203,7 +1203,50 @@ button.link:active {
                 }
             }
         }
-    }    
+    }   
+
+    .admin-table-interface {
+        ul.tabs {
+            @extend .margin-0;
+            @extend .flex-container;
+            @extend .flex-no-shrink;
+
+            padding: 0;
+            list-style: none;
+
+            font-size: 2em;
+            font-weight: 300;
+
+            border-bottom: 0.05em solid $mc-colour-1;
+
+            li {
+                padding: 0 0.5em 0.3em 0.5em;
+                margin-right: 0.2em;
+                
+                cursor: pointer;
+
+                border-bottom: 0.25em solid transparent;
+
+                color: transparentize(fg-on-bg($body-bg-colour), 0.2);
+
+                &:hover {
+                    border-bottom-color: transparentize($mc-colour-1, 0.8);
+                }
+
+                &.active {
+                    font-weight: 400;
+                    color: fg-on-bg($body-bg-colour);
+                    border-bottom-color: $mc-colour-1;
+                }
+            }
+        }
+
+        .core {
+            @extend .flex-grow;
+            @extend .flex-shrink;
+            @extend .flex-basis-0;
+        }
+    } 
 }
 
 
