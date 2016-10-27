@@ -927,7 +927,7 @@ $(() => {
                         $elem.before($insertionForm);
                     });
 
-                    page$().on("click", "a.question-option-content-edit", (e) => {
+                    page$().children("section").on("click", "a.question-option-content-edit", (e) => {
                         const $elem = $(e.currentTarget);
                         const $contentElem = $elem.siblings(".question-option-content");
 
@@ -960,7 +960,7 @@ $(() => {
 
                     });
 
-                    page$().on("click", "a.question-option-delete", (e) => {
+                    page$().children("section").on("click", "a.question-option-delete", (e) => {
                         e.preventDefault();
 
                         const $questionOptionElem = $(e.currentTarget).parent();
@@ -979,7 +979,7 @@ $(() => {
                             });
                     });
 
-                    page$().on("click", "a.question-option-up", (e) => {
+                    page$().children("section").on("click", "a.question-option-up", (e) => {
                         e.preventDefault();
 
                         const $questionOptionElem = $(e.currentTarget).parent();
@@ -1016,7 +1016,7 @@ $(() => {
                             });
                     });
 
-                    page$().on("click", "a.question-option-down", (e) => {
+                    page$().children("section").on("click", "a.question-option-down", (e) => {
                         e.preventDefault();
 
                         const $questionOptionElem = $(e.currentTarget).parent();
