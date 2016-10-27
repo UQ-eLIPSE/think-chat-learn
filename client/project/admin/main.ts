@@ -1,3 +1,6 @@
+import * as saveAs from "file-saver";
+import * as CSV from "csv-js";
+
 import { Conf } from "../../config/Conf";
 // import { Conf as CommonConf } from "../common/config/Conf";
 
@@ -364,6 +367,30 @@ $(() => {
                     //     e.preventDefault();
                     //     fsm.executeTransition("load-questions");
                     // });
+
+                    page$("#export-questions").on("click", (e) => {
+                        e.preventDefault();
+
+                        loadQuestionsXhr!.done((data: IMoocchatApi.ToClientResponseBase<IDB_Question[]>) => {
+                            // Must check success flag
+                            if (!data.success) {
+                                // Something went wrong - check message
+                                return fsm.executeTransition("error", data.message);
+                            }
+
+                            const csvString = CSV.encode(
+                                data.payload.map((question) => {
+                                    return [question._id, question.course, question.title, question.content]
+                                }),
+                                {
+                                    header: ["id", "course", "title", "content"],
+                                });
+
+                            const csvBlob = new Blob([csvString], { type: "text/csv" });
+
+                            saveAs(csvBlob, `MOOCchat-${lti.getCourseName()}-Questions.csv`)
+                        });
+                    });
 
                     page$("#create-question").on("click", (e) => {
                         e.preventDefault();
