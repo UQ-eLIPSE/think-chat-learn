@@ -1121,6 +1121,7 @@ button.link:active {
 /********** Admin panel **********/
 .admin-panel {
     $mc-colour-1: $uq-colour-A2;
+    // $mc-colour-1: $uq-colour-B5;
 
     #header {
         background: $mc-colour-1;
@@ -1149,6 +1150,60 @@ button.link:active {
         background: transparentize($mc-colour-1, 0.8);
         margin-top: 0.4em;
     }
+
+    ul.block-items {
+        padding: 0;
+        position: relative;
+        list-style: none;
+
+        li {
+            @extend .mc-box-pad;
+
+            &:nth-child(odd) {
+                background: transparentize($mc-colour-1, 0.95);
+            }
+
+            &:nth-child(even) {
+                background: transparentize($mc-colour-1, 0.9);
+            }
+
+            &:hover {
+                background: transparentize($mc-colour-1, 0.8);
+                cursor: pointer;
+            }
+
+            &.quiz-schedule-item,
+            &.question-item {
+                .info-left {
+                    width: 85%;
+                    vertical-align: middle;
+                }
+
+                .info-right {
+                    width: 15%;
+                    text-align: right;
+                }
+
+                .id {
+                    font-size: 0.8em;
+                    opacity: 0.3;
+                }
+
+                .question-title {
+                    font-size: 1.5em;
+                    font-weight: 300;
+                    
+                    line-height: 1.1;
+
+                    height: 2.2em;
+                    // max-width: 70%;
+
+                    overflow: hidden;
+                    // text-overflow: ellipsis;
+                }
+            }
+        }
+    }    
 }
 
 
