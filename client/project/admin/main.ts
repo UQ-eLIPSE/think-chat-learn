@@ -1391,6 +1391,7 @@ interface IDB_QuizSchedule {
 }
 interface IDB_Question {
     _id?: string,
+    title?: string,
     content?: string,
     course?: string,
 }
