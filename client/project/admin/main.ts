@@ -307,10 +307,12 @@ $(() => {
         let loadQuizSchedulesXhr: JQueryXHR | undefined;
         let loadQuestionsXhr: JQueryXHR | undefined;
 
-        let quizScheduleViewMode: "all" | "upcoming" = "upcoming";
+        let quizScheduleViewMode: "all" | "upcoming";
 
         fsmDesc.addStateChangeHandlers(STATE.QUIZ_SCHEDULES_PAGE, {
             onEnter: () => {
+                quizScheduleViewMode = "upcoming";
+
                 const loadUpcomingQuizzes = () => {
                     loadQuizSchedulesXhr && loadQuizSchedulesXhr.abort();
                     loadQuizSchedulesXhr = ajaxGet("/api/admin/quiz/upcoming");
