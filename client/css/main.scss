@@ -312,6 +312,14 @@ button.thin {
     flex-basis: 0%;
 }
 
+.flex-main-axis-center {
+    justify-content: center;
+}
+
+.flex-cross-axis-center {
+    align-items: center;
+}
+
 .overflow-y-auto {
     overflow-y: auto;
 }
@@ -1120,8 +1128,9 @@ button.link:active {
 
 /********** Admin panel **********/
 .admin-panel {
-    $mc-colour-1: $uq-colour-A2;
-    // $mc-colour-1: $uq-colour-B5;
+    $mc-colour-1: $uq-colour-A2; // UQ Purple
+    // $mc-colour-1: $uq-colour-B5; // UQ Emerald
+    // $mc-colour-1: $uq-colour-B4; // UQ Blue
 
     #header {
         background: $mc-colour-1;
@@ -1145,11 +1154,11 @@ button.link:active {
         }
     }
 
-    .toolbar-bg {
-        padding: 0.6em 0.8em;
-        background: transparentize($mc-colour-1, 0.8);
-        margin-top: 0.4em;
-    }
+    // .item-list-bottom-toolbar {
+    //     padding: 0.6em 0.8em;
+    //     background: transparentize($mc-colour-1, 0.8);
+    //     margin-top: 0.4em;
+    // }
 
     ul.block-items {
         padding: 0;
@@ -1159,16 +1168,22 @@ button.link:active {
         li {
             @extend .mc-box-pad;
 
-            &:nth-child(odd) {
-                background: transparentize($mc-colour-1, 0.95);
-            }
+            background-clip: padding-box;
 
-            &:nth-child(even) {
-                background: transparentize($mc-colour-1, 0.9);
+            // &:nth-child(odd) {
+            //     background: transparentize($mc-colour-1, 0.95);
+            // }
+
+            // &:nth-child(even) {
+            //     background: transparentize($mc-colour-1, 0.9);
+            // }
+
+            & + li {
+                border-top: 0.05em solid rgba(0,0,0,0.3);
             }
 
             &:hover {
-                background: transparentize($mc-colour-1, 0.8);
+                background-color: transparentize($mc-colour-1, 0.8);
                 cursor: pointer;
             }
 
@@ -1203,7 +1218,138 @@ button.link:active {
                 }
             }
         }
-    }    
+    }   
+
+    .admin-panel-tabbed-interface {
+        & > ul.tabs {
+            @extend .margin-0;
+            @extend .flex-container;
+            @extend .flex-no-shrink;
+
+            padding: 0;
+            list-style: none;
+
+            font-size: 2em;
+            font-weight: 400;
+
+            // border-bottom: 0.05em solid $mc-colour-1;
+
+            li {
+                padding: 0.3em 0.6em;
+                margin-right: 0.2em;
+                
+                cursor: pointer;
+
+                // border-bottom: 0.2em solid transparent;
+
+                color: transparentize($mc-colour-1, 0.5);
+
+                &:hover {
+                    // border-bottom-color: transparentize($mc-colour-1, 0.8);
+                    background: linear-gradient(to top, transparentize($mc-colour-1, 0.7), transparent);
+                }
+
+                &.active {
+                    // font-weight: 400;
+                    color: fg-on-bg($mc-colour-1);
+                    // color: $mc-colour-1;
+                    // border-bottom-color: $mc-colour-1;
+                    background: $mc-colour-1;
+                }
+            }
+        }
+
+        & > .main {
+            @extend .flex-grow;
+            @extend .flex-shrink;
+            @extend .flex-basis-0;
+
+            position: relative;
+
+            &.loading {
+                &::before {
+                    content: "Loading...";
+                    background: red;
+                }
+            }
+        }
+    }
+
+    .admin-panel-table-layout {
+        &.fill-parent {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        & > ul.toolbar {
+            @extend .margin-0;
+            @extend .flex-container;
+            @extend .flex-no-shrink;
+
+            padding: 0.6em 0.7em;
+            list-style: none;
+
+            // font-size: 2em;
+            font-weight: 300;
+
+            // border-bottom: 0.05em solid $mc-colour-1;
+            background: $mc-colour-1;
+
+            li {
+                padding: 0.3em 0.6em;
+                
+                cursor: pointer;
+
+                // color: transparentize($mc-colour-1, 0.2);
+                color: fg-on-bg($mc-colour-1);
+
+                border: 1px solid transparent;
+
+                margin-right: 0.3em;
+
+                &:hover {
+                    // background: transparentize($mc-colour-1, 0.8);
+                    background: transparentize(fg-on-bg($mc-colour-1), 0.8);
+                    border-color: transparentize(fg-on-bg($mc-colour-1), 0.8);
+                }
+
+                // &.active {
+                //     font-weight: 400;
+                //     color: fg-on-bg($body-bg-colour);
+                //     border-bottom-color: $mc-colour-1;
+                // }
+            }
+        }
+
+        & > .main {
+            @extend .flex-grow;
+            @extend .flex-shrink;
+            @extend .flex-basis-0;
+
+            & > * {
+                margin: 0.7em;
+
+                border: 0.05em solid rgba(0,0,0,0.3);
+                background-clip: padding-box;
+
+                & + * {
+                    margin-left: 0;
+                }
+            }
+
+            .sidebar {
+                position: relative;
+
+                width: 25%;
+
+                min-width: 20em;
+                max-width: 30em;
+            }
+        }
+    }
 }
 
 

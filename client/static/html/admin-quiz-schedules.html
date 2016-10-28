@@ -1,13 +1,24 @@
 <!-- All pages must specify <section data-name="..." /> as root element, with name **equal to the file name** -->
-<section data-name="admin-quiz-schedules" class="flex-container h-pad-items">
-	<div class="flex-grow flex-shrink flex-basis-0 flex-container flex-column" style="max-width: 50%;">
+<section data-name="admin-quiz-schedules" class="flex-container flex-column admin-panel-tabbed-interface">
+	<ul class="tabs">
+		<li class="active">Quiz Schedules</li>
+		<li>Question Bank</li>
+	</ul>
+	<div class="main">
+		
+	</div>
+
+
+	<!--<div class="flex-grow flex-shrink flex-basis-0 flex-container flex-column" style="max-width: 50%;">
 		<h1 id="quiz-schedule-list-title" class="flex-no-shrink">Ongoing/Upcoming Quizzes</h1>
 		<ul id="quiz-schedule-list" class="flex-grow margin-0 overflow-y-auto block-items"></ul>
-		<div class="flex-no-shrink toolbar-bg text-right"><a id="view-all-quiz-schedules" class="view-filter-links">View all</a><a id="view-upcoming-quiz-schedules" class="view-filter-links hidden">View ongoing/upcoming</a> | <a id="create-quiz-schedule">Schedule new quiz</a></div>
+		<div class="flex-no-shrink item-list-bottom-toolbar text-right"><a id="view-all-quiz-schedules" class="view-filter-links">View all</a><a id="view-upcoming-quiz-schedules" class="view-filter-links hidden">View ongoing/upcoming</a> | <a id="create-quiz-schedule">Schedule new quiz</a></div>
+		<div id="quiz-schedule-form" class="flex-grow margin-0 overflow-y-auto item-list-bottom-form" style="background: red;">New/Edit form would appear here and pop up as necessary</div>
 	</div>
 	<div class="flex-grow flex-shrink flex-basis-0 flex-container flex-column" style="max-width: 50%;">
 		<h1 id="question-list-title" class="flex-no-shrink">Question Bank</h1>
 		<ul id="question-list" class="flex-grow margin-0 overflow-y-auto block-items"></ul>
-		<div class="flex-no-shrink toolbar-bg text-right"><!--<a id="view-all-questions">View all</a> | -->Export questions | <a id="create-question">Add new question</a></div>
-	</div>
+		<div class="flex-no-shrink item-list-bottom-toolbar text-right"><a id="export-questions">Export questions</a> | <a id="create-question">Add new question</a></div>
+		<div id="question-form" class="flex-grow margin-0 overflow-y-auto item-list-bottom-form" style="background: red;">New/Edit form would appear here and pop up as necessary</div>
+	</div>-->
 </section>
