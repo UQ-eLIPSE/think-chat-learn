@@ -84,7 +84,7 @@ export type StateChangeHandlerInfo = {
 export interface IStateMachineDescriptionTransition {
     label: string,
 
-    fromState: StateLabel,
+    fromState?: StateLabel | null | undefined,
     toState: StateLabel,
 
     onBeforeTransition?: OnTransitionFunction,
