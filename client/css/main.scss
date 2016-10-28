@@ -312,6 +312,14 @@ button.thin {
     flex-basis: 0%;
 }
 
+.flex-main-axis-center {
+    justify-content: center;
+}
+
+.flex-cross-axis-center {
+    align-items: center;
+}
+
 .overflow-y-auto {
     overflow-y: auto;
 }
@@ -1160,16 +1168,22 @@ button.link:active {
         li {
             @extend .mc-box-pad;
 
-            &:nth-child(odd) {
-                background: transparentize($mc-colour-1, 0.95);
-            }
+            background-clip: padding-box;
 
-            &:nth-child(even) {
-                background: transparentize($mc-colour-1, 0.9);
+            // &:nth-child(odd) {
+            //     background: transparentize($mc-colour-1, 0.95);
+            // }
+
+            // &:nth-child(even) {
+            //     background: transparentize($mc-colour-1, 0.9);
+            // }
+
+            & + li {
+                border-top: 0.05em solid rgba(0,0,0,0.3);
             }
 
             &:hover {
-                background: transparentize($mc-colour-1, 0.8);
+                background-color: transparentize($mc-colour-1, 0.8);
                 cursor: pointer;
             }
 
@@ -1315,7 +1329,20 @@ button.link:active {
             @extend .flex-shrink;
             @extend .flex-basis-0;
 
+            & > * {
+                margin: 0.7em;
+
+                border: 0.05em solid rgba(0,0,0,0.3);
+                background-clip: padding-box;
+
+                & + * {
+                    margin-left: 0;
+                }
+            }
+
             .sidebar {
+                position: relative;
+
                 width: 25%;
 
                 min-width: 20em;

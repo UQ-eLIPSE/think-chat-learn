@@ -1,0 +1,40 @@
+<!-- All pages must specify <section data-name="..." /> as root element, with name **equal to the file name** -->
+<section data-name="admin-quiz-schedule-edit-layout" class="flex-container flex-column admin-panel-table-layout fill-parent">
+	<h3>Quiz Schedule</h3>
+	<div class="table">
+		<div class="row edit-only">
+			<div>
+				<p>ID</p>
+				<p id="id"></p>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<p>Question</p>
+				<p><span id="question-title"></span> <a id="view-question" class="edit-only">View</a></p>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<p>Start Date/Time</p>
+				<p><input type="datetime-local" id="available-start" /> (local time)</p>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<p>End Date/Time</p>
+				<p><input type="datetime-local" id="available-end" /> (local time)</p>
+			</div>
+		</div>
+		<div class="row">
+			<div class="edit-only">
+				<button id="save-changes" class="positive">Save Changes</button>
+				<button id="discard-changes">Discard Changes</button>
+				<button id="delete" class="negative">Delete</button>
+			</div>
+			<div class="create-only">
+				<button id="create" class="positive">Create</button>
+			</div>
+		</div>
+	</div>
+</section>

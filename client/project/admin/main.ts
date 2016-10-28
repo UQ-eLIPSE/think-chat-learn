@@ -119,73 +119,59 @@ $(() => {
         },
         {
             label: "error",
-            fromState: "*",
             toState: STATE.ERROR,
         },
         {
             label: "login",
-            fromState: "*",
             toState: STATE.LOGIN,
         },
         {
             label: "logout",
-            fromState: "*",
             toState: STATE.LOGOUT,
         },
         {
             label: "load-main",
-            fromState: "*",
             toState: STATE.MAIN_PAGE,
         },
         {
             label: "load-quizzes",
-            fromState: "*",
             toState: STATE.QUIZZES_PAGE,
         },
         {
             label: "load-quiz-schedule-details",
-            fromState: "*",
             toState: STATE.QUIZ_SCHEDULE_DETAILS_PAGE,
         },
         {
             label: "load-quiz-schedule-creation",
-            fromState: "*",
             toState: STATE.QUIZ_SCHEDULE_CREATION_PAGE,
         },
         // {
         //     label: "load-questions",
-        //     fromState: "*",
         //     toState: STATE.QUESTIONS_PAGE,
         // },
         {
             label: "load-question-details",
-            fromState: "*",
             toState: STATE.QUESTION_DETAILS_PAGE,
         },
         {
             label: "load-question-creation",
-            fromState: "*",
             toState: STATE.QUESTION_CREATION_PAGE,
         },
         {
             label: "load-marking",
-            fromState: "*",
             toState: STATE.MARKING_PAGE,
         },
         {
             label: "load-users",
-            fromState: "*",
             toState: STATE.USERS_PAGE,
         },
         {
             label: "load-user-details",
-            fromState: "*",
             toState: STATE.USER_DETAILS_PAGE,
         },
 
         {
             label: "load-system-info",
-            fromState: "*",
             toState: STATE.SYSTEM_INFO_PAGE,
         },
     ]);
@@ -359,12 +345,10 @@ $(() => {
                     const quizzesFsmDesc = new StateMachineDescription(QUIZZES_STATE.ZERO, [
                         {
                             label: "view-quiz-schedules",
-                            fromState: "*",
                             toState: QUIZZES_STATE.QUIZ_SCHEDULE_TABLE_VIEW,
                         },
                         {
                             label: "view-question-bank",
-                            fromState: "*",
                             toState: QUIZZES_STATE.QUESTION_BANK_TABLE_VIEW,
                         },
                     ]);
@@ -376,6 +360,23 @@ $(() => {
                                 page$("#quiz-schedule-list")
                                     .empty()
                                     .append($("<li>").text("Loading..."));
+
+                                page$("> section > .toolbar").on("click", "li", (e) => {
+                                    const $elem = $(e.target);
+
+                                    // Check sidebar fsm transitions
+                                    const sidebarTransitionLabel: string | undefined = $elem.data("sidebar-fsm-transition");
+
+                                    if (!sidebarTransitionLabel) {
+                                        return;
+                                    }
+
+                                    quizScheduleSidebarFsm.executeTransition(sidebarTransitionLabel);
+
+                                    // Make sure we don't let other components see this click
+                                    e.stopPropagation();
+                                    e.stopImmediatePropagation();
+                                });
 
                                 loadQuizSchedulesXhr!
                                     .done((data: IMoocchatApi.ToClientResponseBase<IDB_QuizSchedule[]>) => {
@@ -392,6 +393,7 @@ $(() => {
                                             const $elem = $("<li>")
                                                 .addClass("quiz-schedule-item")
                                                 .data("id", quizSchedule._id)
+                                                .data("quizSchedule", quizSchedule)
                                                 .html(` <div class="table">
                                                                 <div class="row">
                                                                     <div class="info-left">
@@ -435,9 +437,13 @@ $(() => {
                                             .on("click", ".quiz-schedule-item", (e) => {
                                                 e.preventDefault();
 
-                                                const quizId: string = $(e.currentTarget).data("id");
+                                                // const quizId: string = $(e.currentTarget).data("id");
 
-                                                fsm.executeTransition("load-quiz-schedule-details", quizId);
+                                                // fsm.executeTransition("load-quiz-schedule-details", quizId);
+
+                                                const quizSchedule = $(e.currentTarget).data("quizSchedule");
+
+                                                quizScheduleSidebarFsm.executeTransition("quiz-schedule-sidebar-edit", quizSchedule);
                                             });
 
                                         if (data.payload.length === 0) {
@@ -448,6 +454,85 @@ $(() => {
                                 // }
 
                                 // processQuizXhr();
+
+
+                                enum QUIZ_SCHEDULE_SIDEBAR_STATE {
+                                    ZERO,
+
+                                    EMPTY,
+                                    QUIZ_SCHEDULE_EDIT,
+                                    QUIZ_SCHEDULE_CREATE,
+                                }
+
+                                const quizScheduleSidebarPageManager = new CombinedPageManager(eventBox, page$("section > .main > .sidebar"), pageManager);
+
+                                const quizScheduleSidebarFsmDesc = new StateMachineDescription(QUIZ_SCHEDULE_SIDEBAR_STATE.ZERO, [
+                                    {
+                                        label: "reset",
+                                        toState: QUIZ_SCHEDULE_SIDEBAR_STATE.EMPTY,
+                                        onAfterTransition: () => {
+                                            quizScheduleSidebarPageManager.loadPage("admin-quiz-schedule-sidebar-empty", () => {
+                                                page$("#create-quiz-schedule").on("click", () => {
+                                                    quizScheduleSidebarFsm.executeTransition("quiz-schedule-sidebar-create");
+                                                });
+                                            });
+                                        }
+                                    },
+                                    {
+                                        label: "quiz-schedule-sidebar-edit",
+                                        toState: QUIZ_SCHEDULE_SIDEBAR_STATE.QUIZ_SCHEDULE_EDIT,
+                                        onAfterTransition: (_label: string, _fromState: string, _toState: string, quizSchedule: IDB_QuizSchedule) => {
+                                            quizScheduleSidebarPageManager.loadPage("admin-quiz-schedule-edit-layout", (page$) => {
+                                                page$("#id").text(quizSchedule._id || "?");
+                                                page$("#question-title").text(quizSchedule.questionId || "");
+                                                page$("#available-start").val(dateToRfc3339Local(new Date(quizSchedule.availableStart || 0)));
+                                                page$("#available-end").val(dateToRfc3339Local(new Date(quizSchedule.availableEnd || 0)));
+                                                // page$("#blackboard-column-id").val(quizSchedule.blackboardColumnId || "");
+
+                                                page$(".edit-only").show();
+                                                page$(".create-only").hide();
+                                            });
+                                        }
+                                    },
+                                    {
+                                        label: "quiz-schedule-sidebar-create",
+                                        toState: QUIZ_SCHEDULE_SIDEBAR_STATE.QUIZ_SCHEDULE_CREATE,
+                                        onAfterTransition: (_label: string, _fromState: string, _toState: string) => {
+                                            quizScheduleSidebarPageManager.loadPage("admin-quiz-schedule-edit-layout", (page$) => {
+                                                // page$("#id").text(quizSchedule._id || "?");
+                                                // page$("#question-title").val(quizSchedule.questionId || "");
+                                                // page$("#available-start").val(dateToRfc3339Local(new Date(quizSchedule.availableStart || 0)));
+                                                // page$("#available-end").val(dateToRfc3339Local(new Date(quizSchedule.availableEnd || 0)));
+                                                // page$("#blackboard-column-id").val(quizSchedule.blackboardColumnId || "");
+
+                                                page$(".edit-only").hide();
+                                                page$(".create-only").show();
+                                            });
+                                        }
+                                    },
+                                ]);
+
+                                const quizScheduleSidebarFsm = new StateMachine(quizScheduleSidebarFsmDesc);
+
+                                quizScheduleSidebarFsm.executeTransition("reset");
+
+                                // page$().children("section")
+                                //     .on("click", (e) => {
+                                //         const $elem = $(e.target);
+
+                                //         const transitionLabel: string | undefined = $elem.data("fsm-transition");
+
+                                //         if (!transitionLabel) {
+                                //             return;
+                                //         }
+
+                                //         quizScheduleSidebarFsm.executeTransition(transitionLabel);
+
+                                //         // Make sure we don't let other components see this click
+                                //         e.stopPropagation();
+                                //         e.stopImmediatePropagation();
+                                //     });
+
                             });
                         }
                     });
@@ -499,11 +584,9 @@ $(() => {
 
                     const quizzesFsm = new StateMachine(quizzesFsmDesc);
 
-                    page$("section > ul.tabs")
-                        .on("click", "li", (e) => {
-                            e.preventDefault();
-
-                            const $elem = $(e.currentTarget);
+                    page$().children("section")
+                        .on("click", (e) => {
+                            const $elem = $(e.target);
 
                             const transitionLabel: string | undefined = $elem.data("fsm-transition");
 
@@ -514,8 +597,14 @@ $(() => {
                             quizzesFsm.executeTransition(transitionLabel);
 
                             $elem.addClass("active").siblings().removeClass("active");
-                        })
-                        .children(":first-child").click();
+
+                            // Make sure we don't let other components see this click
+                            e.stopPropagation();
+                            e.stopImmediatePropagation();
+                        });
+
+                    // Launch first tab
+                    page$("section > ul.tabs > li:first-child").click();
 
 
 
