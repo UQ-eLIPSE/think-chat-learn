@@ -17,7 +17,7 @@ export class StateMachineDescription {
         transitions.forEach(t => this.addTransition(t.label, t.fromState, t.toState, t.onBeforeTransition, t.onAfterTransition));
     }
 
-    public addTransition(label: string, fromState: StateLabel, toState: StateLabel, onBeforeTransition?: OnTransitionFunction, onAfterTransition?: OnTransitionFunction) {
+    public addTransition(label: string, fromState: StateLabel | null | undefined, toState: StateLabel, onBeforeTransition?: OnTransitionFunction, onAfterTransition?: OnTransitionFunction) {
         if (label === "*") {
             throw new Error(`Label value "${label}" is reserved`);
         }
@@ -28,6 +28,11 @@ export class StateMachineDescription {
 
         if (toState === "*") {
             throw new Error(`Transitions cannot have ambiguous resultant state`);
+        }
+
+        // From state can be left blank to represent the any state
+        if (fromState !== 0 && !fromState) {
+            fromState = "*";
         }
 
         this.transitions.push({
