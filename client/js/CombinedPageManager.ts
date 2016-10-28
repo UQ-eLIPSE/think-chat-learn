@@ -1,26 +1,33 @@
-import {PageManager} from "./PageManager";
+import { PageManager } from "./PageManager";
 
 import * as $ from "jquery";
 
-import {EventBox} from "../../common/js/EventBox";
+import { EventBox } from "../../common/js/EventBox";
 
 export class CombinedPageManager extends PageManager {
     private combinedPageXHR: JQueryXHR;
-    private combinedPageDOM: {[name: string]: Element} = {};
+    private combinedPageDOM: { [name: string]: Element } = {};
 
-    constructor(sharedEventManager: EventBox, $contentElem: JQuery, combinedPageUrl: string) {
+    constructor(sharedEventManager: EventBox, $contentElem: JQuery, combinedPageResource: string | CombinedPageManager) {
         super(sharedEventManager, $contentElem);
 
-        this.combinedPageXHR = $.ajax({
-            url: combinedPageUrl,
-            dataType: "html",
-            method: "GET"
-        });
-        
+        if (typeof combinedPageResource === "string") {
+            this.combinedPageXHR = $.ajax({
+                url: combinedPageResource,
+                dataType: "html",
+                method: "GET"
+            });
+        } else if (combinedPageResource instanceof CombinedPageManager) {
+            // Share the page fetch if provided a previous combined page manager
+            this.combinedPageXHR = combinedPageResource.combinedPageXHR;
+        } else {
+            throw new Error(`Combined page resource not valid`);
+        }
+
         this.combinedPageXHR.done((html: string) => {
             // Store the parsed HTML into map of <section /> elements, one for each "page"
             const pageDOMs: Element[] = $.parseHTML(html, undefined, true);
-            
+
             pageDOMs.forEach((pageElem) => {
                 const pageName: string = $(pageElem).data("name");
 
