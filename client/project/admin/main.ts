@@ -137,14 +137,14 @@ $(() => {
             label: "load-quizzes",
             toState: STATE.QUIZZES_PAGE,
         },
-        {
-            label: "load-quiz-schedule-details",
-            toState: STATE.QUIZ_SCHEDULE_DETAILS_PAGE,
-        },
-        {
-            label: "load-quiz-schedule-creation",
-            toState: STATE.QUIZ_SCHEDULE_CREATION_PAGE,
-        },
+        // {
+        //     label: "load-quiz-schedule-details",
+        //     toState: STATE.QUIZ_SCHEDULE_DETAILS_PAGE,
+        // },
+        // {
+        //     label: "load-quiz-schedule-creation",
+        //     toState: STATE.QUIZ_SCHEDULE_CREATION_PAGE,
+        // },
         // {
         //     label: "load-questions",
         //     toState: STATE.QUESTIONS_PAGE,
@@ -400,8 +400,8 @@ $(() => {
                                                                         <div class="question-title">...</div>
                                                                     </div>
                                                                     <div class="info-right">
-                                                                        <div class="date">${startDate.getDate()}/${startDate.getMonth() + 1}<br>${startDate.getHours()}:${startDate.getMinutes()}</div>
-                                                                        <div class="date">${endDate.getDate()}/${endDate.getMonth() + 1}<br>${endDate.getHours()}:${endDate.getMinutes()}</div>
+                                                                        <div class="date">${startDate.getDate()}/${startDate.getMonth() + 1}/${startDate.getFullYear()}<br>${startDate.getHours()}:${startDate.getMinutes()}</div>
+                                                                        <div class="date">${endDate.getDate()}/${endDate.getMonth() + 1}/${endDate.getFullYear()}<br>${endDate.getHours()}:${endDate.getMinutes()}</div>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -501,6 +501,8 @@ $(() => {
                                         label: "quiz-schedule-sidebar-create",
                                         toState: QUIZ_SCHEDULE_SIDEBAR_STATE.QUIZ_SCHEDULE_CREATE,
                                         onAfterTransition: (_label: string, _fromState: string, _toState: string) => {
+                                            page$("#quiz-schedule-list > .active").removeClass("active");
+
                                             quizScheduleSidebarPageManager.loadPage("admin-quiz-schedule-edit-layout", (page$) => {
                                                 // page$("#id").text(quizSchedule._id || "?");
                                                 // page$("#question-title").val(quizSchedule.questionId || "");
