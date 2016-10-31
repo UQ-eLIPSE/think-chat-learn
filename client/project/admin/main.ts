@@ -756,7 +756,46 @@ $(() => {
 
 
 
+                                                page$("#create-question-option").on("click", (e) => {
+                                                    const $elem = $(e.currentTarget);
 
+                                                    // Hide button while form open
+                                                    $elem.hide();
+
+                                                    const lastQuestionOptionData: IDB_QuestionOption | undefined = page$("#question-options").children().last().data("questionOption");
+
+                                                    const $contentField = $("<span>").addClass("question-option-content").text("<Type question option here>").prop("contenteditable", true).css("outline", "1px solid orange");
+                                                    const $insertionForm = $("<p>")
+                                                        .append([
+                                                            "Content: ",
+                                                            $contentField,
+                                                            $("<a>").text("Save").one("click", () => {
+                                                                ajaxPost(`/api/admin/question/${question._id}/option`, {
+                                                                    content: $contentField.html(),
+                                                                    sequence: lastQuestionOptionData ? lastQuestionOptionData.sequence + 1 : 0,
+                                                                })
+                                                                    .done((data: IMoocchatApi.ToClientResponseBase<IMoocchatApi.ToClientInsertionIdResponse>) => {
+                                                                        // Must check success flag
+                                                                        if (!data.success) {
+                                                                            // Something went wrong - check message
+                                                                            return fsm.executeTransition("error", data.message);
+                                                                        }
+
+                                                                        loadQuestionOptions();
+                                                                        $insertionForm.remove();
+                                                                        $elem.show();
+                                                                    });
+                                                            }),
+                                                            " ",
+                                                            $("<a>").text("Cancel").one("click", () => {
+                                                                $insertionForm.remove();
+                                                                $elem.show();
+                                                            }),
+                                                        ]
+                                                        )
+
+                                                    $elem.before($insertionForm);
+                                                });
 
                                                 page$("> section").on("click", "a.question-option-content-edit", (e) => {
                                                     const $elem = $(e.currentTarget);
