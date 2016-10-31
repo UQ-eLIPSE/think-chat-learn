@@ -405,7 +405,6 @@ $(() => {
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            <div class="id">${quizSchedule._id}</div>
                                                             `);
 
 
@@ -437,13 +436,17 @@ $(() => {
                                             .on("click", ".quiz-schedule-item", (e) => {
                                                 e.preventDefault();
 
+                                                const $elem = $(e.currentTarget);
+
                                                 // const quizId: string = $(e.currentTarget).data("id");
 
                                                 // fsm.executeTransition("load-quiz-schedule-details", quizId);
 
-                                                const quizSchedule = $(e.currentTarget).data("quizSchedule");
+                                                const quizSchedule = $elem.data("quizSchedule");
 
                                                 quizScheduleSidebarFsm.executeTransition("quiz-schedule-sidebar-edit", quizSchedule);
+                                                
+                                                $elem.addClass("active").siblings().removeClass("active");
                                             });
 
                                         if (data.payload.length === 0) {

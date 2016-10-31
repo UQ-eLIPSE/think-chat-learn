@@ -535,10 +535,10 @@ button.link:active {
 
 // This is the page content that is loaded dynamically
 #content > section {
-    h1:first-child,
-    h2:first-child,
-    h3:first-child,
-    h4:first-child {
+    & > h1:first-child,
+    & > h2:first-child,
+    & > h3:first-child,
+    & > h4:first-child {
         margin-top: 0;
     }
 }
@@ -1179,6 +1179,11 @@ button.link:active {
         li {
             @extend .mc-box-pad;
 
+            border: 0.05em solid transparent;
+            margin: 0.15em;
+
+            position: relative;
+
             background-clip: padding-box;
 
             // &:nth-child(odd) {
@@ -1190,12 +1195,33 @@ button.link:active {
             // }
 
             & + li {
-                border-top: 0.05em solid rgba(0,0,0,0.3);
+            //     border-top: 0.05em solid rgba(0,0,0,0.3);
+                margin-top: 0;
             }
 
             &:hover {
                 background-color: transparentize($mc-colour-1, 0.8);
                 cursor: pointer;
+            }
+
+            &.active {
+                border-color: $mc-colour-1;
+
+                &::before {
+                    content: "";
+                    display: inline-block;
+
+                    width: 0.3rem;
+
+                    position: absolute;
+                    top: 0;
+                    bottom: 0;
+                    left: 0;
+
+                    background: $mc-colour-1;
+                }
+
+                background-color: transparentize($mc-colour-1, 0.9);
             }
 
             &.quiz-schedule-item,
@@ -1362,7 +1388,29 @@ button.link:active {
                 min-width: 20em;
                 max-width: 30em;
 
-                background: rgba(0,0,0,0.1);
+                background: transparentize($mc-colour-1, 0.9);
+
+                h1, 
+                h2,
+                h3,
+                h4 {
+                    font-weight: 300;
+                    line-height: 1.4;
+                    border-bottom: 1px solid;
+                    color: $mc-colour-1;
+
+                    margin-top: 1em;
+                    margin-bottom: 0.3em;
+                }
+
+                & > section > *:first-child {
+                    margin-top: 0;
+                }
+
+                .p-block,
+                p {
+                    margin: 0.3em 0; 
+                }
             }
         }
     }
