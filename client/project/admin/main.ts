@@ -378,23 +378,24 @@ $(() => {
                                     e.stopImmediatePropagation();
                                 });
 
-                                loadQuizSchedulesXhr!
-                                    .done((data: IMoocchatApi.ToClientResponseBase<IDB_QuizSchedule[]>) => {
-                                        // Must check success flag
-                                        if (!data.success) {
-                                            // Something went wrong - check message
-                                            return fsm.executeTransition("error", data.message);
-                                        }
+                                const processQuizXhr = () => {
+                                    loadQuizSchedulesXhr!
+                                        .done((data: IMoocchatApi.ToClientResponseBase<IDB_QuizSchedule[]>) => {
+                                            // Must check success flag
+                                            if (!data.success) {
+                                                // Something went wrong - check message
+                                                return fsm.executeTransition("error", data.message);
+                                            }
 
-                                        const $quizScheduleListElems = data.payload.map((quizSchedule) => {
-                                            const startDate = new Date(quizSchedule.availableStart!);
-                                            const endDate = new Date(quizSchedule.availableEnd!);
+                                            const $quizScheduleListElems = data.payload.map((quizSchedule) => {
+                                                const startDate = new Date(quizSchedule.availableStart!);
+                                                const endDate = new Date(quizSchedule.availableEnd!);
 
-                                            const $elem = $("<li>")
-                                                .addClass("quiz-schedule-item")
-                                                .data("id", quizSchedule._id)
-                                                .data("quizSchedule", quizSchedule)
-                                                .html(` <div class="table">
+                                                const $elem = $("<li>")
+                                                    .addClass("quiz-schedule-item")
+                                                    .data("id", quizSchedule._id)
+                                                    .data("quizSchedule", quizSchedule)
+                                                    .html(` <div class="table">
                                                                 <div class="row">
                                                                     <div class="info-left">
                                                                         <div class="question-title">...</div>
@@ -408,53 +409,53 @@ $(() => {
                                                             `);
 
 
-                                            // TODO: Really inefficient, since we go through the whole response data over and over again, for each question title to fetch
-                                            loadQuestionsXhr!.done((data: IMoocchatApi.ToClientResponseBase<IDB_Question[]>) => {
-                                                // Must check success flag
-                                                if (!data.success) {
-                                                    // Something went wrong - check message
-                                                    return fsm.executeTransition("error", data.message);
-                                                }
+                                                // TODO: Really inefficient, since we go through the whole response data over and over again, for each question title to fetch
+                                                loadQuestionsXhr!.done((data: IMoocchatApi.ToClientResponseBase<IDB_Question[]>) => {
+                                                    // Must check success flag
+                                                    if (!data.success) {
+                                                        // Something went wrong - check message
+                                                        return fsm.executeTransition("error", data.message);
+                                                    }
 
-                                                $(".question-title", $elem).text(data.payload.filter(question => question._id === quizSchedule.questionId)[0].title || "?");
+                                                    $(".question-title", $elem).text(data.payload.filter(question => question._id === quizSchedule.questionId)[0].title || "?");
+                                                });
+
+                                                return $elem;
                                             });
 
-                                            return $elem;
-                                        });
-
-                                        page$("#quiz-schedule-list")
-                                            .empty()
-                                            .append($quizScheduleListElems)
-                                            .off("click")
-                                            // .on("click", "a.view-question", (e) => {
-                                            //     e.preventDefault();
-
-                                            //     const questionId = $(e.currentTarget).text();
-
-                                            //     fsm.executeTransition("load-question-details", questionId);
-                                            // })
-                                            .on("click", ".quiz-schedule-item", (e) => {
-                                                e.preventDefault();
-
-                                                const $elem = $(e.currentTarget);
-
-                                                // const quizId: string = $(e.currentTarget).data("id");
-
-                                                // fsm.executeTransition("load-quiz-schedule-details", quizId);
-
-                                                const quizSchedule = $elem.data("quizSchedule");
-
-                                                quizScheduleSidebarFsm.executeTransition("quiz-schedule-sidebar-edit", quizSchedule);
-                                            });
-
-                                        if (data.payload.length === 0) {
                                             page$("#quiz-schedule-list")
-                                                .append($("<li>").text(`No ${quizScheduleViewMode === "upcoming" ? "ongoing or upcoming " : ""}quizzes found`));
-                                        }
-                                    });
-                                // }
+                                                .empty()
+                                                .append($quizScheduleListElems)
+                                                .off("click")
+                                                // .on("click", "a.view-question", (e) => {
+                                                //     e.preventDefault();
 
-                                // processQuizXhr();
+                                                //     const questionId = $(e.currentTarget).text();
+
+                                                //     fsm.executeTransition("load-question-details", questionId);
+                                                // })
+                                                .on("click", ".quiz-schedule-item", (e) => {
+                                                    e.preventDefault();
+
+                                                    const $elem = $(e.currentTarget);
+
+                                                    // const quizId: string = $(e.currentTarget).data("id");
+
+                                                    // fsm.executeTransition("load-quiz-schedule-details", quizId);
+
+                                                    const quizSchedule = $elem.data("quizSchedule");
+
+                                                    quizScheduleSidebarFsm.executeTransition("quiz-schedule-sidebar-edit", quizSchedule);
+                                                });
+
+                                            if (data.payload.length === 0) {
+                                                page$("#quiz-schedule-list")
+                                                    .append($("<li>").text(`No ${quizScheduleViewMode === "upcoming" ? "ongoing or upcoming " : ""}quizzes found`));
+                                            }
+                                        });
+                                }
+
+                                processQuizXhr();
 
 
                                 enum QUIZ_SCHEDULE_SIDEBAR_STATE {
@@ -507,6 +508,71 @@ $(() => {
                                             page$("#quiz-schedule-list > .active").removeClass("active");
 
                                             quizScheduleSidebarPageManager.loadPage("admin-quiz-schedule-edit-layout", (page$) => {
+                                                loadQuestionsXhr!
+                                                    .done((data: IMoocchatApi.ToClientResponseBase<IDB_Question[]>) => {
+                                                        // Must check success flag
+                                                        if (!data.success) {
+                                                            // Something went wrong - check message
+                                                            return fsm.executeTransition("error", data.message);
+                                                        }
+
+                                                        page$("#question-id").append(
+                                                            data.payload.map((question) => {
+                                                                return $("<option>")
+                                                                    .prop({
+                                                                        value: question._id,
+                                                                    })
+                                                                    .text(`${(question.title && question.title.substr(0, 100)) || "[Undefined Title]"} (${question._id})`);
+                                                            })
+                                                        );
+
+                                                    });
+
+                                                page$("#create").one("click", (e) => {
+                                                    e.preventDefault();
+
+                                                    const questionId: string = page$("#question-id").val();
+                                                    const availableStart: string = rfc3339LocalToDate(page$("#available-start").val()).toISOString();
+                                                    const availableEnd: string = rfc3339LocalToDate(page$("#available-end").val()).toISOString();
+                                                    // const blackboardColumnId: string = page$("#blackboard-column-id").val();
+                                                    const blackboardColumnId: string = "";
+
+                                                    const createQuizXhr = ajaxPost("/api/admin/quiz", {
+                                                        questionId,
+                                                        availableStart,
+                                                        availableEnd,
+                                                        blackboardColumnId,
+                                                    });
+
+                                                    createQuizXhr
+                                                        .done((data: IMoocchatApi.ToClientResponseBase<IMoocchatApi.ToClientInsertionIdResponse>) => {
+                                                            // Must check success flag
+                                                            if (!data.success) {
+                                                                // Something went wrong - check message
+                                                                return fsm.executeTransition("error", data.message);
+                                                            }
+
+                                                            const insertedId = data.payload.id;
+
+                                                            loadQuizzes();
+                                                            processQuizXhr();
+                                                            
+                                                            loadQuizSchedulesXhr!
+                                                                .done((data: IMoocchatApi.ToClientResponseBase<IDB_Question[]>) => {
+                                                                    // Must check success flag
+                                                                    if (!data.success) {
+                                                                        // Something went wrong - check message
+                                                                        return fsm.executeTransition("error", data.message);
+                                                                    }
+
+                                                                    // Get quiz schedule to transit to
+                                                                    const quizSchedule = data.payload.filter(quizSchedule => quizSchedule._id === insertedId)[0];
+
+                                                                    quizScheduleSidebarFsm.executeTransition("quiz-schedule-sidebar-edit", quizSchedule);
+                                                                });
+                                                        });
+                                                });
+
                                                 page$("input").eq(0).focus();
 
                                                 page$(".edit-only").hide();
@@ -587,6 +653,7 @@ $(() => {
                                 });
 
                                 const loadQuestions = () => {
+                                    loadQuestionsXhr && loadQuestionsXhr.abort();
                                     loadQuestionsXhr = ajaxGet("/api/admin/question");
 
                                     loadQuestionsXhr!
