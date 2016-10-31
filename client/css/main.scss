@@ -324,6 +324,14 @@ button.thin {
     overflow-y: auto;
 }
 
+.fill-parent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
 p {
     @extend .p-block;
 }
@@ -1173,7 +1181,7 @@ body > #content > section {
 
     ul.block-items {
         padding: 0;
-        position: relative;
+        // position: relative;
         list-style: none;
 
         li {
@@ -1314,14 +1322,6 @@ body > #content > section {
     }
 
     .admin-panel-table-layout {
-        &.fill-parent {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-        }
-
         & > ul.toolbar {
             @extend .margin-0;
             @extend .flex-container;
