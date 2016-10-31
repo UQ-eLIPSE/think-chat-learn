@@ -513,7 +513,7 @@ button.link:active {
     color: fg-on-bg($mc-colour-1-backup-client);
 }
 
-#content {
+body > #content {
     position: absolute;
     left: $mc-sidebar-width;
     top: 0;
@@ -525,7 +525,7 @@ button.link:active {
     padding: $mc-sidebar-padding-tb*2;
 }
 
-#content > .flex-container {
+body > #content > .flex-container {
     position: absolute;
     top: 2rem;
     left: 2rem;
@@ -534,7 +534,7 @@ button.link:active {
 }
 
 // This is the page content that is loaded dynamically
-#content > section {
+body > #content > section {
     & > h1:first-child,
     & > h2:first-child,
     & > h3:first-child,
@@ -1578,7 +1578,7 @@ button.link:active {
     }
 
     #header,
-    #content {
+    body > #content {
         position: static;
         display: block;
         width: auto;
