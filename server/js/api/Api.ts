@@ -257,14 +257,17 @@ export namespace Api {
             const db = moocchat.getDb();
             const questionId = data.questionId;
 
+            const title = data.title === undefined ? undefined : (data.title || "");
+            const content = data.content === undefined ? undefined : (data.content || "");
+
             new DBQuestion(db).updateOne(
                 {
                     _id: new Database.ObjectId(questionId),
                 },
                 {
                     $set: {
-                        // TODO: Update title
-                        content: data.content || "",
+                        title,
+                        content,
                     }
                 },
                 (err, result) => {

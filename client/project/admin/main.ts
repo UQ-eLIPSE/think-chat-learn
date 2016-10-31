@@ -659,11 +659,9 @@ $(() => {
                                                 .addClass("active")
                                                 .siblings().removeClass("active");
 
-                                            // const reloadQuestionInSidebar = () => {
-                                            //     questionSidebarFsm.executeTransition("question-sidebar-create", question);
-                                            // }
-
                                             let loadQuestionOptionsXhr: JQueryXHR;
+                                            let updateQuestionXhr: JQueryXHR;
+                                            let deleteQuestionXhr: JQueryXHR;
 
                                             const loadQuestionOptions = () => {
                                                 loadQuestionOptionsXhr = ajaxGet(`/api/admin/question/${question._id}/option`);
@@ -703,7 +701,7 @@ $(() => {
                                                 page$(".edit-only").show();
                                                 page$(".create-only").hide();
 
-                                                ckeditor.replace(page$("#content")[0] as HTMLTextAreaElement);
+                                                const questionContentEditor = ckeditor.replace(page$("#content")[0] as HTMLTextAreaElement);
 
 
 
@@ -711,6 +709,47 @@ $(() => {
 
 
 
+
+                                                page$("#save-changes").one("click", (e) => {
+                                                    e.preventDefault();
+
+                                                    const questionTitle: string = page$("#title").val();
+                                                    const questionContent: string = questionContentEditor!.getData();
+
+                                                    updateQuestionXhr = ajaxPut(`/api/admin/question/${question._id}`, {
+                                                        title: questionTitle,
+                                                        content: questionContent,
+                                                    });
+
+                                                    updateQuestionXhr.done((data: IMoocchatApi.ToClientResponseBase<void>) => {
+                                                        // Must check success flag
+                                                        if (!data.success) {
+                                                            // Something went wrong - check message
+                                                            return fsm.executeTransition("error", data.message);
+                                                        }
+
+                                                        // TODO: Currently reloads the whole view; should just update question list and edit sidebar
+                                                        quizzesFsm.executeTransition("view-question-bank");
+                                                    });
+                                                });
+
+                                                page$("#delete").one("click", (e) => {
+                                                    e.preventDefault();
+
+                                                    deleteQuestionXhr = ajaxDelete(`/api/admin/question/${question._id}`);
+
+                                                    deleteQuestionXhr.done((data: IMoocchatApi.ToClientResponseBase<void>) => {
+                                                        // Must check success flag
+                                                        if (!data.success) {
+                                                            // Something went wrong - check message
+                                                            return fsm.executeTransition("error", data.message);
+                                                        }
+
+                                                        loadQuestions();
+
+                                                        questionSidebarFsm.executeTransition("reset");
+                                                    });
+                                                });
 
 
 
