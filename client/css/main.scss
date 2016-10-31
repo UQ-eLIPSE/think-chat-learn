@@ -513,7 +513,7 @@ button.link:active {
     color: fg-on-bg($mc-colour-1-backup-client);
 }
 
-#content {
+body > #content {
     position: absolute;
     left: $mc-sidebar-width;
     top: 0;
@@ -525,7 +525,7 @@ button.link:active {
     padding: $mc-sidebar-padding-tb*2;
 }
 
-#content > .flex-container {
+body > #content > .flex-container {
     position: absolute;
     top: 2rem;
     left: 2rem;
@@ -534,11 +534,11 @@ button.link:active {
 }
 
 // This is the page content that is loaded dynamically
-#content > section {
-    h1:first-child,
-    h2:first-child,
-    h3:first-child,
-    h4:first-child {
+body > #content > section {
+    & > h1:first-child,
+    & > h2:first-child,
+    & > h3:first-child,
+    & > h4:first-child {
         margin-top: 0;
     }
 }
@@ -1132,6 +1132,17 @@ button.link:active {
     // $mc-colour-1: $uq-colour-B5; // UQ Emerald
     // $mc-colour-1: $uq-colour-B4; // UQ Blue
 
+    button {
+        &, 
+        &:hover,
+        &:active {
+            border-radius: 0;
+            font-weight: 300;
+
+            padding: 0.4em 0.8em;
+        }
+    }
+
     #header {
         background: $mc-colour-1;
     }
@@ -1168,6 +1179,11 @@ button.link:active {
         li {
             @extend .mc-box-pad;
 
+            border: 0.05em solid transparent;
+            margin: 0.15em;
+
+            position: relative;
+
             background-clip: padding-box;
 
             // &:nth-child(odd) {
@@ -1179,12 +1195,33 @@ button.link:active {
             // }
 
             & + li {
-                border-top: 0.05em solid rgba(0,0,0,0.3);
+            //     border-top: 0.05em solid rgba(0,0,0,0.3);
+                margin-top: 0;
             }
 
             &:hover {
                 background-color: transparentize($mc-colour-1, 0.8);
                 cursor: pointer;
+            }
+
+            &.active {
+                border-color: $mc-colour-1;
+
+                &::before {
+                    content: "";
+                    display: inline-block;
+
+                    width: 0.3rem;
+
+                    position: absolute;
+                    top: 0;
+                    bottom: 0;
+                    left: 0;
+
+                    background: $mc-colour-1;
+                }
+
+                background-color: transparentize($mc-colour-1, 0.9);
             }
 
             &.quiz-schedule-item,
@@ -1247,6 +1284,7 @@ button.link:active {
                 &:hover {
                     // border-bottom-color: transparentize($mc-colour-1, 0.8);
                     background: linear-gradient(to top, transparentize($mc-colour-1, 0.7), transparent);
+                    background: radial-gradient(ellipse farthest-side at center 125%, transparentize($mc-colour-1, 0.6), transparent);
                 }
 
                 &.active {
@@ -1329,14 +1367,16 @@ button.link:active {
             @extend .flex-shrink;
             @extend .flex-basis-0;
 
+            position: relative;
+
             & > * {
-                margin: 0.7em;
+                margin-top: 0.7em;
 
                 border: 0.05em solid rgba(0,0,0,0.3);
                 background-clip: padding-box;
 
                 & + * {
-                    margin-left: 0;
+                    margin-left: 0.7em;
                 }
             }
 
@@ -1347,6 +1387,30 @@ button.link:active {
 
                 min-width: 20em;
                 max-width: 30em;
+
+                background: transparentize($mc-colour-1, 0.9);
+
+                h1, 
+                h2,
+                h3,
+                h4 {
+                    font-weight: 300;
+                    line-height: 1.4;
+                    border-bottom: 1px solid;
+                    color: $mc-colour-1;
+
+                    margin-top: 1em;
+                    margin-bottom: 0.3em;
+                }
+
+                & > section > *:first-child {
+                    margin-top: 0;
+                }
+
+                .p-block,
+                p {
+                    margin: 0.3em 0; 
+                }
             }
         }
     }
@@ -1514,7 +1578,7 @@ button.link:active {
     }
 
     #header,
-    #content {
+    body > #content {
         position: static;
         display: block;
         width: auto;

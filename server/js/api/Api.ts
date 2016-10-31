@@ -235,6 +235,7 @@ export namespace Api {
             const course = session.getCourse();
 
             new DBQuestion(db).insertOne({
+                title: data.title || "",
                 content: data.content || "",
                 course,
             }, (err, result) => {
@@ -262,6 +263,7 @@ export namespace Api {
                 },
                 {
                     $set: {
+                        // TODO: Update title
                         content: data.content || "",
                     }
                 },
