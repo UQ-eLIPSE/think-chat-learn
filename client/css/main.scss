@@ -1341,14 +1341,16 @@ button.link:active {
             @extend .flex-shrink;
             @extend .flex-basis-0;
 
+            position: relative;
+
             & > * {
-                margin: 0.7em;
+                margin-top: 0.7em;
 
                 border: 0.05em solid rgba(0,0,0,0.3);
                 background-clip: padding-box;
 
                 & + * {
-                    margin-left: 0;
+                    margin-left: 0.7em;
                 }
             }
 
@@ -1359,6 +1361,8 @@ button.link:active {
 
                 min-width: 20em;
                 max-width: 30em;
+
+                background: rgba(0,0,0,0.1);
             }
         }
     }
