@@ -1,0 +1,41 @@
+<!-- All pages must specify <section data-name="..." /> as root element, with name **equal to the file name** -->
+<section data-name="admin-quiz-schedule-edit-layout" class="flex-container flex-column admin-panel-table-layout fill-parent overflow-y-auto" style="padding: 1em;">
+	<h2><span class="edit-only">Edit</span><span class="create-only">Create</span> Quiz Schedule</h2>
+	<div class="table">
+		<div class="row edit-only">
+			<div id="id" class="right" style="font-size: 0.8em; opacity: 0.3;"></div>
+		</div>
+		<div class="row">
+			<div>
+				<h4>Question</h4>
+				<p><span id="question-title"></span><!-- <a id="view-question" class="edit-only">View</a>--></p>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<label>
+					<h4>Start Date/Time</h4>
+					<p><input type="datetime-local" id="available-start" /><!-- (local time)--></p>
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<label>
+					<h4>End Date/Time</h4>
+					<p><input type="datetime-local" id="available-end" /><!-- (local time)--></p>
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<div class="edit-only">
+				<button id="save-changes" class="positive">Save</button>
+				<!--<button id="discard-changes">Discard</button>-->
+				<button id="delete" class="negative">Delete</button>
+			</div>
+			<div class="create-only">
+				<button id="create" class="positive">Create</button>
+			</div>
+		</div>
+	</div>
+</section>

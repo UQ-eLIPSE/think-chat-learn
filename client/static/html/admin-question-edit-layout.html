@@ -1,0 +1,56 @@
+<!-- All pages must specify <section data-name="..." /> as root element, with name **equal to the file name** -->
+<section data-name="admin-question-edit-layout" class="flex-container flex-column admin-panel-table-layout fill-parent overflow-y-auto"
+	style="padding: 1em;">
+	<h2><span class="edit-only">Edit</span><span class="create-only">Create</span> Question</h2>
+	<div class="table">
+		<div class="row edit-only">
+			<div id="id" class="right" style="font-size: 0.8em; opacity: 0.3;"></div>
+		</div>
+		<div class="row">
+			<div>
+				<label>
+					<h4>Title</h4>
+					<p><input type="text" id="title" /></p>
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<div>
+				<label>
+					<h4>Content</h4>
+					<p><textarea id="content" /></p>
+				</label>
+			</div>
+		</div>
+		<div class="row">
+			<div class="edit-only">
+				<button id="save-changes" class="positive">Save</button>
+				<!--<button id="discard-changes">Discard</button>-->
+				<button id="delete" class="negative">Delete</button>
+			</div>
+			<div class="create-only">
+				<button id="create" class="positive">Create</button>
+			</div>
+		</div>
+
+		<div class="row edit-only">
+			<div>
+				<hr>
+			</div>
+		</div>
+
+		<div class="row edit-only">
+			<div>
+				<h4>Question Options</h4>
+				<div id="question-options"></div>
+			</div>
+		</div>
+
+		<div class="row edit-only">
+			<div>
+				<button id="create-question-option">Create Question Option</button>
+			</div>
+		</div>
+
+	</div>
+</section>
