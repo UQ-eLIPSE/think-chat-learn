@@ -1132,6 +1132,17 @@ button.link:active {
     // $mc-colour-1: $uq-colour-B5; // UQ Emerald
     // $mc-colour-1: $uq-colour-B4; // UQ Blue
 
+    button {
+        &, 
+        &:hover,
+        &:active {
+            border-radius: 0;
+            font-weight: 300;
+
+            padding: 0.4em 0.8em;
+        }
+    }
+
     #header {
         background: $mc-colour-1;
     }
@@ -1247,6 +1258,7 @@ button.link:active {
                 &:hover {
                     // border-bottom-color: transparentize($mc-colour-1, 0.8);
                     background: linear-gradient(to top, transparentize($mc-colour-1, 0.7), transparent);
+                    background: radial-gradient(ellipse farthest-side at center 125%, transparentize($mc-colour-1, 0.6), transparent);
                 }
 
                 &.active {
