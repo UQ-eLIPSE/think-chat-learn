@@ -33,6 +33,8 @@ declare class Promise<T> implements Thenable<T> {
 	 *
 	 * @param onRejected called when/if "promise" rejects
 	 */
+    // Promise#catch should pass on the Promise if error does not occur. If error does occur, it would be considered handled, unless the error is thrown again.
+    catch(onRejected?: (error: any) => void | never): Promise<T>;
 	catch<U>(onRejected?: (error: any) => U | Thenable<U>): Promise<U>;
 }
 
