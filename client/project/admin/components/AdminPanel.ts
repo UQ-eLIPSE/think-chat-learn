@@ -2,16 +2,19 @@ import * as $ from "jquery";
 
 import { KVStore } from "../../../../common/js/KVStore";
 
+// UI
 import { Component } from "../../../js/ui/Component";
 import { ComponentRenderable } from "../../../js/ui/ComponentRenderable";
-
 import { Layout } from "../../../js/ui/Layout";
 import { LayoutData } from "../../../js/ui/LayoutData";
 
+// Components
 import { Home } from "./Home";
 import { Marking } from "./Marking";
 import { System } from "./System";
+import { Quizzes } from "./Quizzes";
 
+// Interfaces and Data
 import * as IMoocchatApi from "../../../../common/interfaces/IMoocchatApi";
 import { ILTIData } from "../../../../common/interfaces/ILTIData";
 import { AuthDataWrapperLTI } from "../../../js/auth/AuthDataWrapperLTI";
@@ -20,6 +23,8 @@ import { AuthDataWrapperLTI } from "../../../js/auth/AuthDataWrapperLTI";
 declare const _LTI_BASIC_LAUNCH_DATA: ILTIData | undefined;
 
 export class AdminPanel extends Component {
+    private activeComponent: Component | undefined;
+
     private readonly layoutData: LayoutData;
     private readonly contentElem: JQuery;
     private readonly lti: AuthDataWrapperLTI;
@@ -35,6 +40,7 @@ export class AdminPanel extends Component {
 
         this.setupErrorListener();
 
+        // Set up LTI data wrapper object
         try {
             this.lti = new AuthDataWrapperLTI(_LTI_BASIC_LAUNCH_DATA);
         } catch (e) {
@@ -50,6 +56,7 @@ export class AdminPanel extends Component {
         this.setInitFunc(() => {
             this.loginLti()
                 .then(() => {
+                    this.setCourseName();
                     this.processAction("home");
                 })
                 .catch((error: any) => {
@@ -58,8 +65,13 @@ export class AdminPanel extends Component {
         });
     }
 
+    private setCourseName() {
+        $("#course-name").text(this.getLti().getCourseName());
+    }
+
     private setupSubcomponents() {
         this.components.put("home", new Home(this.contentElem, this.layoutData, this));
+        this.components.put("quizzes", new Quizzes(this.contentElem, this.layoutData, this));
         this.components.put("marking", new Marking(this.contentElem, this.layoutData, this));
         this.components.put("system", new System(this.contentElem, this.layoutData, this));
     }
@@ -92,7 +104,22 @@ export class AdminPanel extends Component {
                     .done((data: T) => {
                         resolve(data);
                     })
-                    .fail(reject);
+                    .fail((...args: any[]) => {
+                        const xhr = args[0];
+
+                        if (xhr.status === 0) {
+                            if (xhr.statusText === "abort") {
+                                // XHR has been aborted
+                                // This will be silenced as generally aborts
+                                //   only happen when instructed to
+                                return;
+                            } else {
+                                // Offline mode
+                            }
+                        }
+
+                        reject(xhr);
+                    }); 
             });
 
             return {
@@ -128,7 +155,22 @@ export class AdminPanel extends Component {
                     .done((data: T) => {
                         resolve(data);
                     })
-                    .fail(reject);
+                    .fail((...args: any[]) => {
+                        const xhr = args[0];
+
+                        if (xhr.status === 0) {
+                            if (xhr.statusText === "abort") {
+                                // XHR has been aborted
+                                // This will be silenced as generally aborts
+                                //   only happen when instructed to
+                                return;
+                            } else {
+                                // Offline mode
+                            }
+                        }
+
+                        reject(xhr);
+                    });
             });
 
             return {
@@ -225,7 +267,11 @@ export class AdminPanel extends Component {
         return this.lti;
     }
 
-    private renderComponent<ComponentType extends ComponentRenderable>(componentName: string) {
+    private destroyActiveComponent() {
+        this.activeComponent && this.activeComponent.destroy();
+    }
+
+    private renderComponent<ComponentType extends ComponentRenderable>(componentName: string, data?: any) {
         const component = this.components.get<ComponentType>(componentName);
 
         if (!component) {
@@ -233,8 +279,16 @@ export class AdminPanel extends Component {
             return;
         }
 
-        component.init();
-        component.render();
+        this.destroyActiveComponent();
+
+        component.init(data)
+            .then(() => {
+                this.activeComponent = component;
+                component.render();
+            })
+            .catch((error) => {
+                this.dispatchError(error);
+            });
     }
 
     private processAction(action: string) {
@@ -244,8 +298,10 @@ export class AdminPanel extends Component {
                 return;
             }
 
-            // case "quizzes":
-            //     break;
+            case "quizzes": {
+                this.renderComponent<Quizzes>("quizzes");
+                return;
+            }
 
             case "marking": {
                 this.renderComponent<Marking>("marking");

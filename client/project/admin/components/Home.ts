@@ -14,7 +14,7 @@ export class Home extends ComponentRenderable {
             new Layout("admin-main", this.getLayoutData())
                 .wipeThenAppendTo(this.getRenderTarget())
                 .promise
-                .then(this.setupPageInitial)
+                .then(this.setSectionActive)
                 .then(this.renderName)
                 .catch((error) => {
                     this.dispatchError(error);
@@ -22,7 +22,7 @@ export class Home extends ComponentRenderable {
         });
     }
 
-    private readonly setupPageInitial = () => {
+    private readonly setSectionActive = () => {
         this.dispatch("setSectionActive", "home", true);
     }
 

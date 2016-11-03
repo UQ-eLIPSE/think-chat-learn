@@ -1,3 +1,5 @@
+import { Promise } from "es6-promise";
+
 import { EventBox2, EventBoxCallback } from "../../../common/js/event/EventBox2";
 
 /**
@@ -11,7 +13,7 @@ export abstract class Component {
     private readonly eventBox: EventBox2;
     private readonly parent: Component | undefined;
 
-    private initFunc: (() => void) | undefined;
+    private initFunc: ((data?: any) => void) | undefined;
     private destroyFunc: (() => void) | undefined;
 
     constructor(parent?: Component) {
@@ -91,8 +93,15 @@ export abstract class Component {
         this.eventBox.dispatch("error", data, Infinity, true);
     }
 
-    public init() {
-        this.initFunc && this.initFunc();
+    public init(data?: any) {
+        return new Promise((resolve, reject) => {
+            try {
+                this.initFunc && this.initFunc(data);
+                resolve();
+            } catch (e) {
+                reject(e);
+            }
+        });
     }
 
     public destroy() {

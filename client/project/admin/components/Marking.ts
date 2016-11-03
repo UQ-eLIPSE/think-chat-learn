@@ -12,14 +12,14 @@ export class Marking extends ComponentRenderable {
             new Layout("admin-marking", this.getLayoutData())
                 .wipeThenAppendTo(this.getRenderTarget())
                 .promise
-                .then(this.setupPageInitial)
+                .then(this.setSectionActive)
                 .catch((error) => {
                     this.dispatchError(error);
                 });
         });
     }
 
-    private readonly setupPageInitial = () => {
+    private readonly setSectionActive = () => {
         this.dispatch("setSectionActive", "marking", true);
     }
 }

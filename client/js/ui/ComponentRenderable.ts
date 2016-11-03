@@ -36,6 +36,16 @@ export abstract class ComponentRenderable extends Component {
         return $(selector, renderTarget);
     }
 
+    protected readonly section$ = (selector?: string) => {
+        const $section = this.$("> section");
+
+        if (!selector) {
+            return $section;
+        }
+
+        return $(selector, $section);
+    }
+
     public render() {
         this.renderFunc && this.renderFunc(this.renderTarget);
     }

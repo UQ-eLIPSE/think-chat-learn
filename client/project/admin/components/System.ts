@@ -1,3 +1,5 @@
+import { XHRStore } from "../../../js/xhr/XHRStore";
+
 import { Component } from "../../../js/ui/Component";
 import { ComponentRenderable } from "../../../js/ui/ComponentRenderable";
 
@@ -9,20 +11,31 @@ import { AdminPanel, AjaxFuncFactoryResultCollection } from "./AdminPanel";
 import * as IMoocchatApi from "../../../../common/interfaces/IMoocchatApi";
 
 export class System extends ComponentRenderable {
-    private ajaxFuncs: AjaxFuncFactoryResultCollection;
+    private ajaxFuncs: AjaxFuncFactoryResultCollection | undefined;
+
+    private readonly xhrStore = new XHRStore();
 
     constructor(renderTarget: JQuery, layoutData: LayoutData, parent: Component) {
         super(renderTarget, layoutData, parent);
 
         this.setInitFunc(() => {
             this.fetchAjaxFuncs();
+            this.xhrStore.empty();
+        });
+
+        this.setDestroyFunc(() => {
+            this.ajaxFuncs = undefined;
+            
+            this.xhrStore.abortAll();
+            this.xhrStore.empty();
         });
 
         this.setRenderFunc(() => {
             new Layout("admin-system-info", this.getLayoutData())
                 .wipeThenAppendTo(this.getRenderTarget())
                 .promise
-                .then(this.setupPageInitial)
+                .then(this.setSectionActive)
+                .then(this.setupReloadButton)
                 .then(this.fetchSystemInfo)
                 .then(this.displaySystemInfo)
                 .catch((error) => {
@@ -42,18 +55,30 @@ export class System extends ComponentRenderable {
         this.ajaxFuncs = topLevelParent.generateAjaxFuncFactory()();
     }
 
-    private readonly setupPageInitial = () => {
-        // Set section active
+    private readonly setSectionActive = () => {
         this.dispatch("setSectionActive", "system", true);
+    }
 
+    private readonly setupReloadButton = () => {
         // Re-render on reload
         $("#reload", this.getRenderTarget()).on("click", () => { this.render() });
     }
 
     private readonly fetchSystemInfo = () => {
         // Fetch system info data via API
-        return this.ajaxFuncs.get<IMoocchatApi.ToClientResponseBase<any>>
-            (`/api/admin/system/info`).promise;
+        const xhrCall = this.ajaxFuncs!.get<IMoocchatApi.ToClientResponseBase<any>>
+            (`/api/admin/system/info`);
+
+        // Store in XHR store to permit aborting when necessary
+        const xhrObj = xhrCall.xhr;
+        const xhrId = this.xhrStore.add(xhrObj);
+
+        // Remove once complete
+        xhrCall.promise.then(() => {
+            this.xhrStore.remove(xhrId);
+        });
+
+        return xhrCall.promise;
     }
 
     private readonly displaySystemInfo = (data: IMoocchatApi.ToClientResponseBase<any>) => {
