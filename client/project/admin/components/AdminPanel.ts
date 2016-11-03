@@ -221,6 +221,10 @@ export class AdminPanel extends Component {
             });
     }
 
+    public getLti() {
+        return this.lti;
+    }
+
     private renderComponent<ComponentType extends ComponentRenderable>(componentName: string) {
         const component = this.components.get<ComponentType>(componentName);
 

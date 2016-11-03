@@ -26,6 +26,16 @@ export abstract class ComponentRenderable extends Component {
         this.renderFunc = renderFunc;
     }
 
+    protected readonly $ = (selector?: string) => {
+        const renderTarget = this.getRenderTarget();
+
+        if (!selector) {
+            return renderTarget;
+        }
+
+        return $(selector, renderTarget);
+    }
+
     public render() {
         this.renderFunc && this.renderFunc(this.renderTarget);
     }

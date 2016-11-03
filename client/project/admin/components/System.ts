@@ -31,7 +31,7 @@ export class System extends ComponentRenderable {
         });
     }
 
-    private fetchAjaxFuncs = () => {
+    private readonly fetchAjaxFuncs = () => {
         // Get AJAX functions from the AdminPanel which sits at the top level
         const topLevelParent = this.getTopLevelParent();
 
@@ -42,7 +42,7 @@ export class System extends ComponentRenderable {
         this.ajaxFuncs = topLevelParent.generateAjaxFuncFactory()();
     }
 
-    private setupPageInitial = () => {
+    private readonly setupPageInitial = () => {
         // Set section active
         this.dispatch("setSectionActive", "system", true);
 
@@ -50,13 +50,13 @@ export class System extends ComponentRenderable {
         $("#reload", this.getRenderTarget()).on("click", () => { this.render() });
     }
 
-    private fetchSystemInfo = () => {
+    private readonly fetchSystemInfo = () => {
         // Fetch system info data via API
         return this.ajaxFuncs.get<IMoocchatApi.ToClientResponseBase<any>>
             (`/api/admin/system/info`).promise;
     }
 
-    private displaySystemInfo = (data: IMoocchatApi.ToClientResponseBase<any>) => {
+    private readonly displaySystemInfo = (data: IMoocchatApi.ToClientResponseBase<any>) => {
         if (!data.success) { throw data.message; }
 
         $("#sys-info", this.getRenderTarget()).text(JSON.stringify(data.payload, null, "  "));
