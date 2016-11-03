@@ -1,4 +1,5 @@
 import * as $ from "jquery";
+import { Promise } from "es6-promise";
 
 import { KVStore } from "../../../../common/js/KVStore";
 

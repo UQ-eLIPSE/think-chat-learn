@@ -1,3 +1,5 @@
+import { Promise } from "es6-promise";
+
 import { KVStore } from "../../../../common/js/KVStore";
 import { XHRStore } from "../../../js/xhr/XHRStore";
 
