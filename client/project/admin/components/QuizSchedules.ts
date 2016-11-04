@@ -39,6 +39,7 @@ export class QuizSchedules extends ComponentRenderable {
         this.setDestroyFunc(() => {
             this.destroyActiveComponent();
 
+            this.ajaxFuncs = undefined;
             this.components.empty();
 
             this.xhrStore.abortAll();
@@ -60,7 +61,8 @@ export class QuizSchedules extends ComponentRenderable {
                     .then(this.setupToolbar)
                     .then(this.emptySidebar),
             ])
-                .then(([quizScheduleData]) => {
+                .then(([quizScheduleData]) => this.cullBadData(quizScheduleData))
+                .then((quizScheduleData) => {
                     this.renderQuizScheduleList(quizScheduleData);
                 })
                 .catch((error) => {
@@ -74,12 +76,12 @@ export class QuizSchedules extends ComponentRenderable {
             // If the result of processAction is true, then we have performed
             //   an action and wish not to bubble it any further by returning
             //   `false` from the callback.
-            this.on(action, (data) => (!this.processAction(action, data)) ? false : undefined);
+            this.on(action, (data) => (this.processAction(action, data) ? false : undefined));
         }
 
         listenerApply("load-list");
         listenerApply("edit");
-        listenerApply("edit-id");
+        listenerApply("reload-list-edit-id");
     }
 
     private readonly fetchAjaxFuncs = () => {
@@ -112,7 +114,7 @@ export class QuizSchedules extends ComponentRenderable {
         const $toolbar = this.section$("> .toolbar");
 
         $toolbar.on("click", "li", (e) => {
-            const $linkElem = $(e.target);
+            const $linkElem = $(e.currentTarget);
             this.processAction($linkElem.data("action"));
         });
     }
@@ -121,7 +123,7 @@ export class QuizSchedules extends ComponentRenderable {
         const $list = this.section$("#quiz-schedule-list");
 
         $list.on("click", "li", (e) => {
-            const $listElem = $(e.target);
+            const $listElem = $(e.currentTarget);
 
             // Fetch data which should be tied to list element
             const data = $listElem.data("quizSchedule");
@@ -136,8 +138,8 @@ export class QuizSchedules extends ComponentRenderable {
     }
 
     private readonly emptySidebar = () => {
-        new Layout("admin-quiz-schedule-sidebar-empty", this.getLayoutData())
-            .wipeThenAppendTo(this.$sidebar!);
+        return new Layout("admin-quiz-schedule-sidebar-empty", this.getLayoutData())
+            .wipeThenAppendTo(this.$sidebar!).promise;
     }
 
     private readonly loadQuizScheduleData = () => {
@@ -156,9 +158,15 @@ export class QuizSchedules extends ComponentRenderable {
         return xhrCall.promise;
     }
 
-    private readonly renderQuizScheduleList = (data: IMoocchatApi.ToClientResponseBase<IDB_QuizSchedule[]>) => {
-        if (!data.success) { throw data.message; }
+    private readonly cullBadData = <T>(data: IMoocchatApi.ToClientResponseBase<T>) => {
+        if (!data.success) {
+            throw data.message;
+        }
 
+        return data;
+    }
+
+    private readonly renderQuizScheduleList = (data: IMoocchatApi.ToClientResponseSuccess<IDB_QuizSchedule[]>) => {
         const $list = this.section$("#quiz-schedule-list");
 
         const $quizScheduleListElems = data.payload.map((quizSchedule) => {
@@ -184,6 +192,8 @@ export class QuizSchedules extends ComponentRenderable {
         this.emptyList();
 
         $list.append($quizScheduleListElems);
+
+        return data;
     }
 
     private readonly destroyActiveComponent = () => {
@@ -210,15 +220,21 @@ export class QuizSchedules extends ComponentRenderable {
             });
     }
 
+    private readonly unsetListActive = () => {
+        this.section$("#quiz-schedule-list > li.active").removeClass("active");
+    }
+
     private readonly processAction = (action: string, data?: any) => {
         switch (action) {
             case "reset": {
+                this.unsetListActive();
                 this.emptySidebar();
                 return true;
             }
 
             case "load-list": {
                 this.loadQuizScheduleData()
+                    .then(this.cullBadData)
                     .then(this.renderQuizScheduleList)
                     .catch((error) => {
                         this.dispatchError(error);
@@ -227,19 +243,50 @@ export class QuizSchedules extends ComponentRenderable {
             }
 
             case "create": {
+                this.unsetListActive();
                 this.renderSidebarComponent<QuizSchedulesCreate>("create");
                 return true;
             }
 
-            case "edit": {
-                this.renderSidebarComponent<QuizSchedulesEdit>("edit", data);
+            case "edit": {  // @param data {IDB_QuizSchedule} 
+                const quizSchedule: IDB_QuizSchedule = data;
+
+                const $elems = this.section$("#quiz-schedule-list > li");
+
+                $elems.each((_i, e) => {
+                    const $e = $(e);
+
+                    // Highlight the one being edited
+                    if ($e.data("quizSchedule") === quizSchedule) {
+                        $e.addClass("active").siblings().removeClass("active");
+                        return false;
+                    }
+
+                    return;
+                });
+
+                this.renderSidebarComponent<QuizSchedulesEdit>("edit", quizSchedule);
                 return true;
             }
 
-            case "edit-id": {
-                // TODO: Convert ID to quizSchedule object
-                const data = { /* quizSchedule object */ };
-                this.processAction("edit", data);
+            case "reload-list-edit-id": {   // @param data {string} Quiz Schedule ID
+                const id: string = data;
+
+                this.loadQuizScheduleData()
+                    .then(this.cullBadData)
+                    .then(this.renderQuizScheduleList)
+                    .then((data) => {
+                        for (let quizSchedule of data.payload) {
+                            if (quizSchedule._id === id) {
+                                this.processAction("edit", quizSchedule);
+                                break;
+                            }
+                        }
+                    })
+                    .catch((error) => {
+                        this.dispatchError(error);
+                    });
+
                 return true;
             }
 

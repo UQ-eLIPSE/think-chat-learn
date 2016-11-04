@@ -45,7 +45,7 @@ export class QuizSchedulesEdit extends ComponentRenderable {
 
         // this.section$("#create").one("click", () => {
         //     this.dispatch("load-list", undefined, true);
-        //     this.dispatch("edit-id", id, true);
+        //     this.dispatch("reload-list-edit-id", id, true);
         // });
     }
 }
