@@ -33,8 +33,6 @@ export class QuizSchedules extends ComponentRenderable {
             this.fetchAjaxFuncs();
             this.components.empty();
             this.xhrStore.empty();
-
-            this.emptyList();
         });
 
         this.setDestroyFunc(() => {

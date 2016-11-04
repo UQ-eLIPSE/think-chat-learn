@@ -39,6 +39,10 @@ export abstract class ComponentRenderable extends Component {
     protected readonly section$ = (selector?: string) => {
         const $section = this.$("> section");
 
+        if ($section.length === 0) {
+            throw new Error(`No <section> element available`);
+        }
+
         if (!selector) {
             return $section;
         }
