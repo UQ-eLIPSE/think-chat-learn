@@ -55,7 +55,9 @@ export class LayoutData {
                     throw new Error(`Layout "${layoutName}" not available`);
                 }
 
-                return layoutElement;
+                // Must clone the element node, otherwise page reloads point
+                //   to the same DOM element
+                return layoutElement.cloneNode(true) as Element;
             });
 
         return {
