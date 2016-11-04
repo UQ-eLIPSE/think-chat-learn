@@ -115,9 +115,9 @@ export class QuizSchedulesCreate extends ComponentRenderable {
                     this.xhrStore.remove(xhrId);
                     return data;
                 })
+                .then(_ => this.cullBadData(_))
                 .then((data) => {
                     // Load newly inserted item via. parent
-                    if (!data.success) { throw data.message; }
                     this.loadQuizScheduleIdInParent(data.payload.id);
                 })
                 .catch((error) => {

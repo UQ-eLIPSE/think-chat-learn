@@ -43,7 +43,7 @@ export abstract class Component {
         return parent;
     }
 
-    protected setInitFunc(initFunc: () => void) {
+    protected setInitFunc(initFunc: (data?: any) => void) {
         this.initFunc = initFunc;
     }
 

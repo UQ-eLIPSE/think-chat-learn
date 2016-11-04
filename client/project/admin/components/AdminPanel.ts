@@ -270,6 +270,7 @@ export class AdminPanel extends Component {
 
     private destroyActiveComponent() {
         this.activeComponent && this.activeComponent.destroy();
+        this.activeComponent = undefined;
     }
 
     private renderComponent<ComponentType extends ComponentRenderable>(componentName: string, data?: any) {

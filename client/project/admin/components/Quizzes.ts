@@ -75,6 +75,7 @@ export class Quizzes extends ComponentRenderable {
 
     private readonly destroyActiveComponent = () => {
         this.activeComponent && this.activeComponent.destroy();
+        this.activeComponent = undefined;
     }
 
     private readonly renderComponent = <ComponentType extends ComponentRenderable>(componentName: string, data?: any) => {

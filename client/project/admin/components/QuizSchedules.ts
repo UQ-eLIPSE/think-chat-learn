@@ -13,6 +13,7 @@ import { AdminPanel, AjaxFuncFactoryResultCollection } from "./AdminPanel";
 
 import { QuizSchedulesCreate } from "./QuizSchedulesCreate";
 import { QuizSchedulesEdit } from "./QuizSchedulesEdit";
+import { QuizSchedulesSidebarEmpty } from "./QuizSchedulesSidebarEmpty";
 
 import * as IMoocchatApi from "../../../../common/interfaces/IMoocchatApi";
 
@@ -79,8 +80,10 @@ export class QuizSchedules extends ComponentRenderable {
             this.on(action, (data) => (this.processAction(action, data) ? false : undefined));
         }
 
+        listenerApply("create");
         listenerApply("load-list");
         listenerApply("edit");
+        listenerApply("reload-list-reset");
         listenerApply("reload-list-edit-id");
     }
 
@@ -108,6 +111,7 @@ export class QuizSchedules extends ComponentRenderable {
 
         this.components.put("create", new QuizSchedulesCreate(subcomponentRenderTarget, this.getLayoutData(), this));
         this.components.put("edit", new QuizSchedulesEdit(subcomponentRenderTarget, this.getLayoutData(), this));
+        this.components.put("sidebar-empty", new QuizSchedulesSidebarEmpty(subcomponentRenderTarget, this.getLayoutData(), this));
     }
 
     private readonly setupToolbar = () => {
@@ -138,13 +142,28 @@ export class QuizSchedules extends ComponentRenderable {
     }
 
     private readonly emptySidebar = () => {
-        return new Layout("admin-quiz-schedule-sidebar-empty", this.getLayoutData())
-            .wipeThenAppendTo(this.$sidebar!).promise;
+        this.renderSidebarComponent<QuizSchedulesCreate>("sidebar-empty");
     }
 
     private readonly loadQuizScheduleData = () => {
         const xhrCall = this.ajaxFuncs!.get<IMoocchatApi.ToClientResponseBase<IDB_QuizSchedule[]>>
             (`/api/admin/quiz`);
+
+        // Store in XHR store to permit aborting when necessary
+        const xhrObj = xhrCall.xhr;
+        const xhrId = this.xhrStore.add(xhrObj);
+
+        // Remove once complete
+        xhrCall.promise.then(() => {
+            this.xhrStore.remove(xhrId);
+        });
+
+        return xhrCall.promise;
+    }
+
+    private readonly loadQuestionData = () => {
+        const xhrCall = this.ajaxFuncs!.get<IMoocchatApi.ToClientResponseBase<IDB_Question[]>>
+            (`/api/admin/question`);
 
         // Store in XHR store to permit aborting when necessary
         const xhrObj = xhrCall.xhr;
@@ -169,11 +188,22 @@ export class QuizSchedules extends ComponentRenderable {
     private readonly renderQuizScheduleList = (data: IMoocchatApi.ToClientResponseSuccess<IDB_QuizSchedule[]>) => {
         const $list = this.section$("#quiz-schedule-list");
 
+        const questionMapPromise = this.loadQuestionData()
+            .then(_ => this.cullBadData(_))
+            .then((data) => {
+                const questionMap = new KVStore<IDB_Question>();
+                data.payload.forEach(question => questionMap.put(question._id!, question));
+                return questionMap;
+            })
+            .catch((error) => {
+                this.dispatchError(error);
+            });
+
         const $quizScheduleListElems = data.payload.map((quizSchedule) => {
             const startDate = new Date(quizSchedule.availableStart!);
             const endDate = new Date(quizSchedule.availableEnd!);
 
-            return $("<li>")
+            const $li = $("<li>")
                 .addClass("quiz-schedule-item")
                 .data("quizSchedule", quizSchedule)
                 .html(` <div class="table">
@@ -187,6 +217,15 @@ export class QuizSchedules extends ComponentRenderable {
                                 </div>
                             </div>
                         </div> `);
+
+            // Fill in title when we have question data
+            questionMapPromise
+                .then((questionMap) => {
+                    const question = questionMap.get(quizSchedule.questionId!);
+                    $(".question-title", $li).text(question!.title!);
+                });
+
+            return $li;
         });
 
         this.emptyList();
@@ -198,6 +237,7 @@ export class QuizSchedules extends ComponentRenderable {
 
     private readonly destroyActiveComponent = () => {
         this.activeComponent && this.activeComponent.destroy();
+        this.activeComponent = undefined;
     }
 
     private readonly renderSidebarComponent = <ComponentType extends ComponentRenderable>(componentName: string, data?: any) => {
@@ -234,7 +274,7 @@ export class QuizSchedules extends ComponentRenderable {
 
             case "load-list": {
                 this.loadQuizScheduleData()
-                    .then(this.cullBadData)
+                    .then(_ => this.cullBadData(_))
                     .then(this.renderQuizScheduleList)
                     .catch((error) => {
                         this.dispatchError(error);
@@ -269,11 +309,21 @@ export class QuizSchedules extends ComponentRenderable {
                 return true;
             }
 
+            case "reload-list-reset": {
+                this.loadQuizScheduleData()
+                    .then(_ => this.cullBadData(_))
+                    .then(this.renderQuizScheduleList)
+                    .then(this.emptySidebar)
+                    .catch((error) => {
+                        this.dispatchError(error);
+                    });
+            }
+
             case "reload-list-edit-id": {   // @param data {string} Quiz Schedule ID
                 const id: string = data;
 
                 this.loadQuizScheduleData()
-                    .then(this.cullBadData)
+                    .then(_ => this.cullBadData(_))
                     .then(this.renderQuizScheduleList)
                     .then((data) => {
                         for (let quizSchedule of data.payload) {
@@ -307,4 +357,11 @@ interface IDB_QuizSchedule {
     availableStart?: string;
     availableEnd?: string;
     blackboardColumnId?: number;
+}
+
+interface IDB_Question {
+    _id?: string,
+    title?: string,
+    content?: string,
+    course?: string,
 }
