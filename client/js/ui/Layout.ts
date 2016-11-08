@@ -33,18 +33,18 @@ export class Layout {
         }
     }
 
-    public replace($elem: JQuery) {
-        const {promise, xhr} = this.getLayout();
+    // public replace($elem: JQuery) {
+    //     const {promise, xhr} = this.getLayout();
 
-        const layoutPromise = promise
-            .then((layoutElement) => {
-                $elem.replaceWith(layoutElement);
-                return layoutElement;
-            });
+    //     const layoutPromise = promise
+    //         .then((layoutElement) => {
+    //             $elem.replaceWith(layoutElement);
+    //             return layoutElement;
+    //         });
 
-        return {
-            promise: layoutPromise,
-            xhr,
-        }
-    }
+    //     return {
+    //         promise: layoutPromise,
+    //         xhr,
+    //     }
+    // }
 }
