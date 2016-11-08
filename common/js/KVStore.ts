@@ -1,3 +1,8 @@
+export interface KVStore<T> {
+    get(key: string): T | undefined
+    get<U extends T>(key: string): U | undefined
+}
+
 export class KVStore<T> {
     private kvStore: { [key: string]: T };
 
@@ -5,7 +10,7 @@ export class KVStore<T> {
         this.empty();
     }
 
-    get(key: string) {
+    get(key: string): T | undefined {
         return this.kvStore[key];
     }
 
