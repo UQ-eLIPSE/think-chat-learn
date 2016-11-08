@@ -1,7 +1,7 @@
+import { Promise } from "es6-promise";
+
 import { KVStore } from "../../../../common/js/KVStore";
 import { XHRStore } from "../../../js/xhr/XHRStore";
-
-import * as ckeditor from "ckeditor";
 
 import { Component } from "../../../js/ui/Component";
 import { ComponentRenderable } from "../../../js/ui/ComponentRenderable";
@@ -12,6 +12,7 @@ import { LayoutData } from "../../../js/ui/LayoutData";
 import { QuestionOptions } from "./QuestionOptions";
 
 import { AdminPanel, AjaxFuncFactoryResultCollection } from "./AdminPanel";
+import { QuestionBankSectionContent } from "./QuestionBankSectionContent";
 
 import * as IMoocchatApi from "../../../../common/interfaces/IMoocchatApi";
 import * as ToClientData from "../../../../common/interfaces/ToClientData";
@@ -20,7 +21,6 @@ export class QuestionBankEdit extends ComponentRenderable {
     private ajaxFuncs: AjaxFuncFactoryResultCollection | undefined;
     private readonly components = new KVStore<Component>();
     private question: ToClientData.Question | undefined;
-    private questionContentEditor: ckeditor.editor | undefined;
 
     private readonly xhrStore = new XHRStore();
 
@@ -48,7 +48,7 @@ export class QuestionBankEdit extends ComponentRenderable {
                 .then(this.setupSubcomponents)
                 .then(this.showRelevantElements)
                 .then(this.renderQuestionInfo)
-                .then(this.setupCkeditor)
+                // .then(this.setupCkeditor)
                 .then(this.setupForm)
                 .then(this.showContent)
                 .catch((error) => {
@@ -77,6 +77,7 @@ export class QuestionBankEdit extends ComponentRenderable {
     }
 
     private readonly setupSubcomponents = () => {
+        this.components.put("content", new QuestionBankSectionContent(this.section$(".question-bank-section-content"), this.getLayoutData(), this));
         this.components.put("options", new QuestionOptions(this.section$("#question-options"), this.getLayoutData(), this));
     }
 
@@ -93,20 +94,32 @@ export class QuestionBankEdit extends ComponentRenderable {
         this.section$(".edit-only").show();
     }
 
-    private readonly setupCkeditor = () => {
-        this.questionContentEditor = ckeditor.replace(this.section$("#content")[0] as HTMLTextAreaElement);
+    // private readonly setupCkeditor = () => {
+    //     this.questionContentEditor = ckeditor.replace(this.section$("#content")[0] as HTMLTextAreaElement);
 
-        return new Promise<void>((resolve) => {
-            this.questionContentEditor!.on("loaded", () => {
-                resolve();
-            });
-        });
+    //     return new Promise<void>((resolve) => {
+    //         this.questionContentEditor!.on("loaded", () => {
+    //             resolve();
+    //         });
+    //     });
+    // }
+
+    private readonly getComponent = <ComponentType extends Component>(componentName: string) => {
+        const component = this.components.get<ComponentType>(componentName);
+
+        if (!component) {
+            throw new Error(`No component named "${componentName}"`);
+        }
+
+        return component;
     }
 
     private readonly setupForm = () => {
         this.section$("#save-changes").one("click", () => {
-            const title: string = this.section$("#title").val();
-            const content: string = this.questionContentEditor!.getData();
+            const sectionContentComponent = this.getComponent<QuestionBankSectionContent>("content");
+
+            const title = sectionContentComponent.getTitle();
+            const content = sectionContentComponent.getContent();
 
             const xhrCall = this.ajaxFuncs!.put<IMoocchatApi.ToClientResponseBase<void>>
                 (`/api/admin/question/${this.question!._id}`, {
@@ -181,15 +194,19 @@ export class QuestionBankEdit extends ComponentRenderable {
         this.section$("#title").val(this.question!.title || "");
         this.section$("#content").val(this.question!.content || "");
 
-        // Render options
-        const questionOptionsComponent = this.components.get<QuestionOptions>("options")!;
+        // Render info
+        const sectionContentComponent = this.getComponent<QuestionBankSectionContent>("content");
+        const questionOptionsComponent = this.getComponent<QuestionOptions>("options");
 
-        questionOptionsComponent.init(this.question!._id)
-            .then(() => {
-                questionOptionsComponent.render();
-            })
-            .catch((error) => {
-                this.dispatchError(error);
-            });
+        return Promise.all([
+            sectionContentComponent.init(this.question)
+                .then(() => {
+                    sectionContentComponent.render();
+                }),
+            questionOptionsComponent.init(this.question!._id)
+                .then(() => {
+                    questionOptionsComponent.render();
+                }),
+        ]);
     }
 }

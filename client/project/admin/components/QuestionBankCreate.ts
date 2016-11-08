@@ -1,6 +1,5 @@
+import { KVStore } from "../../../../common/js/KVStore";
 import { XHRStore } from "../../../js/xhr/XHRStore";
-
-import * as ckeditor from "ckeditor";
 
 import { Component } from "../../../js/ui/Component";
 import { ComponentRenderable } from "../../../js/ui/ComponentRenderable";
@@ -9,13 +8,14 @@ import { Layout } from "../../../js/ui/Layout";
 import { LayoutData } from "../../../js/ui/LayoutData";
 
 import { AdminPanel, AjaxFuncFactoryResultCollection } from "./AdminPanel";
+import { QuestionBankSectionContent } from "./QuestionBankSectionContent";
 
 import * as IMoocchatApi from "../../../../common/interfaces/IMoocchatApi";
 
 export class QuestionBankCreate extends ComponentRenderable {
     private ajaxFuncs: AjaxFuncFactoryResultCollection | undefined;
-    private questionContentEditor: ckeditor.editor | undefined;
 
+    private readonly components = new KVStore<Component>();
     private readonly xhrStore = new XHRStore();
 
     constructor(renderTarget: JQuery, layoutData: LayoutData, parent: Component) {
@@ -23,11 +23,13 @@ export class QuestionBankCreate extends ComponentRenderable {
 
         this.setInitFunc(() => {
             this.fetchAjaxFuncs();
+            this.components.empty();
 
         });
 
         this.setDestroyFunc(() => {
             this.ajaxFuncs = undefined;
+            this.components.empty();
 
         });
 
@@ -35,11 +37,10 @@ export class QuestionBankCreate extends ComponentRenderable {
             new Layout("admin-question-bank-edit-layout", this.getLayoutData())
                 .wipeThenAppendTo(this.getRenderTarget())
                 .promise
-                .then(this.hideContent)
                 .then(this.showRelevantElements)
-                .then(this.setupCkeditor)
+                .then(this.setupSubcomponents)
                 .then(this.setupForm)
-                .then(this.showContent)
+                .then(this.renderSubcomponents)
                 .catch((error) => {
                     this.dispatchError(error);
                 });
@@ -65,33 +66,53 @@ export class QuestionBankCreate extends ComponentRenderable {
         this.ajaxFuncs = topLevelParent.generateAjaxFuncFactory()();
     }
 
-    private readonly hideContent = () => {
-        this.section$().css("visibility", "hidden");
-    }
-
-    private readonly showContent = () => {
-        this.section$().css("visibility", "visible");
-    }
-
     private readonly showRelevantElements = () => {
         this.section$(".create-only").show();
         this.section$(".edit-only").hide();
     }
 
-    private readonly setupCkeditor = () => {
-        this.questionContentEditor = ckeditor.replace(this.section$("#content")[0] as HTMLTextAreaElement);
-        
-        return new Promise<void>((resolve) => {
-            this.questionContentEditor!.on("loaded", () => {
-                resolve();
+    private readonly setupSubcomponents = () => {
+        this.components.put("content", new QuestionBankSectionContent(this.section$(".question-bank-section-content"), this.getLayoutData(), this));
+        // this.components.put("edit", new QuizSchedulesEdit(subcomponentRenderTarget, this.getLayoutData(), this));
+        // this.components.put("sidebar-empty", new QuizSchedulesSidebarEmpty(subcomponentRenderTarget, this.getLayoutData(), this));
+    }
+
+    private readonly getComponent = <ComponentType extends Component>(componentName: string) => {
+        const component = this.components.get<ComponentType>(componentName);
+
+        if (!component) {
+            throw new Error(`No component named "${componentName}"`);
+        }
+
+        return component;
+    }
+
+    private readonly renderComponent = <ComponentType extends ComponentRenderable>(componentName: string, data?: any) => {
+        const component = this.getComponent<ComponentType>(componentName);
+
+        if (!component) {
+            return;
+        }
+
+        component.init(data)
+            .then(() => {
+                component.render();
+            })
+            .catch((error) => {
+                this.dispatchError(error);
             });
-        });
+    }
+
+    private readonly renderSubcomponents = () => {
+        this.renderComponent("content");
     }
 
     private readonly setupForm = () => {
         this.section$("#create").one("click", () => {
-            const title: string = this.section$("#title").val();
-            const content: string = this.questionContentEditor!.getData();
+            const sectionContentComponent = this.getComponent<QuestionBankSectionContent>("content");
+
+            const title = sectionContentComponent.getTitle();
+            const content = sectionContentComponent.getContent();
 
             const xhrCall = this.ajaxFuncs!.post<IMoocchatApi.ToClientResponseBase<IMoocchatApi.ToClientInsertionIdResponse>>
                 (`/api/admin/question`, {
