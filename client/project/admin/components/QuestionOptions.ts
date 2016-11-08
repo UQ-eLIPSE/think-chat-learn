@@ -12,6 +12,7 @@ import { LayoutData } from "../../../js/ui/LayoutData";
 import { AdminPanel, AjaxFuncFactoryResultCollection } from "./AdminPanel";
 
 import * as IMoocchatApi from "../../../../common/interfaces/IMoocchatApi";
+import * as ToClientData from "../../../../common/interfaces/ToClientData";
 
 export class QuestionOptions extends ComponentRenderable {
     private ajaxFuncs: AjaxFuncFactoryResultCollection | undefined;
@@ -58,7 +59,7 @@ export class QuestionOptions extends ComponentRenderable {
     }
 
     private readonly loadQuestionOptionData = () => {
-        const xhrCall = this.ajaxFuncs!.get<IMoocchatApi.ToClientResponseBase<IDB_QuestionOption[]>>
+        const xhrCall = this.ajaxFuncs!.get<IMoocchatApi.ToClientResponseBase<ToClientData.QuestionOption[]>>
             (`/api/admin/question/${this.questionId}/option`);
 
         // Store in XHR store to permit aborting when necessary
@@ -81,7 +82,7 @@ export class QuestionOptions extends ComponentRenderable {
         return data;
     }
 
-    private readonly renderQuestionOptions = (data: IMoocchatApi.ToClientResponseSuccess<IDB_QuestionOption[]>) => {
+    private readonly renderQuestionOptions = (data: IMoocchatApi.ToClientResponseSuccess<ToClientData.QuestionOption[]>) => {
         this.$("#option-list").empty().append(
             data.payload.sort((a, b) => {
                 if (a.sequence === b.sequence) {
@@ -122,7 +123,7 @@ export class QuestionOptions extends ComponentRenderable {
             // Hide button while form open
             $elem.hide();
 
-            const lastQuestionOptionData: IDB_QuestionOption | undefined = this.$("#question-options").children().last().data("questionOption");
+            const lastQuestionOptionData: ToClientData.QuestionOption | undefined = this.$("#question-options").children().last().data("questionOption");
 
             const $contentField = $("<span>").addClass("question-option-content").text("<Type question option here>").prop("contenteditable", true).css("outline", "1px solid orange");
             const $insertionForm = $("<p>")
@@ -166,7 +167,7 @@ export class QuestionOptions extends ComponentRenderable {
             const originalHtml = $contentElem.html();
             $contentElem.prop("contenteditable", true).css("outline", "1px solid orange");
 
-            const currentData: IDB_QuestionOption = $elem.parent().data("questionOption");
+            const currentData: ToClientData.QuestionOption = $elem.parent().data("questionOption");
 
             $elem.hide().after(
                 $("<span>").append([
@@ -199,7 +200,7 @@ export class QuestionOptions extends ComponentRenderable {
 
             const $questionOptionElem = $(e.currentTarget).parent();
 
-            const currentData: IDB_QuestionOption = $questionOptionElem.data("questionOption");
+            const currentData: ToClientData.QuestionOption = $questionOptionElem.data("questionOption");
 
             this.ajaxFuncs!.delete<IMoocchatApi.ToClientResponseBase<void>>
                 (`/api/admin/question/${this.questionId}/option/${currentData._id}`).promise
@@ -225,8 +226,8 @@ export class QuestionOptions extends ComponentRenderable {
                 return;
             }
 
-            const currentData: IDB_QuestionOption = $questionOptionElem.data("questionOption");
-            const aboveData: IDB_QuestionOption = $questionOptionElemAbove.data("questionOption");
+            const currentData: ToClientData.QuestionOption = $questionOptionElem.data("questionOption");
+            const aboveData: ToClientData.QuestionOption = $questionOptionElemAbove.data("questionOption");
 
             Promise.all([
                 this.ajaxFuncs!.put<IMoocchatApi.ToClientResponseBase<void>>
@@ -264,8 +265,8 @@ export class QuestionOptions extends ComponentRenderable {
                 return;
             }
 
-            const currentData: IDB_QuestionOption = $questionOptionElem.data("questionOption");
-            const belowData: IDB_QuestionOption = $questionOptionElemBelow.data("questionOption");
+            const currentData: ToClientData.QuestionOption = $questionOptionElem.data("questionOption");
+            const belowData: ToClientData.QuestionOption = $questionOptionElemBelow.data("questionOption");
 
             Promise.all([
                 this.ajaxFuncs!.put<IMoocchatApi.ToClientResponseBase<void>>
@@ -289,11 +290,4 @@ export class QuestionOptions extends ComponentRenderable {
 
         });
     }
-}
-
-interface IDB_QuestionOption {
-    _id?: string,
-    questionId?: string,
-    sequence?: number,
-    content?: string
 }

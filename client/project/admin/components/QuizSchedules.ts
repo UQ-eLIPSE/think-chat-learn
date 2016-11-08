@@ -16,6 +16,7 @@ import { QuizSchedulesEdit } from "./QuizSchedulesEdit";
 import { QuizSchedulesSidebarEmpty } from "./QuizSchedulesSidebarEmpty";
 
 import * as IMoocchatApi from "../../../../common/interfaces/IMoocchatApi";
+import * as ToClientData from "../../../../common/interfaces/ToClientData";
 
 export class QuizSchedules extends ComponentRenderable {
     private activeComponent: Component | undefined;
@@ -144,7 +145,7 @@ export class QuizSchedules extends ComponentRenderable {
     }
 
     private readonly loadQuizScheduleData = () => {
-        const xhrCall = this.ajaxFuncs!.get<IMoocchatApi.ToClientResponseBase<IDB_QuizSchedule[]>>
+        const xhrCall = this.ajaxFuncs!.get<IMoocchatApi.ToClientResponseBase<ToClientData.QuizSchedule[]>>
             (`/api/admin/quiz`);
 
         // Store in XHR store to permit aborting when necessary
@@ -160,7 +161,7 @@ export class QuizSchedules extends ComponentRenderable {
     }
 
     private readonly loadQuestionData = () => {
-        const xhrCall = this.ajaxFuncs!.get<IMoocchatApi.ToClientResponseBase<IDB_Question[]>>
+        const xhrCall = this.ajaxFuncs!.get<IMoocchatApi.ToClientResponseBase<ToClientData.Question[]>>
             (`/api/admin/question`);
 
         // Store in XHR store to permit aborting when necessary
@@ -183,13 +184,13 @@ export class QuizSchedules extends ComponentRenderable {
         return data;
     }
 
-    private readonly renderQuizScheduleList = (data: IMoocchatApi.ToClientResponseSuccess<IDB_QuizSchedule[]>) => {
+    private readonly renderQuizScheduleList = (data: IMoocchatApi.ToClientResponseSuccess<ToClientData.QuizSchedule[]>) => {
         const $list = this.section$("#quiz-schedule-list");
 
         const questionMapPromise = this.loadQuestionData()
             .then(_ => this.cullBadData(_))
             .then((data) => {
-                const questionMap = new KVStore<IDB_Question>();
+                const questionMap = new KVStore<ToClientData.Question>();
                 data.payload.forEach(question => questionMap.put(question._id!, question));
                 return questionMap;
             })
@@ -286,8 +287,8 @@ export class QuizSchedules extends ComponentRenderable {
                 return true;
             }
 
-            case "edit": {  // @param data {IDB_QuizSchedule} 
-                const quizSchedule: IDB_QuizSchedule = data;
+            case "edit": {  // @param data {ToClientData.QuizSchedule} 
+                const quizSchedule: ToClientData.QuizSchedule = data;
 
                 const $elems = this.section$("#quiz-schedule-list > li");
 
@@ -346,20 +347,4 @@ export class QuizSchedules extends ComponentRenderable {
 
         return false;
     }
-}
-
-interface IDB_QuizSchedule {
-    _id?: string;
-    questionId?: string;
-    course?: string;
-    availableStart?: string;
-    availableEnd?: string;
-    blackboardColumnId?: number;
-}
-
-interface IDB_Question {
-    _id?: string,
-    title?: string,
-    content?: string,
-    course?: string,
 }

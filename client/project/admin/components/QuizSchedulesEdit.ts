@@ -9,17 +9,18 @@ import { LayoutData } from "../../../js/ui/LayoutData";
 import { AdminPanel, AjaxFuncFactoryResultCollection } from "./AdminPanel";
 
 import * as IMoocchatApi from "../../../../common/interfaces/IMoocchatApi";
+import * as ToClientData from "../../../../common/interfaces/ToClientData";
 
 export class QuizSchedulesEdit extends ComponentRenderable {
     private ajaxFuncs: AjaxFuncFactoryResultCollection | undefined;
-    private quizSchedule: IDB_QuizSchedule | undefined;
+    private quizSchedule: ToClientData.QuizSchedule | undefined;
 
     private readonly xhrStore = new XHRStore();
 
     constructor(renderTarget: JQuery, layoutData: LayoutData, parent: Component) {
         super(renderTarget, layoutData, parent);
 
-        this.setInitFunc((quizSchedule: IDB_QuizSchedule) => {
+        this.setInitFunc((quizSchedule: ToClientData.QuizSchedule) => {
             this.fetchAjaxFuncs();
             this.quizSchedule = quizSchedule;
         });
@@ -195,13 +196,4 @@ function rfc3339LocalToDate(datetime: string) {
     date.setMilliseconds(ms);
 
     return date;
-}
-
-interface IDB_QuizSchedule {
-    _id?: string;
-    questionId?: string;
-    course?: string;
-    availableStart?: string;
-    availableEnd?: string;
-    blackboardColumnId?: number;
 }

@@ -1,4 +1,4 @@
-import {IAnswer} from "../../common/interfaces/IAnswer";
+import * as ToServerData from "../../common/interfaces/ToServerData";
 
 /**
  * MOOCchat
@@ -7,8 +7,8 @@ import {IAnswer} from "../../common/interfaces/IAnswer";
  * Holds answers provided by the user for a session.
  */
 export class MoocchatAnswerContainer {
-    public initial: IAnswer;
-    public revised: IAnswer;
+    public initial: ToServerData.QuestionResponse;
+    public revised: ToServerData.QuestionResponse;
 
     constructor() {
         this.reset();

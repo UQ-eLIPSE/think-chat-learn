@@ -7,11 +7,11 @@ import {Conf as CommonConf} from "../../common/config/Conf";
 
 import * as $ from "jquery";
 
-import * as IWSToServerData from "../../common/interfaces/IWSToServerData";
-
-import {IQuizQuestionOption} from "../../common/interfaces/IQuiz";
 import {MoocchatSession} from "./MoocchatSession";
-import {IAnswer} from "../../common/interfaces/IAnswer";
+
+import * as IWSToServerData from "../../common/interfaces/IWSToServerData";
+import * as ToClientData from "../../common/interfaces/ToClientData";
+import * as ToServerData from "../../common/interfaces/ToServerData";
 
 const maxJustificationLength = CommonConf.answers.justification.maxLength;
 
@@ -26,7 +26,7 @@ const maxJustificationLength = CommonConf.answers.justification.maxLength;
  */
 export function SubmissionFuncFactory<StateTypeEnum>(session: MoocchatSession<StateTypeEnum>, answerType: "initial" | "revised", websocketEvent: string) {
     return (optionId: string, justification: string) => {
-        let sessionAnswerObj: IAnswer;
+        let sessionAnswerObj: ToServerData.QuestionResponse;
 
         switch (answerType) {
             case "initial":
@@ -154,12 +154,12 @@ export function UpdateJustificationCharAvailable(justification: string, $charAva
 /**
  * Generates the list of answer option elements from the options available.
  * 
- * @param {IQuizQuestionOption[]} questionOptions
+ * @param {ToClientData.QuestionOption[]} questionOptions
  * @param {string} answerElement The element tag as a string
  * 
  * @return {JQuery[]} Array of JQuery DOM elements of available options
  */
-export function GenerateAnswerOptionElems(questionOptions: IQuizQuestionOption[], answerElement: "<button>" | "<div>" = "<button>") {
+export function GenerateAnswerOptionElems(questionOptions: ToClientData.QuestionOption[], answerElement: "<button>" | "<div>" = "<button>") {
     return questionOptions.map((option) => {
         return $(answerElement).html(option.content).data("optionId", option._id);
     });

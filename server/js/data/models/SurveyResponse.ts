@@ -1,6 +1,7 @@
 import * as mongodb from "mongodb";
 
 import {Database} from "../Database";
+import * as DBSchema from "../../../../common/interfaces/DBSchema";
 
 export class SurveyResponse extends Database<IDB_SurveyResponse> {
     constructor(db: mongodb.Db) {
@@ -8,20 +9,4 @@ export class SurveyResponse extends Database<IDB_SurveyResponse> {
     }
 }
 
-export interface IDB_SurveyResponse {
-    sessionId?: mongodb.ObjectID,
-    surveyId?: mongodb.ObjectID,
-    timestamp?: Date,
-    content?: IDB_SurveyResponse_Content[]
-}
-
-export interface IDB_SurveyResponse_Content {
-    index?: number;
-    
-    /**
-     * Types:
-     * => string = text
-     * => number = multiple choice index (0-based) 
-     */
-    value?: string | number;
-}
+export type IDB_SurveyResponse = DBSchema.SurveyResponse<mongodb.ObjectID, Date>;

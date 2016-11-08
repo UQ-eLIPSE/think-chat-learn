@@ -1,6 +1,7 @@
 import * as mongodb from "mongodb";
 
 import {Database} from "../Database";
+import * as DBSchema from "../../../../common/interfaces/DBSchema";
 
 export class QuizSchedule extends Database<IDB_QuizSchedule> {
     constructor(db: mongodb.Db) {
@@ -8,11 +9,4 @@ export class QuizSchedule extends Database<IDB_QuizSchedule> {
     }
 }
 
-export interface IDB_QuizSchedule {
-    _id?: mongodb.ObjectID;
-    questionId?: mongodb.ObjectID;
-    course?: string;
-    availableStart?: Date;
-    availableEnd?: Date;
-    blackboardColumnId?: number;
-}
+export type IDB_QuizSchedule = DBSchema.QuizSchedule<mongodb.ObjectID, Date>;

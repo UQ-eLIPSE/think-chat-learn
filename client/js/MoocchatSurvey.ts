@@ -1,6 +1,7 @@
 import * as $ from "jquery";
 
-import {ISurvey, ISurveyContent, ISurveyResponseContent} from "../../common/interfaces/ISurvey";
+import * as ToClientData from "../../common/interfaces/ToClientData";
+import * as ToServerData from "../../common/interfaces/ToServerData";
 
 /**
  * MOOCchat
@@ -9,19 +10,19 @@ import {ISurvey, ISurveyContent, ISurveyResponseContent} from "../../common/inte
  * Wraps around the survey data that is returned from the server
  */
 export class MoocchatSurvey {
-    private data: ISurvey;
+    private data: ToClientData.Survey;
 
     /**
-     * @param {ISurvey} data The survey data returned from the server when first logging in
+     * @param {ToClientData.Survey} data The survey data returned from the server when first logging in
      */
-    constructor(data: ISurvey) {
+    constructor(data: ToClientData.Survey) {
         this.data = data;
     }
 
     /**
      * Generates elements for a short text survey question.
      */
-    private generateHTML_TextShort(content: ISurveyContent, name: string) {
+    private generateHTML_TextShort(content: ToClientData.Survey_Content_TextShort, name: string) {
         const $statement = $("<p>").html(content.questionStatement);
         const $field = $("<input>").prop({
             type: "text",
@@ -37,7 +38,7 @@ export class MoocchatSurvey {
     /**
      * Generates elements for a multiple choice survey question.
      */
-    private generateHTML_MultipleChoice(content: ISurveyContent, name: string) {
+    private generateHTML_MultipleChoice(content: ToClientData.Survey_Content_MultipleChoiceInline | ToClientData.Survey_Content_MultipleChoiceList, name: string) {
         const $statement = $("<p>").html(content.questionStatement);
 
         const $wrappedFields: JQuery[] = [];
@@ -147,10 +148,10 @@ export class MoocchatSurvey {
     /**
      * Generates response content data to be sent back to the server for a given survey form root element.
      * 
-     * @return {ISurveyResponseContent[]}
+     * @return {ToServerData.SurveyResponse_Content[]}
      */
     public generateResponseContent($form: JQuery) {
-        const content: ISurveyResponseContent[] = [];
+        const content: ToServerData.SurveyResponse_Content[] = [];
 
         this.data.content.forEach((partContent, i) => {
             // Ignore headings

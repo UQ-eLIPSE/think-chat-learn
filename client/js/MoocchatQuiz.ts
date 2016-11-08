@@ -1,4 +1,4 @@
-import {IQuiz} from "../../common/interfaces/IQuiz";
+import * as ToClientData from "../../common/interfaces/ToClientData";
 
 /**
  * MOOCchat
@@ -7,12 +7,12 @@ import {IQuiz} from "../../common/interfaces/IQuiz";
  * Wraps around the quiz data that is returned from the server
  */
 export class MoocchatQuiz {
-    private data: IQuiz;
+    private data: ToClientData.Quiz;
 
     /**
-     * @param {IQuiz} data The quiz data returned from the server when first logging in
+     * @param {ToClientData.Quiz} data The quiz data returned from the server when first logging in
      */
-    constructor(data: IQuiz) {
+    constructor(data: ToClientData.Quiz) {
         this.data = data;
     }
 
