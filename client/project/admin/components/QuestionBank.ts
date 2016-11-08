@@ -16,6 +16,7 @@ import { QuestionBankEdit } from "./QuestionBankEdit";
 import { QuestionBankSidebarEmpty } from "./QuestionBankSidebarEmpty";
 
 import * as IMoocchatApi from "../../../../common/interfaces/IMoocchatApi";
+import * as ToClientData from "../../../../common/interfaces/ToClientData";
 
 export class QuestionBank extends ComponentRenderable {
     private activeComponent: Component | undefined;
@@ -146,7 +147,7 @@ export class QuestionBank extends ComponentRenderable {
     }
 
     private readonly loadQuestionData = () => {
-        const xhrCall = this.ajaxFuncs!.get<IMoocchatApi.ToClientResponseBase<IDB_Question[]>>
+        const xhrCall = this.ajaxFuncs!.get<IMoocchatApi.ToClientResponseBase<ToClientData.Question[]>>
             (`/api/admin/question`);
 
         // Store in XHR store to permit aborting when necessary
@@ -169,7 +170,7 @@ export class QuestionBank extends ComponentRenderable {
         return data;
     }
 
-    private readonly renderQuestionList = (data: IMoocchatApi.ToClientResponseSuccess<IDB_Question[]>) => {
+    private readonly renderQuestionList = (data: IMoocchatApi.ToClientResponseSuccess<ToClientData.Question[]>) => {
         const $list = this.section$("#question-list");
         
         const $questionListElems = data.payload.map((question) => {
@@ -246,8 +247,8 @@ export class QuestionBank extends ComponentRenderable {
                 return true;
             }
 
-            case "edit": {  // @param data {IDB_Question} 
-                const question: IDB_Question = data;
+            case "edit": {  // @param data {ToClientData.Question} 
+                const question: ToClientData.Question = data;
 
                 const $elems = this.section$("#question-list > li");
 
@@ -306,11 +307,4 @@ export class QuestionBank extends ComponentRenderable {
 
         return false;
     }
-}
-
-interface IDB_Question {
-    _id?: string,
-    title?: string,
-    content?: string,
-    course?: string,
 }

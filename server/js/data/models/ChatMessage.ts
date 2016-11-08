@@ -1,6 +1,7 @@
 import * as mongodb from "mongodb";
 
 import {Database} from "../Database";
+import * as DBSchema from "../../../../common/interfaces/DBSchema";
 
 export class ChatMessage extends Database<IDB_ChatMessage> {
     constructor(db: mongodb.Db) {
@@ -8,9 +9,4 @@ export class ChatMessage extends Database<IDB_ChatMessage> {
     }
 }
 
-export interface IDB_ChatMessage {
-    _id?: mongodb.ObjectID,
-    sessionId?: mongodb.ObjectID,
-    timestamp?: Date,
-    content?: string
-}
+export type IDB_ChatMessage = DBSchema.ChatMessage<mongodb.ObjectID, Date>;

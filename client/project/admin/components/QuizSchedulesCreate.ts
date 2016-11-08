@@ -11,6 +11,7 @@ import { LayoutData } from "../../../js/ui/LayoutData";
 import { AdminPanel, AjaxFuncFactoryResultCollection } from "./AdminPanel";
 
 import * as IMoocchatApi from "../../../../common/interfaces/IMoocchatApi";
+import * as ToClientData from "../../../../common/interfaces/ToClientData";
 
 export class QuizSchedulesCreate extends ComponentRenderable {
     private ajaxFuncs: AjaxFuncFactoryResultCollection | undefined;
@@ -69,7 +70,7 @@ export class QuizSchedulesCreate extends ComponentRenderable {
     }
 
     private readonly loadQuestions = () => {
-        const xhrCall = this.ajaxFuncs!.get<IMoocchatApi.ToClientResponseBase<IDB_Question[]>>
+        const xhrCall = this.ajaxFuncs!.get<IMoocchatApi.ToClientResponseBase<ToClientData.Question[]>>
             (`/api/admin/question`);
 
         // Store in XHR store to permit aborting when necessary
@@ -136,7 +137,7 @@ export class QuizSchedulesCreate extends ComponentRenderable {
         this.dispatch("reload-list-edit-id", id, true);
     }
 
-    private readonly fillQuestionDropdown = (data: IMoocchatApi.ToClientResponseSuccess<IDB_Question[]>) => {
+    private readonly fillQuestionDropdown = (data: IMoocchatApi.ToClientResponseSuccess<ToClientData.Question[]>) => {
         const $dropdown = this.section$("#question-id");
 
         const $dropdownOptionElems = data.payload.map((question) => {
@@ -149,13 +150,6 @@ export class QuizSchedulesCreate extends ComponentRenderable {
 
         $dropdown.empty().append($dropdownOptionElems);
     }
-}
-
-interface IDB_Question {
-    _id?: string,
-    title?: string,
-    content?: string,
-    course?: string,
 }
 
 function rfc3339LocalToDate(datetime: string) {

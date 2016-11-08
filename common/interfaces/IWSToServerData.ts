@@ -1,5 +1,5 @@
 import {ILTIData} from "./ILTIData";
-import {ISurveyResponseContent} from "./ISurvey";
+import * as ToServerData from "../../common/interfaces/ToServerData";
 
 // Generic
 interface SessionResponse {
@@ -41,7 +41,7 @@ export interface BackupClientStatusRequest extends SessionResponse { }
 export interface BackupClientTransferConfirm extends SessionResponse { }
 
 export interface SurveyResponse extends SessionResponse {
-    content: ISurveyResponseContent[]
+    content: ToServerData.SurveyResponse_Content[]
 }
 
 export interface Logout extends SessionResponse {}

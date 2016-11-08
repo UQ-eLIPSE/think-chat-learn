@@ -1,6 +1,7 @@
 import * as mongodb from "mongodb";
 
 import {Database} from "../Database";
+import * as DBSchema from "../../../../common/interfaces/DBSchema";
 
 export class QuestionOption extends Database<IDB_QuestionOption> {
     constructor(db: mongodb.Db) {
@@ -8,9 +9,4 @@ export class QuestionOption extends Database<IDB_QuestionOption> {
     }
 }
 
-export interface IDB_QuestionOption {
-    _id?: mongodb.ObjectID,
-    questionId?: mongodb.ObjectID,
-    sequence?: number,
-    content?: string
-}
+export type IDB_QuestionOption = DBSchema.QuestionOption<mongodb.ObjectID>;

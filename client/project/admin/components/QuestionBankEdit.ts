@@ -14,11 +14,12 @@ import { QuestionOptions } from "./QuestionOptions";
 import { AdminPanel, AjaxFuncFactoryResultCollection } from "./AdminPanel";
 
 import * as IMoocchatApi from "../../../../common/interfaces/IMoocchatApi";
+import * as ToClientData from "../../../../common/interfaces/ToClientData";
 
 export class QuestionBankEdit extends ComponentRenderable {
     private ajaxFuncs: AjaxFuncFactoryResultCollection | undefined;
     private readonly components = new KVStore<Component>();
-    private question: IDB_Question | undefined;
+    private question: ToClientData.Question | undefined;
     private questionContentEditor: ckeditor.editor | undefined;
 
     private readonly xhrStore = new XHRStore();
@@ -26,7 +27,7 @@ export class QuestionBankEdit extends ComponentRenderable {
     constructor(renderTarget: JQuery, layoutData: LayoutData, parent: Component) {
         super(renderTarget, layoutData, parent);
 
-        this.setInitFunc((question: IDB_Question) => {
+        this.setInitFunc((question: ToClientData.Question) => {
             this.fetchAjaxFuncs();
             this.components.empty();
             this.question = question;
@@ -191,11 +192,4 @@ export class QuestionBankEdit extends ComponentRenderable {
                 this.dispatchError(error);
             });
     }
-}
-
-interface IDB_Question {
-    _id?: string,
-    title?: string,
-    content?: string,
-    course?: string,
 }

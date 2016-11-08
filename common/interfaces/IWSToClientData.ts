@@ -1,5 +1,4 @@
-import {IQuiz} from "./IQuiz";
-import {ISurvey} from "./ISurvey";
+import * as ToClientData from "../../common/interfaces/ToClientData";
 
 
 // Generic
@@ -21,8 +20,8 @@ interface ChatGroupAnswer {
 export interface LoginSuccess {
     sessionId: string;
     username: string;
-    quiz: IQuiz;
-    survey: ISurvey;
+    quiz: ToClientData.Quiz;
+    survey: ToClientData.Survey;
     researchConsentRequired: boolean;
 }
 export type LoginFailure = string;
