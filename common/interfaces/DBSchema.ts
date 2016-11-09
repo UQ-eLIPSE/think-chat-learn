@@ -1,11 +1,17 @@
 
 export interface ChatMessage<OID, Date> {
     _id?: OID,
-    sessionId?: OID,
+    quizAttemptId?: OID,
+    chatGroupId?: OID,
     timestamp?: Date,
     content?: string
 }
 
+export interface ChatGroup<OID> {
+    _id?: OID,
+    quizAttemptIds?: OID[],
+    quizScheduleId?: OID,
+}
 
 
 export interface Question<OID> {
@@ -13,6 +19,12 @@ export interface Question<OID> {
     title?: string,
     content?: string,
     course?: string,
+}
+
+export interface QuestionAdvice<OID> {
+    _id?: OID,
+    questionId?: OID,
+    content?: string,
 }
 
 export interface QuestionOption<OID> {
@@ -44,9 +56,22 @@ export interface QuizSchedule<OID, Date> {
     course?: string,
     availableStart?: Date,
     availableEnd?: Date,
-    blackboardColumnId?: number,
 }
 
+export interface QuizAttempt<OID> {
+    _id?: OID,
+    userSessionId?: OID,
+    quizScheduleId?: OID,
+    responseInitialId?: OID,
+    responseFinalId?: OID,
+}
+
+export interface QuizAttemptTransition<OID, Date> {
+    _id?: OID,
+    quizAttemptId?: OID,
+    timestamp?: Date,
+    state?: string,
+}
 
 
 export interface Survey<OID, Date> {
@@ -117,10 +142,23 @@ export interface User<OID> {
 export interface UserSession<OID, Date> {
     _id?: OID,
     userId?: OID,
-    quizScheduleId?: OID,
     timestampStart?: Date,
     timestampEnd?: Date,
-    responseInitialId?: OID,
-    responseFinalId?: OID,
-    chatGroupId?: string
+    type?: UserSessionType,
 }
+
+export type UserSessionType = "ADMIN" | "STUDENT";
+
+
+
+export interface Marking<OID, Date> {
+    _id?: OID,
+    markerUserSession?: OID,
+    quizAttemptId?: OID,
+    value?: string | number,
+    method?: MarkingMethod,
+    timestamp?: Date,
+}
+
+export type MarkingMethod = "MOUSOKU";
+

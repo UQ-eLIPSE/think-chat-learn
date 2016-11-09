@@ -108,7 +108,7 @@ export namespace Api {
         @ApiDecorators.ApplySession
         @ApiDecorators.AdminOnly
         public static Post(moocchat: Moocchat, res: ApiResponseCallback<IMoocchatApi.ToClientInsertionIdResponse>, data: IMoocchatApi.ToServerStandardRequestBase & IDB_QuizSchedule, session?: Session): void {
-            precheckQuizScheduleInsert(moocchat, session, res, data, (questionId, availableStart, availableEnd, blackboardColumnId) => {
+            precheckQuizScheduleInsert(moocchat, session, res, data, (questionId, availableStart, availableEnd) => {
                 const db = moocchat.getDb();
                 const course = session.getCourse();
 
@@ -117,7 +117,6 @@ export namespace Api {
                     course,
                     availableStart,
                     availableEnd,
-                    blackboardColumnId,
                 }, (err, result) => {
                     if (handleMongoError(err, res)) { return; }
 
@@ -135,7 +134,7 @@ export namespace Api {
         @ApiDecorators.AdminOnly
         @ApiDecorators.LimitQuizIdToSession
         public static Put(moocchat: Moocchat, res: ApiResponseCallback<void>, data: IMoocchatApi.ToServerQuizId & IDB_QuizSchedule, session?: Session): void {
-            precheckQuizScheduleUpdate(moocchat, session, res, data, (questionId, availableStart, availableEnd, blackboardColumnId) => {
+            precheckQuizScheduleUpdate(moocchat, session, res, data, (questionId, availableStart, availableEnd) => {
                 const db = moocchat.getDb();
                 const quizId = data.quizId;
 
@@ -148,7 +147,6 @@ export namespace Api {
                             questionId,
                             availableStart,
                             availableEnd,
-                            blackboardColumnId,
                         }
                     },
                     (err, result) => {
@@ -772,7 +770,7 @@ export function checkQuestionOptionIdToQuestionId(moocchat: Moocchat, questionId
     }, callback);
 }
 
-export function precheckQuizScheduleInsert(moocchat: Moocchat, session: Session, res: ApiResponseCallback<IMoocchatApi.ToClientInsertionIdResponse>, data: IMoocchatApi.ToServerStandardRequestBase & IDB_QuizSchedule, callback: (questionId: mongodb.ObjectID, availableStart: Date, availableEnd: Date, blackboardColumnId: number) => void) {
+export function precheckQuizScheduleInsert(moocchat: Moocchat, session: Session, res: ApiResponseCallback<IMoocchatApi.ToClientInsertionIdResponse>, data: IMoocchatApi.ToServerStandardRequestBase & IDB_QuizSchedule, callback: (questionId: mongodb.ObjectID, availableStart: Date, availableEnd: Date) => void) {
     const db = moocchat.getDb();
     const course = session.getCourse();
 
@@ -780,7 +778,6 @@ export function precheckQuizScheduleInsert(moocchat: Moocchat, session: Session,
     let questionId: mongodb.ObjectID;
     let availableStart: Date;
     let availableEnd: Date;
-    let blackboardColumnId: number;
 
     let missingParameters: string[] = [];
 
@@ -802,7 +799,6 @@ export function precheckQuizScheduleInsert(moocchat: Moocchat, session: Session,
         questionId = new Database.ObjectId(data.questionId as any as string);
         availableStart = new Date(data.availableStart as any as string);
         availableEnd = new Date(data.availableEnd as any as string);
-        blackboardColumnId = (+data.blackboardColumnId | 0) || undefined;
     } catch (e) {
         return res({
             success: false,
@@ -855,13 +851,12 @@ export function precheckQuizScheduleInsert(moocchat: Moocchat, session: Session,
                 questionId,
                 availableStart,
                 availableEnd,
-                blackboardColumnId
             );
         });
     });
 }
 
-export function precheckQuizScheduleUpdate(moocchat: Moocchat, session: Session, res: ApiResponseCallback<void>, data: IMoocchatApi.ToServerQuizId & IDB_QuizSchedule, callback: (questionId: mongodb.ObjectID, availableStart: Date, availableEnd: Date, blackboardColumnId: number) => void) {
+export function precheckQuizScheduleUpdate(moocchat: Moocchat, session: Session, res: ApiResponseCallback<void>, data: IMoocchatApi.ToServerQuizId & IDB_QuizSchedule, callback: (questionId: mongodb.ObjectID, availableStart: Date, availableEnd: Date) => void) {
     const db = moocchat.getDb();
     const course = session.getCourse();
 
@@ -870,7 +865,6 @@ export function precheckQuizScheduleUpdate(moocchat: Moocchat, session: Session,
     let questionId: mongodb.ObjectID;
     let availableStart: Date;
     let availableEnd: Date;
-    let blackboardColumnId: number;
 
     try {
         // Note that JSON data only has bare primitives, so complex objects and Dates do not exist and must be converted from strings
@@ -878,17 +872,6 @@ export function precheckQuizScheduleUpdate(moocchat: Moocchat, session: Session,
         questionId = new Database.ObjectId(data.questionId as any as string);
         availableStart = new Date(data.availableStart as any as string);
         availableEnd = new Date(data.availableEnd as any as string);
-
-        if (data.blackboardColumnId as any as string === "") {
-            blackboardColumnId = null;
-        } else if (data.blackboardColumnId !== null) {
-            // Values are cast into int32 or set to undefined (indicating no value set by request)
-            if (typeof data.blackboardColumnId !== "number") {
-                blackboardColumnId = undefined;
-            } else {
-                blackboardColumnId = +data.blackboardColumnId | 0;
-            }
-        }
     } catch (e) {
         return res({
             success: false,
@@ -909,7 +892,6 @@ export function precheckQuizScheduleUpdate(moocchat: Moocchat, session: Session,
         !questionId && (questionId = existingQuizSchedule.questionId);
         !availableStart && (availableStart = existingQuizSchedule.availableStart);
         !availableEnd && (availableEnd = existingQuizSchedule.availableEnd);
-        (blackboardColumnId === undefined) && (blackboardColumnId = existingQuizSchedule.blackboardColumnId);
 
         // Available start and end dates must not be reversed
         if (availableStart > availableEnd) {
@@ -958,7 +940,6 @@ export function precheckQuizScheduleUpdate(moocchat: Moocchat, session: Session,
                     questionId,
                     availableStart,
                     availableEnd,
-                    blackboardColumnId
                 );
             });
         });
