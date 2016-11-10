@@ -1,95 +1,238 @@
-
-// import { Moocchat } from "../Moocchat";
-import { Session } from "../session/Session";
+import * as mongodb from "mongodb";
+import { QuizAttempt as DBQuizAttempt, IDB_QuizAttempt } from "../data/models/QuizAttempt";
 
 import { KVStore } from "../../../common/js/KVStore";
 
-import { StateMachine } from "../../../common/js/StateMachine";
-import { StateMachineDescription } from "../../../common/js/StateMachineDescription";
+import { User } from "../user/User";
 
-import { SessionStoreKeys } from "../session/SessionStoreKeys";
+// Refers to...
+import { UserSession } from "../user/UserSession";
+import { QuizSchedule } from "./QuizSchedule";
+import { QuestionResponse } from "../question/QuestionResponse";
 
-const fsmKey = SessionStoreKeys._MOOCCHATATTEMPT_FSM;
-
-enum QUIZ_ATTEMPT_STATE {
-    ZERO,
-
-    WELCOME,
-
-}
+// Referred to by...
+import { SurveyResponse } from "../survey/SurveyResponse";
 
 export class QuizAttempt {
-    private static readonly SingletonStore = new KVStore<QuizAttempt>();
+    private static readonly Store = new KVStore<QuizAttempt>();
 
-    private readonly session: Session;
+    private data: IDB_QuizAttempt;
+    private readonly userSession: UserSession;
+    private readonly quizSchedule: QuizSchedule;
+    private responseInitial: QuestionResponse | undefined;
+    private responseFinal: QuestionResponse | undefined;
 
-    private static GetStateMachineDescription() {
-        const fsmDesc = new StateMachineDescription(QUIZ_ATTEMPT_STATE.ZERO, [
+    private readonly db: mongodb.Db;
+
+    public static GetWithResponseInitial(responseInitial: QuestionResponse) {
+        return QuizAttempt.Store.getValues().filter(quizAttempt => quizAttempt.getResponseInitial() === responseInitial);
+    }
+
+    public static GetWithResponseFinal(responseFinal: QuestionResponse) {
+        return QuizAttempt.Store.getValues().filter(quizAttempt => quizAttempt.getResponseFinal() === responseFinal);
+    }
+
+    public static GetWithUserSession(userSession: UserSession) {
+        return QuizAttempt.Store.getValues().filter(quizAttempt => quizAttempt.getUserSession() === userSession);
+    }
+
+    public static GetWithQuizSchedule(quizSchedule: QuizSchedule) {
+        return QuizAttempt.Store.getValues().filter(quizAttempt => quizAttempt.getQuizSchedule() === quizSchedule);
+    }
+
+    public static async GetAutoFetch(db: mongodb.Db, quizAttemptId: string) {
+        const quizAttempt = QuizAttempt.Get(quizAttemptId);
+
+        if (quizAttempt) {
+            return quizAttempt;
+        }
+
+        return await QuizAttempt.Fetch(db, quizAttemptId);
+    }
+
+    public static Get(quizAttemptId: string) {
+        return QuizAttempt.Store.get(quizAttemptId);
+    }
+
+    public static async Fetch(db: mongodb.Db, quizAttemptId: string): Promise<QuizAttempt | undefined> {
+        const dbQuizAttempt = new DBQuizAttempt(db).getCollection();
+
+        let quizAttempt: IDB_QuizAttempt | null = await dbQuizAttempt.findOne(
             {
-                label: "STARTUP",
-                fromState: QUIZ_ATTEMPT_STATE.ZERO,
-                toState: QUIZ_ATTEMPT_STATE.WELCOME,
+                _id: new mongodb.ObjectID(quizAttemptId),
             }
-        ]);
-        return fsmDesc;
-    }
+        );
 
-    constructor(session: Session, init: boolean = false) {
-        const existingAttempt = QuizAttempt.SingletonStore.get(session.getId());
+        if (!quizAttempt) {
+            return undefined;
+        }
 
-        if (existingAttempt) {
-            if (init) {
-                // Cannot init; new user session is required
-                throw new QuizAttemptExistsInSessionError();
-            }
+        const userSession = await UserSession.GetAutoFetch(db, quizAttempt.userSessionId.toHexString());
 
-            if (!existingAttempt.getFsm()) {
-                // For some reason there is no FSM even though there's an attempt...
-                throw new QuizAttemptFSMDoesNotExistError();
-            }
+        if (!userSession) {
+            throw new Error(`User session "${quizAttempt.userSessionId.toHexString()}" missing for quiz attempt "${quizAttempt._id.toHexString()}"`)
+        }
 
-            // If we are just merely fetching the singleton, return it
-            return existingAttempt;
+        const quizSchedule = await QuizSchedule.GetAutoFetch(db, quizAttempt.quizScheduleId.toHexString());
+
+        if (!quizSchedule) {
+            throw new Error(`Quiz schedule "${quizAttempt.quizScheduleId.toHexString()}" missing for quiz attempt "${quizAttempt._id.toHexString()}"`)
         }
 
 
-        // You must explicitly call for an init at this point since we do not have an existing attempt on record
-        if (!init) {
-            throw new QuizAttemptDoesNotExistError();
+        const quizAttemptObj = new QuizAttempt(db, quizAttempt, userSession, quizSchedule);
+
+
+        if (quizAttempt.responseInitialId) {
+            const responseInitial = await QuestionResponse.GetAutoFetch(db, quizAttempt.responseInitialId.toHexString());
+
+            if (!responseInitial) {
+                throw new Error(`Response initial "${quizAttempt.responseInitialId.toHexString()}" missing for quiz attempt "${quizAttempt._id.toHexString()}"`)
+            }
+
+            quizAttemptObj.responseInitial = responseInitial;
         }
 
+        if (quizAttempt.responseFinalId) {
+            const responseFinal = await QuestionResponse.GetAutoFetch(db, quizAttempt.responseFinalId.toHexString());
 
-        // Store references
-        this.session = session;
+            if (!responseFinal) {
+                throw new Error(`Response final "${quizAttempt.responseFinalId.toHexString()}" missing for quiz attempt "${quizAttempt._id.toHexString()}"`)
+            }
 
-        // Create and store FSM for attempt
-        const fsm = new StateMachine(QuizAttempt.GetStateMachineDescription());
-        session.getStore().put(fsmKey, fsm);
+            quizAttemptObj.responseFinal = responseFinal;
+        }
 
-        // Keep track of this new attempt in singleton store
-        QuizAttempt.SingletonStore.put(this.session.getId(), this);
-
-
-        return this;
+        return quizAttemptObj;
     }
 
-    private getFsm(): StateMachine | undefined {
-        // FSM is only available via. session store, because the MoocchatAttempt class
-        // is only intended to be a thin wrapper; this also means that if the session
-        // is destroyed, the FSM object goes with it as there should be no reference
-        // to the object itself
-        return this.session.getStore().get(fsmKey);
+    public static async HasPreviouslyCompleted(db: mongodb.Db, quizSchedule: QuizSchedule, user: User) {
+        const userSessions = await UserSession.FetchSessions(db, user);
+
+        if (userSessions.length === 0) {
+            return false;
+        }
+
+        const userSessionOIDs = userSessions.map(userSession => userSession.getOID());
+
+        const dbQuizAttempt = new DBQuizAttempt(db).getCollection();
+
+        const cursor = dbQuizAttempt.find({
+            userSessionId: { $in: userSessionOIDs },
+            quizScheduleId: quizSchedule.getOID(),
+            responseInitialId: { $ne: null },
+            responseFinalId: { $ne: null }
+        });
+
+        // Count number of records up to 1 (we don't care about the actual number)
+        const recordExistsCount = await cursor.count(true, { limit: 1 });
+
+        return recordExistsCount === 1;
     }
 
-    public executeTransition(label: string, ...args: any[]) {
-        this.getFsm().executeTransition(label, ...args);
+    public static async Create(db: mongodb.Db, userSession: UserSession, quizSchedule: QuizSchedule) {
+        const dbQuizAttempt = new DBQuizAttempt(db).getCollection();
+
+        const newQuizAttemptData: IDB_QuizAttempt = {
+            userSessionId: userSession.getOID(),
+            quizScheduleId: quizSchedule.getOID(),
+            responseInitialId: null,
+            responseFinalId: null,
+        }
+
+        await dbQuizAttempt.insertOne(newQuizAttemptData);
+
+        return new QuizAttempt(db, newQuizAttemptData, userSession, quizSchedule);
     }
 
-    public getCurrentState() {
-        return this.getFsm().getCurrentState();
+    private static async Update(quizAttempt: QuizAttempt, updateData: IDB_QuizAttempt) {
+        const dbUser = new DBQuizAttempt(quizAttempt.getDb()).getCollection();
+
+        const result = await dbUser.findOneAndUpdate(
+            {
+                _id: quizAttempt.getOID(),
+            },
+            {
+                $set: updateData,
+            },
+            {
+                returnOriginal: false,
+            }
+        );
+
+        // Update data for this object
+        quizAttempt.data = result.value;
+    }
+
+    private constructor(db: mongodb.Db, data: IDB_QuizAttempt, userSession: UserSession, quizSchedule: QuizSchedule) {
+        this.data = data;
+        this.userSession = userSession;
+        this.quizSchedule = quizSchedule;
+        this.db = db;
+
+        this.addToStore();
+    }
+
+    private getDb() {
+        return this.db;
+    }
+
+    public getOID() {
+        return this.data._id;
+    }
+
+    public getId() {
+        return this.data._id.toHexString();
+    }
+
+    public getUserSession() {
+        return this.userSession;
+    }
+
+    public getQuizSchedule() {
+        return this.quizSchedule;
+    }
+
+    public getResponseInitial() {
+        return this.responseInitial;
+    }
+
+    public getResponseFinal() {
+        return this.responseFinal;
+    }
+
+    public async setQuizResponse(type: "initial" | "final", response: QuestionResponse) {
+        let updateObj: { [key: string]: mongodb.ObjectID } = {};
+
+        if (type === "initial") {
+            updateObj["responseInitialId"] = response.getOID();
+        } else if (type === "final") {
+            updateObj["responseFinalId"] = response.getOID();
+        } else {
+            throw new Error(`Unrecognised response type "${type}"`);
+        }
+
+        await QuizAttempt.Update(this, updateObj);
+
+        if (type === "initial") {
+            this.responseInitial = response;
+        } else if (type === "final") {
+            this.responseFinal = response;
+        }
+    }
+
+    private addToStore() {
+        QuizAttempt.Store.put(this.getId(), this);
+    }
+
+    private removeFromStore() {
+        QuizAttempt.Store.delete(this.getId());
+    }
+
+    public async destroyInstance() {
+        this.removeFromStore();
+
+        // Remove related objects
+        SurveyResponse.GetWithQuizAttempt(this).forEach(_ => _.destroyInstance());
     }
 }
-
-export class QuizAttemptExistsInSessionError extends Error { }
-export class QuizAttemptDoesNotExistError extends Error { }
-export class QuizAttemptFSMDoesNotExistError extends Error { }

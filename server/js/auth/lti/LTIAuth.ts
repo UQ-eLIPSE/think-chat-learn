@@ -1,9 +1,10 @@
-import {ILTIData} from "../../../../common/interfaces/ILTIData";
-import {IMoocchatAuthProcessReturn} from "../IMoocchatAuthProcessReturn";
+import { ILTIData } from "../../../../common/interfaces/ILTIData";
+import { IMoocchatAuthProcessReturn } from "../IMoocchatAuthProcessReturn";
+import { IMoocchatIdentityInfo } from "../IMoocchatIdentityInfo";
 
-import {Conf} from "../../../config/Conf";
-import {LTIProcessor} from "./LTIProcessor";
-import {MoocchatAuth} from "../MoocchatAuth";
+import { Conf } from "../../../config/Conf";
+import { LTIProcessor } from "./LTIProcessor";
+import { MoocchatAuth } from "../MoocchatAuth";
 
 export class LTIAuth extends MoocchatAuth {
     private static Processor = new LTIProcessor(Conf.lti.signingInfo, true, Conf.lti.testMode);
@@ -36,7 +37,7 @@ export class LTIAuth extends MoocchatAuth {
         };
     }
 
-    public getIdentity() {
+    public getIdentity(): IMoocchatIdentityInfo {
         return {
             _authName: this.getAuthName(),
 

@@ -33,11 +33,9 @@ export interface ChatGroupFormed {
     groupId: string;
     groupSize: number;
     groupAnswers: ChatGroupAnswer[];
-    screenName: string;
     clientIndex: number;
 }
 export interface ChatGroupMessage {
-    screenName: string;
     clientIndex: number;
     message: string;
     timestamp: number;
@@ -45,9 +43,7 @@ export interface ChatGroupMessage {
 export interface ChatGroupQuitStatusChange {
     groupId: string;
     groupSize: number;
-    quitQueueSize: number;
 
-    screenName: string;
     clientIndex: number;
     quitStatus: boolean;
 }

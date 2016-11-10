@@ -50,5 +50,39 @@ export const Utils = {
 
             return minutes + ":" + ((seconds < 10) ? "0" : "") + seconds;
         }
-    }
+    },
+
+    Array: {
+        includes: <T>(array: T[], searchElement: T) => {
+            const len = array.length;
+            let k = 0;
+
+            var currentElement: T;
+            while (k < len) {
+                currentElement = array[k];
+                if (searchElement === currentElement ||
+                    (searchElement !== searchElement && currentElement !== currentElement)) { // NaN !== NaN
+                    return true;
+                }
+                k++;
+            }
+            return false;
+        },
+
+        /*
+         * Shuffles array in place.
+         * http://stackoverflow.com/a/6274381
+         * 
+         * @param {T[]} a The array containing the items.
+         */
+        shuffleInPlace: <T>(a: T[]) => {
+            let j: number, x: T, i: number;
+            for (i = a.length; i; i -= 1) {
+                j = Math.floor(Math.random() * i);
+                x = a[i - 1];
+                a[i - 1] = a[j];
+                a[j] = x;
+            }
+        }
+    },
 }

@@ -110,7 +110,8 @@ export type Survey_Content =
     Survey_Content_MultipleChoiceList;
 
 export interface SurveyResponse<OID, Date> {
-    sessionId?: OID,
+    _id?: OID,
+    quizAttemptId?: OID,
     surveyId?: OID,
     timestamp?: Date,
     content?: SurveyResponse_Content[]
@@ -153,7 +154,7 @@ export type UserSessionType = "ADMIN" | "STUDENT";
 
 export interface Marking<OID, Date> {
     _id?: OID,
-    markerUserSession?: OID,
+    markerUserSessionId?: OID,
     quizAttemptId?: OID,
     value?: string | number,
     method?: MarkingMethod,

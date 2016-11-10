@@ -1,127 +1,104 @@
-import {Conf} from "../../config/Conf";
+import { Conf } from "../../config/Conf";
 
-import {IDB_QuestionOption} from "../data/models/QuestionOption";
+import { KVStore } from "../../../common/js/KVStore";
+import { MoocchatBackupClientQueue } from "./MoocchatBackupClientQueue";
 
-import {MoocchatUserSession} from "../user/MoocchatUserSession";
-import {MoocchatBackupClientQueue} from "./MoocchatBackupClientQueue";
+import { QuizAttempt } from "../quiz/QuizAttempt";
+
+import { Utils } from "../../../common/js/Utils";
 
 export class MoocchatWaitPool {
     private static DesiredGroupSize: number = Conf.chat.groups.desiredSize;
     private static DesiredMaxWaitTime: number = Conf.chat.groups.formationTimeoutMs;
-    private static WaitPools: { [quizSessionId: string]: MoocchatWaitPool } = {};
+    private static readonly WaitPools = new KVStore<MoocchatWaitPool>();
 
     private _quizSessionId: string;
 
-    private answerQueues: { [answerId: string]: MoocchatWaitPoolAnswerQueueData[] };
+    private readonly answerQueues = new KVStore<MoocchatWaitPoolAnswerQueueData[]>();
 
 
-    public static GetPool(quizSessionId: string, quizQuestionOptions: IDB_QuestionOption[]) {
-        const waitPool = MoocchatWaitPool.GetPoolWithQuizSessionId(quizSessionId);
-        
+    public static GetPoolAutoCreate(quizSessionId: string) {
+        const waitPool = MoocchatWaitPool.GetPool(quizSessionId);
+
         if (!waitPool) {
             // Create new wait pool
-            return new MoocchatWaitPool(quizSessionId, quizQuestionOptions);
+            return new MoocchatWaitPool(quizSessionId);
         }
 
         return waitPool;
     }
 
-    /**
-     * Gets pool with specified quiz session ID.
-     * 
-     * ***Do not*** use this method unless you do not want a new pool to be created.
-     * You should generally use .GetPool() instead.
-     * 
-     * @static
-     * @param {string} quizSessionId
-     * @returns
-     */
-    public static GetPoolWithQuizSessionId(quizSessionId: string) {
-        return MoocchatWaitPool.WaitPools[quizSessionId];
+    public static GetPool(quizSessionId: string) {
+        return MoocchatWaitPool.WaitPools.get(quizSessionId);
     }
 
-    /**
-     * Gets pool with same quiz schedule as supplied session.
-     * Session may not actually be in wait pool.
-     * 
-     * @static
-     * @param {MoocchatUserSession} session
-     * @returns
-     */
-    public static GetPoolWithQuizScheduleFrom(session: MoocchatUserSession) {
-        return MoocchatWaitPool.GetPool(session.data.quizSchedule._id.toString(), session.data.quizQuestionOptions);
+    public static GetPoolWithQuizScheduleFrom(quizAttempt: QuizAttempt) {
+        const quizSchedule = quizAttempt.getQuizSchedule();
+
+        return MoocchatWaitPool.GetPoolAutoCreate(quizSchedule.getId());
     }
 
     public static Destroy(pool: MoocchatWaitPool) {
         pool._quizSessionId = undefined;
-        pool.answerQueues = {};
+        pool.answerQueues.empty();
 
-        delete MoocchatWaitPool.WaitPools[pool.getQuizSessionId()];
+        MoocchatWaitPool.WaitPools.delete(pool.getQuizSessionId());
     }
 
 
 
-    constructor(quizSessionId: string, quizQuestionOptions: IDB_QuestionOption[]) {
+    constructor(quizSessionId: string) {
         this._quizSessionId = quizSessionId;
 
-        // Set up answer queues as a map between a question answer option ID to MoocchatWaitPoolAnswerQueueData
-        this.answerQueues = {};
-
-        quizQuestionOptions.forEach((questionOption) => {
-            this.answerQueues[questionOption._id.toString()] = [];
-        });
+        this.answerQueues.empty();
 
         // Put into singleton map
-        MoocchatWaitPool.WaitPools[quizSessionId] = this;
+        MoocchatWaitPool.WaitPools.put(quizSessionId, this);
     }
 
     public getQuizSessionId() {
         return this._quizSessionId;
     }
 
-    public addSession(session: MoocchatUserSession) {
-        let answerId = session.data.response.initial.optionId.toString();
+    public addQuizAttempt(quizAttempt: QuizAttempt) {
+        const answerId = quizAttempt.getResponseInitial().getQuestionOption().getId();
 
-        // Answer is either not in range expected or some weird answer
-        if (!this.answerQueues.hasOwnProperty(answerId)) {
-            // Assign to random queue instead
-            const queueKeys = Object.keys(this.answerQueues);
-            const randomQueueKeyIndex = Math.floor(Math.random() * queueKeys.length);
-
-            answerId = queueKeys[randomQueueKeyIndex];
+        // If answer ID is not in queue, create queue for it
+        if (!this.answerQueues.hasKey(answerId)) {
+            this.answerQueues.put(answerId, []);
         }
 
-        const answerQueue = this.answerQueues[answerId];
+        const answerQueue = this.answerQueues.get(answerId);
 
         // If the client is already in the queue, don't do anything.
         for (let i = 0; i < answerQueue.length; ++i) {
             const answerQueueData = answerQueue[i];
 
-            if (answerQueueData.session === session) {
+            if (answerQueueData.quizAttempt === quizAttempt) {
                 return;
             }
         }
 
         // Add client to the queue once all okay 
         answerQueue.push({
-            session: session,
+            quizAttempt,
             timestamp: Date.now()
         });
     }
 
-    public removeSession(session: MoocchatUserSession) {
+    public removeQuizAttempt(quizAttempt: QuizAttempt) {
         // Need to search through the entire pool to remove
-        const arr = Object.keys(this.answerQueues);
+        const arr = this.answerQueues.getKeys();
 
         for (let i = 0; i < arr.length; ++i) {
             const queueKey = arr[i];
-            const thisAnswerSessionDataArray = this.answerQueues[queueKey];
+            const thisAnswerQuizAttemptArray = this.answerQueues.get(queueKey);
 
-            for (let j = 0; j < thisAnswerSessionDataArray.length; ++j) {
-                if (thisAnswerSessionDataArray[j].session === session) {
+            for (let j = 0; j < thisAnswerQuizAttemptArray.length; ++j) {
+                if (thisAnswerQuizAttemptArray[j].quizAttempt === quizAttempt) {
                     // Remove the client out and return it
-                    console.log(`Removing session '${session.getId()}' from wait pool '${this.getQuizSessionId()}'`);
-                    return thisAnswerSessionDataArray.splice(j, 1)[0].session;
+                    console.log(`Removing quiz attempt '${quizAttempt.getId()}' from wait pool '${this.getQuizSessionId()}'`);
+                    return thisAnswerQuizAttemptArray.splice(j, 1)[0].quizAttempt;
                 }
             }
         }
@@ -129,15 +106,15 @@ export class MoocchatWaitPool {
         return undefined;
     }
 
-    public hasSession(session: MoocchatUserSession) {
-        const arr = Object.keys(this.answerQueues);
-        
+    public hasQuizAttempt(quizAttempt: QuizAttempt) {
+        const arr = this.answerQueues.getKeys();
+
         for (let i = 0; i < arr.length; ++i) {
             const queueKey = arr[i];
-            const thisAnswerSessionDataArray = this.answerQueues[queueKey];
+            const thisAnswerQuizAttemptArray = this.answerQueues.get(queueKey);
 
-            for (let j = 0; j < thisAnswerSessionDataArray.length; ++j) {
-                if (thisAnswerSessionDataArray[j].session === session) {
+            for (let j = 0; j < thisAnswerQuizAttemptArray.length; ++j) {
+                if (thisAnswerQuizAttemptArray[j].quizAttempt === quizAttempt) {
                     return true;
                 }
             }
@@ -146,43 +123,31 @@ export class MoocchatWaitPool {
         return false;
     }
 
-    private answerQueueKeysWithSessions() {
-        return Object.keys(this.answerQueues).filter((queueKey) => {
-            return this.answerQueues[queueKey].length > 0;
+    private answerQueueKeysWithQuizAttempts() {
+        return this.answerQueues.getKeys().filter((queueKey) => {
+            return this.answerQueues.get(queueKey).length > 0;
         });
     }
 
     private answerQueueSizes() {
         const queueSizes: { [queueKey: string]: number } = {};
 
-        Object.keys(this.answerQueues).forEach((queueKey) => {
-            queueSizes[queueKey] = this.answerQueues[queueKey].length;
+        this.answerQueues.getKeys().forEach((queueKey) => {
+            queueSizes[queueKey] = this.answerQueues.get(queueKey).length;
         });
 
         return queueSizes;
     }
 
-    // private answerQueueFrontWait() {
-    //     return Object.keys(this.answerQueues).map((queueKey) => {
-    //         const firstQueueSessionData = this.answerQueues[queueKey][0];
-
-    //         if (!firstQueueSessionData) {
-    //             return 0;
-    //         }
-
-    //         return Date.now() - firstQueueSessionData.timestamp;
-    //     })
-    // }
-
     private waitTimeoutReached() {
-        return Object.keys(this.answerQueues).some((queueKey) => {
-            const firstQueueSessionData = this.answerQueues[queueKey][0];
+        return this.answerQueues.getKeys().some((queueKey) => {
+            const firstInQueueData = this.answerQueues.get(queueKey)[0];
 
-            if (!firstQueueSessionData) {
+            if (!firstInQueueData) {
                 return false;
             }
 
-            const waitTime = Date.now() - firstQueueSessionData.timestamp;
+            const waitTime = Date.now() - firstInQueueData.timestamp;
 
             return waitTime > MoocchatWaitPool.DesiredMaxWaitTime;
         });
@@ -190,13 +155,13 @@ export class MoocchatWaitPool {
 
     public getSize() {
         // Go over answerQueues and sum the length of each queues
-        return Object.keys(this.answerQueues).reduce((sum, queueKey) => {
-            return sum + this.answerQueues[queueKey].length;
+        return this.answerQueues.getKeys().reduce((sum, queueKey) => {
+            return sum + this.answerQueues.get(queueKey).length;
         }, 0);
     }
 
-    private popSessionFromAnswerQueue(queueKey: string) {
-        return this.answerQueues[queueKey].shift().session;
+    private popQuizAttemptFromAnswerQueue(queueKey: string) {
+        return this.answerQueues.get(queueKey).shift().quizAttempt;
     }
 
     public tryFormGroup() {
@@ -207,7 +172,7 @@ export class MoocchatWaitPool {
         // Below pool size checks:
         //  n       prevents premature creation of groups now when (n+1) size groups may need to be considered in the future
         //  n+1     prevents loner groups from appearing (when groups: {n, 1} may form)
-        if (this.answerQueueKeysWithSessions().length >= MoocchatWaitPool.DesiredGroupSize &&
+        if (this.answerQueueKeysWithQuizAttempts().length >= MoocchatWaitPool.DesiredGroupSize &&
             totalPoolSize !== MoocchatWaitPool.DesiredGroupSize &&
             totalPoolSize !== (MoocchatWaitPool.DesiredGroupSize + 1)) {
             return this.popGroup();
@@ -251,7 +216,7 @@ export class MoocchatWaitPool {
 
         const queueSizes = this.answerQueueSizes();
         const queueKeys = Object.keys(queueSizes);
-        shuffle(queueKeys);         // Shuffle so that we don't skew groups with more of the first answer overall
+        Utils.Array.shuffleInPlace(queueKeys);  // Shuffle so that we don't skew groups with more of the first answer overall
 
         const intendedQueueKeys: string[] = []; // Store queue keys to be mapped into clients for group formation
 
@@ -276,29 +241,12 @@ export class MoocchatWaitPool {
         }
 
         return intendedQueueKeys.map((queueKey) => {
-            return this.popSessionFromAnswerQueue(queueKey);
+            return this.popQuizAttemptFromAnswerQueue(queueKey);
         });
     }
 }
 
 export interface MoocchatWaitPoolAnswerQueueData {
-    session: MoocchatUserSession;
+    quizAttempt: QuizAttempt;
     timestamp: number;
-}
-
-
-/******************************************************************************
- * Shuffles array in place.
- * http://stackoverflow.com/a/6274381
- * 
- * @param {IData[]} a items The array containing the items.
- */
-function shuffle<IData>(a: IData[]) {
-    let j: number, x: IData, i: number;
-    for (i = a.length; i; i -= 1) {
-        j = Math.floor(Math.random() * i);
-        x = a[i - 1];
-        a[i - 1] = a[j];
-        a[j] = x;
-    }
 }

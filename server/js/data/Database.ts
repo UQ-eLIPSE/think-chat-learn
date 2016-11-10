@@ -1,7 +1,13 @@
 import * as mongodb from "mongodb";
+import * as crypto from "crypto";
 
 export abstract class Database<CollectionData> {
     public static ObjectId = mongodb.ObjectID;
+
+
+    public static GenerateRandomOID() {
+        return new mongodb.ObjectID(crypto.randomBytes(12).toString('hex'));
+    }
 
 
     public static Connect(url: string, callback?: mongodb.MongoCallback<mongodb.Db>) {

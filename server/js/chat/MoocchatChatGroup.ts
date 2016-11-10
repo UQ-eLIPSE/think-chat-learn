@@ -1,4 +1,4 @@
-import {MoocchatUserSession} from "../user/MoocchatUserSession";
+// import {MoocchatUserSession} from "../user/MoocchatUserSession";
 
 export class MoocchatChatGroup {
     private static ChatGroups: { [chatGroupId: string]: MoocchatChatGroup } = {};
@@ -90,7 +90,6 @@ export class MoocchatChatGroup {
 
     public broadcastMessage(session: MoocchatUserSession, message: string) {
         this.broadcast("chatGroupMessage", {
-            screenName: "",         // No longer used
             clientIndex: this.getSessionIndex(session),
             message: message,
             timestamp: Date.now()
@@ -127,9 +126,7 @@ export class MoocchatChatGroup {
         this.broadcast("chatGroupQuitChange", {
             groupId: this.getId(),
             groupSize: this.numberOfSessions(),
-            quitQueueSize: 0,       // No longer used
 
-            screenName: "",         // No longer used
             clientIndex: this.getSessionIndex(quittingSession),
             quitStatus: quitStatus
         });
@@ -169,7 +166,6 @@ export class MoocchatChatGroup {
                     };
                 }),
 
-                screenName: "",     // No longer used
                 clientIndex: this.getSessionIndex(session)
             });
         })

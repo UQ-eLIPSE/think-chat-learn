@@ -1,19 +1,20 @@
-import {MoocchatUserSessionData} from "./MoocchatUserSessionData";
-import {MoocchatUserSessionStore} from "./MoocchatUserSessionStore";
+import { KVStore } from "../../../common/js/KVStore";
 
-import {MoocchatWaitPool} from "../queue/MoocchatWaitPool";
-import {MoocchatChatGroup} from "../chat/MoocchatChatGroup";
-import {MoocchatBackupClientQueue} from "../queue/MoocchatBackupClientQueue";
+import { MoocchatUserSessionData } from "./MoocchatUserSessionData";
 
-import {IDB_Question} from "../data/models/Question";
-import {IDB_QuestionOption} from "../data/models/QuestionOption";
-import {IDB_QuizSchedule} from "../data/models/QuizSchedule";
-import {IDB_Survey} from "../data/models/Survey";
+import { MoocchatWaitPool } from "../queue/MoocchatWaitPool";
+import { MoocchatChatGroup } from "../chat/MoocchatChatGroup";
+import { MoocchatBackupClientQueue } from "../queue/MoocchatBackupClientQueue";
 
-import {PacSeqSocket_Server} from "../../../common/js/PacSeqSocket_Server";
+import { IDB_Question } from "../data/models/Question";
+import { IDB_QuestionOption } from "../data/models/QuestionOption";
+import { IDB_QuizSchedule } from "../data/models/QuizSchedule";
+import { IDB_Survey } from "../data/models/Survey";
+
+import { PacSeqSocket_Server } from "../../../common/js/PacSeqSocket_Server";
 
 export class MoocchatUserSession {
-    private static UserSessionStore: MoocchatUserSessionStore = new MoocchatUserSessionStore();
+    private static readonly UserSessionStore = new KVStore<MoocchatUserSession>();
 
     private _userId: string;
     private _sessionId: string;
@@ -23,11 +24,11 @@ export class MoocchatUserSession {
 
 
     public static GetSessionIds() {
-        return MoocchatUserSession.UserSessionStore.getSessionIds();
+        return MoocchatUserSession.UserSessionStore.getKeys();
     }
 
     public static GetSession(sessionId: string, socket?: PacSeqSocket_Server) {
-        const session = MoocchatUserSession.UserSessionStore.getSession(sessionId);
+        const session = MoocchatUserSession.UserSessionStore.get(sessionId);
 
         // Update socket reference in case someone has switched/disconnected-connected sockets
         if (session && socket && !session.socketAlreadySaved(socket)) {
@@ -44,7 +45,7 @@ export class MoocchatUserSession {
     }
 
     public static GetSessionWith(userId: string) {
-        return MoocchatUserSession.UserSessionStore.getSessionByUserId(userId);
+        return MoocchatUserSession.UserSessionStore.getValues().filter(session => session.getUserId() === userId)[0];
     }
 
     public static Destroy(session: MoocchatUserSession, sendTerminateMessage: boolean = false) {
@@ -161,20 +162,18 @@ export class MoocchatUserSession {
         // Return the most up to date socket
         return this._sockets[this._sockets.length - 1];
     }
-    
+
     private socketPosition(socket: PacSeqSocket_Server) {
         // Check by matching ID
         for (let i = 0; i < this._sockets.length; i++) {
             const _socket = this._sockets[i];
-            
+
             if (_socket.id === socket.id) {
                 return i;
             }
         }
 
         return -1;
-
-        // return this._sockets.indexOf(socket);
     }
 
     private socketAlreadySaved(socket: PacSeqSocket_Server) {
@@ -182,11 +181,11 @@ export class MoocchatUserSession {
     }
 
     private addToStore() {
-        MoocchatUserSession.UserSessionStore.add(this);
+        MoocchatUserSession.UserSessionStore.put(this.getId(), this);
     }
 
     private removeFromStore() {
-        MoocchatUserSession.UserSessionStore.remove(this);
+        MoocchatUserSession.UserSessionStore.delete(this.getId());
     }
 
 

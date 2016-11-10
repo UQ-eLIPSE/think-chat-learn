@@ -1,29 +1,34 @@
-import {WSEndpoint} from "../WSEndpoint";
+import { WSEndpoint } from "../WSEndpoint";
 
 import * as IWSToServerData from "../../../../common/interfaces/IWSToServerData";
 import * as IWSToClientData from "../../../../common/interfaces/IWSToClientData";
-import {PacSeqSocket_Server} from "../../../../common/js/PacSeqSocket_Server";
+import { PacSeqSocket_Server } from "../../../../common/js/PacSeqSocket_Server";
 
-import * as crypto from "crypto";
 
 import * as mongodb from "mongodb";
-import {Database} from "../../data/Database";
-import {User, IDB_User} from "../../data/models/User";
-import {UserSession} from "../../data/models/UserSession";
-import {QuizSchedule, IDB_QuizSchedule} from "../../data/models/QuizSchedule";
-import {Question, IDB_Question} from "../../data/models/Question";
-import {QuestionOption, IDB_QuestionOption} from "../../data/models/QuestionOption";
-import {Survey, IDB_Survey} from "../../data/models/Survey";
+import { Database } from "../../data/Database";
 
-import * as CBC from "../../../../common/js/CallbackChainer";
-import {CountingSynchroniser} from "../../../../common/js/CountingSynchroniser";
+import * as DBSchema from "../../../../common/interfaces/DBSchema";
 
-import {MoocchatUserSession} from "../../user/MoocchatUserSession";
-import {ChatGroupFormationLoop} from "../../chat/ChatGroupFormationLoop";
-import {MoocchatBackupClientQueue} from "../../queue/MoocchatBackupClientQueue";
+import { User } from "../../user/User";
+import { UserSession } from "../../user/UserSession";
 
-import {LTIAuth} from "../../auth/lti/LTIAuth";
-import {IMoocchatIdentityInfo} from "../../auth/IMoocchatIdentityInfo";
+import { QuizSchedule } from "../../quiz/QuizSchedule";
+import { QuizAttempt } from "../../quiz/QuizAttempt";
+
+import { Question } from "../../question/Question";
+import { QuestionOption } from "../../question/QuestionOption";
+
+import { Survey } from "../../survey/Survey";
+
+
+import { ChatGroupFormationLoop } from "../../chat/ChatGroupFormationLoop";
+import { MoocchatBackupClientQueue } from "../../queue/MoocchatBackupClientQueue";
+
+import { LTIAuth } from "../../auth/lti/LTIAuth";
+import { IMoocchatIdentityInfo } from "../../auth/IMoocchatIdentityInfo";
+
+import { Utils } from "../../../../common/js/Utils";
 
 
 export class UserLoginEndpoint extends WSEndpoint {
@@ -31,279 +36,128 @@ export class UserLoginEndpoint extends WSEndpoint {
         socket.emit("loginFailure", (e && e.message) ? e.message : "Unexpected error");
     }
 
-    private static HandleLoginLTI(socket: PacSeqSocket_Server, data: IWSToServerData.LoginLti, db: mongodb.Db) {
-        const dbUser = new User(db);
-        const dbUserSession = new UserSession(db);
-        const dbQuizSchedule = new QuizSchedule(db);
-
-        const dbQuestion = new Question(db);
-        const dbQuestionOption = new QuestionOption(db);
-
-        const dbSurvey = new Survey(db);
-
-
-        // Callback chain
-        // TODO: Seriously need to convert this into Promises for better structure,
-        //       streamlined execution and more reliable error handling
-        new CBC.CallbackChainer([
-            processLtiObject,
-            checkUserId,
-            retrieveUser,
-            checkNoActiveSession,
-            findScheduledQuiz,
-            checkQuizSessionNotTaken,
-            loadQuestionData,
-            findSurvey,
-            writeSessionToDb,
-            setupChatGroupFormationLoop,
-            notifyClientOfLogin
-        ]).run((e) => {
-            UserLoginEndpoint.NotifyClientOnError(socket, e);
-        });
-
-
-        // Variables in serialised callback chain
-        let identity: IMoocchatIdentityInfo;
-        let session: MoocchatUserSession;
-        let user: IDB_User;
-
-        let quizSchedule: IDB_QuizSchedule;
-        let question: IDB_Question;
-        let questionOptions: IDB_QuestionOption[];
-        let survey: IDB_Survey;
-
-        function processLtiObject(throwErr: CBC.ErrorThrowFunc, next: CBC.NextFunc) {
-            const ltiAuth = new LTIAuth(data);
+    private static async HandleLoginLTI(socket: PacSeqSocket_Server, data: IWSToServerData.LoginLti, db: mongodb.Db) {
+        const processLtiObject = async (loginData: IWSToServerData.LoginLti) => {
+            const ltiAuth = new LTIAuth(loginData);
 
             const authResult = ltiAuth.authenticate();
 
             if (!authResult.success) {
-                return throwErr(new Error(authResult.message));
+                throw new Error(authResult.message);
             }
 
-            identity = ltiAuth.getIdentity();
-
-            next();
+            return ltiAuth.getIdentity();
         }
 
-        function checkUserId(throwErr: CBC.ErrorThrowFunc, next: CBC.NextFunc) {
+        const checkUserId = (identity: IMoocchatIdentityInfo) => {
             if (!identity.identityId) {
-                return throwErr(new Error("[10] No user ID received."));
+                throw new Error("[10] No user ID received.");
+            }
+        }
+
+        const retrieveUser = async (identity: IMoocchatIdentityInfo) => {
+            return await User.GetAutoFetchAutoCreate(db, identity);
+        }
+
+        const checkNoActiveSession = (user: User) => {
+            const sessions = UserSession.GetWith(user);
+
+            if (sessions.length > 0) {
+                throw new Error(`[20] The user "${user.getUsername()}" is currently in an active session.`);
+            }
+        }
+
+        const retrieveQuizSchedule = async (course: string) => {
+            const quiz = await QuizSchedule.FetchActiveNow(db, course);
+
+            if (!quiz) {
+                throw new Error("[30] No scheduled quiz found.");
             }
 
-            next();
+            return quiz;
         }
 
-        function retrieveUser(throwErr: CBC.ErrorThrowFunc, next: CBC.NextFunc) {
-            dbUser.readAsArray({
-                username: identity.identityId
-            }, function(err, result) {
-                if (err) {
-                    return throwErr(err);
-                }
-
-                if (result.length > 1) {
-                    return throwErr(new Error("[11] More than one user with same username '" + identity.identityId + "' detected."));
-                }
-
-                // New user
-                if (result.length === 0) {
-                    const newUser: IDB_User = {
-                        _id: new Database.ObjectId(crypto.randomBytes(12).toString('hex')),   // MongoDB ObjectIDs are 12 bytes only!
-                        username: identity.identityId,
-
-                        firstName: identity.name.given,
-                        lastName: identity.name.family,
-
-                        researchConsent: null
-                    };
-
-                    dbUser.insertOne(newUser,
-                        function(err, result) {
-                            if (err) {
-                                return throwErr(err);
-                            }
-
-                            user = newUser;
-
-                            next();
-                        });
-
-                    return;
-                }
-
-                // Existing user
-                user = result[0];
-
-                next();
-            });
+        const checkQuizNotPreviouslyAttempted = async (user: User, quizSchedule: QuizSchedule) => {
+            if (await QuizAttempt.HasPreviouslyCompleted(db, quizSchedule, user)) {
+                throw new Error(`[21] User "${user.getUsername()}" has previously completed the current quiz session.`);
+            }
         }
 
-        function checkNoActiveSession(throwErr: CBC.ErrorThrowFunc, next: CBC.NextFunc) {
-            const session = MoocchatUserSession.GetSessionWith(user._id.toHexString());
+        const retrieveQuestionOptions = async (question: Question) => {
+            const options = await QuestionOption.FetchWithQuestion(db, question);
 
-            if (session) {
-                return throwErr(new Error("[20] The user '" + identity.identityId + "' is currently in an active session."));
+            if (options.length === 0) {
+                throw new Error(`[51] No question options for question ID = ${question.getId()}`);
             }
 
-            next();
+            return options;
         }
 
-        function findScheduledQuiz(throwErr: CBC.ErrorThrowFunc, next: CBC.NextFunc) {
-            const now = new Date();
-
-            dbQuizSchedule.readAsArray({
-                availableStart: { $lte: now },
-                availableEnd: { $gte: now },
-                course: identity.course,
-            }, function(err, result) {
-                if (err) {
-                    return throwErr(err);
-                }
-
-                // Find first available scheduled quiz session
-                if (result.length === 0) {
-                    return throwErr(new Error("[30] No scheduled quiz found."));
-                }
-
-                quizSchedule = result[0];
-
-                next();
-            });
+        const retrieveSurvey = async (course: string) => {
+            return await Survey.FetchActiveNow(db, course);
         }
 
-        function checkQuizSessionNotTaken(throwErr: CBC.ErrorThrowFunc, next: CBC.NextFunc) {
-            // A session is considered to have been taken if a user
-            // successfully fills in an initial AND final answer response
-            // for this quiz session
-            dbUserSession.readAsArray({
-                userId: user._id,
-                quizScheduleId: quizSchedule._id,
-                responseInitialId: { $ne: null },
-                responseFinalId: { $ne: null }
-            }, function(err, result) {
-                if (err) {
-                    return throwErr(err);
-                }
+        const determineAdminStatus = (identity: IMoocchatIdentityInfo) => {
+            const adminRoles = [
+                "instructor",
+                "teachingassistant",
+                "administrator",
+            ];
 
-                if (result.length > 0) {
-                    return throwErr(new Error("[21] User '" + identity.identityId + "' has previously completed the current quiz session."));
-                }
-
-                next();
+            const isAdmin = identity.roles.some(role => {
+                return Utils.Array.includes(adminRoles, role.toLowerCase());
             });
+
+            return isAdmin;
         }
 
-        function loadQuestionData(throwErr: CBC.ErrorThrowFunc, next: CBC.NextFunc) {
-            // Sync on n = 2 (question + question options)
-            const callbackSync = new CountingSynchroniser(2, next).generateSyncFunction();
+        const createSession = async (user: User, isAdmin: boolean) => {
+            let sessionType: DBSchema.UserSessionType;
 
-            dbQuestion.readAsArray({
-                _id: quizSchedule.questionId
-            }, function(err, result) {
-                if (err) {
-                    return throwErr(err);
-                }
+            if (isAdmin) {
+                sessionType = "ADMIN";
+            } else {
+                sessionType = "STUDENT";
+            }
 
-                if (result.length === 0) {
-                    return throwErr(new Error("[50] No question with _id = " + quizSchedule.questionId));
-                }
-
-                question = result[0];
-
-                callbackSync();
-            });
-
-            dbQuestionOption.readAsArray({
-                questionId: quizSchedule.questionId
-            }, function(err, result) {
-                if (err) {
-                    return throwErr(err);
-                }
-
-                if (result.length === 0) {
-                    return throwErr(new Error("[51] No question options for question ID = " + quizSchedule.questionId));
-                }
-
-                questionOptions = result;
-
-                callbackSync();
-            });
+            return await UserSession.Create(db, user, sessionType);
         }
 
-        function findSurvey(throwErr: CBC.ErrorThrowFunc, next: CBC.NextFunc) {
-            const now = new Date();
-
-            dbSurvey.readAsArray({
-                availableStart: { $lte: now },
-                course: identity.course,
-            }, function(err, result) {
-                if (err) {
-                    return throwErr(err);
-                }
-
-                // Surveys are optional, if found
-                if (result.length === 0) {
-                    survey = null;
-                } else {
-                    survey = result[0];
-                }
-
-
-                next();
-            });
+        const createQuizAttempt = async (quizSchedule: QuizSchedule, session: UserSession) => {
+            return await QuizAttempt.Create(db, session, quizSchedule);
         }
 
-        function writeSessionToDb(throwErr: CBC.ErrorThrowFunc, next: CBC.NextFunc) {
-            dbUserSession.insertOne({
-                _id: new Database.ObjectId(crypto.randomBytes(12).toString('hex')),   // MongoDB ObjectIDs are 12 bytes only!
-                userId: user._id,
-
-                timestampStart: new Date(),
-                timestampEnd: null,
-
-                chatGroupId: null,
-                quizScheduleId: quizSchedule._id,
-
-                responseInitialId: null,
-                responseFinalId: null
-            }, function(err, result) {
-                if (err) {
-                    return throwErr(err);
-                }
-
-                const sessionIdString = result.insertedId.toHexString();
-
-                // Set up session
-                session = new MoocchatUserSession(socket, user._id.toHexString(), sessionIdString);
-                session.initSessionData(
-                    quizSchedule,
-                    question,
-                    questionOptions,
-                    survey,
-                    identity.identityId
-                );
-
-                next();
-            });
-        }
-
-        function setupChatGroupFormationLoop(throwErr: CBC.ErrorThrowFunc, next: CBC.NextFunc) {
-            const quizSessionId = session.data.quizSchedule._id.toHexString();
-            const loop = ChatGroupFormationLoop.GetChatGroupFormationLoopWithQuizScheduleFrom(session);
+        const setupChatGroupFormationLoop = async (quizAttempt: QuizAttempt) => {
+            const quizSessionId = quizAttempt.getQuizSchedule().getId();
+            const loop = ChatGroupFormationLoop.GetChatGroupFormationLoopWithQuizScheduleFrom(quizAttempt);
 
             if (!loop.hasStarted) {
-                loop.registerOnSessionAssignedChatGroup((newChatGroup, session) => {
-                    console.log(`Writing chat group ${newChatGroup.getId()} to user session ${session.getId()}`);
-                    dbUserSession.updateOne(
-                        {
-                            _id: new Database.ObjectId(session.getId())
-                        },
-                        {
-                            $set: {
-                                chatGroupId: newChatGroup.getId()
-                            }
-                        });
+                loop.registerOnSessionAssignedChatGroup((newChatGroup, quizAttempt) => {
+
+
+
+
+                    // TODO: ChatGroup model should already handle saving the chat groups into DB!
+
+
+
+                    // console.log(`Writing chat group ${newChatGroup.getId()} to user session ${quizAttempt.getId()}`);
+                    // dbUserSession.updateOne(
+                    //     {
+                    //         _id: new Database.ObjectId(quizAttempt.getId())
+                    //     },
+                    //     {
+                    //         $set: {
+                    //             chatGroupId: newChatGroup.getId()
+                    //         }
+                    //     });
+
+
+
+
+
+
+
                 });
 
                 loop.registerOnChatGroupFormed((newChatGroup) => {
@@ -315,24 +169,60 @@ export class UserLoginEndpoint extends WSEndpoint {
                 loop.start();
             }
 
-            next();
-        }
+            const notifyClientOfLogin = (session: UserSession, user: User, quizSchedule: QuizSchedule, question: Question, questionOptions: QuestionOption[], survey: Survey | undefined) => {
+                const researchConsent = user.getResearchConsent();
 
-        function notifyClientOfLogin(throwErr: CBC.ErrorThrowFunc, next: CBC.NextFunc) {
-            // Complete login by notifying client
-            session.getSocket().emit("loginSuccess", {
-                sessionId: session.getId(),
-                username: identity.identityId,
-                quiz: {
-                    quizSchedule: quizSchedule,
-                    question: question,
-                    questionOptions: questionOptions
-                },
-                survey: survey,
-                researchConsentRequired: (user.researchConsent === false || user.researchConsent === true) ? false : true
-            });
+                let researchConsentRequired: boolean;
 
-            next();
+                // If previously explicitly set, consent not required
+                if (researchConsent === false || researchConsent === true) {
+                    researchConsentRequired = false;
+                } else {
+                    researchConsentRequired = true;
+                }
+
+                // Complete login by notifying client
+                socket.emit("loginSuccess", {
+                    sessionId: session.getId(),
+                    username: user.getUsername(),
+                    quiz: {
+                        quizSchedule: quizSchedule.getData(),
+                        question: question.getData(),
+                        questionOptions: questionOptions.map(questionOption => questionOption.getData())
+                    },
+                    survey: survey ? survey.getData() : null,
+                    researchConsentRequired,
+                });
+            }
+
+            try {
+                const identity = await processLtiObject(data);
+                checkUserId(identity);
+
+                const user = await retrieveUser(identity);
+                checkNoActiveSession(user);
+
+                const quizSchedule = await retrieveQuizSchedule(identity.course);
+                checkQuizNotPreviouslyAttempted(user, quizSchedule);
+
+                const question = quizSchedule.getQuestion();
+
+                const questionOptions = await retrieveQuestionOptions(question);
+
+                const survey: Survey | undefined = await retrieveSurvey(identity.course);
+
+                const isAdmin = determineAdminStatus(identity);
+
+                const session = await createSession(user, isAdmin);
+
+                const quizAttempt = await createQuizAttempt(quizSchedule, session);
+
+                setupChatGroupFormationLoop(quizAttempt);
+
+                notifyClientOfLogin(session, user, quizSchedule, question, questionOptions, survey);
+            } catch (e) {
+                UserLoginEndpoint.NotifyClientOnError(socket, e);
+            }
         }
     }
 

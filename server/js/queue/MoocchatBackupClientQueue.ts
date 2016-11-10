@@ -188,7 +188,7 @@ export class MoocchatBackupClientQueue {
             console.log(`MoocchatBackupClientQueue(${this.getQuizSessionId()}) MOVING TO POOL Session ${sessionToCall.getId()}`);
 
             this.removeSession(sessionToCall);
-            waitPool.addSession(sessionToCall);
+            waitPool.addQuizAttempt(sessionToCall);
         }
 
         // If no response then timeout handler will run to move backup client queue on
