@@ -3,13 +3,11 @@ import { Conf } from "../../config/Conf";
 import { KVStore } from "../../../common/js/KVStore";
 
 import { MoocchatWaitPool } from "../queue/MoocchatWaitPool";
-import { MoocchatChatGroup } from "../chat/MoocchatChatGroup";
-// import { MoocchatUserSession } from "../user/MoocchatUserSession";
 
-import {QuizAttempt} from "../quiz/QuizAttempt";
+import { QuizAttempt } from "../quiz/QuizAttempt";
 
 export class ChatGroupFormationLoop {
-    private static readonly CGFLInstances = new KVStore<ChatGroupFormationLoop>(); 
+    private static readonly CGFLInstances = new KVStore<ChatGroupFormationLoop>();
     private static TimeBetweenChecks = Conf.chat.groups.formationIntervalMs;
 
     public static GetChatGroupFormationLoop(waitPool: MoocchatWaitPool) {
@@ -33,8 +31,7 @@ export class ChatGroupFormationLoop {
     private timerHandle: NodeJS.Timer;
     private waitPool: MoocchatWaitPool;
 
-    private onSessionAssignedChatGroup: (newChatGroup: MoocchatChatGroup, quizAttempt: QuizAttempt) => void;
-    private onChatGroupFormed: (newChatGroup: MoocchatChatGroup) => void;
+    private onGroupCoalesced: (quizAttempts: QuizAttempt[]) => void;
 
     private started: boolean = false;
 
@@ -51,12 +48,8 @@ export class ChatGroupFormationLoop {
         ChatGroupFormationLoop.CGFLInstances.put(waitPool.getQuizSessionId(), this);
     }
 
-    public registerOnSessionAssignedChatGroup(handler: (newChatGroup: MoocchatChatGroup, quizAttempt: QuizAttempt) => void) {
-        this.onSessionAssignedChatGroup = handler;
-    }
-
-    public registerOnChatGroupFormed(handler: (newChatGroup: MoocchatChatGroup) => void) {
-        this.onChatGroupFormed = handler;
+    public registerOnGroupCoalesced(handler: (quizAttempts: QuizAttempt[]) => void) {
+        this.onGroupCoalesced = handler;
     }
 
     public get hasStarted() {
@@ -88,23 +81,8 @@ export class ChatGroupFormationLoop {
         const quizAttemptsInGroup = this.waitPool.tryFormGroup();
 
         if (quizAttemptsInGroup && quizAttemptsInGroup.length > 0) {
-            // Form chat group
-            const newChatGroup = new MoocchatChatGroup(quizAttemptsInGroup);
-
-            // Run onSessionAssignedChatGroup per session
-            if (this.onSessionAssignedChatGroup) {
-                newChatGroup.getSessions().forEach((session) => {
-                    this.onSessionAssignedChatGroup(newChatGroup, session);
-                });
-            } else {
-                console.error(`No onSessionAssignedChatGroup`);
-            }
-
-            // Run onChatGroupFormed
-            if (this.onChatGroupFormed) {
-                this.onChatGroupFormed(newChatGroup);
-            } else {
-                console.error(`No onChatGroupFormed`);
+            if (this.onGroupCoalesced) {
+                this.onGroupCoalesced(quizAttemptsInGroup);
             }
 
             // Process next group at next available timeslot

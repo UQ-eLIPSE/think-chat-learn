@@ -1,106 +1,81 @@
-import {WSEndpoint} from "../WSEndpoint";
+import { WSEndpoint } from "../WSEndpoint";
 
 import * as IWSToServerData from "../../../../common/interfaces/IWSToServerData";
-import {PacSeqSocket_Server} from "../../../../common/js/PacSeqSocket_Server";
+import { PacSeqSocket_Server } from "../../../../common/js/PacSeqSocket_Server";
 
 import * as mongodb from "mongodb";
-import {Database} from "../../data/Database";
-import {UserSession} from "../../data/models/UserSession";
-import {QuestionResponse, IDB_QuestionResponse} from "../../data/models/QuestionResponse";
+// import { Database } from "../../data/Database";
+// import { UserSession } from "../../data/models/UserSession";
+// import { QuestionResponse, IDB_QuestionResponse } from "../../data/models/QuestionResponse";
 
-import {MoocchatUserSession} from "../../user/MoocchatUserSession";
+// import { MoocchatUserSession } from "../../user/MoocchatUserSession";
+
+import { QuizAttempt } from "../../quiz/QuizAttempt";
+
+import { QuestionOption } from "../../question/QuestionOption";
+import { QuestionResponse } from "../../question/QuestionResponse";
 
 export class AnswerSubmissionEndpoint extends WSEndpoint {
-    private static AnswerSubmissionHandlerFactory(socket: PacSeqSocket_Server, answerType: "initial" | "final", db: mongodb.Db) {
-        return (data: IWSToServerData.AnswerResponse) => {
-            const session = MoocchatUserSession.GetSession(data.sessionId, socket);
+    private static async AnswerSubmissionHandler(socket: PacSeqSocket_Server, answerType: "initial" | "final", db: mongodb.Db, data: IWSToServerData.AnswerResponse) {
+        const quizAttempt = await QuizAttempt.Get(data.quizAttemptId);
 
-            if (!session) {
-                return console.error("Attempted answer submission with invalid session ID = " + data.sessionId);
-            }
+        if (!quizAttempt) {
+            return console.error("Attempted answer submission with invalid quiz attempt ID = " + data.quizAttemptId);
+        }
 
-            const optionIdString = data.optionId;
-            const justification = data.justification;
+        const justification = data.justification;
+        const questionOptionId = data.optionId;
 
-            /** Holds reference to the answer object (depends on `answerType`) */
-            let sessionAnswerObj: IDB_QuestionResponse;
+        // Fetch question option
+        const questionOption = await QuestionOption.GetAutoFetch(db, questionOptionId);
 
-            /** String for websocket event to be sent on success */
-            let onSuccessWebsocketEvent: string;
+        if (!questionOption) {
+            return console.error("Could not find question option ID = " + questionOptionId);
+        }
 
-            /** Function for generating the update set depending on `answerType` */
-            let generateUpdateSet: (id: mongodb.ObjectID) => Object;
+        // Check it is valid to quiz
+        if (questionOption.getQuestion() !== quizAttempt.getQuizSchedule().getQuestion()) {
+            return console.error(`Question option ${questionOption.getId()} refers to question ${questionOption.getQuestion().getId()}, but quiz attempt ${quizAttempt.getId()} relies on quiz schedule referring to question ${quizAttempt.getQuizSchedule().getQuestion().getId()}`);
+        }
 
-            switch (answerType) {
-                case "initial":
-                    sessionAnswerObj = session.data.response.initial;
-                    onSuccessWebsocketEvent = "answerSubmissionInitialSaved";
-                    generateUpdateSet = (questionResponseObjectId) => {
-                        return {
-                            responseInitialId: questionResponseObjectId
-                        }
-                    }
-                    break;
+        /** String for websocket event to be sent on success */
+        let onSuccessWebsocketEvent: string;
 
-                case "final":
-                    sessionAnswerObj = session.data.response.final;
-                    onSuccessWebsocketEvent = "answerSubmissionFinalSaved";
-                    generateUpdateSet = (questionResponseObjectId) => {
-                        return {
-                            responseFinalId: questionResponseObjectId
-                        }
-                    }
-                    break;
-
-                default:
-                    throw new Error("Unrecogised answer type");
-            }
-
-            // Check that option ID is valid for session
-            if (optionIdString &&
-                session.data.quizQuestionOptions
-                    .map((option) => option._id.toString())
-                    .indexOf(optionIdString) < 0) {
-                return;
-            }
-
-            // Check that it hasn't already been saved
-            if (sessionAnswerObj &&
-                sessionAnswerObj._id) {
-                return;
-            }
-
-            new QuestionResponse(db).insertOne({
-                optionId: (optionIdString ? new Database.ObjectId(optionIdString) : null),
-                justification: justification,
-                timestamp: new Date()
-            }, function(err, result) {
-                if (err) {
-                    return console.error(err);
+        switch (answerType) {
+            case "initial":
+                // Prevent resubmits
+                if (quizAttempt.getResponseInitial()) {
+                    return;
                 }
 
-                const questionResponseObjectId = result.insertedId;
+                onSuccessWebsocketEvent = "answerSubmissionInitialSaved";
+                break;
 
-                // Sets the OBJECT that is being held in session.data.response.*
-                sessionAnswerObj._id = questionResponseObjectId;
-                sessionAnswerObj.optionId = new Database.ObjectId(optionIdString);
-                sessionAnswerObj.justification = justification;
+            case "final":
+                // Prevent resubmits
+                if (quizAttempt.getResponseFinal()) {
+                    return;
+                }
 
-                new UserSession(db).updateOne(
-                    {
-                        _id: new Database.ObjectId(session.getId())
-                    },
-                    {
-                        $set: generateUpdateSet(questionResponseObjectId)
-                    },
-                    function(err, result) {
-                        if (err) {
-                            return console.error(err);
-                        }
+                onSuccessWebsocketEvent = "answerSubmissionFinalSaved";
+                break;
+        }
 
-                        session.getSocket().emit(onSuccessWebsocketEvent);
-                    });
-            });
+        // Create response; then set within quiz attempt 
+        const questionResponse = await QuestionResponse.Create(db, {
+            justification,
+            timestamp: new Date(),
+        }, questionOption);
+
+        quizAttempt.setQuizResponse(answerType, questionResponse);
+
+        socket.emit(onSuccessWebsocketEvent);
+    }
+
+    private static AnswerSubmissionHandlerFactory(socket: PacSeqSocket_Server, answerType: "initial" | "final", db: mongodb.Db) {
+        return (data: IWSToServerData.AnswerResponse) => {
+            AnswerSubmissionEndpoint.AnswerSubmissionHandler(socket, answerType, db, data)
+                .catch(e => console.error(e));
         }
     }
 

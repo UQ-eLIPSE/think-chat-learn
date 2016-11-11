@@ -73,12 +73,19 @@ export class Survey {
         }
 
         // We only limit ourselves to one survey at a time
-        const survey = await dbSurvey.findOne(filter);
+        const survey: IDB_Survey = await dbSurvey.findOne(filter);
 
         if (!survey) {
             return undefined;
         }
-        
+
+        // If survey has existing object, return that
+        const existingObj = Survey.Get(survey._id.toHexString());
+
+        if (existingObj) {
+            return existingObj;
+        }
+
         return new Survey(db, survey);
     }
 

@@ -154,8 +154,11 @@ export class UserSession {
         UserSession.Store.delete(this.getId());
     }
 
-    public async destroyInstance() {
+    public async end() {
         await this.setTimestampEnd();
+    }
+
+    public destroyInstance() {
         this.removeFromStore();
 
         // Remove related objects

@@ -83,7 +83,7 @@ export class MoocchatBackupClientQueue {
     }
 
     public broadcastWaitPoolCount() {
-        const waitPool = MoocchatWaitPool.GetPoolWithQuizSessionId(this.getQuizSessionId());
+        const waitPool = MoocchatWaitPool.GetPool(this.getQuizSessionId());
 
         // If there is no wait pool, stop
         if (!waitPool) {

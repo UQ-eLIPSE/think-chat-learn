@@ -87,12 +87,20 @@ export class QuizSchedule {
         }
 
         // We only limit ourselves to one quiz at a time
-        const quizSchedule = await dbQuizSchedule.findOne(filter);
+        const quizSchedule: IDB_QuizSchedule = await dbQuizSchedule.findOne(filter);
 
         if (!quizSchedule) {
             return undefined;
         }
 
+        // If quiz schedule has existing object, return that
+        const existingObj = QuizSchedule.Get(quizSchedule._id.toHexString());
+
+        if (existingObj) {
+            return existingObj;
+        }
+
+        // Fetch related objects to quiz schedule
         const question = await Question.GetAutoFetch(db, quizSchedule.questionId.toHexString());
 
         if (!question) {

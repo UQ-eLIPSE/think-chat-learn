@@ -1,4 +1,5 @@
 import * as mongodb from "mongodb";
+import { Database } from "../data/Database";
 import { QuizAttempt as DBQuizAttempt, IDB_QuizAttempt } from "../data/models/QuizAttempt";
 
 import { KVStore } from "../../../common/js/KVStore";
@@ -134,6 +135,7 @@ export class QuizAttempt {
         const dbQuizAttempt = new DBQuizAttempt(db).getCollection();
 
         const newQuizAttemptData: IDB_QuizAttempt = {
+            _id: Database.GenerateRandomOID(),
             userSessionId: userSession.getOID(),
             quizScheduleId: quizSchedule.getOID(),
             responseInitialId: null,
