@@ -1,20 +1,23 @@
-import {WSEndpoint} from "../WSEndpoint";
+import { WSEndpoint } from "../WSEndpoint";
 
 import * as IWSToServerData from "../../../../common/interfaces/IWSToServerData";
-import {PacSeqSocket_Server} from "../../../../common/js/PacSeqSocket_Server";
+import { PacSeqSocket_Server } from "../../../../common/js/PacSeqSocket_Server";
 
-import {MoocchatUserSession} from "../../user/MoocchatUserSession";
+import { UserSession } from "../../user/UserSession";
+
+import { SocketSession } from "../SocketSession";
 
 export class SocketResyncEndpoint extends WSEndpoint {
     private static HandleSessionSocketResync(socket: PacSeqSocket_Server, data: IWSToServerData.SessionSocketResync) {
-        const session = MoocchatUserSession.GetSession(data.sessionId, socket);
+        const session = UserSession.Get(data.sessionId);
 
         if (!session) {
             return console.error("Attempted session socket resync with invalid session ID = " + data.sessionId);
         }
 
-        // No need to do anything further because the socket resync
-        // happens within MoocchatUserSession.GetSession
+        const socketSession = SocketSession.GetAutoCreate(session);
+        
+        socketSession.setSocket(socket);
     }
 
 

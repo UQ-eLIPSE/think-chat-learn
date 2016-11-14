@@ -1,35 +1,42 @@
-import {WSEndpoint} from "../WSEndpoint";
+import { WSEndpoint } from "../WSEndpoint";
 
 import * as IWSToServerData from "../../../../common/interfaces/IWSToServerData";
-import {PacSeqSocket_Server} from "../../../../common/js/PacSeqSocket_Server";
+import { PacSeqSocket_Server } from "../../../../common/js/PacSeqSocket_Server";
 
 import * as mongodb from "mongodb";
-import {Database} from "../../data/Database";
-import {SurveyResponse} from "../../data/models/SurveyResponse";
 
-import {MoocchatUserSession} from "../../user/MoocchatUserSession";
+import { Survey } from "../../survey/Survey";
+import { SurveyResponse } from "../../survey/SurveyResponse";
+import { QuizAttempt } from "../../quiz/QuizAttempt";
 
 export class SurveyEndpoint extends WSEndpoint {
-    private static HandleSubmitSurvey(socket: PacSeqSocket_Server, data: IWSToServerData.SurveyResponse, db: mongodb.Db) {
-        const session = MoocchatUserSession.GetSession(data.sessionId, socket);
+    private static async HandleSubmitSurvey(socket: PacSeqSocket_Server, data: IWSToServerData.SurveyResponse, db: mongodb.Db) {
+        const quizAttempt = QuizAttempt.Get(data.quizAttemptId);
 
-        if (!session) {
-            return console.error("Attempted survey submission with invalid session ID = " + data.sessionId);
+        if (!quizAttempt) {
+            return console.error("Attempted survey submission with invalid quiz attempt ID = " + data.quizAttemptId);
         }
 
-        // If no survey or survey already saved, don't save another
-        if (!session.data.survey || session.data.surveyTaken) {
+        const previousSurveyResponse = await SurveyResponse.GetWithQuizAttempt(quizAttempt);
+
+        // If survey already saved, don't save another
+        if (!previousSurveyResponse) {
             return;
         }
 
-        session.data.surveyTaken = true;
+        const survey = await Survey.FetchActiveNow(db, quizAttempt.getQuizSchedule().getQuestion().getData().course);
 
-        new SurveyResponse(db).insertOne({
-            sessionId: new Database.ObjectId(session.getId()),
-            surveyId: session.data.survey._id,
+        // If no survey, then don't save at all
+        if (!survey) {
+            return;
+        }
+
+        await SurveyResponse.Create(db, {
             timestamp: new Date(),
-            content: data.content
-        });
+            content: data.content,
+        }, survey, quizAttempt);
+
+        // TODO: MOOCchat does not currently return survey success message; this should be included.
     }
 
 
@@ -43,7 +50,8 @@ export class SurveyEndpoint extends WSEndpoint {
 
     public get onSubmitSurvey() {
         return (data: IWSToServerData.SurveyResponse) => {
-            SurveyEndpoint.HandleSubmitSurvey(this.getSocket(), data, this.db);
+            SurveyEndpoint.HandleSubmitSurvey(this.getSocket(), data, this.db)
+                .catch(e => console.error(e));
         };
     }
 

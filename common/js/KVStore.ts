@@ -33,4 +33,8 @@ export class KVStore<T> {
     getValues() {
         return this.getKeys().map(id => this.kvStore[id]);
     }
+
+    hasKey(key: string) {
+        return this.kvStore.hasOwnProperty(key);
+    }
 }

@@ -1,7 +1,13 @@
 import * as mongodb from "mongodb";
+import * as crypto from "crypto";
 
 export abstract class Database<CollectionData> {
     public static ObjectId = mongodb.ObjectID;
+
+
+    public static GenerateRandomOID() {
+        return new mongodb.ObjectID(crypto.randomBytes(12).toString('hex'));
+    }
 
 
     public static Connect(url: string, callback?: mongodb.MongoCallback<mongodb.Db>) {
@@ -9,7 +15,11 @@ export abstract class Database<CollectionData> {
     }
 
     public static Collection(db: mongodb.Db, collectionName: string, callback?: mongodb.MongoCallback<mongodb.Collection>) {
-        db.collection(collectionName, callback);
+        if (callback) {
+            return db.collection(collectionName, callback);
+        }
+
+        return db.collection(collectionName);
     }
 
     public static InsertOne<CollectionData>(collection: mongodb.Collection, data: CollectionData, callback?: mongodb.MongoCallback<mongodb.InsertOneWriteOpResult>) {
@@ -20,8 +30,12 @@ export abstract class Database<CollectionData> {
         collection.insertMany(dataArray, callback);
     }
 
-    public static CursorToArray<CollectionData>(cursor: mongodb.Cursor, callback?: mongodb.MongoCallback<CollectionData[]>) {
-        cursor.toArray(callback);
+    public static CursorToArray<CollectionData>(cursor: mongodb.Cursor, callback?: mongodb.MongoCallback<CollectionData[]>): void | Promise<any> {
+        if (callback) {
+            return cursor.toArray(callback);
+        }
+
+        return cursor.toArray();
     }
 
     public static ReadWithCursor(collection: mongodb.Collection, query?: Object) {
@@ -36,8 +50,12 @@ export abstract class Database<CollectionData> {
         collection.deleteOne(filter, callback);
     }
 
-    public static Close(db: mongodb.Db, callback?: mongodb.MongoCallback<void>) {
-        db.close(callback);
+    public static Close(db: mongodb.Db, callback?: mongodb.MongoCallback<void>): void | Promise<any> {
+        if (callback) {
+            return db.close(callback);
+        }
+
+        return db.close();
     }
 
 
@@ -63,7 +81,7 @@ export abstract class Database<CollectionData> {
     }
 
     private fetchCollection() {
-        this.collection = this.db.collection(this.getCollectionName()); 
+        this.collection = this.db.collection(this.getCollectionName());
     }
 
     public getCollection() {

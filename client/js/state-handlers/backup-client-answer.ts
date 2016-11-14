@@ -16,6 +16,7 @@ export const BackupClientAnswerStateHandler: IStateHandler<STATE> =
         // Successful backup client answer save
         session.socket.once<IWSToClientData.BackupClientEnterQueueState>(WebsocketEvents.INBOUND.BACKUP_CLIENT_ENTER_QUEUE_STATE, (data) => {
             if (data.success) {
+                session.setQuizAttemptId(data.quizAttemptId);
                 session.stateMachine.goTo(STATE.BACKUP_CLIENT_WAIT);
             }
         });

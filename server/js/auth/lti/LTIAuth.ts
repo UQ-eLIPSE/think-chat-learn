@@ -1,9 +1,10 @@
-import {ILTIData} from "../../../../common/interfaces/ILTIData";
-import {IMoocchatAuthProcessReturn} from "../IMoocchatAuthProcessReturn";
+import { ILTIData } from "../../../../common/interfaces/ILTIData";
+import { IMoocchatAuthProcessReturn } from "../IMoocchatAuthProcessReturn";
+import { IMoocchatIdentityInfo } from "../IMoocchatIdentityInfo";
 
-import {Conf} from "../../../config/Conf";
-import {LTIProcessor} from "./LTIProcessor";
-import {MoocchatAuth} from "../MoocchatAuth";
+import { Conf } from "../../../config/Conf";
+import { LTIProcessor } from "./LTIProcessor";
+import { MoocchatAuth } from "../MoocchatAuth";
 
 export class LTIAuth extends MoocchatAuth {
     private static Processor = new LTIProcessor(Conf.lti.signingInfo, true, Conf.lti.testMode);
@@ -36,7 +37,11 @@ export class LTIAuth extends MoocchatAuth {
         };
     }
 
-    public getIdentity() {
+    public getIdentity(): IMoocchatIdentityInfo {
+        if (!this.ltiData.user_id) {
+            throw new Error("No user ID available for use");
+        }
+
         return {
             _authName: this.getAuthName(),
 
@@ -47,7 +52,7 @@ export class LTIAuth extends MoocchatAuth {
                 family: this.ltiData.lis_person_name_family || "",
             },
             course: this.ltiData.context_label || "",
-            roles: this.ltiData.roles.split(","),
+            roles: (this.ltiData.roles || "").split(","),
         }
     }
 }

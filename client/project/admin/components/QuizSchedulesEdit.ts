@@ -74,15 +74,12 @@ export class QuizSchedulesEdit extends ComponentRenderable {
             const questionId: string = this.section$("#question-title").text();
             const availableStart: string = rfc3339LocalToDate(this.section$("#available-start").val()).toISOString();
             const availableEnd: string = rfc3339LocalToDate(this.section$("#available-end").val()).toISOString();
-            // const blackboardColumnId: string = this.section$("#blackboard-column-id").val();
-            const blackboardColumnId: string = "";
 
             const xhrCall = this.ajaxFuncs!.put<IMoocchatApi.ToClientResponseBase<void>>
                 (`/api/admin/quiz/${this.quizSchedule!._id}`, {
                     questionId,
                     availableStart,
                     availableEnd,
-                    blackboardColumnId,
                 });
 
             // Store in XHR store to permit aborting when necessary
@@ -152,7 +149,6 @@ export class QuizSchedulesEdit extends ComponentRenderable {
         this.section$("#question-title").text(this.quizSchedule!.questionId || "");
         this.section$("#available-start").val(dateToRfc3339Local(new Date(this.quizSchedule!.availableStart || 0)));
         this.section$("#available-end").val(dateToRfc3339Local(new Date(this.quizSchedule!.availableEnd || 0)));
-        // this.section$("#blackboard-column-id").val(quizSchedule.blackboardColumnId || "");
     }
 }
 

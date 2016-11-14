@@ -53,7 +53,7 @@ export class MoocchatChat {
 
         this.session.socket.emitData<IWSToServerData.ChatGroupQuitStatusChange>(WebsocketEvents.OUTBOUND.CHAT_GROUP_QUIT_STATUS_CHANGE, {
             groupId: this.groupData.groupId,
-            sessionId: this.session.id,
+            quizAttemptId: this.session.quizAttemptId,
             quitStatus: true    // Indicate we are quitting
         });
     }
@@ -66,7 +66,7 @@ export class MoocchatChat {
     public sendMessage(message: string) {
         this.session.socket.emitData<IWSToServerData.ChatGroupSendMessage>(WebsocketEvents.OUTBOUND.CHAT_GROUP_SEND_MESSAGE, {
             groupId: this.groupData.groupId,
-            sessionId: this.session.id,
+            quizAttemptId: this.session.quizAttemptId,
             message: message
         });
     }
@@ -127,7 +127,7 @@ export class MoocchatChat {
     public sendTypingState(isTyping: boolean) {
         this.session.socket.emitData<IWSToServerData.ChatGroupTypingNotification>(WebsocketEvents.OUTBOUND.CHAT_GROUP_TYPING_NOTIFICATION, {
             groupId: this.groupData.groupId,
-            sessionId: this.session.id,
+            quizAttemptId: this.session.quizAttemptId,
             isTyping: isTyping
         });
     }
@@ -206,7 +206,7 @@ export class MoocchatChat {
     public static EmitJoinRequest<StateTypeEnum>(session: MoocchatSession<StateTypeEnum>, callback: (data: IWSToClientData.ChatGroupFormed) => void) {
         session.socket.once<IWSToClientData.ChatGroupFormed>(WebsocketEvents.INBOUND.CHAT_GROUP_FORMED, callback);
         session.socket.emitData<IWSToServerData.ChatGroupJoin>(WebsocketEvents.OUTBOUND.CHAT_GROUP_JOIN_REQUEST, {
-            sessionId: session.id
+            quizAttemptId: session.quizAttemptId
         });
     }
 }

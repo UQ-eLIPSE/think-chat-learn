@@ -21,6 +21,7 @@ export const LoginStateHandler: IStateHandler<STATE> =
 
                     session
                         .setId(data.sessionId)
+                        .setQuizAttemptId(data.quizAttemptId)
                         .setQuiz(new MoocchatQuiz(data.quiz))
                         .setUser(user);
 

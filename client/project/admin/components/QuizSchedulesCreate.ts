@@ -95,15 +95,12 @@ export class QuizSchedulesCreate extends ComponentRenderable {
             const questionId: string = this.section$("#question-id").val();
             const availableStart: string = rfc3339LocalToDate(this.section$("#available-start").val()).toISOString();
             const availableEnd: string = rfc3339LocalToDate(this.section$("#available-end").val()).toISOString();
-            // const blackboardColumnId: string = this.section$("#blackboard-column-id").val();
-            const blackboardColumnId: string = "";
 
             const xhrCall = this.ajaxFuncs!.post<IMoocchatApi.ToClientResponseBase<IMoocchatApi.ToClientInsertionIdResponse>>
                 (`/api/admin/quiz`, {
                     questionId,
                     availableStart,
                     availableEnd,
-                    blackboardColumnId,
                 });
 
             // Store in XHR store to permit aborting when necessary

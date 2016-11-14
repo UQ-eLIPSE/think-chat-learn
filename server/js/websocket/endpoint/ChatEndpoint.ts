@@ -1,40 +1,44 @@
-import {WSEndpoint} from "../WSEndpoint";
+import { WSEndpoint } from "../WSEndpoint";
 
 import * as IWSToServerData from "../../../../common/interfaces/IWSToServerData";
-import {PacSeqSocket_Server} from "../../../../common/js/PacSeqSocket_Server";
+import { PacSeqSocket_Server } from "../../../../common/js/PacSeqSocket_Server";
 
-import {MoocchatUserSession} from "../../user/MoocchatUserSession";
-import {MoocchatWaitPool} from "../../queue/MoocchatWaitPool";
-import {MoocchatBackupClientQueue} from "../../queue/MoocchatBackupClientQueue";
+import { MoocchatWaitPool } from "../../queue/MoocchatWaitPool";
+import { MoocchatBackupClientQueue } from "../../queue/MoocchatBackupClientQueue";
 
 import * as mongodb from "mongodb";
-import {Database} from "../../data/Database";
-import {ChatMessage} from "../../data/models/ChatMessage";
 
-import {ChatGroupFormationLoop} from "../../chat/ChatGroupFormationLoop";
+import { QuizAttempt } from "../../quiz/QuizAttempt";
+
+import { ChatGroup } from "../../chat/ChatGroup";
+import { ChatMessage } from "../../chat/ChatMessage";
+
+import { ChatGroupFormationLoop } from "../../chat/ChatGroupFormationLoop";
 
 export class ChatEndpoint extends WSEndpoint {
     private static HandleJoinRequest(socket: PacSeqSocket_Server, data: IWSToServerData.ChatGroupJoin) {
-        const session = MoocchatUserSession.GetSession(data.sessionId, socket);
+        const quizAttempt = QuizAttempt.Get(data.quizAttemptId);
 
-        if (!session) {
-            return console.error("Attempted chat group join request with invalid session ID = " + data.sessionId);
+        if (!quizAttempt) {
+            return console.error("Attempted chat group join request with invalid quiz attempt ID = " + data.quizAttemptId);
         }
+
+        const existingChatGroup = ChatGroup.GetWithQuizAttempt(quizAttempt);
 
         // Can't join into pool if already in chat group
-        if (session.chatGroup) {
-            return console.error(`Attempted chat group join request with session already in chat group; session ID = ${session.getId()}`);
+        if (existingChatGroup) {
+            return console.error(`Attempted chat group join request with quiz attempt already in chat group; quiz attempt ID = ${quizAttempt.getId()}`);
         }
 
-        const waitPool = MoocchatWaitPool.GetPoolWithQuizScheduleFrom(session);
+        const waitPool = MoocchatWaitPool.GetPoolWithQuizScheduleFrom(quizAttempt);
 
         // Can't join into pool if already in pool
-        if (waitPool.hasSession(session)) {
-            return console.error(`Attempted chat group join request with session already in pool; session ID = ${session.getId()}`);
+        if (waitPool.hasQuizAttempt(quizAttempt)) {
+            return console.error(`Attempted chat group join request with quiz attempt already in pool; quiz attempt ID = ${quizAttempt.getId()}`);
         }
 
-        // Add session into wait pool
-        waitPool.addSession(session);
+        // Add quiz attempt into wait pool
+        waitPool.addQuizAttempt(quizAttempt);
 
 
         // Run the chat group formation loop now
@@ -45,7 +49,7 @@ export class ChatEndpoint extends WSEndpoint {
         }
 
         // Update backup queue
-        const backupClientQueue = MoocchatBackupClientQueue.GetQueueWithQuizScheduleFrom(session);
+        const backupClientQueue = MoocchatBackupClientQueue.GetQueueWithQuizScheduleFrom(quizAttempt);
 
         if (backupClientQueue) {
             backupClientQueue.broadcastWaitPoolCount();
@@ -53,59 +57,58 @@ export class ChatEndpoint extends WSEndpoint {
     }
 
     private static HandleTypingNotification(socket: PacSeqSocket_Server, data: IWSToServerData.ChatGroupTypingNotification) {
-        const session = MoocchatUserSession.GetSession(data.sessionId, socket);
+        const quizAttempt = QuizAttempt.Get(data.quizAttemptId);
 
-        if (!session) {
-            return console.error("Attempted chat group typing notification with invalid session ID = " + data.sessionId);
+        if (!quizAttempt) {
+            return console.error("Attempted chat group typing notification with invalid quiz attempt ID = " + data.quizAttemptId);
         }
 
-        const chatGroup = session.chatGroup;
+        const chatGroup = ChatGroup.GetWithQuizAttempt(quizAttempt);
 
         if (!chatGroup) {
-            return console.error("Could not find chat group for session ID = " + data.sessionId);
+            return console.error("Could not find chat group for quiz attempt ID = " + data.quizAttemptId);
         }
 
-        chatGroup.setTypingState(session, data.isTyping);
+        chatGroup.setTypingState(quizAttempt, data.isTyping);
     }
 
     private static HandleQuitStatusChange(socket: PacSeqSocket_Server, data: IWSToServerData.ChatGroupQuitStatusChange) {
-        const session = MoocchatUserSession.GetSession(data.sessionId, socket);
+        const quizAttempt = QuizAttempt.Get(data.quizAttemptId);
 
-        if (!session) {
-            return console.error("Attempted chat group quit request with invalid session ID = " + data.sessionId);
+        if (!quizAttempt) {
+            return console.error("Attempted chat group typing notification with invalid quiz attempt ID = " + data.quizAttemptId);
         }
 
-        const chatGroup = session.chatGroup;
+        const chatGroup = ChatGroup.GetWithQuizAttempt(quizAttempt);
 
         if (!chatGroup) {
-            return console.error("Could not find chat group for session ID = " + data.sessionId);
+            return console.error("Could not find chat group for quiz attempt ID = " + data.quizAttemptId);
         }
 
         if (data.quitStatus) {
-            chatGroup.quitSession(session);
+            chatGroup.quitQuizAttempt(quizAttempt);
         }
     }
 
-    private static HandleMessage(socket: PacSeqSocket_Server, data: IWSToServerData.ChatGroupSendMessage, db: mongodb.Db) {
-        const session = MoocchatUserSession.GetSession(data.sessionId, socket);
+    private static async HandleMessage(socket: PacSeqSocket_Server, data: IWSToServerData.ChatGroupSendMessage, db: mongodb.Db) {
+        const quizAttempt = QuizAttempt.Get(data.quizAttemptId);
 
-        if (!session) {
-            return console.error("Attempted chat group message from invalid session ID = " + data.sessionId);
+        if (!quizAttempt) {
+            return console.error("Attempted chat group message with invalid quiz attempt ID = " + data.quizAttemptId);
         }
 
-        const chatGroup = session.chatGroup;
+        const chatGroup = ChatGroup.GetWithQuizAttempt(quizAttempt);
 
         if (!chatGroup) {
-            return console.error("Could not find chat group for session ID = " + data.sessionId);
+            return console.error("Could not find chat group for quiz attempt ID = " + data.quizAttemptId);
         }
 
-        new ChatMessage(db).insertOne({
+        const chatMessage = await ChatMessage.Create(db, {
             content: data.message,
-            sessionId: new Database.ObjectId(session.getId()),
-            timestamp: new Date()
-        });
+            timestamp: new Date(),
+        }, chatGroup, quizAttempt);
 
-        chatGroup.broadcastMessage(session, data.message);
+        chatGroup.broadcastMessage(quizAttempt, chatMessage.getMessage()!);
     }
 
 
@@ -138,7 +141,8 @@ export class ChatEndpoint extends WSEndpoint {
 
     public get onMessage() {
         return (data: IWSToServerData.ChatGroupSendMessage) => {
-            ChatEndpoint.HandleMessage(this.getSocket(), data, this.db);
+            ChatEndpoint.HandleMessage(this.getSocket(), data, this.db)
+                .catch(e => console.error(e));
         }
     }
 

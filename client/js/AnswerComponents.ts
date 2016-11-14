@@ -43,7 +43,7 @@ export function SubmissionFuncFactory<StateTypeEnum>(session: MoocchatSession<St
         sessionAnswerObj.justification = ClipJustification(justification);
 
         session.socket.emitData<IWSToServerData.AnswerResponse>(websocketEvent, {
-            sessionId: session.id,
+            quizAttemptId: session.quizAttemptId,
             optionId: sessionAnswerObj.optionId,
             justification: sessionAnswerObj.justification
         });

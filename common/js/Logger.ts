@@ -6,7 +6,7 @@ export class Logger {
         Error: console.error
     };
 
-    private static LoggerInstance: Logger;
+    private static LoggerInstance: Logger | undefined;
 
 
     public static Get(config?: LoggerConfig) {

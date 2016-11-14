@@ -19,9 +19,10 @@ interface ChatGroupAnswer {
 // Inbound data interfaces
 export interface LoginSuccess {
     sessionId: string;
+    quizAttemptId: string;
     username: string;
     quiz: ToClientData.Quiz;
-    survey: ToClientData.Survey;
+    survey: ToClientData.Survey | null;
     researchConsentRequired: boolean;
 }
 export type LoginFailure = string;
@@ -33,11 +34,9 @@ export interface ChatGroupFormed {
     groupId: string;
     groupSize: number;
     groupAnswers: ChatGroupAnswer[];
-    screenName: string;
     clientIndex: number;
 }
 export interface ChatGroupMessage {
-    screenName: string;
     clientIndex: number;
     message: string;
     timestamp: number;
@@ -45,9 +44,7 @@ export interface ChatGroupMessage {
 export interface ChatGroupQuitStatusChange {
     groupId: string;
     groupSize: number;
-    quitQueueSize: number;
 
-    screenName: string;
     clientIndex: number;
     quitStatus: boolean;
 }
@@ -55,7 +52,9 @@ export interface ChatGroupTypingNotification {
     clientIndicies: number[]
 }
 
-export type BackupClientEnterQueueState = SuccessState;
+export interface BackupClientEnterQueueState extends SuccessState {
+    quizAttemptId: string;
+}
 export interface ClientPoolCountUpdate {
     backupClientQueue: {
         quizScheduleId: string;

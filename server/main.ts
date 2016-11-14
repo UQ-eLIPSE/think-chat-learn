@@ -160,8 +160,8 @@ AssociateDELETEEndpoint("/api/admin/question/:questionId/option/:questionOptionI
 
 
 // MOOCchat
-AssociatePOSTEndpoint("/api/moocchat/start", undefined);
-AssociatePOSTEndpoint("/api/moocchat/fsm/transit", undefined);
+// AssociatePOSTEndpoint("/api/moocchat/start", undefined);
+// AssociatePOSTEndpoint("/api/moocchat/fsm/transit", undefined);
 
 
 // Sessions

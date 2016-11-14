@@ -55,7 +55,7 @@ export class Moocchat {
                 const userLoginEndpoint = new UserLoginEndpoint(socket, this.db);
                 const answerSubmissionEndpoint = new AnswerSubmissionEndpoint(socket, this.db);
                 const surveyEndpoint = new SurveyEndpoint(socket, this.db);
-                const backupClientEndpoint = new BackupClientEndpoint(socket);
+                const backupClientEndpoint = new BackupClientEndpoint(socket, this.db);
                 const socketResyncEndpoint = new SocketResyncEndpoint(socket);
 
                 chatEndpoint.registerAllEndpointSocketEvents();
