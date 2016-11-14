@@ -9,8 +9,6 @@ import { Survey } from "../../survey/Survey";
 import { SurveyResponse } from "../../survey/SurveyResponse";
 import { QuizAttempt } from "../../quiz/QuizAttempt";
 
-// import {MoocchatUserSession} from "../../user/MoocchatUserSession";
-
 export class SurveyEndpoint extends WSEndpoint {
     private static async HandleSubmitSurvey(socket: PacSeqSocket_Server, data: IWSToServerData.SurveyResponse, db: mongodb.Db) {
         const quizAttempt = await QuizAttempt.Get(data.quizAttemptId);

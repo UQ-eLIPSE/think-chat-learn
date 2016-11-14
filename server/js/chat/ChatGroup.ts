@@ -62,10 +62,22 @@ export class ChatGroup {
             return undefined;
         }
 
-        const quizSchedule = await QuizSchedule.GetAutoFetch(db, chatGroup.quizScheduleId.toHexString());
+        chatGroupId = chatGroup._id!.toHexString();
+
+        if (!chatGroup.quizScheduleId) {
+            throw new Error(`Quiz schedule ID missing for chat group "${chatGroupId}"`);
+        }
+
+        const quizScheduleId = chatGroup.quizScheduleId.toHexString();
+
+        const quizSchedule = await QuizSchedule.GetAutoFetch(db, quizScheduleId);
 
         if (!quizSchedule) {
-            throw new Error(`Quiz schedule "${chatGroup.quizScheduleId.toHexString()}" missing for chat group "${chatGroup._id.toHexString()}"`)
+            throw new Error(`Quiz schedule "${quizScheduleId}" missing for chat group "${chatGroupId}"`)
+        }
+
+        if (!chatGroup.quizAttemptIds) {
+            throw new Error(`Quiz attempt IDs missing for chat group "${chatGroupId}"`);
         }
 
         const quizAttemptFetchPromises: Promise<QuizAttempt>[] = [];
@@ -78,30 +90,30 @@ export class ChatGroup {
         const quizAttempts = await Promise.all(quizAttemptFetchPromises);
 
         if (quizAttempts.length !== quizAttemptFetchPromises.length) {
-            throw new Error(`Could not fetch all quiz attempts for chat group "${chatGroup._id.toHexString()}"`);
+            throw new Error(`Could not fetch all quiz attempts for chat group "${chatGroupId}"`);
         }
 
         return new ChatGroup(db, chatGroup, quizSchedule, quizAttempts);
     }
 
-    private static async Update(chatGroup: ChatGroup, updateData: IDB_ChatGroup) {
-        const dbChatGroup = new DBChatGroup(chatGroup.getDb()).getCollection();
+    // private static async Update(chatGroup: ChatGroup, updateData: IDB_ChatGroup) {
+    //     const dbChatGroup = new DBChatGroup(chatGroup.getDb()).getCollection();
 
-        const result = await dbChatGroup.findOneAndUpdate(
-            {
-                _id: chatGroup.getOID(),
-            },
-            {
-                $set: updateData,
-            },
-            {
-                returnOriginal: false,
-            }
-        );
+    //     const result = await dbChatGroup.findOneAndUpdate(
+    //         {
+    //             _id: chatGroup.getOID(),
+    //         },
+    //         {
+    //             $set: updateData,
+    //         },
+    //         {
+    //             returnOriginal: false,
+    //         }
+    //     );
 
-        // Update data for this object
-        chatGroup.data = result.value;
-    }
+    //     // Update data for this object
+    //     chatGroup.data = result.value;
+    // }
 
     private constructor(db: mongodb.Db, data: IDB_ChatGroup, quizSchedule: QuizSchedule, quizAttempts: QuizAttempt[]) {
         this.data = data;
@@ -112,16 +124,16 @@ export class ChatGroup {
         this.addToStore();
     }
 
-    private getDb() {
-        return this.db;
-    }
+    // private getDb() {
+    //     return this.db;
+    // }
 
     public getOID() {
-        return this.data._id;
+        return this.data._id!;
     }
 
     public getId() {
-        return this.data._id.toHexString();
+        return this.getOID().toHexString();
     }
 
     public getData() {

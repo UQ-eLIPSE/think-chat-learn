@@ -62,8 +62,8 @@ export interface QuizAttempt<OID> {
     _id?: OID,
     userSessionId?: OID,
     quizScheduleId?: OID,
-    responseInitialId?: OID,
-    responseFinalId?: OID,
+    responseInitialId?: OID | null,
+    responseFinalId?: OID | null,
 }
 
 export interface QuizAttemptTransition<OID, Date> {
@@ -144,7 +144,7 @@ export interface UserSession<OID, Date> {
     _id?: OID,
     userId?: OID,
     timestampStart?: Date,
-    timestampEnd?: Date,
+    timestampEnd?: Date | null,
     type?: UserSessionType,
 }
 

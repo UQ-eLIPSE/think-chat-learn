@@ -62,39 +62,53 @@ export class SurveyResponse {
             return undefined;
         }
 
-        const survey = await Survey.GetAutoFetch(db, surveyResponse.surveyId.toHexString());
+        surveyResponseId = surveyResponse._id!.toHexString();
 
-        if (!survey) {
-            throw new Error(`Survey "${surveyResponse.surveyId.toHexString()}" missing for survey response "${surveyResponse._id.toHexString()}"`)
+        if (!surveyResponse.surveyId) {
+            throw new Error(`Survey ID missing for survey response "${surveyResponseId}"`)
         }
 
-        const quizAttempt = await QuizAttempt.GetAutoFetch(db, surveyResponse.quizAttemptId.toHexString());
+        const surveyId = surveyResponse.surveyId.toHexString();
+
+        const survey = await Survey.GetAutoFetch(db, surveyId);
+
+        if (!survey) {
+            throw new Error(`Survey "${surveyId}" missing for survey response "${surveyResponseId}"`)
+        }
+
+        if (!surveyResponse.quizAttemptId) {
+            throw new Error(`Quiz attempt ID missing for survey response "${surveyResponseId}"`)
+        }
+
+        const quizAttemptId = surveyResponse.quizAttemptId.toHexString();
+
+        const quizAttempt = await QuizAttempt.GetAutoFetch(db, quizAttemptId);
 
         if (!quizAttempt) {
-            throw new Error(`Quiz attempt "${surveyResponse.quizAttemptId.toHexString()}" missing for survey response "${surveyResponse._id.toHexString()}"`)
+            throw new Error(`Quiz attempt "${quizAttemptId}" missing for survey response "${surveyResponseId}"`)
         }
 
         return new SurveyResponse(db, surveyResponse, survey, quizAttempt);
     }
 
-    private static async Update(surveyResponse: SurveyResponse, updateData: IDB_SurveyResponse) {
-        const dbSurveyResponse = new DBSurveyResponse(surveyResponse.getDb()).getCollection();
+    // private static async Update(surveyResponse: SurveyResponse, updateData: IDB_SurveyResponse) {
+    //     const dbSurveyResponse = new DBSurveyResponse(surveyResponse.getDb()).getCollection();
 
-        const result = await dbSurveyResponse.findOneAndUpdate(
-            {
-                _id: surveyResponse.getOID(),
-            },
-            {
-                $set: updateData,
-            },
-            {
-                returnOriginal: false,
-            }
-        );
+    //     const result = await dbSurveyResponse.findOneAndUpdate(
+    //         {
+    //             _id: surveyResponse.getOID(),
+    //         },
+    //         {
+    //             $set: updateData,
+    //         },
+    //         {
+    //             returnOriginal: false,
+    //         }
+    //     );
 
-        // Update data for this object
-        surveyResponse.data = result.value;
-    }
+    //     // Update data for this object
+    //     surveyResponse.data = result.value;
+    // }
 
     private constructor(db: mongodb.Db, data: IDB_SurveyResponse, survey: Survey, quizAttempt: QuizAttempt) {
         this.data = data;
@@ -105,16 +119,16 @@ export class SurveyResponse {
         this.addToStore();
     }
 
-    private getDb() {
-        return this.db;
-    }
+    // private getDb() {
+    //     return this.db;
+    // }
 
     public getOID() {
-        return this.data._id;
+        return this.data._id!;
     }
 
     public getId() {
-        return this.data._id.toHexString();
+        return this.getOID().toHexString();
     }
 
     public getSurvey() {

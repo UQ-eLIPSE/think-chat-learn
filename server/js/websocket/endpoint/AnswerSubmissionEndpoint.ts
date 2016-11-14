@@ -4,11 +4,6 @@ import * as IWSToServerData from "../../../../common/interfaces/IWSToServerData"
 import { PacSeqSocket_Server } from "../../../../common/js/PacSeqSocket_Server";
 
 import * as mongodb from "mongodb";
-// import { Database } from "../../data/Database";
-// import { UserSession } from "../../data/models/UserSession";
-// import { QuestionResponse, IDB_QuestionResponse } from "../../data/models/QuestionResponse";
-
-// import { MoocchatUserSession } from "../../user/MoocchatUserSession";
 
 import { QuizAttempt } from "../../quiz/QuizAttempt";
 
@@ -59,6 +54,9 @@ export class AnswerSubmissionEndpoint extends WSEndpoint {
 
                 onSuccessWebsocketEvent = "answerSubmissionFinalSaved";
                 break;
+
+            default:
+                return console.error(`Unrecognised response type "${answerType}" for answer submission`);
         }
 
         // Create response; then set within quiz attempt 

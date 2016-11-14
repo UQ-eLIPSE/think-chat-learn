@@ -50,10 +50,18 @@ export class UserSession {
             return undefined;
         }
 
-        const user = await User.GetAutoFetch(db, userSession.userId.toHexString());
+        userSessionId = userSession._id!.toHexString();
+
+        if (!userSession.userId) {
+            throw new Error(`User ID missing for user session "${userSessionId}"`);
+        }
+
+        const userId = userSession.userId.toHexString();
+
+        const user = await User.GetAutoFetch(db, userId);
 
         if (!user) {
-            throw new Error(`User "${userSession.userId.toHexString()}" missing for user session "${userSession._id.toHexString()}"`)
+            throw new Error(`User "${userId}" missing for user session "${userSessionId}"`)
         }
 
         return new UserSession(db, userSession, user);
@@ -69,7 +77,7 @@ export class UserSession {
         ).toArray();
 
         return userSessions.map(userSession => {
-            const existingObj = UserSession.Get(userSession._id.toHexString());
+            const existingObj = UserSession.Get(userSession._id!.toHexString());
 
             if (existingObj) {
                 return existingObj;
@@ -129,11 +137,11 @@ export class UserSession {
     }
 
     public getOID() {
-        return this.data._id;
+        return this.data._id!;
     }
 
     public getId() {
-        return this.data._id.toHexString();
+        return this.getOID().toHexString();
     }
 
     public getUser() {

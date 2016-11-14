@@ -33,6 +33,10 @@ export class QuizAttempt {
         return QuizAttempt.Store.getValues().filter(quizAttempt => quizAttempt.getResponseFinal() === responseFinal);
     }
 
+    public static GetWithResponse(response: QuestionResponse) {
+        return QuizAttempt.Store.getValues().filter(quizAttempt => quizAttempt.getResponseInitial() === response || quizAttempt.getResponseFinal() === response);
+    }
+
     public static GetWithUserSession(userSession: UserSession) {
         return QuizAttempt.Store.getValues().filter(quizAttempt => quizAttempt.getUserSession() === userSession);
     }
@@ -68,16 +72,30 @@ export class QuizAttempt {
             return undefined;
         }
 
-        const userSession = await UserSession.GetAutoFetch(db, quizAttempt.userSessionId.toHexString());
+        quizAttemptId = quizAttempt._id!.toHexString();
 
-        if (!userSession) {
-            throw new Error(`User session "${quizAttempt.userSessionId.toHexString()}" missing for quiz attempt "${quizAttempt._id.toHexString()}"`)
+        if (!quizAttempt.userSessionId) {
+            throw new Error(`User session ID missing for quiz attempt "${quizAttemptId}"`)
         }
 
-        const quizSchedule = await QuizSchedule.GetAutoFetch(db, quizAttempt.quizScheduleId.toHexString());
+        const userSessionId = quizAttempt.userSessionId.toHexString();
+
+        const userSession = await UserSession.GetAutoFetch(db, userSessionId);
+
+        if (!userSession) {
+            throw new Error(`User session "${quizAttempt.userSessionId.toHexString()}" missing for quiz attempt "${quizAttemptId}"`)
+        }
+
+        if (!quizAttempt.quizScheduleId) {
+            throw new Error(`Quiz schedule ID missing for quiz attempt "${quizAttemptId}"`)
+        }
+
+        const quizScheduleId = quizAttempt.quizScheduleId.toHexString();
+
+        const quizSchedule = await QuizSchedule.GetAutoFetch(db, quizScheduleId);
 
         if (!quizSchedule) {
-            throw new Error(`Quiz schedule "${quizAttempt.quizScheduleId.toHexString()}" missing for quiz attempt "${quizAttempt._id.toHexString()}"`)
+            throw new Error(`Quiz schedule "${quizScheduleId}" missing for quiz attempt "${quizAttemptId}"`)
         }
 
 
@@ -88,7 +106,7 @@ export class QuizAttempt {
             const responseInitial = await QuestionResponse.GetAutoFetch(db, quizAttempt.responseInitialId.toHexString());
 
             if (!responseInitial) {
-                throw new Error(`Response initial "${quizAttempt.responseInitialId.toHexString()}" missing for quiz attempt "${quizAttempt._id.toHexString()}"`)
+                throw new Error(`Response initial "${quizAttempt.responseInitialId.toHexString()}" missing for quiz attempt "${quizAttemptId}"`)
             }
 
             quizAttemptObj.responseInitial = responseInitial;
@@ -98,7 +116,7 @@ export class QuizAttempt {
             const responseFinal = await QuestionResponse.GetAutoFetch(db, quizAttempt.responseFinalId.toHexString());
 
             if (!responseFinal) {
-                throw new Error(`Response final "${quizAttempt.responseFinalId.toHexString()}" missing for quiz attempt "${quizAttempt._id.toHexString()}"`)
+                throw new Error(`Response final "${quizAttempt.responseFinalId.toHexString()}" missing for quiz attempt "${quizAttemptId}"`)
             }
 
             quizAttemptObj.responseFinal = responseFinal;
@@ -180,11 +198,11 @@ export class QuizAttempt {
     }
 
     public getOID() {
-        return this.data._id;
+        return this.data._id!;
     }
 
     public getId() {
-        return this.data._id.toHexString();
+        return this.getOID().toHexString();
     }
 
     public getUserSession() {

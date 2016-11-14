@@ -38,6 +38,10 @@ export class LTIAuth extends MoocchatAuth {
     }
 
     public getIdentity(): IMoocchatIdentityInfo {
+        if (!this.ltiData.user_id) {
+            throw new Error("No user ID available for use");
+        }
+
         return {
             _authName: this.getAuthName(),
 
@@ -48,7 +52,7 @@ export class LTIAuth extends MoocchatAuth {
                 family: this.ltiData.lis_person_name_family || "",
             },
             course: this.ltiData.context_label || "",
-            roles: this.ltiData.roles.split(","),
+            roles: (this.ltiData.roles || "").split(","),
         }
     }
 }

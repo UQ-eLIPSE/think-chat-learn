@@ -58,33 +58,41 @@ export class QuestionResponse {
             return undefined;
         }
 
-        const questionOption = await QuestionOption.GetAutoFetch(db, questionResponse.optionId.toHexString());
+        questionResponseId = questionResponse._id!.toHexString();
+
+        if (!questionResponse.optionId) {
+            throw new Error(`Option ID missing for question response "${questionResponseId}"`);
+        }
+        
+        const optionId = questionResponse.optionId.toHexString();
+
+        const questionOption = await QuestionOption.GetAutoFetch(db, optionId);
 
         if (!questionOption) {
-            throw new Error(`Question option "${questionResponse.optionId.toHexString()}" missing for question option "${questionResponse._id.toHexString()}"`)
+            throw new Error(`Question option "${optionId}" missing for question option "${questionResponseId}"`)
         }
 
         return new QuestionResponse(db, questionResponse, questionOption);
     }
 
-    private static async Update(questionResponse: QuestionResponse, updateData: IDB_QuestionResponse) {
-        const dbQuestionResponse = new DBQuestionResponse(questionResponse.getDb()).getCollection();
+    // private static async Update(questionResponse: QuestionResponse, updateData: IDB_QuestionResponse) {
+    //     const dbQuestionResponse = new DBQuestionResponse(questionResponse.getDb()).getCollection();
 
-        const result = await dbQuestionResponse.findOneAndUpdate(
-            {
-                _id: questionResponse.getOID(),
-            },
-            {
-                $set: updateData,
-            },
-            {
-                returnOriginal: false,
-            }
-        );
+    //     const result = await dbQuestionResponse.findOneAndUpdate(
+    //         {
+    //             _id: questionResponse.getOID(),
+    //         },
+    //         {
+    //             $set: updateData,
+    //         },
+    //         {
+    //             returnOriginal: false,
+    //         }
+    //     );
 
-        // Update data for this object
-        questionResponse.data = result.value;
-    }
+    //     // Update data for this object
+    //     questionResponse.data = result.value;
+    // }
 
     private constructor(db: mongodb.Db, data: IDB_QuestionResponse, questionOption: QuestionOption) {
         this.data = data;
@@ -94,16 +102,16 @@ export class QuestionResponse {
         this.addToStore();
     }
 
-    private getDb() {
-        return this.db;
-    }
+    // private getDb() {
+    //     return this.db;
+    // }
 
     public getOID() {
-        return this.data._id;
+        return this.data._id!;
     }
 
     public getId() {
-        return this.data._id.toHexString();
+        return this.getOID().toHexString();
     }
 
     public getQuestionOption() {
@@ -122,7 +130,6 @@ export class QuestionResponse {
         this.removeFromStore();
 
         // Remove related objects
-        QuizAttempt.GetWithResponseInitial(this).forEach(_ => _.destroyInstance());
-        QuizAttempt.GetWithResponseFinal(this).forEach(_ => _.destroyInstance());
+        QuizAttempt.GetWithResponse(this).forEach(_ => _.destroyInstance());
     }
 }

@@ -80,7 +80,7 @@ export class Survey {
         }
 
         // If survey has existing object, return that
-        const existingObj = Survey.Get(survey._id.toHexString());
+        const existingObj = Survey.Get(survey._id!.toHexString());
 
         if (existingObj) {
             return existingObj;
@@ -89,24 +89,24 @@ export class Survey {
         return new Survey(db, survey);
     }
 
-    private static async Update(survey: Survey, updateData: IDB_Survey) {
-        const dbSurvey = new DBSurvey(survey.getDb()).getCollection();
+    // private static async Update(survey: Survey, updateData: IDB_Survey) {
+    //     const dbSurvey = new DBSurvey(survey.getDb()).getCollection();
 
-        const result = await dbSurvey.findOneAndUpdate(
-            {
-                _id: survey.getOID(),
-            },
-            {
-                $set: updateData,
-            },
-            {
-                returnOriginal: false,
-            }
-        );
+    //     const result = await dbSurvey.findOneAndUpdate(
+    //         {
+    //             _id: survey.getOID(),
+    //         },
+    //         {
+    //             $set: updateData,
+    //         },
+    //         {
+    //             returnOriginal: false,
+    //         }
+    //     );
 
-        // Update data for this object
-        survey.data = result.value;
-    }
+    //     // Update data for this object
+    //     survey.data = result.value;
+    // }
 
     private constructor(db: mongodb.Db, data: IDB_Survey) {
         this.data = data;
@@ -115,16 +115,16 @@ export class Survey {
         this.addToStore();
     }
 
-    private getDb() {
-        return this.db;
-    }
+    // private getDb() {
+    //     return this.db;
+    // }
 
     public getOID() {
-        return this.data._id;
+        return this.data._id!;
     }
 
     public getId() {
-        return this.data._id.toHexString();
+        return this.getOID().toHexString();
     }
 
     public getData() {

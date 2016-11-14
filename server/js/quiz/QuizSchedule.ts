@@ -58,10 +58,18 @@ export class QuizSchedule {
             return undefined;
         }
 
-        const question = await Question.GetAutoFetch(db, quizSchedule.questionId.toHexString());
+        quizScheduleId = quizSchedule._id!.toHexString();
+
+        if (!quizSchedule.questionId) {
+            throw new Error(`Question ID missing for quiz schedule "${quizScheduleId}"`);
+        }
+
+        const questionId = quizSchedule.questionId.toHexString();
+
+        const question = await Question.GetAutoFetch(db, questionId);
 
         if (!question) {
-            throw new Error(`Question "${quizSchedule.questionId.toHexString()}" missing for quiz schedule "${quizSchedule._id.toHexString()}"`)
+            throw new Error(`Question "${questionId}" missing for quiz schedule "${quizScheduleId}"`)
         }
 
         return new QuizSchedule(db, quizSchedule, question);
@@ -93,18 +101,26 @@ export class QuizSchedule {
             return undefined;
         }
 
+        const quizScheduleId = quizSchedule._id!.toHexString();
+
         // If quiz schedule has existing object, return that
-        const existingObj = QuizSchedule.Get(quizSchedule._id.toHexString());
+        const existingObj = QuizSchedule.Get(quizScheduleId);
 
         if (existingObj) {
             return existingObj;
         }
 
+        if (!quizSchedule.questionId) {
+            throw new Error(`Question ID missing for quiz schedule "${quizScheduleId}"`);
+        }
+
+        const questionId = quizSchedule.questionId.toHexString();
+
         // Fetch related objects to quiz schedule
-        const question = await Question.GetAutoFetch(db, quizSchedule.questionId.toHexString());
+        const question = await Question.GetAutoFetch(db, questionId);
 
         if (!question) {
-            throw new Error(`Question "${quizSchedule.questionId.toHexString()}" missing for quiz schedule "${quizSchedule._id.toHexString()}"`)
+            throw new Error(`Question "${questionId}" missing for quiz schedule "${quizScheduleId}"`);
         }
 
         return new QuizSchedule(db, quizSchedule, question);
@@ -142,11 +158,11 @@ export class QuizSchedule {
     }
 
     public getOID() {
-        return this.data._id;
+        return this.data._id!;
     }
 
     public getId() {
-        return this.data._id.toHexString();
+        return this.getOID().toHexString();
     }
 
     public getData() {
@@ -155,6 +171,18 @@ export class QuizSchedule {
 
     public getQuestion() {
         return this.question;
+    }
+
+    public async setAvailableStart(date: Date) {
+        await QuizSchedule.Update(this, {
+            availableStart: date,
+        });
+    }
+
+    public async setAvailableEnd(date: Date) {
+        await QuizSchedule.Update(this, {
+            availableEnd: date,
+        });
     }
 
     private addToStore() {

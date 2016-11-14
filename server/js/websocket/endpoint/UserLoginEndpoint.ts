@@ -48,6 +48,10 @@ export class UserLoginEndpoint extends WSEndpoint {
             const user = await UserLoginFunc.RetrieveUser(db, identity);
             UserLoginFunc.CheckNoActiveSession(user);   // TODO: Need to change this to check live quiz attempts to the current quiz, not user session
 
+            if (!identity.course) {
+                throw new Error(`No course associated with identity`);
+            }
+
             const quizSchedule = await UserLoginFunc.RetrieveQuizSchedule(db, identity.course);
             await UserLoginFunc.CheckQuizNotPreviouslyAttempted(db, user, quizSchedule);
 
@@ -256,7 +260,7 @@ class UserLoginFunc {
             "administrator",
         ];
 
-        const isAdmin = identity.roles.some(role => {
+        const isAdmin = (identity.roles || []).some(role => {
             return Utils.Array.includes(adminRoles, role.toLowerCase());
         });
 
