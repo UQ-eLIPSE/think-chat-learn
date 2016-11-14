@@ -85,15 +85,21 @@ export class Question {
     }
 
     public getOID() {
-        return this.data._id;
+        return this.data._id!;
     }
 
     public getId() {
-        return this.data._id.toHexString();
+        return this.getOID().toHexString();
     }
 
     public getData() {
         return this.data;
+    }
+
+    public async setTitle(title: string) {
+        await Question.Update(this, {
+            title,
+        });
     }
 
     private addToStore() {

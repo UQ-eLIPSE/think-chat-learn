@@ -39,7 +39,7 @@ export class MoocchatWaitPool {
     }
 
     public static Destroy(pool: MoocchatWaitPool) {
-        pool._quizSessionId = undefined;
+        // pool._quizSessionId = undefined;
         pool.answerQueues.empty();
 
         MoocchatWaitPool.WaitPools.delete(pool.getQuizSessionId());
@@ -61,14 +61,20 @@ export class MoocchatWaitPool {
     }
 
     public addQuizAttempt(quizAttempt: QuizAttempt) {
-        const answerId = quizAttempt.getResponseInitial().getQuestionOption().getId();
+        const responseInitial = quizAttempt.getResponseInitial();
+
+        if (!responseInitial) {
+            throw new Error(`Attempted to add quiz attempt to pool without response initial; quiz attempt ID = ${quizAttempt.getId()}`);
+        }
+
+        const answerId = responseInitial.getQuestionOption().getId();
 
         // If answer ID is not in queue, create queue for it
         if (!this.answerQueues.hasKey(answerId)) {
             this.answerQueues.put(answerId, []);
         }
 
-        const answerQueue = this.answerQueues.get(answerId);
+        const answerQueue = this.answerQueues.get(answerId)!;
 
         // If the client is already in the queue, don't do anything.
         for (let i = 0; i < answerQueue.length; ++i) {
@@ -92,7 +98,7 @@ export class MoocchatWaitPool {
 
         for (let i = 0; i < arr.length; ++i) {
             const queueKey = arr[i];
-            const thisAnswerQuizAttemptArray = this.answerQueues.get(queueKey);
+            const thisAnswerQuizAttemptArray = this.answerQueues.get(queueKey)!;
 
             for (let j = 0; j < thisAnswerQuizAttemptArray.length; ++j) {
                 if (thisAnswerQuizAttemptArray[j].quizAttempt === quizAttempt) {
@@ -111,7 +117,7 @@ export class MoocchatWaitPool {
 
         for (let i = 0; i < arr.length; ++i) {
             const queueKey = arr[i];
-            const thisAnswerQuizAttemptArray = this.answerQueues.get(queueKey);
+            const thisAnswerQuizAttemptArray = this.answerQueues.get(queueKey)!;
 
             for (let j = 0; j < thisAnswerQuizAttemptArray.length; ++j) {
                 if (thisAnswerQuizAttemptArray[j].quizAttempt === quizAttempt) {
@@ -125,7 +131,7 @@ export class MoocchatWaitPool {
 
     private answerQueueKeysWithQuizAttempts() {
         return this.answerQueues.getKeys().filter((queueKey) => {
-            return this.answerQueues.get(queueKey).length > 0;
+            return this.answerQueues.get(queueKey)!.length > 0;
         });
     }
 
@@ -133,7 +139,7 @@ export class MoocchatWaitPool {
         const queueSizes: { [queueKey: string]: number } = {};
 
         this.answerQueues.getKeys().forEach((queueKey) => {
-            queueSizes[queueKey] = this.answerQueues.get(queueKey).length;
+            queueSizes[queueKey] = this.answerQueues.get(queueKey)!.length;
         });
 
         return queueSizes;
@@ -141,7 +147,7 @@ export class MoocchatWaitPool {
 
     private waitTimeoutReached() {
         return this.answerQueues.getKeys().some((queueKey) => {
-            const firstInQueueData = this.answerQueues.get(queueKey)[0];
+            const firstInQueueData = this.answerQueues.get(queueKey)![0];
 
             if (!firstInQueueData) {
                 return false;
@@ -156,12 +162,18 @@ export class MoocchatWaitPool {
     public getSize() {
         // Go over answerQueues and sum the length of each queues
         return this.answerQueues.getKeys().reduce((sum, queueKey) => {
-            return sum + this.answerQueues.get(queueKey).length;
+            return sum + this.answerQueues.get(queueKey)!.length;
         }, 0);
     }
 
     private popQuizAttemptFromAnswerQueue(queueKey: string) {
-        return this.answerQueues.get(queueKey).shift().quizAttempt;
+        const poppedFirstElem = this.answerQueues.get(queueKey)!.shift();
+        
+        if (!poppedFirstElem) {
+            return;
+        }
+
+        return poppedFirstElem.quizAttempt;
     }
 
     public tryFormGroup() {
@@ -241,7 +253,8 @@ export class MoocchatWaitPool {
         }
 
         return intendedQueueKeys.map((queueKey) => {
-            return this.popQuizAttemptFromAnswerQueue(queueKey);
+            // Queues should always have the required number of elements that are being popped from queue
+            return this.popQuizAttemptFromAnswerQueue(queueKey)!;
         });
     }
 }

@@ -135,7 +135,7 @@ export interface User<OID> {
     username?: string,
     firstName?: string,
     lastName?: string,
-    researchConsent?: boolean,
+    researchConsent?: boolean | null,
 }
 
 

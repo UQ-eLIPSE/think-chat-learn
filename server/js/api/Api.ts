@@ -40,7 +40,7 @@ export namespace Api {
         @ApiDecorators.ApplySession
         @ApiDecorators.AdminOnly
         public static Gets(moocchat: Moocchat, res: ApiResponseCallback<IDB_QuizSchedule[]>, data: IMoocchatApi.ToServerStandardRequestBase, session?: Session): void {
-            const course = session.getCourse();
+            const course = session!.getCourse();
 
             // Look up quizzes under course
             const db = moocchat.getDb();
@@ -63,7 +63,7 @@ export namespace Api {
         @ApiDecorators.ApplySession
         @ApiDecorators.AdminOnly
         public static Gets_NowFuture(moocchat: Moocchat, res: ApiResponseCallback<IDB_QuizSchedule[]>, data: IMoocchatApi.ToServerStandardRequestBase, session?: Session): void {
-            const course = session.getCourse();
+            const course = session!.getCourse();
 
             // Look up quizzes under course
             const db = moocchat.getDb();
@@ -108,9 +108,9 @@ export namespace Api {
         @ApiDecorators.ApplySession
         @ApiDecorators.AdminOnly
         public static Post(moocchat: Moocchat, res: ApiResponseCallback<IMoocchatApi.ToClientInsertionIdResponse>, data: IMoocchatApi.ToServerStandardRequestBase & IDB_QuizSchedule, session?: Session): void {
-            precheckQuizScheduleInsert(moocchat, session, res, data, (questionId, availableStart, availableEnd) => {
+            precheckQuizScheduleInsert(moocchat, session!, res, data, (questionId, availableStart, availableEnd) => {
                 const db = moocchat.getDb();
-                const course = session.getCourse();
+                const course = session!.getCourse();
 
                 new DBQuizSchedule(db).insertOne({
                     questionId,
@@ -134,7 +134,7 @@ export namespace Api {
         @ApiDecorators.AdminOnly
         @ApiDecorators.LimitQuizIdToSession
         public static Put(moocchat: Moocchat, res: ApiResponseCallback<void>, data: IMoocchatApi.ToServerQuizId & IDB_QuizSchedule, session?: Session): void {
-            precheckQuizScheduleUpdate(moocchat, session, res, data, (questionId, availableStart, availableEnd) => {
+            precheckQuizScheduleUpdate(moocchat, session!, res, data, (questionId, availableStart, availableEnd) => {
                 const db = moocchat.getDb();
                 const quizId = data.quizId;
 
@@ -187,7 +187,7 @@ export namespace Api {
         @ApiDecorators.ApplySession
         @ApiDecorators.AdminOnly
         public static Gets(moocchat: Moocchat, res: ApiResponseCallback<IDB_Question[]>, data: IMoocchatApi.ToServerStandardRequestBase, session?: Session): void {
-            const course = session.getCourse();
+            const course = session!.getCourse();
 
             // Look up question under course
             const db = moocchat.getDb();
@@ -230,7 +230,7 @@ export namespace Api {
         @ApiDecorators.AdminOnly
         public static Post(moocchat: Moocchat, res: ApiResponseCallback<IMoocchatApi.ToClientInsertionIdResponse>, data: IMoocchatApi.ToServerStandardRequestBase & IDB_Question, session?: Session): void {
             const db = moocchat.getDb();
-            const course = session.getCourse();
+            const course = session!.getCourse();
 
             new DBQuestion(db).insertOne({
                 title: data.title || "",
@@ -346,7 +346,7 @@ export namespace Api {
         @ApiDecorators.LimitQuestionIdToSession
         @ApiDecorators.LimitQuestionOptionIdToQuestionId
         public static Put_WithQuestionId(moocchat: Moocchat, res: ApiResponseCallback<void>, data: IMoocchatApi.ToServerQuestionId & IMoocchatApi.ToServerQuestionOptionId & IDB_QuestionOption, session?: Session): void {
-            precheckQuestionOptionUpdate(moocchat, session, res, data, (content, sequence) => {
+            precheckQuestionOptionUpdate(moocchat, session!, res, data, (content, sequence) => {
                 const db = moocchat.getDb();
 
                 new DBQuestionOption(db).updateOne(
@@ -438,7 +438,7 @@ export namespace Api {
         @ApiDecorators.ApplySession
         @ApiDecorators.AdminOnly
         public static Gets(moocchat: Moocchat, res: ApiResponseCallback<IDB_User[]>, data: IMoocchatApi.ToServerStandardRequestBase, session?: Session): void {
-            const course = session.getCourse();
+            const course = session!.getCourse();
 
             // Look up all quiz schedules in course, then all user sessions, then map to users
             const db = moocchat.getDb();
@@ -515,11 +515,10 @@ export namespace Api {
             const authResult = authObj.authenticate();
 
             if (!authResult.success) {
-                authResult
                 return res({
                     success: false,
                     code: "AUTHENTICATION_FAILED",
-                    message: authResult.message,
+                    message: authResult.message || "",
                 });
             }
 
@@ -548,7 +547,7 @@ export namespace Api {
 
         @ApiDecorators.ApplySession
         public static Delete(moocchat: Moocchat, res: ApiResponseCallback<void>, data: IMoocchatApi.ToServerStandardRequestBase, session?: Session): void {
-            Session.Destroy(session);
+            Session.Destroy(session!);
 
             return res({
                 success: true,
@@ -889,9 +888,9 @@ export function precheckQuizScheduleUpdate(moocchat: Moocchat, session: Session,
         const existingQuizSchedule = result[0];
 
         // Update where given
-        !questionId && (questionId = existingQuizSchedule.questionId);
-        !availableStart && (availableStart = existingQuizSchedule.availableStart);
-        !availableEnd && (availableEnd = existingQuizSchedule.availableEnd);
+        !questionId && (questionId = existingQuizSchedule.questionId!);
+        !availableStart && (availableStart = existingQuizSchedule.availableStart!);
+        !availableEnd && (availableEnd = existingQuizSchedule.availableEnd!);
 
         // Available start and end dates must not be reversed
         if (availableStart > availableEnd) {
@@ -947,14 +946,14 @@ export function precheckQuizScheduleUpdate(moocchat: Moocchat, session: Session,
 }
 
 
-export function precheckQuestionOptionUpdate(moocchat: Moocchat, session: Session, res: ApiResponseCallback<void>, data: IMoocchatApi.ToServerQuestionOptionId & IMoocchatApi.ToServerQuestionId & IDB_QuestionOption, callback: (content: string, sequence: number) => void) {
+export function precheckQuestionOptionUpdate(moocchat: Moocchat, session: Session, res: ApiResponseCallback<void>, data: IMoocchatApi.ToServerQuestionOptionId & IMoocchatApi.ToServerQuestionId & IDB_QuestionOption, callback: (content: string, sequence: number | null) => void) {
     const db = moocchat.getDb();
 
     // Check valid data
     const questionOptionId: mongodb.ObjectID = new Database.ObjectId(data.questionOptionId);
     const questionId: mongodb.ObjectID = new Database.ObjectId(data.questionId);
-    let content: string;
-    let sequence: number;
+    let content: string | null | undefined;
+    let sequence: number | null | undefined;
 
     try {
         // Note that JSON data only has bare primitives, so complex objects and Dates do not exist and must be converted from strings
@@ -993,8 +992,8 @@ export function precheckQuestionOptionUpdate(moocchat: Moocchat, session: Sessio
         const existingQuestionOption = result[0];
 
         // Update where given
-        !content && (content = existingQuestionOption.content);
-        (sequence === undefined) && (sequence = existingQuestionOption.sequence);
+        !content && (content = existingQuestionOption.content!);
+        (sequence === undefined) && (sequence = existingQuestionOption.sequence!);
 
         // Run callback if conditions pass
         callback(

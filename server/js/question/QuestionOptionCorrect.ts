@@ -62,16 +62,30 @@ export class QuestionOptionCorrect {
             return undefined;
         }
 
-        const question = await Question.GetAutoFetch(db, questionOptionCorrect.questionId.toHexString());
+        questionOptionCorrectId = questionOptionCorrect._id!.toHexString();
 
-        if (!question) {
-            throw new Error(`Question "${questionOptionCorrect.questionId.toHexString()}" missing for question option correct "${questionOptionCorrect._id.toHexString()}"`)
+        if (!questionOptionCorrect.questionId) {
+            throw new Error(`Question ID missing for question option correct "${questionOptionCorrectId}"`)
         }
 
-        const questionOption = await QuestionOption.GetAutoFetch(db, questionOptionCorrect.optionId.toHexString());
+        const questionId = questionOptionCorrect.questionId.toHexString();
+
+        const question = await Question.GetAutoFetch(db, questionId);
+
+        if (!question) {
+            throw new Error(`Question "${questionId}" missing for question option correct "${questionOptionCorrectId}"`)
+        }
+
+        if (!questionOptionCorrect.optionId){
+            throw new Error(`Question option ID missing for question option correct "${questionOptionCorrectId}"`)
+        }
+
+        const optionId = questionOptionCorrect.optionId.toHexString();
+
+        const questionOption = await QuestionOption.GetAutoFetch(db, optionId);
 
         if (!questionOption) {
-            throw new Error(`Question option "${questionOptionCorrect.optionId.toHexString()}" missing for question option correct "${questionOptionCorrect._id.toHexString()}"`)
+            throw new Error(`Question option "${optionId}" missing for question option correct "${questionOptionCorrectId}"`)
         }
 
         return new QuestionOptionCorrect(db, questionOption, question, questionOption);
@@ -110,11 +124,11 @@ export class QuestionOptionCorrect {
     }
 
     public getOID() {
-        return this.data._id;
+        return this.data._id!;
     }
 
     public getId() {
-        return this.data._id.toHexString();
+        return this.getOID().toHexString();
     }
 
     public getQuestion() {
@@ -123,6 +137,12 @@ export class QuestionOptionCorrect {
 
     public getQuestionOption() {
         return this.questionOption;
+    }
+
+    public async setJustification(justification: string) {
+        await QuestionOptionCorrect.Update(this, {
+            justification,
+        });
     }
 
     private addToStore() {

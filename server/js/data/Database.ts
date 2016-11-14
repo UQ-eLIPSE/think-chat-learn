@@ -15,7 +15,11 @@ export abstract class Database<CollectionData> {
     }
 
     public static Collection(db: mongodb.Db, collectionName: string, callback?: mongodb.MongoCallback<mongodb.Collection>) {
-        db.collection(collectionName, callback);
+        if (callback) {
+            return db.collection(collectionName, callback);
+        }
+
+        return db.collection(collectionName);
     }
 
     public static InsertOne<CollectionData>(collection: mongodb.Collection, data: CollectionData, callback?: mongodb.MongoCallback<mongodb.InsertOneWriteOpResult>) {
@@ -27,7 +31,11 @@ export abstract class Database<CollectionData> {
     }
 
     public static CursorToArray<CollectionData>(cursor: mongodb.Cursor, callback?: mongodb.MongoCallback<CollectionData[]>) {
-        cursor.toArray(callback);
+        if (callback) {
+            return cursor.toArray(callback);
+        }
+
+        return cursor.toArray();
     }
 
     public static ReadWithCursor(collection: mongodb.Collection, query?: Object) {
@@ -43,7 +51,11 @@ export abstract class Database<CollectionData> {
     }
 
     public static Close(db: mongodb.Db, callback?: mongodb.MongoCallback<void>) {
-        db.close(callback);
+        if (callback) {
+            return db.close(callback);
+        }
+
+        return db.close();
     }
 
 
@@ -69,7 +81,7 @@ export abstract class Database<CollectionData> {
     }
 
     private fetchCollection() {
-        this.collection = this.db.collection(this.getCollectionName()); 
+        this.collection = this.db.collection(this.getCollectionName());
     }
 
     public getCollection() {

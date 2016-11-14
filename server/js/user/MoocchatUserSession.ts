@@ -1,6 +1,6 @@
 import { KVStore } from "../../../common/js/KVStore";
 
-import { MoocchatUserSessionData } from "./MoocchatUserSessionData";
+// import { MoocchatUserSessionData } from "./MoocchatUserSessionData";
 
 import { MoocchatWaitPool } from "../queue/MoocchatWaitPool";
 import { MoocchatChatGroup } from "../chat/MoocchatChatGroup";

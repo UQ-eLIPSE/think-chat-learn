@@ -29,7 +29,7 @@ export class PacSeqSocket<SocketType> {
     private eventManager: EventBox = new EventBox();
 
     /** Holds pointer to new socket from which this socket was copied */
-    private transferredTo: PacSeqSocket<SocketType> = undefined;
+    private transferredTo: PacSeqSocket<SocketType> | undefined = undefined;
 
     protected enableInternalEventDispatch: boolean = false;
 
@@ -81,10 +81,10 @@ export class PacSeqSocket<SocketType> {
         // EventBox which was carried over to the new PacSeqSocket obj when .Copy() is run 
         // EventBox.Destroy(psSocket.eventManager);
 
-        psSocket.mode = undefined;
-        psSocket.sequencer = undefined;
-        psSocket.lastAcknowledged = undefined;
-        psSocket.eventManager = undefined;
+        delete psSocket.mode;
+        delete psSocket.sequencer;
+        delete psSocket.lastAcknowledged;
+        delete psSocket.eventManager;
     }
 
     /** 

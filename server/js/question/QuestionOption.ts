@@ -59,10 +59,18 @@ export class QuestionOption {
             return undefined;
         }
 
-        const question = await Question.GetAutoFetch(db, questionOption.questionId.toHexString());
+        questionOptionId = questionOption._id!.toHexString();
+
+        if (!questionOption.questionId) {
+            throw new Error(`Question ID missing for question option "${questionOptionId}"`)
+        }
+
+        const questionId = questionOption.questionId.toHexString();
+
+        const question = await Question.GetAutoFetch(db, questionId);
 
         if (!question) {
-            throw new Error(`Question "${questionOption.questionId.toHexString()}" missing for question option "${questionOption._id.toHexString()}"`)
+            throw new Error(`Question "${questionId}" missing for question option "${questionOptionId}"`)
         }
 
         return new QuestionOption(db, questionOption, question);
@@ -78,7 +86,7 @@ export class QuestionOption {
         ).toArray();
 
         return questionOptions.map(questionOption => {
-            const existingObj = QuestionOption.Get(questionOption._id.toHexString());
+            const existingObj = QuestionOption.Get(questionOption._id!.toHexString());
 
             if (existingObj) {
                 return existingObj;
@@ -120,11 +128,11 @@ export class QuestionOption {
     }
 
     public getOID() {
-        return this.data._id;
+        return this.data._id!;
     }
 
     public getId() {
-        return this.data._id.toHexString();
+        return this.getOID().toHexString();
     }
 
     public getData() {
@@ -133,6 +141,12 @@ export class QuestionOption {
 
     public getQuestion() {
         return this.question;
+    }
+
+    public async setContent(content: string) {
+        await QuestionOption.Update(this, {
+            content,
+        });
     }
 
     private addToStore() {
