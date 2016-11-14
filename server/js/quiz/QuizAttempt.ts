@@ -221,23 +221,32 @@ export class QuizAttempt {
         return this.responseFinal;
     }
 
+    public async setResponseInitial(response: QuestionResponse) {
+        await QuizAttempt.Update(this, {
+            responseInitialId: response.getOID(),
+        });
+
+        this.responseInitial = response;
+    }
+
+    public async setResponseFinal(response: QuestionResponse) {
+        await QuizAttempt.Update(this, {
+            responseFinalId: response.getOID(),
+        });
+
+        this.responseInitial = response;
+    }
+
     public async setQuizResponse(type: "initial" | "final", response: QuestionResponse) {
-        let updateObj: { [key: string]: mongodb.ObjectID } = {};
-
-        if (type === "initial") {
-            updateObj["responseInitialId"] = response.getOID();
-        } else if (type === "final") {
-            updateObj["responseFinalId"] = response.getOID();
-        } else {
-            throw new Error(`Unrecognised response type "${type}"`);
-        }
-
-        await QuizAttempt.Update(this, updateObj);
-
-        if (type === "initial") {
-            this.responseInitial = response;
-        } else if (type === "final") {
-            this.responseFinal = response;
+        switch (type) {
+            case "initial":
+                await this.setResponseInitial(response);
+                break;
+            case "final":
+                await this.setResponseFinal(response);
+                break;
+            default:
+                throw new Error(`Unrecognised response type "${type}"`);
         }
     }
 

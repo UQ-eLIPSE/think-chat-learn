@@ -1,15 +1,15 @@
-import {Conf} from "../../config/Conf";
+import { Conf } from "../../config/Conf";
 
-import {MoocchatUserSession} from "../user/MoocchatUserSession";
-import {MoocchatWaitPool} from "./MoocchatWaitPool";
+import { QuizAttempt } from "../quiz/QuizAttempt";
+import { MoocchatWaitPool } from "./MoocchatWaitPool";
 
 export class MoocchatBackupClientQueue {
     private static BackupClientQueues: { [quizSessionId: string]: MoocchatBackupClientQueue } = {};
 
-    private _sessions: MoocchatUserSession[];
+    private _quizAttempts: QuizAttempt[];
     private _quizSessionId: string;
 
-    private sessionToCall: MoocchatUserSession;
+    private quizAttemptToCall: QuizAttempt | undefined;
     private callNoResponseTimeoutHandle: number;
 
     public static GetQueue(quizSessionId: string) {
@@ -22,22 +22,22 @@ export class MoocchatBackupClientQueue {
     }
 
     /**
-     * Gets queue with same quiz schedule as supplied session.
-     * Session may not actually be in queue.
+     * Gets queue with same quiz schedule as supplied quiz attempt.
+     * Quiz attempt may not actually be in queue.
      * 
      * @static
-     * @param {MoocchatUserSession} session
+     * @param {QuizAttempt} quizAttempt
      * @returns
      */
-    public static GetQueueWithQuizScheduleFrom(session: MoocchatUserSession) {
-        return MoocchatBackupClientQueue.GetQueue(session.data.quizSchedule._id.toString());
+    public static GetQueueWithQuizScheduleFrom(quizAttempt: QuizAttempt) {
+        return MoocchatBackupClientQueue.GetQueue(quizAttempt.getQuizSchedule().getId());
     }
 
-    public static Destroy(chatGroup: MoocchatBackupClientQueue) {
-        chatGroup._quizSessionId = undefined;
-        chatGroup._sessions = [];
+    public static Destroy(backupQueue: MoocchatBackupClientQueue) {
+        delete backupQueue._quizSessionId;
+        delete backupQueue._quizAttempts;
 
-        delete MoocchatBackupClientQueue.BackupClientQueues[chatGroup.getQuizSessionId()];
+        delete MoocchatBackupClientQueue.BackupClientQueues[backupQueue.getQuizSessionId()];
     }
 
 
@@ -45,7 +45,7 @@ export class MoocchatBackupClientQueue {
 
     constructor(quizSessionId: string) {
         this._quizSessionId = quizSessionId;
-        this._sessions = [];
+        this._quizAttempts = [];
 
         // Put into singleton map
         MoocchatBackupClientQueue.BackupClientQueues[this.getQuizSessionId()] = this;
@@ -55,14 +55,14 @@ export class MoocchatBackupClientQueue {
         return this._quizSessionId;
     }
 
-    public getSessions() {
-        return this._sessions;
+    public getQuizAttempts() {
+        return this._quizAttempts;
     }
 
 
     public broadcast(event: string, data: any) {
-        this.getSessions().forEach((session) => {
-            const socket = session.getSocket();
+        this.getQuizAttempts().forEach((quizAttempt) => {
+            const socket = quizAttempt.getUserSession().getSocket();
 
             if (!socket) {
                 return;
@@ -74,9 +74,9 @@ export class MoocchatBackupClientQueue {
 
     public broadcastQueueChange() {
         this.broadcast("backupClientQueueUpdate", {
-            clients: this._sessions.map((session) => {
+            clients: this._quizAttempts.map((quizAttempt) => {
                 return {
-                    username: session.data.username
+                    username: quizAttempt.getUserSession().getUser().getUsername()
                 }
             })
         });
@@ -98,36 +98,42 @@ export class MoocchatBackupClientQueue {
         });
     }
 
-    public addSession(session: MoocchatUserSession) {
-        if (this._sessions.indexOf(session) > -1) {
+    public addQuizAttempt(quizAttempt: QuizAttempt) {
+        if (this._quizAttempts.indexOf(quizAttempt) > -1) {
             return;
         }
 
-        console.log(`MoocchatBackupClientQueue(${this.getQuizSessionId()}) ADDING Session ${session.getId()}`);
+        console.log(`MoocchatBackupClientQueue(${this.getQuizSessionId()}) ADDING Quiz Attempt ${quizAttempt.getId()}`);
 
-        this._sessions.push(session);
+        this._quizAttempts.push(quizAttempt);
 
         this.broadcastQueueChange();
 
-        session.getSocket().emit("backupClientEnterQueueState", {
+        const socket = quizAttempt.getUserSession().getSocket();
+
+        if (!socket) {
+            return console.error(`No socket available to emit "backupClientEnterQueueState" to quiz attempt ${quizAttempt.getId()}`);
+        }
+
+        socket.emit("backupClientEnterQueueState", {
             success: true
         });
     }
 
-    public removeSession(session: MoocchatUserSession) {
-        const sessionIndex = this._sessions.indexOf(session);
+    public removeQuizAttempt(quizAttempt: QuizAttempt) {
+        const index = this._quizAttempts.indexOf(quizAttempt);
 
-        if (sessionIndex < 0) {
+        if (index < 0) {
             return undefined;
         }
 
-        console.log(`MoocchatBackupClientQueue(${this.getQuizSessionId()}) REMOVING Session ${session.getId()}`);
+        console.log(`MoocchatBackupClientQueue(${this.getQuizSessionId()}) REMOVING Quiz Attempt ${quizAttempt.getId()}`);
 
-        const removedSession = this._sessions.splice(sessionIndex, 1)[0];
+        const removedSession = this._quizAttempts.splice(index, 1)[0];
 
-        if (this.sessionToCall === removedSession) {
+        if (this.quizAttemptToCall === removedSession) {
             clearTimeout(this.callNoResponseTimeoutHandle);
-            this.sessionToCall = undefined;
+            this.quizAttemptToCall = undefined;
         }
 
         this.broadcastQueueChange();
@@ -141,54 +147,54 @@ export class MoocchatBackupClientQueue {
      */
     public callToPool(waitPool: MoocchatWaitPool) {
         // If already called, then return true while we wait
-        if (this.sessionToCall) {
+        if (this.quizAttemptToCall) {
             return true;
         }
 
-        // Set session to call
-        const sessionToCall = this._sessions[0];
+        // Set quiz attempt to call
+        const quizAttemptToCall = this._quizAttempts[0];
 
-        if (!sessionToCall) {
+        if (!quizAttemptToCall) {
             return false;
         }
 
-        const sessionToCallSocket = sessionToCall.getSocket();
+        const quizAttemptToCallSocket = quizAttemptToCall.getUserSession().getSocket();
 
-        if (!sessionToCallSocket) {
+        if (!quizAttemptToCallSocket) {
             return false;
         }
 
         // If we can get the session then store as session to call
-        this.sessionToCall = sessionToCall;
+        this.quizAttemptToCall = quizAttemptToCall;
 
 
         const noResponseFunc = () => {
-            const sessionToCallSocket = sessionToCall.getSocket();
+            const quizAttemptToCallSocket = quizAttemptToCall.getUserSession().getSocket();
 
-            if (sessionToCallSocket) {
-                sessionToCallSocket.off("backupClientTransferConfirm", responseFunc);
-                sessionToCallSocket.emit("backupClientEjected");
+            if (quizAttemptToCallSocket) {
+                quizAttemptToCallSocket.off("backupClientTransferConfirm", responseFunc);
+                quizAttemptToCallSocket.emit("backupClientEjected");
             }
 
-            this.removeSession(sessionToCall);
+            this.removeQuizAttempt(quizAttemptToCall);
 
             // Run again
             this.callToPool(waitPool);
         }
 
         const responseFunc = () => {
-            const sessionToCallSocket = sessionToCall.getSocket();
+            const quizAttemptToCallSocket = quizAttemptToCall.getUserSession().getSocket()
 
-            if (sessionToCallSocket) {
-                sessionToCallSocket.off("backupClientTransferConfirm", responseFunc);
+            if (quizAttemptToCallSocket) {
+                quizAttemptToCallSocket.off("backupClientTransferConfirm", responseFunc);
             }
 
             clearTimeout(this.callNoResponseTimeoutHandle);
 
-            console.log(`MoocchatBackupClientQueue(${this.getQuizSessionId()}) MOVING TO POOL Session ${sessionToCall.getId()}`);
+            console.log(`MoocchatBackupClientQueue(${this.getQuizSessionId()}) MOVING TO POOL Session ${quizAttemptToCall.getId()}`);
 
-            this.removeSession(sessionToCall);
-            waitPool.addQuizAttempt(sessionToCall);
+            this.removeQuizAttempt(quizAttemptToCall);
+            waitPool.addQuizAttempt(quizAttemptToCall);
         }
 
         // If no response then timeout handler will run to move backup client queue on
@@ -196,12 +202,12 @@ export class MoocchatBackupClientQueue {
         this.callNoResponseTimeoutHandle = <any>setTimeout(noResponseFunc, Conf.backupClient.callConfirmTimeoutMs);
 
         // Handle confirm response
-        sessionToCallSocket.once("backupClientTransferConfirm", responseFunc);
+        quizAttemptToCallSocket.once("backupClientTransferConfirm", responseFunc);
 
 
         // Send call out
-        console.log(`MoocchatBackupClientQueue(${this.getQuizSessionId()}) CALLING Session ${sessionToCall.getId()}`);
-        sessionToCallSocket.emit("backupClientTransferCall");
+        console.log(`MoocchatBackupClientQueue(${this.getQuizSessionId()}) CALLING Session ${quizAttemptToCall.getId()}`);
+        quizAttemptToCallSocket.emit("backupClientTransferCall");
 
         return true;
     }

@@ -114,8 +114,16 @@ export class QuestionResponse {
         return this.getOID().toHexString();
     }
 
+    public getData() {
+        return this.data;
+    }
+
     public getQuestionOption() {
         return this.questionOption;
+    }
+
+    public getJustification() {
+        return this.data.justification;
     }
 
     private addToStore() {

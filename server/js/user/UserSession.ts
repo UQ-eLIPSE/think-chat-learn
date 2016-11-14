@@ -10,6 +10,7 @@ import { User } from "./User";
 
 // Referred to by...
 import { QuizAttempt } from "../quiz/QuizAttempt";
+import { SocketSession } from "../websocket/SocketSession";
 
 export class UserSession {
     private static readonly Store = new KVStore<UserSession>();
@@ -148,6 +149,20 @@ export class UserSession {
         return this.user;
     }
 
+    public getSocketSession() {
+        return SocketSession.Get(this);
+    }
+
+    public getSocket() {
+        const socketSession = this.getSocketSession();
+
+        if (socketSession) {
+            return socketSession.getSocket();
+        }
+
+        return;
+    }
+
     private async setTimestampEnd() {
         await UserSession.Update(this, {
             timestampEnd: new Date(),
@@ -171,5 +186,8 @@ export class UserSession {
 
         // Remove related objects
         QuizAttempt.GetWithUserSession(this).forEach(_ => _.destroyInstance());
+
+        const socketSession = this.getSocketSession();
+        socketSession && socketSession.destroyInstance();
     }
 }

@@ -12,12 +12,12 @@ import { QuestionResponse } from "../../question/QuestionResponse";
 
 export class AnswerSubmissionEndpoint extends WSEndpoint {
     private static async AnswerSubmissionHandler(socket: PacSeqSocket_Server, answerType: "initial" | "final", db: mongodb.Db, data: IWSToServerData.AnswerResponse) {
-        const quizAttempt = await QuizAttempt.Get(data.quizAttemptId);
+        const quizAttempt = QuizAttempt.Get(data.quizAttemptId);
 
         if (!quizAttempt) {
             return console.error("Attempted answer submission with invalid quiz attempt ID = " + data.quizAttemptId);
         }
-
+        
         const justification = data.justification;
         const questionOptionId = data.optionId;
 

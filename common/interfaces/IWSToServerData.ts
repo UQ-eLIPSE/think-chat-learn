@@ -41,9 +41,9 @@ export interface ChatGroupTypingNotification extends ChatGroupResponse {
 }
 
 export interface BackupClientAnswer extends AnswerResponse { }
-export interface BackupClientReturnToQueue extends SessionResponse { }
-export interface BackupClientStatusRequest extends SessionResponse { }
-export interface BackupClientTransferConfirm extends SessionResponse { }
+export interface BackupClientReturnToQueue extends QuizAttemptResponse { }
+export interface BackupClientStatusRequest extends QuizAttemptResponse { }
+export interface BackupClientTransferConfirm extends QuizAttemptResponse { }
 
 export interface SurveyResponse extends QuizAttemptResponse {
     content: ToServerData.SurveyResponse_Content[]

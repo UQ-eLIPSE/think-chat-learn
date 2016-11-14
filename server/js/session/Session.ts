@@ -202,11 +202,17 @@ export class Session {
     }
 
     public isAdmin() {
-        return this.getRoles().some((role) => {
-            switch (role) {
-                case "TeachingAssistant":
-                case "Instructor":
-                case "Administrator":
+        const roles = this.getRoles();
+
+        if (!roles) {
+            return false;
+        }
+
+        return roles.some((role) => {
+            switch (role.toLowerCase()) {
+                case "teachingassistant":
+                case "instructor":
+                case "administrator":
                     return true;
             }
 

@@ -11,7 +11,7 @@ import { QuizAttempt } from "../../quiz/QuizAttempt";
 
 export class SurveyEndpoint extends WSEndpoint {
     private static async HandleSubmitSurvey(socket: PacSeqSocket_Server, data: IWSToServerData.SurveyResponse, db: mongodb.Db) {
-        const quizAttempt = await QuizAttempt.Get(data.quizAttemptId);
+        const quizAttempt = QuizAttempt.Get(data.quizAttemptId);
 
         if (!quizAttempt) {
             return console.error("Attempted survey submission with invalid quiz attempt ID = " + data.quizAttemptId);

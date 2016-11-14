@@ -63,4 +63,15 @@ export class SocketSession {
     private socketAlreadySaved(socket: PacSeqSocket_Server) {
         return this.socketPosition(socket) > -1;
     }
+
+    private removeFromStore() {
+        SocketSession.Store.delete(this.userSession.getId());
+    }
+
+    public destroyInstance() {
+        this.removeFromStore();
+
+        delete this.userSession;
+        delete this.sockets;
+    }
 }

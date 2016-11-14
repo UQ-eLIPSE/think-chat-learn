@@ -16,8 +16,8 @@ import { ChatMessage } from "../../chat/ChatMessage";
 import { ChatGroupFormationLoop } from "../../chat/ChatGroupFormationLoop";
 
 export class ChatEndpoint extends WSEndpoint {
-    private static async HandleJoinRequest(socket: PacSeqSocket_Server, data: IWSToServerData.ChatGroupJoin) {
-        const quizAttempt = await QuizAttempt.Get(data.quizAttemptId);
+    private static HandleJoinRequest(socket: PacSeqSocket_Server, data: IWSToServerData.ChatGroupJoin) {
+        const quizAttempt = QuizAttempt.Get(data.quizAttemptId);
 
         if (!quizAttempt) {
             return console.error("Attempted chat group join request with invalid quiz attempt ID = " + data.quizAttemptId);
@@ -49,15 +49,15 @@ export class ChatEndpoint extends WSEndpoint {
         }
 
         // Update backup queue
-        const backupClientQueue = MoocchatBackupClientQueue.GetQueueWithQuizScheduleFrom(session);
+        const backupClientQueue = MoocchatBackupClientQueue.GetQueueWithQuizScheduleFrom(quizAttempt);
 
         if (backupClientQueue) {
             backupClientQueue.broadcastWaitPoolCount();
         }
     }
 
-    private static async HandleTypingNotification(socket: PacSeqSocket_Server, data: IWSToServerData.ChatGroupTypingNotification) {
-        const quizAttempt = await QuizAttempt.Get(data.quizAttemptId);
+    private static HandleTypingNotification(socket: PacSeqSocket_Server, data: IWSToServerData.ChatGroupTypingNotification) {
+        const quizAttempt = QuizAttempt.Get(data.quizAttemptId);
 
         if (!quizAttempt) {
             return console.error("Attempted chat group typing notification with invalid quiz attempt ID = " + data.quizAttemptId);
@@ -69,11 +69,11 @@ export class ChatEndpoint extends WSEndpoint {
             return console.error("Could not find chat group for quiz attempt ID = " + data.quizAttemptId);
         }
 
-        chatGroup.setTypingState(session, data.isTyping);
+        chatGroup.setTypingState(quizAttempt, data.isTyping);
     }
 
-    private static async HandleQuitStatusChange(socket: PacSeqSocket_Server, data: IWSToServerData.ChatGroupQuitStatusChange) {
-        const quizAttempt = await QuizAttempt.Get(data.quizAttemptId);
+    private static HandleQuitStatusChange(socket: PacSeqSocket_Server, data: IWSToServerData.ChatGroupQuitStatusChange) {
+        const quizAttempt = QuizAttempt.Get(data.quizAttemptId);
 
         if (!quizAttempt) {
             return console.error("Attempted chat group typing notification with invalid quiz attempt ID = " + data.quizAttemptId);
@@ -86,12 +86,12 @@ export class ChatEndpoint extends WSEndpoint {
         }
 
         if (data.quitStatus) {
-            chatGroup.quitSession(session);
+            chatGroup.quitQuizAttempt(quizAttempt);
         }
     }
 
     private static async HandleMessage(socket: PacSeqSocket_Server, data: IWSToServerData.ChatGroupSendMessage, db: mongodb.Db) {
-        const quizAttempt = await QuizAttempt.Get(data.quizAttemptId);
+        const quizAttempt = QuizAttempt.Get(data.quizAttemptId);
 
         if (!quizAttempt) {
             return console.error("Attempted chat group message with invalid quiz attempt ID = " + data.quizAttemptId);
@@ -108,7 +108,7 @@ export class ChatEndpoint extends WSEndpoint {
             timestamp: new Date(),
         }, chatGroup, quizAttempt);
 
-        chatGroup.broadcastMessage(session, chatMessage.getMessage());
+        chatGroup.broadcastMessage(quizAttempt, chatMessage.getMessage()!);
     }
 
 
@@ -123,22 +123,19 @@ export class ChatEndpoint extends WSEndpoint {
 
     public get onJoinRequest() {
         return (data: IWSToServerData.ChatGroupJoin) => {
-            ChatEndpoint.HandleJoinRequest(this.getSocket(), data)
-                .catch(e => console.error(e));
+            ChatEndpoint.HandleJoinRequest(this.getSocket(), data);
         };
     }
 
     public get onTypingNotification() {
         return (data: IWSToServerData.ChatGroupTypingNotification) => {
-            ChatEndpoint.HandleTypingNotification(this.getSocket(), data)
-                .catch(e => console.error(e));
+            ChatEndpoint.HandleTypingNotification(this.getSocket(), data);
         };
     }
 
     public get onQuitStatusChange() {
         return (data: IWSToServerData.ChatGroupQuitStatusChange) => {
-            ChatEndpoint.HandleQuitStatusChange(this.getSocket(), data)
-                .catch(e => console.error(e));
+            ChatEndpoint.HandleQuitStatusChange(this.getSocket(), data);
         }
     }
 

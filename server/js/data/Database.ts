@@ -30,7 +30,7 @@ export abstract class Database<CollectionData> {
         collection.insertMany(dataArray, callback);
     }
 
-    public static CursorToArray<CollectionData>(cursor: mongodb.Cursor, callback?: mongodb.MongoCallback<CollectionData[]>) {
+    public static CursorToArray<CollectionData>(cursor: mongodb.Cursor, callback?: mongodb.MongoCallback<CollectionData[]>): void | Promise<any> {
         if (callback) {
             return cursor.toArray(callback);
         }
@@ -50,7 +50,7 @@ export abstract class Database<CollectionData> {
         collection.deleteOne(filter, callback);
     }
 
-    public static Close(db: mongodb.Db, callback?: mongodb.MongoCallback<void>) {
+    public static Close(db: mongodb.Db, callback?: mongodb.MongoCallback<void>): void | Promise<any> {
         if (callback) {
             return db.close(callback);
         }

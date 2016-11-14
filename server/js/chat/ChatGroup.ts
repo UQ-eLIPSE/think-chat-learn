@@ -14,6 +14,9 @@ export class ChatGroup {
     private readonly quizAttempts: QuizAttempt[];
     private readonly quizSchedule: QuizSchedule;
 
+    private readonly clientsCurrentlyTyping: QuizAttempt[] = [];
+    private readonly clientsThatQuit: QuizAttempt[] = [];
+
     private readonly db: mongodb.Db;
 
     public static Get(chatGroupId: string) {
@@ -122,6 +125,14 @@ export class ChatGroup {
         this.db = db;
 
         this.addToStore();
+
+        const id = this.getId();
+
+        this.quizAttempts.forEach((quizAttempt) => {
+            console.log(`ChatGroup(${id}) JOIN Quiz Attempt '${quizAttempt.getId()}'`);
+        });
+
+        this.notifyEveryoneOnJoin();
     }
 
     // private getDb() {
@@ -156,6 +167,120 @@ export class ChatGroup {
         return this.getQuizAttemptIndex(quizAttempt) > -1;
     }
 
+    public broadcast(event: string, data: any) {
+        this.getQuizAttempts().forEach((quizAttempt) => {
+            // Don't broadcast message to those already quit
+            if (this.clientsThatQuit.indexOf(quizAttempt) > -1) {
+                return;
+            }
+
+            const socket = quizAttempt.getUserSession().getSocket();
+
+            if (socket) {
+                socket.emit(event, data);
+            }
+        });
+    }
+
+    public numberOfActiveClients() {
+        return this.quizAttempts.length - this.clientsThatQuit.length;
+    }
+
+    public broadcastMessage(quizAttempt: QuizAttempt, message: string) {
+        this.broadcast("chatGroupMessage", {
+            clientIndex: this.getQuizAttemptIndex(quizAttempt),
+            message: message,
+            timestamp: Date.now()
+        });
+
+        // Remove the session that just sent the message from the typing sessions array
+        this.setTypingState(quizAttempt, false);
+    }
+
+    public setTypingState(quizAttempt: QuizAttempt, isTyping: boolean) {
+        const quizAttemptIndex = this.clientsCurrentlyTyping.indexOf(quizAttempt);
+
+        if (isTyping && quizAttemptIndex < 0) {
+            this.clientsCurrentlyTyping.push(quizAttempt);
+        } else if (!isTyping && quizAttemptIndex > -1) {
+            this.clientsCurrentlyTyping.splice(quizAttemptIndex, 1);
+        }
+
+        this.updateTypingNotifications();
+    }
+
+    private updateTypingNotifications() {
+        this.broadcast("chatGroupTypingNotification", {
+            clientIndicies: this.clientsCurrentlyTyping.map(quizAttempt => this.getQuizAttemptIndex(quizAttempt))
+        });
+    }
+
+    private broadcastQuit(quittingClient: QuizAttempt, quitStatus: boolean = true) {
+        // Don't broadcast quit event when the session has already quit
+        if (this.clientsThatQuit.indexOf(quittingClient) > -1) {
+            return;
+        }
+
+        this.broadcast("chatGroupQuitChange", {
+            groupId: this.getId(),
+            groupSize: this.numberOfActiveClients(),
+
+            clientIndex: this.getQuizAttemptIndex(quittingClient),
+            quitStatus: quitStatus
+        });
+    }
+
+    public quitQuizAttempt(quittingClient: QuizAttempt) {
+        this.setTypingState(quittingClient, false);
+
+        // You must broadcast the quit BEFORE actually quitting
+        this.broadcastQuit(quittingClient);
+
+        // If not previously tracked as quitted, add to quit array
+        if (this.clientsThatQuit.indexOf(quittingClient) < 0) {
+            console.log(`ChatGroup(${this.getId()}) QUIT Quiz Attempt '${quittingClient.getId()}'`);
+            this.clientsThatQuit.push(quittingClient);
+        }
+
+        // Self destroy when there are no sessions left
+        if (this.numberOfActiveClients() === 0) {
+            this.destroyInstance();
+        }
+    }
+
+    private notifyEveryoneOnJoin() {
+        const chatGroupId = this.getId();
+        const numberOfAtiveClients = this.numberOfActiveClients();
+        const quizAttemptsInGroup = this.getQuizAttempts();
+
+        quizAttemptsInGroup.forEach((quizAttempt) => {
+            const socket = quizAttempt.getUserSession().getSocket();
+            
+            if (!socket) {
+                return;
+            }
+
+            socket.emit("chatGroupFormed", {
+                groupId: chatGroupId,
+                groupSize: numberOfAtiveClients,
+                groupAnswers: quizAttemptsInGroup.map((_quizAttempt) => {
+                    const responseInitial = _quizAttempt.getResponseInitial();
+
+                    if (!responseInitial) {
+                        console.error(`Quiz attempt "${_quizAttempt.getId()}" has no response initial object during chat group formation`);
+                    }
+
+                    return {
+                        clientIndex: this.getQuizAttemptIndex(_quizAttempt),
+                        answer: responseInitial ? responseInitial.getData() : {},   // TODO: Returning object literal as placeholder; response initial should be required before proceeding to chat group formation in the first place 
+                    };
+                }),
+
+                clientIndex: this.getQuizAttemptIndex(quizAttempt)
+            });
+        })
+    }
+
     private addToStore() {
         ChatGroup.Store.put(this.getId(), this);
     }
@@ -166,5 +291,12 @@ export class ChatGroup {
 
     public destroyInstance() {
         this.removeFromStore();
+
+        delete this.clientsCurrentlyTyping;
+        delete this.clientsThatQuit;
+        delete this.data;
+        delete this.db;
+        delete this.quizAttempts;
+        delete this.quizSchedule;
     }
 }
