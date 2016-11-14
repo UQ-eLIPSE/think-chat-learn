@@ -60,10 +60,13 @@ export class BackupClientEndpoint extends WSEndpoint {
 
         const newQuizAttempt = await QuizAttempt.Create(db, userSession, quizSchedule);
 
+        // End the previous quiz attempt instance
+        quizAttempt.destroyInstance();
+
         // Question responses are able to be assigned multiple times to
         //   different quiz attempts (this is only to be available for
         //   admins though)
-        await quizAttempt.setResponseInitial(responseInitial);
+        await newQuizAttempt.setResponseInitial(responseInitial);
 
         const backupClientQueue = MoocchatBackupClientQueue.GetQueueWithQuizScheduleFrom(newQuizAttempt);
 

@@ -11,6 +11,7 @@ import * as DBSchema from "../../../../common/interfaces/DBSchema";
 
 import { User } from "../../user/User";
 import { UserSession } from "../../user/UserSession";
+import { SocketSession } from "../SocketSession";
 
 import { QuizSchedule } from "../../quiz/QuizSchedule";
 import { QuizAttempt } from "../../quiz/QuizAttempt";
@@ -65,12 +66,13 @@ export class UserLoginEndpoint extends WSEndpoint {
             // Setting up session
             const isAdmin = UserLoginFunc.DetermineAdminStatus(identity);
             const session = await UserLoginFunc.CreateSession(db, user, isAdmin);
-
+            SocketSession.Create(session).setSocket(socket);
+            
             const quizAttempt = await UserLoginFunc.CreateQuizAttempt(db, quizSchedule, session);
             UserLoginFunc.SetupChatGroupFormationLoop(db, quizAttempt);
 
             // Return response
-            UserLoginFunc.NotifyClientOfLogin(socket, session, user, quizSchedule, question, questionOptions, survey);
+            UserLoginFunc.NotifyClientOfLogin(socket, session, user, quizSchedule, quizAttempt, question, questionOptions, survey);
         } catch (e) {
             UserLoginEndpoint.NotifyClientOnError(socket, e);
         }
@@ -293,7 +295,7 @@ class UserLoginFunc {
                 // Form chat group out of coalesced quiz attempts
                 console.log(`Forming chat group with quiz attempts: ${quizAttempts.map(_ => _.getId()).join()}`)
                 ChatGroup.Create(db, {}, quizSchedule, quizAttempts);
-
+                
                 console.log(`Updating backup queue`);
                 const backupClientQueue = MoocchatBackupClientQueue.GetQueue(quizSessionId);
                 backupClientQueue.broadcastWaitPoolCount();
@@ -303,7 +305,7 @@ class UserLoginFunc {
         }
     }
 
-    public static NotifyClientOfLogin(socket: PacSeqSocket_Server, session: UserSession, user: User, quizSchedule: QuizSchedule, question: Question, questionOptions: QuestionOption[], survey: Survey | undefined) {
+    public static NotifyClientOfLogin(socket: PacSeqSocket_Server, session: UserSession, user: User, quizSchedule: QuizSchedule, quizAttempt: QuizAttempt, question: Question, questionOptions: QuestionOption[], survey: Survey | undefined) {
         const researchConsent = user.getResearchConsent();
 
         let researchConsentRequired: boolean;
@@ -316,15 +318,21 @@ class UserLoginFunc {
         }
 
         // Complete login by notifying client
-        socket.emit("loginSuccess", {
+        const quizScheduleData = quizSchedule.getData() as DBSchema.QuizSchedule<string, string>;
+        const questionData = question.getData() as DBSchema.Question<string>;
+        const questionOptionsData = questionOptions.map(questionOption => questionOption.getData()) as DBSchema.QuestionOption<string>[];
+        const surveyData = survey ? survey.getData() as DBSchema.Survey<string, string> : null;
+
+        socket.emitData<IWSToClientData.LoginSuccess>("loginSuccess", {
             sessionId: session.getId(),
-            username: user.getUsername(),
+            quizAttemptId: quizAttempt.getId(),
+            username: user.getUsername()!,
             quiz: {
-                quizSchedule: quizSchedule.getData(),
-                question: question.getData(),
-                questionOptions: questionOptions.map(questionOption => questionOption.getData())
+                quizSchedule: quizScheduleData,
+                question: questionData,
+                questionOptions: questionOptionsData,
             },
-            survey: survey ? survey.getData() : null,
+            survey: surveyData,
             researchConsentRequired,
         });
     }

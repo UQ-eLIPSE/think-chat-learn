@@ -64,7 +64,7 @@ export const BackupClientWaitStateHandler: IStateHandler<STATE> =
                         $transferConfirmBox.one("click", "#confirm-transfer", () => {
                             $transferConfirmBox.addClass("hidden");
                             clearInterval(countdownIntervalHandle);
-                            session.socket.emitData<IWSToServerData.BackupClientTransferConfirm>(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_TRANSFER_CONFIRM, { sessionId: session.id });
+                            session.socket.emitData<IWSToServerData.BackupClientTransferConfirm>(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_TRANSFER_CONFIRM, { quizAttemptId: session.quizAttemptId });
 
                             session.socket.once<IWSToClientData.ChatGroupFormed>(WebsocketEvents.INBOUND.CHAT_GROUP_FORMED, (data) => {
                                 session.stateMachine.goTo(STATE.DISCUSSION, data);
@@ -87,7 +87,7 @@ export const BackupClientWaitStateHandler: IStateHandler<STATE> =
                     session.socket.on(WebsocketEvents.INBOUND.BACKUP_CLIENT_EJECTED, onBackupClientEjected);
 
                     // Request information now (once only)
-                    session.socket.emitData<IWSToServerData.BackupClientStatusRequest>(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_STATUS_REQUEST, { sessionId: session.id });
+                    session.socket.emitData<IWSToServerData.BackupClientStatusRequest>(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_STATUS_REQUEST, { quizAttemptId: session.quizAttemptId });
 
                     page$("#logout").one("click", () => {
                         session.stateMachine.goTo(STATE.BACKUP_CLIENT_LOGOUT);

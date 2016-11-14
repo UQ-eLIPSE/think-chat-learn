@@ -14,11 +14,12 @@ export const BackupClientReturnToWaitStateHandler: IStateHandler<STATE> =
                 session.socket.once<IWSToClientData.BackupClientEnterQueueState>(WebsocketEvents.INBOUND.BACKUP_CLIENT_ENTER_QUEUE_STATE, (data) => {
                     if (data.success) {
                         session.sectionManager.getSection("discussion").showTimer();
+                        session.setQuizAttemptId(data.quizAttemptId);
                         session.stateMachine.goTo(STATE.BACKUP_CLIENT_WAIT);
                     }
                 });
 
-                session.socket.emitData<IWSToServerData.BackupClientReturnToQueue>(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_RETURN_TO_QUEUE, { sessionId: session.id });
+                session.socket.emitData<IWSToServerData.BackupClientReturnToQueue>(WebsocketEvents.OUTBOUND.BACKUP_CLIENT_RETURN_TO_QUEUE, { quizAttemptId: session.quizAttemptId });
             }
         }
     }

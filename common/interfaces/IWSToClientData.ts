@@ -19,9 +19,10 @@ interface ChatGroupAnswer {
 // Inbound data interfaces
 export interface LoginSuccess {
     sessionId: string;
+    quizAttemptId: string;
     username: string;
     quiz: ToClientData.Quiz;
-    survey: ToClientData.Survey;
+    survey: ToClientData.Survey | null;
     researchConsentRequired: boolean;
 }
 export type LoginFailure = string;
@@ -51,7 +52,9 @@ export interface ChatGroupTypingNotification {
     clientIndicies: number[]
 }
 
-export type BackupClientEnterQueueState = SuccessState;
+export interface BackupClientEnterQueueState extends SuccessState {
+    quizAttemptId: string;
+}
 export interface ClientPoolCountUpdate {
     backupClientQueue: {
         quizScheduleId: string;

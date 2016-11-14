@@ -49,7 +49,7 @@ export const SurveyStateHandler: IStateHandler<STATE> =
                         // Send survey
                         const surveyResponseContent = session.survey.generateResponseContent($surveyForm);
                         session.socket.emitData<IWSToServerData.SurveyResponse>(WebsocketEvents.OUTBOUND.SURVEY_SUBMISSION, {
-                            sessionId: session.id,
+                            quizAttemptId: session.quizAttemptId,
                             content: surveyResponseContent
                         });
 

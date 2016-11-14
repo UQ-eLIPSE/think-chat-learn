@@ -1,21 +1,21 @@
-import {Conf} from "../config/Conf";
+import { Conf } from "../config/Conf";
 
-import {EventBox} from "../../common/js/EventBox";
-import {StateFlow} from "./StateFlow";
-import {PageManager} from "./PageManager";
-import {CombinedPageManager} from "./CombinedPageManager";
-import {TaskSectionManager} from "./TaskSectionManager";
-import {WebsocketManager} from "./WebsocketManager";
-import {SessionStorage} from "./SessionStorage";
+import { EventBox } from "../../common/js/EventBox";
+import { StateFlow } from "./StateFlow";
+import { PageManager } from "./PageManager";
+import { CombinedPageManager } from "./CombinedPageManager";
+import { TaskSectionManager } from "./TaskSectionManager";
+import { WebsocketManager } from "./WebsocketManager";
+import { SessionStorage } from "./SessionStorage";
 
-import {MoocchatAnalytics} from "./MoocchatAnalytics";
-import {MoocchatAnalyticsCore} from "./MoocchatAnalyticsCore";
-import {MoocchatUser} from "./MoocchatUser";
-import {MoocchatQuiz} from "./MoocchatQuiz";
-import {MoocchatSurvey} from "./MoocchatSurvey";
-import {MoocchatAnswerContainer} from "./MoocchatAnswerContainer";
+import { MoocchatAnalytics } from "./MoocchatAnalytics";
+import { MoocchatAnalyticsCore } from "./MoocchatAnalyticsCore";
+import { MoocchatUser } from "./MoocchatUser";
+import { MoocchatQuiz } from "./MoocchatQuiz";
+import { MoocchatSurvey } from "./MoocchatSurvey";
+import { MoocchatAnswerContainer } from "./MoocchatAnswerContainer";
 
-import {WebsocketEvents} from "./WebsocketEvents";
+import { WebsocketEvents } from "./WebsocketEvents";
 import * as IWSToServerData from "../../common/interfaces/IWSToServerData";
 import * as IWSToClientData from "../../common/interfaces/IWSToClientData";
 
@@ -27,6 +27,7 @@ import * as IWSToClientData from "../../common/interfaces/IWSToClientData";
  */
 export class MoocchatSession<StateTypeEnum> {
     private _id: string;
+    private _quizAttemptId: string;
 
     private _stateMachine: StateFlow<StateTypeEnum>;
     private _pageManager: PageManager;
@@ -65,6 +66,10 @@ export class MoocchatSession<StateTypeEnum> {
 
     public get id() {
         return this._id;
+    }
+
+    public get quizAttemptId() {
+        return this._quizAttemptId;
     }
 
     public get quiz() {
@@ -111,6 +116,22 @@ export class MoocchatSession<StateTypeEnum> {
         if (!this._id) {
             this._id = id;
         }
+
+        return this;
+    }
+
+    /**
+     * Sets the quiz attempt ID.
+     * 
+     * Multiple sets are permitted as backup clients change quiz attempts
+     * during the course of a login session.
+     * 
+     * @param {string} id
+     * 
+     * @return {this}
+     */
+    public setQuizAttemptId(id: string) {
+        this._quizAttemptId = id;
 
         return this;
     }

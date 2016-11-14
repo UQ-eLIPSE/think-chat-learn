@@ -1,5 +1,7 @@
 import { Conf } from "../../config/Conf";
 
+import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
+
 import { QuizAttempt } from "../quiz/QuizAttempt";
 import { MoocchatWaitPool } from "./MoocchatWaitPool";
 
@@ -115,8 +117,9 @@ export class MoocchatBackupClientQueue {
             return console.error(`No socket available to emit "backupClientEnterQueueState" to quiz attempt ${quizAttempt.getId()}`);
         }
 
-        socket.emit("backupClientEnterQueueState", {
-            success: true
+        socket.emitData<IWSToClientData.BackupClientEnterQueueState>("backupClientEnterQueueState", {
+            success: true,
+            quizAttemptId: quizAttempt.getId(),
         });
     }
 

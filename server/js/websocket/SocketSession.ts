@@ -31,6 +31,8 @@ export class SocketSession {
 
     private constructor(userSession: UserSession) {
         this.userSession = userSession;
+
+        SocketSession.Store.put(userSession.getId(), this);
     }
 
     public setSocket(socket: PacSeqSocket_Server) {

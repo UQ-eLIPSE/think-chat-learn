@@ -191,6 +191,8 @@ export class QuizAttempt {
         this.db = db;
 
         this.addToStore();
+
+        console.log(`Quiz attempt '${this.getId()}' created; User session = ${this.getUserSession().getId()}`);
     }
 
     private getDb() {

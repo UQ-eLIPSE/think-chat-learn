@@ -250,7 +250,7 @@ export class ChatGroup {
 
     private notifyEveryoneOnJoin() {
         const chatGroupId = this.getId();
-        const numberOfAtiveClients = this.numberOfActiveClients();
+        const numberOfActiveClients = this.numberOfActiveClients();
         const quizAttemptsInGroup = this.getQuizAttempts();
 
         quizAttemptsInGroup.forEach((quizAttempt) => {
@@ -262,7 +262,7 @@ export class ChatGroup {
 
             socket.emit("chatGroupFormed", {
                 groupId: chatGroupId,
-                groupSize: numberOfAtiveClients,
+                groupSize: numberOfActiveClients,
                 groupAnswers: quizAttemptsInGroup.map((_quizAttempt) => {
                     const responseInitial = _quizAttempt.getResponseInitial();
 
