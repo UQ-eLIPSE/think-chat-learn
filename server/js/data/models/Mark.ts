@@ -3,10 +3,10 @@ import * as mongodb from "mongodb";
 import {Database} from "../Database";
 import * as DBSchema from "../../../../common/interfaces/DBSchema";
 
-export class Marking extends Database<IDB_Marking> {
+export class Mark extends Database<IDB_Mark> {
     constructor(db: mongodb.Db) {
-        super(db, "uq_marking");
+        super(db, "uq_mark");
     }
 }
 
-export type IDB_Marking = DBSchema.Marking<mongodb.ObjectID, Date>;
+export type IDB_Mark = DBSchema.Mark<mongodb.ObjectID, Date>;
