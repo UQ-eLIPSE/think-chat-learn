@@ -80,7 +80,7 @@ export class QuizAttempt {
 
         const userSessionId = quizAttempt.userSessionId.toHexString();
 
-        const userSession = UserSession.Get(userSessionId);
+        const userSession = await UserSession.GetAutoFetch(db, userSessionId);
 
         if (!userSession) {
             throw new Error(`User session "${quizAttempt.userSessionId.toHexString()}" missing for quiz attempt "${quizAttemptId}"`)

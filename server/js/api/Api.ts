@@ -7,11 +7,15 @@ import * as ApiDecorators from "./ApiDecorators";
 import { Moocchat } from "../Moocchat";
 
 import * as IMoocchatApi from "../../../common/interfaces/IMoocchatApi";
+import * as FromClientData from "../../../common/interfaces/FromClientData";
+
 import { ILTIData } from "../../../common/interfaces/ILTIData";
 import { LTIAuth } from "../auth/lti/LTIAuth";
 
 import { User as _User } from "../user/User";
 import { UserSession as _UserSession } from "../user/UserSession";
+
+import { QuizAttempt as _QuizAttempt } from "../quiz/QuizAttempt";
 
 import { Database } from "../data/Database";
 import { User as DBUser, IDB_User } from "../data/models/User";
@@ -21,9 +25,7 @@ import { Question as DBQuestion, IDB_Question } from "../data/models/Question";
 import { QuestionOption as DBQuestionOption, IDB_QuestionOption } from "../data/models/QuestionOption";
 import { QuestionOptionCorrect as DBQuestionOptionCorrect, IDB_QuestionOptionCorrect } from "../data/models/QuestionOptionCorrect";
 // import { Survey as DBSurvey, IDB_Survey } from "../data/models/Survey";
-import { Mark as DBMark, IDB_Mark } from "../data/models/Mark";
-
-// import { QuizAttempt, QuizAttemptExistsInSessionError, QuizAttemptDoesNotExistError, QuizAttemptFSMDoesNotExistError } from "../quiz/QuizAttempt";
+import { Mark as DBMark } from "../data/models/Mark";
 
 import { Utils } from "../../../common/js/Utils";
 
@@ -619,7 +621,7 @@ export namespace Api {
     export class Mark {
         @ApiDecorators.ApplySession
         @ApiDecorators.AdminOnly
-        public static Post(moocchat: Moocchat, res: ApiResponseCallback<IMoocchatApi.ToClientInsertionIdResponse>, data: IMoocchatApi.ToServerStandardRequestBase & IDB_Mark, session?: _UserSession): void {
+        public static Post(moocchat: Moocchat, res: ApiResponseCallback<IMoocchatApi.ToClientInsertionIdResponse>, data: IMoocchatApi.ToServerStandardRequestBase & FromClientData.Mark, session?: _UserSession): void {
             const db = moocchat.getDb();
 
             let missingParameters: string[] = [];
@@ -635,25 +637,44 @@ export namespace Api {
                     message: `Input missing parameters: ${missingParameters.join(", ")}`
                 });
             }
-            
-            // TODO: Look up quiz attempt ID being marked and check that the course is equal to the marker user session course
 
+            (async () => {
+                // Look up quiz attempt ID being marked and check that the course is equal to the marker user session course
+                const quizAttemptId = data.quizAttemptId!;
+                const quizAttempt = await _QuizAttempt.GetAutoFetch(db, quizAttemptId);
 
+                if (!quizAttempt) {
+                    throw new Error(`Quiz attempt "${quizAttemptId}" not valid`);
+                }
 
-            new DBMark(db).insertOne({
-                method: data.method,
-                markerUserSessionId: session!.getOID(),
-                quizAttemptId: new Database.ObjectId(data.quizAttemptId as any as string),
-                value: data.value,
-                timestamp: new Date(),
-            }, (err, result) => {
-                if (handleMongoError(err, res)) { return; }
+                const markerSessionCourse = session!.getCourse();
+                const quizAttemptCourse = quizAttempt.getUserSession().getCourse();
 
+                if (markerSessionCourse !== quizAttemptCourse) {
+                    throw new Error(`Marker session course "${markerSessionCourse}" does not match marked quiz attempt course "${quizAttemptCourse}"`);
+                }
+
+                new DBMark(db).insertOne({
+                    method: data.method,
+                    markerUserSessionId: session!.getOID(),
+                    quizAttemptId: quizAttempt.getOID(),
+                    value: data.value,
+                    timestamp: new Date(),
+                }, (err, result) => {
+                    if (handleMongoError(err, res)) { return; }
+
+                    return res({
+                        success: true,
+                        payload: {
+                            id: result.insertedId.toHexString(),
+                        }
+                    });
+                });
+            })().catch((e) => {
                 return res({
-                    success: true,
-                    payload: {
-                        id: result.insertedId.toHexString(),
-                    }
+                    success: false,
+                    code: "UNKNOWN_ERROR",
+                    message: e.toString(),
                 });
             });
         }

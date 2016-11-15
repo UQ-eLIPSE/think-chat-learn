@@ -34,15 +34,15 @@ export class UserSession {
         return UserSession.Store.get(sessionId);
     }
 
-    // public static async GetAutoFetch(db: mongodb.Db, userSessionId: string) {
-    //     const userSession = UserSession.Get(userSessionId);
+    public static async GetAutoFetch(db: mongodb.Db, userSessionId: string) {
+        const userSession = UserSession.Get(userSessionId);
 
-    //     if (userSession) {
-    //         return userSession;
-    //     }
+        if (userSession) {
+            return userSession;
+        }
 
-    //     return await UserSession.Fetch(db, userSessionId);
-    // }
+        return await UserSession.Fetch(db, userSessionId);
+    }
 
     public static async Fetch(db: mongodb.Db, userSessionId: string): Promise<UserSession | undefined> {
         const dbUserSession = new DBUserSession(db).getCollection();
@@ -150,6 +150,10 @@ export class UserSession {
 
     public getId() {
         return this.getOID().toHexString();
+    }
+    
+    public getData() {
+        return this.data;
     }
 
     public getUser() {
