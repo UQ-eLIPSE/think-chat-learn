@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>mousoku / Export</title>
+    <link rel="stylesheet" href="./lib/css/normalize/4.1.1/normalize.css" />
+    <link rel="stylesheet" href="./build/css/main.css" />
+
+    <script src="./lib/js/require/2.2.0/require.min.js"></script>
+    <script src="./conf/js/main.require.conf.js"></script>
+    <script>
+        // This is the application code to load
+        require(["export"]);
+    </script>
+</head>
+
+<body>
+    <h1><a href="./index.html">mousoku/MOOCchat</a></h1>
+    <h2>Export</h2>
+    <p>Produces CSV with: [username,mark]. Where no mark recorded, value is blank.</p>
+    <p style="color: red; font-weight: bold;">*** Duplicate user sessions are NOT removed ***</p>
+    <p>Select session: <select id="session-select"></select></p>
+    <p><button id="perform-export">Export</button></p>
+</body>
+
+</html>

@@ -2,20 +2,48 @@
 <html>
 
 <head>
+    <meta charset="utf-8" />
+    <title>mousoku over MOOCchat Bridge</title>
+
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            border: 0;
+        }
+
+        iframe {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+
     <script>
+        // getBridge is a global fetched from child frames
+        var getBridge = function() { throw new Error("No bridge available"); };
+
         (function() {
             var bridgePort;
             var xhrId = 0;
             var xhrCallbacks = {};
+            
+            getBridge = function() {
+                return {
+                    sendXhrRequest: sendXhrRequest,
+                    isXhrInProgress: isXhrInProgress,
+                }
+            }
+            
+            function isXhrInProgress() {
+                return Object.keys(xhrCallbacks).length > 0;
+            }
 
             function onBridgeReady() {
-                sendXhrRequest("GET", "/api/admin/quiz", undefined,
-                    function(data) {
-                        console.log(data);
-                    },
-                    function(textStatus, errorThrown) {
-                        console.error(errorThrown);
-                    });
+                document.getElementById("iframe").src = "sessions.html";
             }
 
             function sendXhrRequest(method, url, data, onSuccess, onFail) {
@@ -44,22 +72,27 @@
 
             function handleBridgeMessage(e) {
                 var packet = e.data;
+                console.log(packet.data);
 
                 switch (packet.event) {
                     case "mc_bridge_xhrSuccess":
                         var xhrId = packet.data.xhrId;
-
-                        xhrCallbacks[xhrId].onSuccess(packet.data.data, packet.data.textStatus);
+                        var onSuccess = xhrCallbacks[xhrId].onSuccess;
+                        
                         delete xhrCallbacks[xhrId];
+
+                        onSuccess && onSuccess(packet.data.data, packet.data.textStatus);
 
                         return;
                     
                     case "mc_bridge_xhrFail":
                         var xhrId = packet.data.xhrId;
-
-                        xhrCallbacks[xhrId].onFail(packet.data.textStatus, packet.data.errorThrown);
-                        delete xhrCallbacks[xhrId];
+                        var onFail = xhrCallbacks[xhrId].onFail;
                         
+                        delete xhrCallbacks[xhrId];
+
+                        onFail && onFail(packet.data.textStatus, packet.data.errorThrown);
+
                         return;
                 }
 
@@ -92,14 +125,23 @@
                 }
             }
 
+            function onBeforeUnload(e) {
+                if (isXhrInProgress()) {
+                    var message = "You are about to leave the marking tool before it has completed background operations. Exiting now may result in incomplete operations.";
+
+                    e.returnValue = message;
+                    return message;
+                }
+            }
+
             window.addEventListener("message", setupBridgePort);
+            window.addEventListener("beforeunload", onBeforeUnload);
         })();
         </script>
 </head>
 
 <body>
-    <h1>mousoku</h1>
-    <p>See console for test XHR request response</p>
+    <iframe id="iframe"></iframe>
 </body>
 
 </html>
