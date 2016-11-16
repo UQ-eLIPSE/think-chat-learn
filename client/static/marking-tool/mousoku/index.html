@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script>
+        (function() {
+            var bridgePort;
+            var xhrId = 0;
+            var xhrCallbacks = {};
+
+            function onBridgeReady() {
+                sendXhrRequest("GET", "/api/admin/quiz", undefined,
+                    function(data) {
+                        console.log(data);
+                    },
+                    function(textStatus, errorThrown) {
+                        console.error(errorThrown);
+                    });
+            }
+
+            function sendXhrRequest(method, url, data, onSuccess, onFail) {
+                // Increment XHR ID
+                ++xhrId;
+
+                // Store callbacks
+                xhrCallbacks[xhrId] = {
+                    onSuccess: onSuccess,
+                    onFail: onFail
+                };
+
+                // Send request over bridge
+                bridgePort.postMessage({
+                        event: "mc_bridge_xhrRequest",
+                        data: {
+                            xhrId: xhrId,
+                            method: method,
+                            url: url,
+                            data: data
+                        }
+                    });
+
+                // XHR response is handled via. bridge messages
+            }
+
+            function handleBridgeMessage(e) {
+                var packet = e.data;
+
+                switch (packet.event) {
+                    case "mc_bridge_xhrSuccess":
+                        var xhrId = packet.data.xhrId;
+
+                        xhrCallbacks[xhrId].onSuccess(packet.data.data, packet.data.textStatus);
+                        delete xhrCallbacks[xhrId];
+
+                        return;
+                    
+                    case "mc_bridge_xhrFail":
+                        var xhrId = packet.data.xhrId;
+
+                        xhrCallbacks[xhrId].onFail(packet.data.textStatus, packet.data.errorThrown);
+                        delete xhrCallbacks[xhrId];
+                        
+                        return;
+                }
+
+                console.log(e);
+            }
+
+            function setupBridgePort(e) {
+                // Set up marking bridge port
+                if (e.data === "mc_bridge_port" && !bridgePort && e.ports[0]) {
+                    bridgePort = e.ports[0];
+
+                    // Send ready reply (this will be queued until port is started)
+                    bridgePort.postMessage({
+                        event: "mc_bridge_ready",
+                        data: null
+                    });
+
+                    // Set up port listener
+                    bridgePort.addEventListener("message", handleBridgeMessage);
+
+                    // Ports must be 'started' when using #addEventListener()
+                    // Queued messages are sent at this point
+                    bridgePort.start();
+
+                    // This is no longer needed once port set up
+                    window.removeEventListener("message", setupBridgePort);
+
+
+                    onBridgeReady();
+                }
+            }
+
+            window.addEventListener("message", setupBridgePort);
+        })();
+        </script>
+</head>
+
+<body>
+    <h1>mousoku</h1>
+    <p>See console for test XHR request response</p>
+</body>
+
+</html>
