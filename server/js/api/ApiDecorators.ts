@@ -3,7 +3,7 @@ import * as Api from "./Api";
 import { Moocchat } from "../Moocchat";
 
 import * as IMoocchatApi from "../../../common/interfaces/IMoocchatApi";
-import { Session } from "../session/Session";
+import { UserSession as _UserSession } from "../user/UserSession";
 
 /**
  * Decorates API endpoints by supplying session as the last parameter where available
@@ -14,15 +14,14 @@ export function ApplySession<Target, InputType extends IMoocchatApi.ToServerStan
 
     descriptor.value = function(this: Target, moocchat: Moocchat, res: Api.ApiResponseCallback<PayloadType>, data: InputType) {
         // Load up session
-        let session: Session;
+        const sessionId = data.sessionId;
+        const session = _UserSession.Get(sessionId);
 
-        try {
-            session = new Session(data.sessionId);
-        } catch (e) {
+        if (!session || !session.isValid()) {
             return res({
                 success: false,
                 code: "SESSION_INITIALISATION_FAILED",
-                message: e.message,
+                message: `Session with ID "${sessionId}" is not valid, has expired, or has been destroyed`,
             });
         }
 
@@ -40,7 +39,7 @@ export function ApplySession<Target, InputType extends IMoocchatApi.ToServerStan
 export function LimitQuestionIdToSession<Target, InputType extends IMoocchatApi.ToServerQuestionId, PayloadType>(target: Target, propertyKey: string, descriptor: TypedPropertyDescriptor<Api.ApiHandlerWithSession<InputType, PayloadType>>) {
     const originalMethod = descriptor.value!;
 
-    descriptor.value = function(this: Target, moocchat: Moocchat, res: Api.ApiResponseCallback<PayloadType>, data: InputType, session: Session) {
+    descriptor.value = function(this: Target, moocchat: Moocchat, res: Api.ApiResponseCallback<PayloadType>, data: InputType, session: _UserSession) {
         const questionId = data.questionId;
 
         if (!questionId) {
@@ -79,7 +78,7 @@ export function LimitQuestionIdToSession<Target, InputType extends IMoocchatApi.
 export function LimitQuizIdToSession<Target, InputType extends IMoocchatApi.ToServerQuizId, PayloadType>(target: Target, propertyKey: string, descriptor: TypedPropertyDescriptor<Api.ApiHandlerWithSession<InputType, PayloadType>>) {
     const originalMethod = descriptor.value!;
 
-    descriptor.value = function(this: Target, moocchat: Moocchat, res: Api.ApiResponseCallback<PayloadType>, data: InputType, session: Session) {
+    descriptor.value = function(this: Target, moocchat: Moocchat, res: Api.ApiResponseCallback<PayloadType>, data: InputType, session: _UserSession) {
         const quizId = data.quizId;
 
         if (!quizId) {
@@ -118,7 +117,7 @@ export function LimitQuizIdToSession<Target, InputType extends IMoocchatApi.ToSe
 export function LimitUserIdToSession<Target, InputType extends IMoocchatApi.ToServerUserId, PayloadType>(target: Target, propertyKey: string, descriptor: TypedPropertyDescriptor<Api.ApiHandlerWithSession<InputType, PayloadType>>) {
     const originalMethod = descriptor.value!;
 
-    descriptor.value = function(this: Target, moocchat: Moocchat, res: Api.ApiResponseCallback<PayloadType>, data: InputType, session: Session) {
+    descriptor.value = function(this: Target, moocchat: Moocchat, res: Api.ApiResponseCallback<PayloadType>, data: InputType, session: _UserSession) {
         const userId = data.userId;
 
         if (!userId) {
@@ -156,7 +155,7 @@ export function LimitUserIdToSession<Target, InputType extends IMoocchatApi.ToSe
 export function LimitQuestionOptionIdToQuestionId<Target, InputType extends IMoocchatApi.ToServerQuestionId & IMoocchatApi.ToServerQuestionOptionId, PayloadType>(target: Target, propertyKey: string, descriptor: TypedPropertyDescriptor<Api.ApiHandlerWithSession<InputType, PayloadType>>) {
     const originalMethod = descriptor.value!;
 
-    descriptor.value = function(this: Target, moocchat: Moocchat, res: Api.ApiResponseCallback<PayloadType>, data: InputType, session: Session) {
+    descriptor.value = function(this: Target, moocchat: Moocchat, res: Api.ApiResponseCallback<PayloadType>, data: InputType, session: _UserSession) {
         const questionId = data.questionId;
         const questionOptionId = data.questionOptionId;
 
@@ -199,7 +198,7 @@ export function LimitQuestionOptionIdToQuestionId<Target, InputType extends IMoo
 export function AdminOnly<Target, InputType extends IMoocchatApi.ToServerStandardRequestBase, PayloadType>(target: Target, propertyKey: string, descriptor: TypedPropertyDescriptor<Api.ApiHandlerWithSession<InputType, PayloadType>>) {
     const originalMethod = descriptor.value!;
 
-    descriptor.value = function(this: Target, moocchat: Moocchat, res: Api.ApiResponseCallback<PayloadType>, data: InputType, session: Session) {
+    descriptor.value = function(this: Target, moocchat: Moocchat, res: Api.ApiResponseCallback<PayloadType>, data: InputType, session: _UserSession) {
         if (!session.isAdmin()) {
             return res({
                 success: false,

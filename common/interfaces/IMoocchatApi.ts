@@ -32,6 +32,10 @@ export interface ToServerUserId extends ToServerStandardRequestBase {
     userId: string,
 }
 
+export interface ToServerMarkId extends ToServerStandardRequestBase {
+    markId: string,
+}
+
 export interface ToServerQuestionOptionId extends ToServerStandardRequestBase {
     questionOptionId: string,
 }

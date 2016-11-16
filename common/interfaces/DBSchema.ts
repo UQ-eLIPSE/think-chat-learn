@@ -146,20 +146,23 @@ export interface UserSession<OID, Date> {
     timestampStart?: Date,
     timestampEnd?: Date | null,
     type?: UserSessionType,
+    course?: string,
 }
 
 export type UserSessionType = "ADMIN" | "STUDENT";
 
 
 
-export interface Marking<OID, Date> {
+export interface Mark<OID, Date> {
     _id?: OID,
     markerUserSessionId?: OID,
     quizAttemptId?: OID,
     value?: string | number,
     method?: MarkingMethod,
     timestamp?: Date,
+    invalidated?: Date | null,
 }
 
-export type MarkingMethod = "MOUSOKU";
+// export type MarkingMethod = "MOUSOKU";
+export type MarkingMethod = string;
 

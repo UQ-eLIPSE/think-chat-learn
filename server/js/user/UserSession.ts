@@ -1,3 +1,5 @@
+import { Conf } from "../../config/Conf";
+
 import * as mongodb from "mongodb";
 import { Database } from "../data/Database";
 import * as DBSchema from "../../../common/interfaces/DBSchema";
@@ -13,10 +15,14 @@ import { QuizAttempt } from "../quiz/QuizAttempt";
 import { SocketSession } from "../websocket/SocketSession";
 
 export class UserSession {
+    public static readonly Timeout = Conf.session.timeoutMs;
+
     private static readonly Store = new KVStore<UserSession>();
 
     private data: IDB_UserSession;
     private readonly user: User;
+
+    private lastActive: number;
 
     private readonly db: mongodb.Db;
 
@@ -88,7 +94,7 @@ export class UserSession {
         });
     }
 
-    public static async Create(db: mongodb.Db, user: User, type: DBSchema.UserSessionType) {
+    public static async Create(db: mongodb.Db, user: User, type: DBSchema.UserSessionType, course: string) {
         const dbUserSession = new DBUserSession(db).getCollection();
 
         const newSessionData: IDB_UserSession = {
@@ -97,6 +103,7 @@ export class UserSession {
             timestampStart: new Date(),
             timestampEnd: null,
             type,
+            course,
         }
 
         await dbUserSession.insertOne(newSessionData);
@@ -144,6 +151,10 @@ export class UserSession {
     public getId() {
         return this.getOID().toHexString();
     }
+    
+    public getData() {
+        return this.data;
+    }
 
     public getUser() {
         return this.user;
@@ -169,6 +180,43 @@ export class UserSession {
         });
     }
 
+    /**
+     * @returns {number} Inactivity time in milliseconds
+     */
+    public getInactivityTime() {
+        return Date.now() - this.getLastActiveTime();
+    }
+
+    public getLastActiveTime() {
+        return this.lastActive;
+    }
+
+    public updateActivityTime() {
+        return (this.lastActive = Date.now());
+    }
+
+    public invalidate() {
+        this.lastActive = 0;
+    }
+
+    public isValid() {
+
+        // Check timeout
+        if (this.getInactivityTime() > UserSession.Timeout) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public isAdmin() {
+        return this.data.type === "ADMIN";
+    }
+
+    public getCourse() {
+        return this.data.course;
+    }
+
     private addToStore() {
         UserSession.Store.put(this.getId(), this);
     }
@@ -178,6 +226,7 @@ export class UserSession {
     }
 
     public async end() {
+        this.invalidate();
         await this.setTimestampEnd();
     }
 

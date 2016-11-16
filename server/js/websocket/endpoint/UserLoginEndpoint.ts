@@ -65,7 +65,7 @@ export class UserLoginEndpoint extends WSEndpoint {
 
             // Setting up session
             const isAdmin = UserLoginFunc.DetermineAdminStatus(identity);
-            const session = await UserLoginFunc.CreateSession(db, user, isAdmin);
+            const session = await UserLoginFunc.CreateSession(db, user, isAdmin, identity.course);
             SocketSession.Create(session).setSocket(socket);
             
             const quizAttempt = await UserLoginFunc.CreateQuizAttempt(db, quizSchedule, session);
@@ -79,7 +79,7 @@ export class UserLoginEndpoint extends WSEndpoint {
     }
 
     private static async HandleLogout(socket: PacSeqSocket_Server, data: IWSToServerData.Logout, db: mongodb.Db) {
-        const session = await UserSession.GetAutoFetch(db, data.sessionId);
+        const session = UserSession.Get(data.sessionId);
 
         if (!session) {
             return console.error("Attempted logout with invalid session ID = " + data.sessionId);
@@ -88,7 +88,7 @@ export class UserLoginEndpoint extends WSEndpoint {
         const sessionId = session.getId();
 
         // Log out by ending the session, then destroying the in-memory object
-        session.end();
+        await session.end();
         session.destroyInstance();
 
         socket.emitData<IWSToClientData.LogoutSuccess>("logoutSuccess", {
@@ -121,7 +121,7 @@ export class UserLoginEndpoint extends WSEndpoint {
     }
 
     private static async HandleResearchConsentSet(socket: PacSeqSocket_Server, data: IWSToServerData.LoginResearchConsent, db: mongodb.Db) {
-        const session = await UserSession.GetAutoFetch(db, data.sessionId);
+        const session = UserSession.Get(data.sessionId);
 
         if (!session) {
             return console.error("Attempted research consent set with invalid session ID = " + data.sessionId);
@@ -133,7 +133,7 @@ export class UserLoginEndpoint extends WSEndpoint {
             return console.error(`Session ${session.getId()} attempted research consent set with invalid value = ${researchConsent}`);
         }
 
-        session.getUser().setResearchConsent(researchConsent);
+        await session.getUser().setResearchConsent(researchConsent);
 
         socket.emit("researchConsentSaved");
     }
@@ -269,7 +269,7 @@ class UserLoginFunc {
         return isAdmin;
     }
 
-    public static async CreateSession(db: mongodb.Db, user: User, isAdmin: boolean) {
+    public static async CreateSession(db: mongodb.Db, user: User, isAdmin: boolean, course: string) {
         let sessionType: DBSchema.UserSessionType;
 
         if (isAdmin) {
@@ -278,7 +278,7 @@ class UserLoginFunc {
             sessionType = "STUDENT";
         }
 
-        return await UserSession.Create(db, user, sessionType);
+        return await UserSession.Create(db, user, sessionType, course);
     }
 
     public static async CreateQuizAttempt(db: mongodb.Db, quizSchedule: QuizSchedule, session: UserSession) {
