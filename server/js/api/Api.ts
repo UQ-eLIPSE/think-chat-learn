@@ -1,5 +1,4 @@
 import * as mongodb from "mongodb";
-// import * as crypto from "crypto";
 import * as os from "os";
 
 import * as ApiDecorators from "./ApiDecorators";
@@ -15,17 +14,18 @@ import { LTIAuth } from "../auth/lti/LTIAuth";
 import { User as _User } from "../user/User";
 import { UserSession as _UserSession } from "../user/UserSession";
 
+import { QuizSchedule as _QuizSchedule } from "../quiz/QuizSchedule";
 import { QuizAttempt as _QuizAttempt } from "../quiz/QuizAttempt";
 
-import { Database } from "../data/Database";
 import { User as DBUser, IDB_User } from "../data/models/User";
 import { UserSession as DBUserSession, IDB_UserSession } from "../data/models/UserSession";
 import { QuizSchedule as DBQuizSchedule, IDB_QuizSchedule } from "../data/models/QuizSchedule";
 import { Question as DBQuestion, IDB_Question } from "../data/models/Question";
+import { QuizAttempt as DBQuizAttempt } from "../data/models/QuizAttempt";
 import { QuestionOption as DBQuestionOption, IDB_QuestionOption } from "../data/models/QuestionOption";
 import { QuestionOptionCorrect as DBQuestionOptionCorrect, IDB_QuestionOptionCorrect } from "../data/models/QuestionOptionCorrect";
 // import { Survey as DBSurvey, IDB_Survey } from "../data/models/Survey";
-import { Mark as DBMark } from "../data/models/Mark";
+import { Mark as DBMark, IDB_Mark } from "../data/models/Mark";
 
 import { Utils } from "../../../common/js/Utils";
 
@@ -97,7 +97,7 @@ export namespace Api {
             const db = moocchat.getDb();
 
             new DBQuizSchedule(db).readAsArray({
-                _id: new Database.ObjectId(data.quizId)
+                _id: new mongodb.ObjectID(data.quizId)
             }, (err, result) => {
                 if (handleMongoError(err, res)) { return; }
 
@@ -147,7 +147,7 @@ export namespace Api {
 
                 new DBQuizSchedule(db).updateOne(
                     {
-                        _id: new Database.ObjectId(quizId),
+                        _id: new mongodb.ObjectID(quizId),
                     },
                     {
                         $set: {
@@ -176,7 +176,7 @@ export namespace Api {
 
             new DBQuizSchedule(db).delete(
                 {
-                    _id: new Database.ObjectId(quizId),
+                    _id: new mongodb.ObjectID(quizId),
                 },
                 (err, result) => {
                     if (handleMongoError(err, res)) { return; }
@@ -218,7 +218,7 @@ export namespace Api {
             const db = moocchat.getDb();
 
             new DBQuestion(db).readAsArray({
-                _id: new Database.ObjectId(data.questionId)
+                _id: new mongodb.ObjectID(data.questionId)
             }, (err, result) => {
                 if (handleMongoError(err, res)) { return; }
 
@@ -267,7 +267,7 @@ export namespace Api {
 
             new DBQuestion(db).updateOne(
                 {
-                    _id: new Database.ObjectId(questionId),
+                    _id: new mongodb.ObjectID(questionId),
                 },
                 {
                     $set: {
@@ -294,7 +294,7 @@ export namespace Api {
 
             new DBQuestion(db).delete(
                 {
-                    _id: new Database.ObjectId(questionId),
+                    _id: new mongodb.ObjectID(questionId),
                 },
                 (err, result) => {
                     if (handleMongoError(err, res)) { return; }
@@ -315,7 +315,7 @@ export namespace Api {
             const db = moocchat.getDb();
 
             new DBQuestionOption(db).readAsArray({
-                questionId: new Database.ObjectId(data.questionId)
+                questionId: new mongodb.ObjectID(data.questionId)
             }, (err, result) => {
                 if (handleMongoError(err, res)) { return; }
 
@@ -334,7 +334,7 @@ export namespace Api {
 
             new DBQuestionOption(db).insertOne({
                 content: data.content || "",
-                questionId: new Database.ObjectId(data.questionId),
+                questionId: new mongodb.ObjectID(data.questionId),
                 sequence: data.sequence,
             }, (err, result) => {
                 if (handleMongoError(err, res)) { return; }
@@ -358,7 +358,7 @@ export namespace Api {
 
                 new DBQuestionOption(db).updateOne(
                     {
-                        _id: new Database.ObjectId(data.questionOptionId),
+                        _id: new mongodb.ObjectID(data.questionOptionId),
                     },
                     {
                         $set: {
@@ -386,7 +386,7 @@ export namespace Api {
 
             new DBQuestionOption(db).delete(
                 {
-                    _id: new Database.ObjectId(data.questionOptionId),
+                    _id: new mongodb.ObjectID(data.questionOptionId),
                 },
                 (err, result) => {
                     if (handleMongoError(err, res)) { return; }
@@ -407,7 +407,7 @@ export namespace Api {
             const db = moocchat.getDb();
 
             new DBQuestionOptionCorrect(db).readAsArray({
-                questionId: new Database.ObjectId(data.questionId)
+                questionId: new mongodb.ObjectID(data.questionId)
             }, (err, result) => {
                 if (handleMongoError(err, res)) { return; }
 
@@ -427,7 +427,7 @@ export namespace Api {
             const db = moocchat.getDb();
 
             new DBUser(db).readAsArray({
-                _id: new Database.ObjectId(data.userId)
+                _id: new mongodb.ObjectID(data.userId)
             }, (err, result) => {
                 if (handleMongoError(err, res)) { return; }
 
@@ -503,7 +503,7 @@ export namespace Api {
 
             new DBUserSession(db)
                 .readAsArray({
-                    userId: new Database.ObjectId(data.userId)
+                    userId: new mongodb.ObjectID(data.userId)
                 }, (err, result) => {
                     if (handleMongoError(err, res)) { return; }
 
@@ -621,6 +621,67 @@ export namespace Api {
     export class Mark {
         @ApiDecorators.ApplySession
         @ApiDecorators.AdminOnly
+        public static Gets_WithQuizId(moocchat: Moocchat, res: ApiResponseCallback<IDB_Mark[]>, data: IMoocchatApi.ToServerQuizId, session?: _UserSession): void {
+            const db = moocchat.getDb();
+
+            (async () => {
+                const quizScheduleId = data.quizId!;
+
+                // Look up quiz course; check course matches admin course
+                const quizSchedule = await _QuizSchedule.GetAutoFetch(db, quizScheduleId);
+
+                if (!quizSchedule) {
+                    throw new Error();      // TODO:
+                }
+
+                const markerSessionCourse = session!.getCourse();
+                const quizCourse = quizSchedule.getData().course!;
+
+                if (markerSessionCourse !== quizCourse) {
+                    throw new Error(`Marker session course "${markerSessionCourse}" does not match quiz schedule course "${quizCourse}"`);
+                }
+
+                // Get marks related to quiz attempts for the specified quiz schedule
+
+                new DBQuizAttempt(db)
+                    .readWithCursor({
+                        quizScheduleId: quizSchedule.getOID(),
+                    })
+                    .project({
+                        _id: 1,
+                    })
+                    .toArray((err, result) => {
+                        if (handleMongoError(err, res)) { return; }
+
+                        const quizAttemptIds = result.map((result: { _id: mongodb.ObjectID }) => result._id);
+
+                        new DBMark(db).readAsArray({
+                            quizAttemptId: {
+                                $in: quizAttemptIds,
+                            },
+                            invalidated: null,
+                        }, (err, result) => {
+                            if (handleMongoError(err, res)) { return; }
+
+                            return res({
+                                success: true,
+                                payload: result,
+                            });
+                        });
+                    });
+            })().catch((e) => {
+                console.error(e);
+
+                return res({
+                    success: false,
+                    code: "UNKNOWN_ERROR",
+                    message: e.toString(),
+                });
+            });
+        }
+
+        @ApiDecorators.ApplySession
+        @ApiDecorators.AdminOnly
         public static Post(moocchat: Moocchat, res: ApiResponseCallback<IMoocchatApi.ToClientInsertionIdResponse>, data: IMoocchatApi.ToServerStandardRequestBase & FromClientData.Mark, session?: _UserSession): void {
             const db = moocchat.getDb();
 
@@ -644,33 +705,52 @@ export namespace Api {
                 const quizAttempt = await _QuizAttempt.GetAutoFetch(db, quizAttemptId);
 
                 if (!quizAttempt) {
-                    throw new Error(`Quiz attempt "${quizAttemptId}" not valid`);
+                    throw new Error(`Quiz attempt ID "${quizAttemptId}" cannot be found`);
                 }
 
                 const markerSessionCourse = session!.getCourse();
-                const quizAttemptCourse = quizAttempt.getUserSession().getCourse();
+                const quizAttemptCourse = quizAttempt.getQuizSchedule().getData().course;
 
                 if (markerSessionCourse !== quizAttemptCourse) {
                     throw new Error(`Marker session course "${markerSessionCourse}" does not match marked quiz attempt course "${quizAttemptCourse}"`);
                 }
 
-                new DBMark(db).insertOne({
-                    method: data.method,
-                    markerUserSessionId: session!.getOID(),
-                    quizAttemptId: quizAttempt.getOID(),
-                    value: data.value,
-                    timestamp: new Date(),
-                }, (err, result) => {
-                    if (handleMongoError(err, res)) { return; }
+                // Set previous marks invalid
+                new DBMark(db).getCollection().updateMany(
+                    {
+                        quizAttemptId: quizAttempt.getOID(),
+                        invalidated: null,
+                    },
+                    {
+                        $set: {
+                            invalidated: new Date(),
+                        },
+                    },
+                    (err, result) => {
+                        if (handleMongoError(err, res)) { return; }
 
-                    return res({
-                        success: true,
-                        payload: {
-                            id: result.insertedId.toHexString(),
-                        }
-                    });
-                });
+                        new DBMark(db).insertOne({
+                            method: data.method,
+                            markerUserSessionId: session!.getOID(),
+                            quizAttemptId: quizAttempt.getOID(),
+                            value: data.value,
+                            timestamp: new Date(),
+                            invalidated: null,
+                        }, (err, result) => {
+                            if (handleMongoError(err, res)) { return; }
+
+                            return res({
+                                success: true,
+                                payload: {
+                                    id: result.insertedId.toHexString(),
+                                }
+                            });
+                        });
+                    }
+                );
             })().catch((e) => {
+                console.error(e);
+
                 return res({
                     success: false,
                     code: "UNKNOWN_ERROR",
@@ -778,7 +858,7 @@ export function checkQuestionId(moocchat: Moocchat, session: _UserSession, quest
     const db = moocchat.getDb();
 
     if (typeof questionId === "string") {
-        questionId = new Database.ObjectId(questionId);
+        questionId = new mongodb.ObjectID(questionId);
     }
 
     new DBQuestion(db).readAsArray({
@@ -795,7 +875,7 @@ export function checkQuizId(moocchat: Moocchat, session: _UserSession, quizId: s
     const db = moocchat.getDb();
 
     if (typeof quizId === "string") {
-        quizId = new Database.ObjectId(quizId);
+        quizId = new mongodb.ObjectID(quizId);
     }
 
     new DBQuizSchedule(db).readAsArray({
@@ -812,7 +892,7 @@ export function checkUserId(moocchat: Moocchat, session: _UserSession, userId: s
     const db = moocchat.getDb();
 
     if (typeof userId === "string") {
-        userId = new Database.ObjectId(userId);
+        userId = new mongodb.ObjectID(userId);
     }
 
     new DBQuizSchedule(db)
@@ -848,11 +928,11 @@ export function checkQuestionOptionIdToQuestionId(moocchat: Moocchat, questionId
     const db = moocchat.getDb();
 
     if (typeof questionId === "string") {
-        questionId = new Database.ObjectId(questionId);
+        questionId = new mongodb.ObjectID(questionId);
     }
 
     if (typeof questionOptionId === "string") {
-        questionOptionId = new Database.ObjectId(questionOptionId);
+        questionOptionId = new mongodb.ObjectID(questionOptionId);
     }
 
     new DBQuestionOption(db).readAsArray({
@@ -887,7 +967,7 @@ export function precheckQuizScheduleInsert(moocchat: Moocchat, session: _UserSes
     try {
         // Note that JSON data only has bare primitives, so complex objects and Dates do not exist and must be converted from strings
         // TODO: Need to create a common set of interfaces that is shared for server-side (database) and client-side (JSON)
-        questionId = new Database.ObjectId(data.questionId as any as string);
+        questionId = new mongodb.ObjectID(data.questionId as any as string);
         availableStart = new Date(data.availableStart as any as string);
         availableEnd = new Date(data.availableEnd as any as string);
     } catch (e) {
@@ -952,7 +1032,7 @@ export function precheckQuizScheduleUpdate(moocchat: Moocchat, session: _UserSes
     const course = session.getCourse();
 
     // Check valid data
-    const quizId: mongodb.ObjectID = new Database.ObjectId(data.quizId);
+    const quizId: mongodb.ObjectID = new mongodb.ObjectID(data.quizId);
     let questionId: mongodb.ObjectID;
     let availableStart: Date;
     let availableEnd: Date;
@@ -960,7 +1040,7 @@ export function precheckQuizScheduleUpdate(moocchat: Moocchat, session: _UserSes
     try {
         // Note that JSON data only has bare primitives, so complex objects and Dates do not exist and must be converted from strings
         // TODO: Need to create a common set of interfaces that is shared for server-side (database) and client-side (JSON)
-        questionId = new Database.ObjectId(data.questionId as any as string);
+        questionId = new mongodb.ObjectID(data.questionId as any as string);
         availableStart = new Date(data.availableStart as any as string);
         availableEnd = new Date(data.availableEnd as any as string);
     } catch (e) {
@@ -1042,8 +1122,8 @@ export function precheckQuestionOptionUpdate(moocchat: Moocchat, session: _UserS
     const db = moocchat.getDb();
 
     // Check valid data
-    const questionOptionId: mongodb.ObjectID = new Database.ObjectId(data.questionOptionId);
-    const questionId: mongodb.ObjectID = new Database.ObjectId(data.questionId);
+    const questionOptionId: mongodb.ObjectID = new mongodb.ObjectID(data.questionOptionId);
+    const questionId: mongodb.ObjectID = new mongodb.ObjectID(data.questionId);
     let content: string | null | undefined;
     let sequence: number | null | undefined;
 

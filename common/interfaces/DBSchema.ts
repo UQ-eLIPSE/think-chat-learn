@@ -160,7 +160,9 @@ export interface Mark<OID, Date> {
     value?: string | number,
     method?: MarkingMethod,
     timestamp?: Date,
+    invalidated?: Date | null,
 }
 
-export type MarkingMethod = "MOUSOKU";
+// export type MarkingMethod = "MOUSOKU";
+export type MarkingMethod = string;
 

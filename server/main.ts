@@ -135,6 +135,7 @@ AssociateGETEndpoint("/api/admin/quiz", Api.Quiz.Gets);
 AssociateGETEndpoint("/api/admin/quiz/upcoming", Api.Quiz.Gets_NowFuture);
 AssociateGETEndpoint("/api/admin/quiz/:quizId", Api.Quiz.Get);
 // AssociateGETEndpoint("/api/admin/quiz/:quizId/session", undefined);
+AssociateGETEndpoint("/api/admin/quiz/:quizId/mark", Api.Mark.Gets_WithQuizId);
 AssociateGETEndpoint("/api/admin/question", Api.Question.Gets);
 AssociateGETEndpoint("/api/admin/question/:questionId", Api.Question.Get);
 AssociateGETEndpoint("/api/admin/question/:questionId/option", Api.QuestionOption.Gets_WithQuestionId);
@@ -145,10 +146,12 @@ AssociateGETEndpoint("/api/admin/user", Api.User.Gets);
 AssociateGETEndpoint("/api/admin/user/:userId", Api.User.Get);
 AssociateGETEndpoint("/api/admin/user/:userId/session", Api.UserSession.Gets_WithUserId);
 AssociateGETEndpoint("/api/admin/system/info", Api.System.Get_Info);
+// AssociateGETEndpoint("/api/admin/mark/:markId", Api.Mark.Get);
 // POSTs
 AssociatePOSTEndpoint("/api/admin/quiz", Api.Quiz.Post);
 AssociatePOSTEndpoint("/api/admin/question", Api.Question.Post);
 AssociatePOSTEndpoint("/api/admin/question/:questionId/option", Api.QuestionOption.Post_WithQuestionId);
+AssociatePOSTEndpoint("/api/admin/mark", Api.Mark.Post);
 // PUTs
 AssociatePUTEndpoint("/api/admin/quiz/:quizId", Api.Quiz.Put);
 AssociatePUTEndpoint("/api/admin/question/:questionId", Api.Question.Put);
