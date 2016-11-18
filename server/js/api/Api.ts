@@ -760,6 +760,91 @@ export namespace Api {
         }
     }
 
+    export class QuizAttempt_User {
+        @ApiDecorators.ApplySession
+        @ApiDecorators.AdminOnly
+        public static Gets_WithQuizId(moocchat: Moocchat, res: ApiResponseCallback<any[]>, data: IMoocchatApi.ToServerQuizId, session?: _UserSession): void {
+            const db = moocchat.getDb();
+
+            (async () => {
+                const quizScheduleId = data.quizId!;
+
+                // Look up quiz course; check course matches admin course
+                const quizSchedule = await _QuizSchedule.GetAutoFetch(db, quizScheduleId);
+
+                if (!quizSchedule) {
+                    throw new Error();      // TODO:
+                }
+
+                const markerSessionCourse = session!.getCourse();
+                const quizCourse = quizSchedule.getData().course!;
+
+                if (markerSessionCourse !== quizCourse) {
+                    throw new Error(`Marker session course "${markerSessionCourse}" does not match quiz schedule course "${quizCourse}"`);
+                }
+
+                // Get quiz attempts and pair them up with user information
+
+                new DBQuizAttempt(db).readAsArray({
+                    quizScheduleId: quizSchedule.getOID(),
+                }, (err, quizAttempts) => {
+                    if (handleMongoError(err, res)) { return; }
+
+                    const userSessionIds = quizAttempts.map(result => result.userSessionId);
+
+                    new DBUserSession(db).readAsArray({
+                        _id: {
+                            $in: userSessionIds,
+                        }
+                    }, (err, userSessions) => {
+                        if (handleMongoError(err, res)) { return; }
+
+                        // Map user session IDs to user IDs
+                        const userSessionToUser: { [userSessionId: string]: mongodb.ObjectID } = {};
+                        const userIds: mongodb.ObjectID[] = [];
+
+                        userSessions.forEach((userSession) => {
+                            userSessionToUser[userSession._id!.toHexString()] = userSession.userId!;
+                            userIds.push(userSession.userId!);
+                        })
+
+                        new DBUser(db).readAsArray({
+                            _id: {
+                                $in: userIds,
+                            }
+                        }, (err, users) => {
+                            if (handleMongoError(err, res)) { return; }
+
+                            // Convert array to lookup
+                            const userLookup: { [id: string]: IDB_User } = {};
+
+                            users.forEach((user) => {
+                                userLookup[user._id!.toHexString()] = user;
+                            });
+
+                            // Return quiz attempts with user info under `_user`
+                            (<any[]>quizAttempts).forEach((quizAttempt) => {
+                                quizAttempt["_user"] = userLookup[userSessionToUser[quizAttempt.userSessionId!.toHexString()].toHexString()];
+                            });
+
+                            return res({
+                                success: true,
+                                payload: quizAttempts,
+                            });
+                        });
+                    });
+                });
+            })().catch((e) => {
+                console.error(e);
+
+                return res({
+                    success: false,
+                    code: "UNKNOWN_ERROR",
+                    message: e.toString(),
+                });
+            });
+        }
+    }
 
 
     // export class MoocchatAttemptApi {
