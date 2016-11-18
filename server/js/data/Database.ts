@@ -101,15 +101,15 @@ export abstract class Database<CollectionData> {
     }
 
     public insertOne(data: CollectionData, callback?: mongodb.MongoCallback<mongodb.InsertOneWriteOpResult>) {
-        Database.InsertOne(this.getCollection(), data, callback);
+        Database.InsertOne<CollectionData>(this.getCollection(), data, callback);
     }
 
     public insertMany(dataArray: CollectionData[], callback?: mongodb.MongoCallback<mongodb.InsertWriteOpResult>) {
-        Database.InsertMany(this.getCollection(), dataArray, callback);
+        Database.InsertMany<CollectionData>(this.getCollection(), dataArray, callback);
     }
 
     public readAsArray(query?: Object, callback?: mongodb.MongoCallback<CollectionData[]>) {
-        Database.CursorToArray(this.readWithCursor(query), callback);
+        Database.CursorToArray<CollectionData>(this.readWithCursor(query), callback);
     }
 
     public readWithCursor(query?: Object) {

@@ -136,6 +136,7 @@ AssociateGETEndpoint("/api/admin/quiz/upcoming", Api.Quiz.Gets_NowFuture);
 AssociateGETEndpoint("/api/admin/quiz/:quizId", Api.Quiz.Get);
 // AssociateGETEndpoint("/api/admin/quiz/:quizId/session", undefined);
 AssociateGETEndpoint("/api/admin/quiz/:quizId/mark", Api.Mark.Gets_WithQuizId);
+AssociateGETEndpoint("/api/admin/quiz/:quizId/quizAttempt_user", Api.QuizAttempt_User.Gets_WithQuizId);
 AssociateGETEndpoint("/api/admin/question", Api.Question.Gets);
 AssociateGETEndpoint("/api/admin/question/:questionId", Api.Question.Get);
 AssociateGETEndpoint("/api/admin/question/:questionId/option", Api.QuestionOption.Gets_WithQuestionId);
