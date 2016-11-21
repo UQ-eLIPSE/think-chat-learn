@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>mousoku / Actions</title>
+    <title>mousoku / List Quiz Attempts and Marks</title>
     <link rel="stylesheet" href="./lib/css/normalize/4.1.1/normalize.css" />
     <link rel="stylesheet" href="./build/css/main.css" />
 
@@ -11,21 +11,31 @@
     <script src="./conf/js/main.require.conf.js"></script>
     <script>
         // This is the application code to load
-        require(["actions"]);
+        require(["list-marks"]);
     </script>
 </head>
 
 <body>
     <h1>mousoku/MOOCchat</h1>
-    <h2 id="quiz-schedule-name"></h2>
-    <p>What would you like to do?</p>
+    <h2>List Quiz Attempts and Marks</h2>
+    <h3 id="quiz-schedule-name"></h3>
     <ul>
-        <li><a href="./marking.html">Start marking</a></li>
-        <li><a href="./list-marks.html">View quiz attempts and marks (where previously given)</a></li>
         <li><a href="./export.html">Export marks</a></li>
         <br>
-        <li><a href="./sessions.html">Select a different quiz session</a></li>
+        <li><a href="./actions.html">Go back to actions</a></li>
     </ul>
+    <table>
+        <thead>
+            <tr>
+                <th>Quiz Attempt ID</th>
+                <th>Username</th>
+                <th>Mark</th>
+            </tr>
+        </thead>
+        <tbody id="mark-list-table-body">
+
+        </tbody>
+    </table>
 </body>
 
 </html>

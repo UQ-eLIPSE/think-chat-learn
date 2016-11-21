@@ -15,7 +15,7 @@
     </script>
 </head>
 
-<body id="marking-layout">
+<body id="marking-layout" class="loading">
     <div id="marking-assessment-content">
         <div id="marking-justifications">
             <div id="marking-justification-initial"></div>
@@ -30,19 +30,21 @@
             <button id="toggle-left-hand">L/R</button>
             <button id="toggle-traditional-scroll-chats">Scroll Mode</button><br>
             <button id="toggle-no-bg">Chat BG</button>
+            <br><br>
+            <button id="exit" style="color: red;">Exit</button>
             <!--<button id="toggle-diff-removed-visible">[r] Diff Removed <span class="state" style="font-size: 0.7em;"></span></button>-->
             <!--<button id="toggle-diff-added-visible">[a] Diff Added <span class="state" style="font-size: 0.7em;"></span></button>-->
         </div>
         <div style="font-size: 0.7em;">
             <button id="go-to-page">[g] 📄 <span id="active-session-number"></span>/<span id="number-of-sessions"></span></button>
-            <button id="go-to-next-unmarked">[u] ➜ Unmarked</button><br>
-            <button id="lookup-session">🔍 Session</button>
+            <!--<button id="go-to-next-unmarked">[u] ➜ Unmarked</button>--><br>
+            <button id="lookup-session">🔍 Quiz Attempt</button>
             <button id="lookup-user">🔍 User</button><br>
-            <button id="delete-mark">✘ Mark</button>
+            <!--<button id="delete-mark">✘ Mark</button>-->
         </div>
         <div id="session-info">
             <span id="active-session-user-name"></span> (<span id="active-session-user-id"></span>)<br>
-            Session ID: <span id="active-session-id"></span><br>
+            Quiz Attempt ID: <span id="active-session-id"></span><br>
             Chat Group ID: <span id="active-session-chat-group-id"></span>
         </div>
         <div id="mark-value"></div>

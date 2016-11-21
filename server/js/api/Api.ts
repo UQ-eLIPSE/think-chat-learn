@@ -21,11 +21,14 @@ import { User as DBUser, IDB_User } from "../data/models/User";
 import { UserSession as DBUserSession, IDB_UserSession } from "../data/models/UserSession";
 import { QuizSchedule as DBQuizSchedule, IDB_QuizSchedule } from "../data/models/QuizSchedule";
 import { Question as DBQuestion, IDB_Question } from "../data/models/Question";
-import { QuizAttempt as DBQuizAttempt } from "../data/models/QuizAttempt";
+import { QuizAttempt as DBQuizAttempt, IDB_QuizAttempt } from "../data/models/QuizAttempt";
 import { QuestionOption as DBQuestionOption, IDB_QuestionOption } from "../data/models/QuestionOption";
 import { QuestionOptionCorrect as DBQuestionOptionCorrect, IDB_QuestionOptionCorrect } from "../data/models/QuestionOptionCorrect";
 // import { Survey as DBSurvey, IDB_Survey } from "../data/models/Survey";
 import { Mark as DBMark, IDB_Mark } from "../data/models/Mark";
+import { ChatGroup as DBChatGroup, IDB_ChatGroup } from "../data/models/ChatGroup";
+import { ChatMessage as DBChatMessage, IDB_ChatMessage } from "../data/models/ChatMessage";
+import { QuestionResponse as DBQuestionResponse, IDB_QuestionResponse } from "../data/models/QuestionResponse";
 
 import { Utils } from "../../../common/js/Utils";
 
@@ -682,6 +685,51 @@ export namespace Api {
 
         @ApiDecorators.ApplySession
         @ApiDecorators.AdminOnly
+        public static Gets_WithQuizAttemptId(moocchat: Moocchat, res: ApiResponseCallback<IDB_Mark>, data: IMoocchatApi.ToServerQuizAttemptId, session?: _UserSession): void {
+            const db = moocchat.getDb();
+
+            (async () => {
+                const quizAttemptId = data.quizAttemptId!;
+
+                const quizAttempt = await _QuizAttempt.GetAutoFetch(db, quizAttemptId);
+
+                if (!quizAttempt) {
+                    throw new Error();      // TODO:
+                }
+
+                // Look up quiz course; check course matches admin course
+                const markerSessionCourse = session!.getCourse();
+                const quizCourse = quizAttempt.getQuizSchedule().getData().course!;
+
+                if (markerSessionCourse !== quizCourse) {
+                    throw new Error(`Marker session course "${markerSessionCourse}" does not match quiz schedule course "${quizCourse}"`);
+                }
+
+                // Get mark for quiz attempt
+                new DBMark(db).readAsArray({
+                    quizAttemptId: quizAttempt.getOID(),
+                    invalidated: null,
+                }, (err, result) => {
+                    if (handleMongoError(err, res)) { return; }
+
+                    return res({
+                        success: true,
+                        payload: result[0],
+                    });
+                });
+            })().catch((e) => {
+                console.error(e);
+
+                return res({
+                    success: false,
+                    code: "UNKNOWN_ERROR",
+                    message: e.toString(),
+                });
+            });
+        }
+
+        @ApiDecorators.ApplySession
+        @ApiDecorators.AdminOnly
         public static Post(moocchat: Moocchat, res: ApiResponseCallback<IMoocchatApi.ToClientInsertionIdResponse>, data: IMoocchatApi.ToServerStandardRequestBase & FromClientData.Mark, session?: _UserSession): void {
             const db = moocchat.getDb();
 
@@ -834,6 +882,188 @@ export namespace Api {
                         });
                     });
                 });
+            })().catch((e) => {
+                console.error(e);
+
+                return res({
+                    success: false,
+                    code: "UNKNOWN_ERROR",
+                    message: e.toString(),
+                });
+            });
+        }
+    }
+
+    export class ChatGroup {
+        @ApiDecorators.ApplySession
+        @ApiDecorators.AdminOnly
+        public static Gets_WithQuizId(moocchat: Moocchat, res: ApiResponseCallback<IDB_ChatGroup[]>, data: IMoocchatApi.ToServerQuizId, session?: _UserSession): void {
+            const db = moocchat.getDb();
+
+            (async () => {
+                const quizScheduleId = data.quizId!;
+
+                // Look up quiz course; check course matches admin course
+                const quizSchedule = await _QuizSchedule.GetAutoFetch(db, quizScheduleId);
+
+                if (!quizSchedule) {
+                    throw new Error();      // TODO:
+                }
+
+                const markerSessionCourse = session!.getCourse();
+                const quizCourse = quizSchedule.getData().course!;
+
+                if (markerSessionCourse !== quizCourse) {
+                    throw new Error(`Marker session course "${markerSessionCourse}" does not match quiz schedule course "${quizCourse}"`);
+                }
+
+                // Get all chat groups with quiz schedule
+                new DBChatGroup(db).readAsArray({
+                    quizScheduleId: quizSchedule.getOID(),
+                }, (err, result) => {
+                    if (handleMongoError(err, res)) { return; }
+
+                    return res({
+                        success: true,
+                        payload: result,
+                    });
+                });
+            })().catch((e) => {
+                console.error(e);
+
+                return res({
+                    success: false,
+                    code: "UNKNOWN_ERROR",
+                    message: e.toString(),
+                });
+            });
+        }
+    }
+
+    export class ChatMessage {
+        @ApiDecorators.ApplySession
+        @ApiDecorators.AdminOnly
+        public static Gets_WithQuizId(moocchat: Moocchat, res: ApiResponseCallback<IDB_ChatMessage[]>, data: IMoocchatApi.ToServerQuizId, session?: _UserSession): void {
+            const db = moocchat.getDb();
+
+            (async () => {
+                const quizScheduleId = data.quizId!;
+
+                // Look up quiz course; check course matches admin course
+                const quizSchedule = await _QuizSchedule.GetAutoFetch(db, quizScheduleId);
+
+                if (!quizSchedule) {
+                    throw new Error();      // TODO:
+                }
+
+                const markerSessionCourse = session!.getCourse();
+                const quizCourse = quizSchedule.getData().course!;
+
+                if (markerSessionCourse !== quizCourse) {
+                    throw new Error(`Marker session course "${markerSessionCourse}" does not match quiz schedule course "${quizCourse}"`);
+                }
+
+                // Get chat messages related to quiz attempts for the specified quiz schedule
+
+                new DBQuizAttempt(db)
+                    .readWithCursor({
+                        quizScheduleId: quizSchedule.getOID(),
+                    })
+                    .project({
+                        _id: 1,
+                    })
+                    .toArray((err, result) => {
+                        if (handleMongoError(err, res)) { return; }
+
+                        const quizAttemptIds = result.map((result: { _id: mongodb.ObjectID }) => result._id);
+
+                        new DBChatMessage(db).readAsArray({
+                            quizAttemptId: {
+                                $in: quizAttemptIds,
+                            },
+                        }, (err, result) => {
+                            if (handleMongoError(err, res)) { return; }
+
+                            return res({
+                                success: true,
+                                payload: result,
+                            });
+                        });
+                    });
+            })().catch((e) => {
+                console.error(e);
+
+                return res({
+                    success: false,
+                    code: "UNKNOWN_ERROR",
+                    message: e.toString(),
+                });
+            });
+        }
+    }
+
+    export class QuestionResponse {
+        @ApiDecorators.ApplySession
+        @ApiDecorators.AdminOnly
+        public static Gets_WithQuizId(moocchat: Moocchat, res: ApiResponseCallback<IDB_QuestionResponse[]>, data: IMoocchatApi.ToServerQuizId, session?: _UserSession): void {
+            const db = moocchat.getDb();
+
+            (async () => {
+                const quizScheduleId = data.quizId!;
+
+                // Look up quiz course; check course matches admin course
+                const quizSchedule = await _QuizSchedule.GetAutoFetch(db, quizScheduleId);
+
+                if (!quizSchedule) {
+                    throw new Error();      // TODO:
+                }
+
+                const markerSessionCourse = session!.getCourse();
+                const quizCourse = quizSchedule.getData().course!;
+
+                if (markerSessionCourse !== quizCourse) {
+                    throw new Error(`Marker session course "${markerSessionCourse}" does not match quiz schedule course "${quizCourse}"`);
+                }
+
+                // Get marks related to quiz attempts for the specified quiz schedule
+
+                new DBQuizAttempt(db)
+                    .readWithCursor({
+                        quizScheduleId: quizSchedule.getOID(),
+                    })
+                    .project({
+                        _id: 0,
+                        responseInitialId: 1,
+                        responseFinalId: 1,
+                    })
+                    .toArray((err, result) => {
+                        if (handleMongoError(err, res)) { return; }
+
+                        const questionResponseIds: mongodb.ObjectID[] = [];
+
+                        result.forEach((quizAttempt: IDB_QuizAttempt) => {
+                            if (quizAttempt.responseInitialId) {
+                                questionResponseIds.push(quizAttempt.responseInitialId);
+                            }
+
+                            if (quizAttempt.responseFinalId) {
+                                questionResponseIds.push(quizAttempt.responseFinalId);
+                            }
+                        });
+
+                        new DBQuestionResponse(db).readAsArray({
+                            _id: {
+                                $in: questionResponseIds,
+                            },
+                        }, (err, result) => {
+                            if (handleMongoError(err, res)) { return; }
+
+                            return res({
+                                success: true,
+                                payload: result,
+                            });
+                        });
+                    });
             })().catch((e) => {
                 console.error(e);
 

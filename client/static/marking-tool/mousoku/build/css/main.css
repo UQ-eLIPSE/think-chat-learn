@@ -119,6 +119,16 @@ body {
     border-right: 1em solid #fafafa;
     border-left: 1em solid #fafafa; }
 
+body.loading #marking-chats::before {
+  content: "Loading data...";
+  color: red;
+  font-weight: bold;
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  text-align: center; }
+
 #marking-chats-overview-bar {
   display: flex;
   flex-direction: column;
