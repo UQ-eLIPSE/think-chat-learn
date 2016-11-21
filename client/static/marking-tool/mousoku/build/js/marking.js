@@ -95,6 +95,7 @@ define(["require", "exports", "jquery", "diff", "./classes/MoocchatBridge"], fun
                 var $buttonLookupSession = $("#lookup-session");
                 var $buttonLookupUser = $("#lookup-user");
                 var $messagePressInsertToEdit = $("#message-press-insert-to-edit");
+                var $exitButton = $("#exit");
                 var toggleLeftHandMode = function () {
                     $markingLayout.toggleClass("left-handed");
                 };
@@ -259,6 +260,14 @@ define(["require", "exports", "jquery", "diff", "./classes/MoocchatBridge"], fun
                     });
                 };
                 var index = 0;
+                if (quizAttemptId) {
+                    for (var i = 0; i < data.quizAttempt_users.length; ++i) {
+                        if (data.quizAttempt_users[i]._id === quizAttemptId) {
+                            index = i;
+                            break;
+                        }
+                    }
+                }
                 $numberOfSessions.text(data.quizAttempt_users.length);
                 loadSession(index);
                 $(window).on("keydown", function (e) {
@@ -436,6 +445,14 @@ define(["require", "exports", "jquery", "diff", "./classes/MoocchatBridge"], fun
                 });
                 $("button").on("click", function (e) {
                     $(e.currentTarget).blur();
+                });
+                $exitButton.on("click", function (e) {
+                    if ($markValue.hasClass("edit-mode")) {
+                        if (!confirm("Mark not yet committed - leave now?")) {
+                            return;
+                        }
+                    }
+                    location.assign("./actions.html");
                 });
             });
         };
