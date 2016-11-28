@@ -711,15 +711,18 @@ body > #content > section {
     font-weight: bold;
 }
 
-#answers {
+#answers,
+.admin-panel #option-list {
     counter-reset: answer-counter;
 }
 
-#answers > * {
-    @extend .mc-box-pad;
+#answers > *,
+.admin-panel #option-list > * {
+    // @extend .mc-box-pad;
     @extend .thin-border;
     
-    padding-left: 3.5rem;
+    padding: 0.7em;
+    padding-left: 2.8em;
     
     display: block;
     width: 100%;
@@ -733,32 +736,66 @@ body > #content > section {
     
     position: relative;
 
+    word-wrap: break-word;
+
     &::before {
         list-style-type: upper-alpha;
         content: counter(answer-counter, upper-alpha);
         counter-increment: answer-counter;
-        padding: 0.2rem 0.4rem;
+        padding: 0.1em 0;
         line-height: 1;
         background: $mc-colour-1;
         color: fg-on-bg($mc-colour-1);
         
         display: inline-block;
         position: absolute;
-        left: 0.8rem;
+        left: 0.3em;
         top: 50%;
-        margin-top: -1rem;
+        margin-top: -0.55em;
 
         font-weight: bold;
-        font-size: 1.7rem;
+        font-size: 1.6em;
+
+        width: 1.1em;
+        text-align: center;
     }
 
-    &:hover {
-        background: #eee;
-        cursor: pointer;
+    &.new {
+        background: none;
+        border-color: transparent;
+
+        &::before {
+            content: "+";
+            background: rgba(0,0,0,0.3);
+        }
+
+        &:empty::after {
+            content: "Type new option, then press ENTER";
+            font-style: italic;
+            opacity: 0.3;
+        }
+    }
+
+    &.edit-mode {
+        border-color: transparent;
+        outline: $thin-border-width solid #000;
+        box-shadow: 0 0 0.5em #000;
+        z-index: 1;
+    }
+
+    &.deemphasise {
+        opacity: 0.5;
     }
 
     & + * {
         border-top: 0;
+    }
+}
+
+#answers > * {
+    &:hover {
+        background: #eee;
+        cursor: pointer;
     }
 
     &.selected {
@@ -782,6 +819,10 @@ body > #content > section {
         background: $uq-colour-B5;
         color: fg-on-bg($uq-colour-B5);
     }
+}
+
+#option-list .option-controls {
+    font-size: 0.8em;
 }
 
 .client-justifications {
@@ -1383,10 +1424,10 @@ body > #content > section {
             .sidebar {
                 position: relative;
 
-                width: 25%;
+                width: 40%;
 
                 min-width: 20em;
-                max-width: 30em;
+                max-width: 40em;
 
                 background: transparentize($mc-colour-1, 0.9);
 
