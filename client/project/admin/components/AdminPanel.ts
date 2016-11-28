@@ -58,7 +58,7 @@ export class AdminPanel extends Component {
             this.loginLti()
                 .then(() => {
                     this.setCourseName();
-                    this.processAction("home");
+                    this.processAction("quizzes");
                 })
                 .catch((error: any) => {
                     this.dispatchError(error);

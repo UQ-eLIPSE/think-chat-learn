@@ -9,6 +9,7 @@ import { LayoutData } from "../../../js/ui/LayoutData";
 
 import { AdminPanel, AjaxFuncFactoryResultCollection } from "./AdminPanel";
 import { QuestionBankSectionContent } from "./QuestionBankSectionContent";
+import { QuestionBankSectionOptions } from "./QuestionBankSectionOptions";
 
 import * as IMoocchatApi from "../../../../common/interfaces/IMoocchatApi";
 
@@ -73,8 +74,7 @@ export class QuestionBankCreate extends ComponentRenderable {
 
     private readonly setupSubcomponents = () => {
         this.components.put("content", new QuestionBankSectionContent(this.section$(".question-bank-section-content"), this.getLayoutData(), this));
-        // this.components.put("edit", new QuizSchedulesEdit(subcomponentRenderTarget, this.getLayoutData(), this));
-        // this.components.put("sidebar-empty", new QuizSchedulesSidebarEmpty(subcomponentRenderTarget, this.getLayoutData(), this));
+        this.components.put("options", new QuestionBankSectionOptions(this.section$(".question-bank-section-options"), this.getLayoutData(), this));
     }
 
     private readonly getComponent = <ComponentType extends Component>(componentName: string) => {
@@ -105,6 +105,7 @@ export class QuestionBankCreate extends ComponentRenderable {
 
     private readonly renderSubcomponents = () => {
         this.renderComponent("content");
+        this.renderComponent("options");
     }
 
     private readonly setupForm = () => {
