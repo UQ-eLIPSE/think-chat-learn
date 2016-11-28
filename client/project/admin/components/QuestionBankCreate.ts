@@ -1,3 +1,5 @@
+import * as $ from "jquery";
+
 import { KVStore } from "../../../../common/js/KVStore";
 import { XHRStore } from "../../../js/xhr/XHRStore";
 
@@ -109,37 +111,78 @@ export class QuestionBankCreate extends ComponentRenderable {
     }
 
     private readonly setupForm = () => {
-        this.section$("#create").one("click", () => {
+        const handler = () => {
             const sectionContentComponent = this.getComponent<QuestionBankSectionContent>("content");
+            const sectionOptionsComponent = this.getComponent<QuestionBankSectionOptions>("options");
 
             const title = sectionContentComponent.getTitle();
             const content = sectionContentComponent.getContent();
+            const questionOptions = sectionOptionsComponent.getQuestionOptions();
 
-            const xhrCall = this.ajaxFuncs!.post<IMoocchatApi.ToClientResponseBase<IMoocchatApi.ToClientInsertionIdResponse>>
+            if (!title || $.trim(title).length === 0) {
+                return alert("Title must not be blank");
+            }
+
+            if (questionOptions.length === 0) {
+                return alert("At least one question option is required");
+            }
+
+            // Prevent double clicks
+            this.section$("#create").off("click", handler);
+
+
+            const apiPost = <PayloadType>(url: string, data: any) => {
+                const xhrCall = this.ajaxFuncs!.post<IMoocchatApi.ToClientResponseBase<PayloadType>>
+                    (url, data);
+
+                // Store in XHR store to permit aborting when necessary
+                const xhrObj = xhrCall.xhr;
+                const xhrId = this.xhrStore.add(xhrObj);
+
+                return xhrCall.promise
+                    .then((data) => {
+                        // Remove once complete
+                        this.xhrStore.remove(xhrId);
+                        return data;
+                    })
+                    // Pick up if API call failed
+                    .then(_ => this.cullBadData(_));
+            }
+
+
+
+            let newQuestionId: string;
+
+            apiPost<IMoocchatApi.ToClientInsertionIdResponse>
                 (`/api/admin/question`, {
                     title,
                     content,
-                });
-
-            // Store in XHR store to permit aborting when necessary
-            const xhrObj = xhrCall.xhr;
-            const xhrId = this.xhrStore.add(xhrObj);
-
-            xhrCall.promise
-                .then((data) => {
-                    // Remove once complete
-                    this.xhrStore.remove(xhrId);
-                    return data;
                 })
-                .then(_ => this.cullBadData(_))
                 .then((data) => {
-                    // Load newly inserted item via. parent
-                    this.loadQuestionIdInParent(data.payload.id);
+                    // Keep track of new question ID
+                    newQuestionId = data.payload.id;
+                })
+                .then(() => {
+                    // Send posts for all question options -> wrap as Promises
+                    const questionOptionPosts = questionOptions.map((questionOption) => {
+                        return apiPost<IMoocchatApi.ToClientInsertionIdResponse>
+                            (`/api/admin/question/${newQuestionId}/option`, {
+                                content: questionOption.content,
+                                sequence: questionOption.sequence,
+                            });
+                    });
+
+                    return Promise.all(questionOptionPosts);
+                })
+                .then(() => {
+                    this.loadQuestionIdInParent(newQuestionId);
                 })
                 .catch((error) => {
                     this.dispatchError(error);
                 });
-        });
+        }
+
+        this.section$("#create").on("click", handler);
     }
 
     private readonly loadQuestionIdInParent = (id: string) => {

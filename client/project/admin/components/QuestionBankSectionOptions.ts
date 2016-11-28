@@ -1,3 +1,5 @@
+import * as $ from "jquery";
+
 import { Component } from "../../../js/ui/Component";
 import { ComponentRenderable } from "../../../js/ui/ComponentRenderable";
 
@@ -52,7 +54,7 @@ export class QuestionBankSectionOptions extends ComponentRenderable {
     }
 
     public readonly getQuestionOptions = () => {
-        return this.getQuestionOptions;
+        return this.questionOptions;
     }
 
     private readonly fetchAjaxFuncs = () => {
@@ -186,6 +188,15 @@ export class QuestionBankSectionOptions extends ComponentRenderable {
     }
 
     private readonly onDeleteQuestionOption = (questionOption: ToClientData.QuestionOption) => {
+        // Maintain at least one question option
+        if (this.getQuestionOptions().length < 2) {
+            return new Promise((resolve) => {
+                alert("At least one question option is required");
+
+                resolve();
+            }) as Promise<void>;
+        }
+
         if (this.question) {
             return this.submitDeleteQuestionOption(questionOption._id!)
                 .then(_ => this.cullBadData(_))
