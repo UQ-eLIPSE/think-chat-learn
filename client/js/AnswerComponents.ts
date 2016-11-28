@@ -161,7 +161,7 @@ export function UpdateJustificationCharAvailable(justification: string, $charAva
  */
 export function GenerateAnswerOptionElems(questionOptions: ToClientData.QuestionOption[], answerElement: "<button>" | "<div>" = "<button>") {
     return questionOptions.map((option) => {
-        return $(answerElement).html(option.content).data("optionId", option._id);
+        return $(answerElement).text(option.content).data("optionId", option._id);
     });
 }
 
