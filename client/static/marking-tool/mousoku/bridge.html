@@ -106,7 +106,11 @@
                     // Send ready reply (this will be queued until port is started)
                     bridgePort.postMessage({
                         event: "mc_bridge_ready",
-                        data: null
+                        data: {
+                            application: {
+                                name: "mousoku",
+                            },
+                        },
                     });
 
                     // Set up port listener
@@ -131,6 +135,12 @@
                     e.returnValue = message;
                     return message;
                 }
+
+                // Post bridge close event
+                bridgePort.postMessage({
+                    event: "mc_bridge_close",
+                    data: null
+                });
             }
 
             window.addEventListener("message", setupBridgePort);

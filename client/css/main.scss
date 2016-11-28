@@ -430,6 +430,23 @@ button.link:active {
     }
 }
 
+.mc-full-screen-msg-container {
+    @extend .fill-parent;
+    @extend .flex-container;
+    @extend .flex-main-axis-center;
+    @extend .flex-cross-axis-center;
+
+    background: rgba(0,0,0,0.8);
+
+    & > * {
+        @extend .mc-box-pad;
+
+        width: 50%;
+        max-width: 40em;
+        
+        background: #fff;
+    }
+}
 
 /********** Core UI structure **********/
 

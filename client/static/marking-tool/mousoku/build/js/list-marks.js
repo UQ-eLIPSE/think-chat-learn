@@ -26,7 +26,8 @@ define(["require", "exports", "jquery", "./classes/MoocchatBridge"], function (r
                 quizAttempt_users.forEach(function (quizAttempt_user) {
                     var username = quizAttempt_user._user.username;
                     var quizAttemptId = quizAttempt_user._id;
-                    var mark = (markLookup[quizAttemptId] || "").toString();
+                    var markValue = markLookup[quizAttemptId];
+                    var mark = (markValue === undefined ? "" : markValue).toString();
                     rows.push($("<tr>").append([
                         $("<td>").append([
                             $("<a>").addClass("open-attempt").attr("href", "#").data("quizAttemptId", quizAttemptId).text(quizAttemptId),

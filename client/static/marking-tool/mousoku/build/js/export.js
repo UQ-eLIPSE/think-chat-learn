@@ -28,7 +28,8 @@ define(["require", "exports", "jquery", "FileSaver", "./classes/MoocchatBridge"]
                     quizAttempt_users.forEach(function (quizAttempt_user) {
                         var username = quizAttempt_user._user.username;
                         var quizAttemptId = quizAttempt_user._id;
-                        var mark = (markLookup[quizAttemptId] || "").toString();
+                        var markValue = markLookup[quizAttemptId];
+                        var mark = (markValue === undefined ? "" : markValue).toString();
                         csvArray.push(username + "," + mark + "," + quizAttemptId);
                     });
                     var csvBlob = new Blob([csvArray.join("\n")], { type: "text/csv" });
