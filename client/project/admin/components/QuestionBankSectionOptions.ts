@@ -41,25 +41,15 @@ export class QuestionBankSectionOptions extends ComponentRenderable {
             new Layout("admin-question-bank-section-options", this.getLayoutData())
                 .wipeThenAppendTo(this.getRenderTarget())
                 .promise
-                // .then(this.hideContent)
                 .then(this.emptyQuestionOptions)
                 .then(this.setupNewQuestionOptionBox)
                 .then(this.setupOptionListControls)
                 .then(this.fetchRenderQuestionData)
-                // .then(this.showContent)
                 .catch((error) => {
                     this.dispatchError(error);
                 });
         });
     }
-
-    // private readonly hideContent = () => {
-    //     this.section$().css("visibility", "hidden");
-    // }
-
-    // private readonly showContent = () => {
-    //     this.section$().css("visibility", "visible");
-    // }
 
     public readonly getQuestionOptions = () => {
         return this.getQuestionOptions;
@@ -89,6 +79,7 @@ export class QuestionBankSectionOptions extends ComponentRenderable {
             this.xhrStore.remove(xhrId);
         });
 
+        // Update question option cache
         xhrCall.promise
             .then(_ => this.cullBadData(_))
             .then((data) => {
@@ -248,6 +239,108 @@ export class QuestionBankSectionOptions extends ComponentRenderable {
         }
     }
 
+    private readonly detachUpdateQuestionOnBodyClick = () => {
+        $("body").off("click.updateQuestionOnBodyClick");
+    }
+
+    private readonly onStartEditQuestionOption = ($optionItem: JQuery, questionOption: ToClientData.QuestionOption) => {
+        // Remove controls from item
+        const $optionControls = $(".option-controls", $optionItem);
+        $optionControls.remove();
+
+        const updateQuestionOnBodyClick = (e: JQueryEventObject) => {
+            const $actualClickedElem = $(e.target);
+
+            // If we're clicking inside the same element we're trying to edit
+            // don't continue
+            if ($actualClickedElem.closest($optionItem).length > 0) {
+                return;
+            }
+
+            // Detach now (effectively makes this a once-only event)
+            this.detachUpdateQuestionOnBodyClick();
+
+            // Only if we were in edit mode shall we update
+            if ($optionItem.hasClass("edit-mode")) {
+                updateQuestion();
+            }
+        }
+
+        const updateQuestion = () => {
+            // Update question option with new text
+            const content = $.trim($optionItem.text());
+
+            // Only edit if we have content
+            if (content.length !== 0) {
+                questionOption.content = content;
+            }
+
+            // Remove update on click handler
+            this.detachUpdateQuestionOnBodyClick();
+
+            // Update question option
+            if (this.question) {
+                return this.submitEditQuestionOption(questionOption)
+                    .then(_ => this.cullBadData(_))
+                    .then(this.loadQuestionOptionData)
+                    .then(_ => this.cullBadData(_))
+                    .then((data) => {
+                        this.renderQuestions(data.payload);
+                    });
+            } else {
+                return new Promise((resolve) => {
+                    this.renderQuestions(this.questionOptions);
+
+                    resolve();
+                }) as Promise<void>;
+            }
+        }
+
+        // Make item editable
+        $optionItem
+            .prop("contenteditable", true)
+            .focus()
+            .addClass("edit-mode")
+            .on("keydown", (e) => {
+                // Capture ENTER key
+                if (e.keyCode === 13) {
+                    e.preventDefault();
+                    this.detachUpdateQuestionOnBodyClick();
+
+                    return updateQuestion();
+                }
+
+                // Capture ESC key
+                if (e.keyCode === 27) {
+                    e.preventDefault();
+                    this.detachUpdateQuestionOnBodyClick();
+
+                    // Re-render from cache
+                    return this.renderQuestions(this.questionOptions);
+                }
+
+                return;
+            })
+
+            // Deemphasise siblings
+            .siblings()
+            .not(".new")
+            .addClass("deemphasise disabled");
+
+        // Update on click outside of element
+        //   This is done within a setTimeout to delay attachment so we
+        //   don't end up in a cycle where the click handler is triggered
+        //   immediately after entering edit mode.
+        //
+        //   While it is possible to prevent this from happening by stopping
+        //   the propagation of events from bubbling to <body>, that will
+        //   cause other side effects that complicate handling this very
+        //   feature (not picking up clicks in other option items etc.)
+        setTimeout(() => {
+            $("body").on("click.updateQuestionOnBodyClick", updateQuestionOnBodyClick);
+        }, 0);
+    }
+
     private readonly setupNewQuestionOptionBox = () => {
         const $newBox = this.section$("#option-list .new");
 
@@ -281,6 +374,11 @@ export class QuestionBankSectionOptions extends ComponentRenderable {
                 const $optionItem = $elem.closest(".option-item");
                 const questionOption = $optionItem.data("questionOption") as ToClientData.QuestionOption;
 
+                // Don't do anything if disabled
+                if ($optionItem.hasClass("disabled")) {
+                    return;
+                }
+
                 switch ($elem.text().toLowerCase()) {
                     case "up": {
                         const $optionItemPrev = $optionItem.prev();
@@ -304,7 +402,7 @@ export class QuestionBankSectionOptions extends ComponentRenderable {
 
                         return this.onSwapOrderQuestionOption(questionOption, questionOptionNext);
                     }
-                    case "edit": return;
+                    case "edit": return this.onStartEditQuestionOption($optionItem, questionOption);
                     case "delete": return this.onDeleteQuestionOption(questionOption);
                 }
 
