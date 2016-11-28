@@ -1,3 +1,5 @@
+import * as $ from "jquery";
+
 import { Component } from "../../../js/ui/Component";
 import { ComponentRenderable } from "../../../js/ui/ComponentRenderable";
 
@@ -66,58 +68,65 @@ export class Marking extends ComponentRenderable {
         const theirPort = bridgeChannel.port2;
         const markingWindow = window.open(url, undefined, "menubar=0,toolbar=0,location=0,personalbar=0,directories=0,status=0,resizable=1,scrollbars=0");
 
+        let applicationName: string | undefined;
+        let $warning: JQuery | undefined;
+
         const sendPort = () => {
             markingWindow.postMessage("mc_bridge_port", "*", [theirPort]);
         }
 
+        const warnBridgeActiveOnBeforeUnload = (e: BeforeUnloadEvent) => {
+            var message = `Application "${applicationName}" is currently using MOOCchat Bridge. If you exit now, "${applicationName}" will be unable to continue functioning.`;
+
+            e.returnValue = message;
+            return message;
+        }
+
+        const closeBridge = () => {
+            // Close the bridge, clean up, enable window to move on
+            window.removeEventListener("beforeunload", warnBridgeActiveOnBeforeUnload);
+            ourPort.removeEventListener("message", processBridgeMessage);
+            ourPort.close();
+
+            if ($warning) {
+                $warning.remove();
+            }
+        }
+
         const processBridgeMessage = (e: MessageEvent) => {
-            interface BridgePacket {
-                event: string,
-                data: any,
-            }
-
-            interface BridgeXhrRequest extends BridgePacket {
-                data: {
-                    xhrId: string,  // The XHR requestor must identify their XHR request with a self-generated ID so that once the data is returned, the requestor is able to sort out what request is what
-                    method: "GET" | "POST",
-                    url: string,
-                    data?: any,
-                }
-            }
-
-            interface BridgeXhrSuccess extends BridgePacket {
-                event: "mc_bridge_xhrSuccess",
-                data: {
-                    xhrId: string,
-                    textStatus: string,
-                    data: any,
-                }
-            }
-
-            interface BridgeXhrFail extends BridgePacket {
-                event: "mc_bridge_xhrFail",
-                data: {
-                    xhrId: string,
-                    textStatus: string,
-                    errorThrown: any,
-                }
-            }
-
             const packet: BridgePacket = e.data;
 
             switch (packet.event) {
                 case "mc_bridge_ready": {
-                    // We're ready to go
-                    // TODO: Make it hard to close this window at this point,
-                    //       because this component is required to be active when marking
+                    const _packet: BridgeReady = packet;
+                    const data = _packet.data;
+
+                    // Set application name
+                    applicationName = data.application.name;
+
+                    // Display warning over page
+                    $warning = $("<div>")
+                        .addClass("mc-full-screen-msg-container")
+                        .append([
+                            $("<div>")
+                                .append([
+                                    $("<h1>").text(`"${applicationName}" is currently using MOOCchat Bridge`),
+                                    $("<p>").text(`If you exit now, "${applicationName}" will be unable to continue functioning.`),
+                                    $("<p>").text(`To close MOOCchat Bridge, return to "${applicationName}" and exit the application normally.`),
+                                    $("<button>").text("Force close MOOCchat Bridge").one("click", closeBridge),
+                                ])
+                        ]);
+
+                    $("body").append($warning);
+
+                    // Warn when leaving
+                    window.addEventListener("beforeunload", warnBridgeActiveOnBeforeUnload);
 
                     return;
                 }
 
                 case "mc_bridge_close": {
-                    // TODO: Close the bridge, clean up, enable window to move on
-                    ourPort.close();
-                    ourPort.removeEventListener("message", processBridgeMessage);
+                    closeBridge();
                     return;
                 }
 
@@ -203,5 +212,46 @@ export class Marking extends ComponentRenderable {
         }
 
         return false;
+    }
+}
+
+
+interface BridgePacket {
+    event: string,
+    data: any,
+}
+
+interface BridgeXhrRequest extends BridgePacket {
+    data: {
+        xhrId: string,  // The XHR requestor must identify their XHR request with a self-generated ID so that once the data is returned, the requestor is able to sort out what request is what
+        method: "GET" | "POST",
+        url: string,
+        data?: any,
+    }
+}
+
+interface BridgeXhrSuccess extends BridgePacket {
+    event: "mc_bridge_xhrSuccess",
+    data: {
+        xhrId: string,
+        textStatus: string,
+        data: any,
+    }
+}
+
+interface BridgeXhrFail extends BridgePacket {
+    event: "mc_bridge_xhrFail",
+    data: {
+        xhrId: string,
+        textStatus: string,
+        errorThrown: any,
+    }
+}
+
+interface BridgeReady extends BridgePacket {
+    data: {
+        application: {
+            name: string,
+        }
     }
 }
