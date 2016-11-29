@@ -43,6 +43,8 @@ interface FlatpickrOptions {
 
 declare class Flatpickr {
     constructor(element: string | Element, config?: FlatpickrOptions);
+    
+    selectedDates: Date[];
 
     changeMonth(monthNum: number, is_offset: boolean): void;
     clear(): void;

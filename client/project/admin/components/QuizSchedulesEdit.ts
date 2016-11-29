@@ -36,6 +36,7 @@ export class QuizSchedulesEdit extends ComponentRenderable {
                 .promise
                 .then(this.showRelevantElements)
                 .then(this.renderQuizScheduleInfo)
+                .then(this.enableDatePicker)
                 .then(this.setupForm)
                 .catch((error) => {
                     this.dispatchError(error);
@@ -72,8 +73,12 @@ export class QuizSchedulesEdit extends ComponentRenderable {
         this.section$("#save-changes").one("click", () => {
             // const questionId: string = this.section$("#question-id").val();
             const questionId: string = this.section$("#question-title").text();
-            const availableStart: string = rfc3339LocalToDate(this.section$("#available-start").val()).toISOString();
-            const availableEnd: string = rfc3339LocalToDate(this.section$("#available-end").val()).toISOString();
+
+            const flatpickrAvailableStart: Flatpickr = this.section$("#available-start").data("flatpickr");
+            const flatpickrAvailableEnd: Flatpickr = this.section$("#available-end").data("flatpickr");
+
+            const availableStart: string = flatpickrAvailableStart.selectedDates[0].toISOString();
+            const availableEnd: string = flatpickrAvailableEnd.selectedDates[0].toISOString();
 
             const xhrCall = this.ajaxFuncs!.put<IMoocchatApi.ToClientResponseBase<void>>
                 (`/api/admin/quiz/${this.quizSchedule!._id}`, {
@@ -124,6 +129,22 @@ export class QuizSchedulesEdit extends ComponentRenderable {
         });
     }
 
+    private readonly enableDatePicker = () => {
+        const $elems = [
+            this.section$("#available-start"),
+            this.section$("#available-end"),
+        ];
+
+        const config: FlatpickrOptions = {
+            enableTime: true,
+        };
+
+        // Save reference to flatpickr instance to the element itself
+        $elems.forEach(($elem) => {
+            $elem.data("flatpickr", new Flatpickr($elem.get(0), config));
+        });
+    }
+
     private readonly loadQuizScheduleIdInParent = (id: string) => {
         const parent = this.getParent();
 
@@ -147,49 +168,49 @@ export class QuizSchedulesEdit extends ComponentRenderable {
     private readonly renderQuizScheduleInfo = () => {
         this.section$("#id").text(this.quizSchedule!._id || "?");
         this.section$("#question-title").text(this.quizSchedule!.questionId || "");
-        this.section$("#available-start").val(dateToRfc3339Local(new Date(this.quizSchedule!.availableStart || 0)));
-        this.section$("#available-end").val(dateToRfc3339Local(new Date(this.quizSchedule!.availableEnd || 0)));
+        this.section$("#available-start").val(new Date(this.quizSchedule!.availableStart || 0).toISOString());
+        this.section$("#available-end").val(new Date(this.quizSchedule!.availableEnd || 0).toISOString());
     }
 }
 
-function dateToRfc3339Local(date: Date, includeMilliseconds: boolean = false) {
-    const yyyy = date.getFullYear();
-    const MM = date.getMonth() + 1;
-    const dd = date.getDate();
+// function dateToRfc3339Local(date: Date, includeMilliseconds: boolean = false) {
+//     const yyyy = date.getFullYear();
+//     const MM = date.getMonth() + 1;
+//     const dd = date.getDate();
 
-    const HH = date.getHours();
-    const mm = date.getMinutes();
-    const ss = date.getSeconds();
-    const ms = date.getMilliseconds();
+//     const HH = date.getHours();
+//     const mm = date.getMinutes();
+//     const ss = date.getSeconds();
+//     const ms = date.getMilliseconds();
 
-    return `${yyyy}-${MM < 10 ? "0" + MM : MM}-${dd < 10 ? "0" + dd : dd}T${HH < 10 ? "0" + HH : HH}:${mm < 10 ? "0" + mm : mm}:${ss < 10 ? "0" + ss : ss}.${includeMilliseconds ? ms : 0}`
-}
+//     return `${yyyy}-${MM < 10 ? "0" + MM : MM}-${dd < 10 ? "0" + dd : dd}T${HH < 10 ? "0" + HH : HH}:${mm < 10 ? "0" + mm : mm}:${ss < 10 ? "0" + ss : ss}.${includeMilliseconds ? ms : 0}`
+// }
 
-function rfc3339LocalToDate(datetime: string) {
-    const dateTimeSplit = datetime.split("T");
+// function rfc3339LocalToDate(datetime: string) {
+//     const dateTimeSplit = datetime.split("T");
 
-    const yyyyMMdd = dateTimeSplit[0].split("-");
-    const yyyy = +yyyyMMdd[0];
-    const MM = +yyyyMMdd[1];
-    const dd = +yyyyMMdd[2];
+//     const yyyyMMdd = dateTimeSplit[0].split("-");
+//     const yyyy = +yyyyMMdd[0];
+//     const MM = +yyyyMMdd[1];
+//     const dd = +yyyyMMdd[2];
 
-    const HHmmss_ms = dateTimeSplit[1].split(":");
-    const HH = +HHmmss_ms[0];
-    const mm = +HHmmss_ms[1];
-    const ss_ms = (HHmmss_ms[2] || "").split(".");
-    const ss = +ss_ms[0] || 0;
-    const ms = +ss_ms[1] || 0;
+//     const HHmmss_ms = dateTimeSplit[1].split(":");
+//     const HH = +HHmmss_ms[0];
+//     const mm = +HHmmss_ms[1];
+//     const ss_ms = (HHmmss_ms[2] || "").split(".");
+//     const ss = +ss_ms[0] || 0;
+//     const ms = +ss_ms[1] || 0;
 
-    const date = new Date();
+//     const date = new Date();
 
-    date.setFullYear(yyyy);
-    date.setMonth(MM - 1);
-    date.setDate(dd);
+//     date.setFullYear(yyyy);
+//     date.setMonth(MM - 1);
+//     date.setDate(dd);
 
-    date.setHours(HH);
-    date.setMinutes(mm);
-    date.setSeconds(ss);
-    date.setMilliseconds(ms);
+//     date.setHours(HH);
+//     date.setMinutes(mm);
+//     date.setSeconds(ss);
+//     date.setMilliseconds(ms);
 
-    return date;
-}
+//     return date;
+// }
