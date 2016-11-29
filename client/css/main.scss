@@ -1265,11 +1265,6 @@ body > #content > section {
                 margin-top: 0;
             }
 
-            &:hover {
-                background-color: transparentize($mc-colour-1, 0.8);
-                cursor: pointer;
-            }
-
             &.active {
                 border-color: $mc-colour-1;
 
@@ -1292,6 +1287,11 @@ body > #content > section {
 
             &.quiz-schedule-item,
             &.question-item {
+                &:hover {
+                    background-color: transparentize($mc-colour-1, 0.8);
+                    cursor: pointer;
+                }
+
                 .info-left {
                     width: 85%;
                     vertical-align: middle;
@@ -1319,6 +1319,12 @@ body > #content > section {
                     overflow: hidden;
                     // text-overflow: ellipsis;
                 }
+            }
+
+            &.record-indicator {
+                text-align: center;
+                font-style: italic;
+                color: rgba(0,0,0,0.5);
             }
         }
     }   

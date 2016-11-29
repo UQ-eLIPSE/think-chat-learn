@@ -127,7 +127,7 @@ export class QuestionBank extends ComponentRenderable {
     private readonly setupListElemClick = () => {
         const $list = this.section$("#question-list");
 
-        $list.on("click", "li", (e) => {
+        $list.on("click", "li:not(.record-indicator)", (e) => {
             const $listElem = $(e.currentTarget);
 
             // Fetch data which should be tied to list element
@@ -172,7 +172,7 @@ export class QuestionBank extends ComponentRenderable {
 
     private readonly renderQuestionList = (data: IMoocchatApi.ToClientResponseSuccess<ToClientData.Question[]>) => {
         const $list = this.section$("#question-list");
-        
+
         const $questionListElems = data.payload.map((question) => {
             return $("<li>")
                 .addClass("question-item")
@@ -186,6 +186,13 @@ export class QuestionBank extends ComponentRenderable {
                             </div>
                         </div> `);
         });
+
+        // Add record indicator at end
+        $questionListElems.push(
+            $("<li>")
+                .addClass("record-indicator")
+                .text(`${data.payload.length} question${data.payload.length !== 1 ? "s" : ""}`)
+        );
 
         this.emptyList();
 
