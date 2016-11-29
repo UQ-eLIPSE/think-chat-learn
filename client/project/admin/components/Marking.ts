@@ -75,7 +75,6 @@ export class Marking extends ComponentRenderable {
         let $warning: JQuery | undefined;
 
         const sendPort = () => {
-            markingWindow.postMessage("test", "*");
             markingWindow.postMessage("mc_bridge_port", "*", [theirPort]);
             // markingWindow.removeEventListener("load", sendPort);
         }
@@ -198,13 +197,10 @@ export class Marking extends ComponentRenderable {
         // Ports must be 'started' when using #addEventListener()
         ourPort.start();
 
-        // Once marking tool loaded, send MessagePort so it knows how to communicate back
-        // markingWindow.addEventListener("load", sendPort);
-
         // Go to page
         markingWindow.location.assign(url);
 
-        // Workaround: IE doesn't fire load event
+        // Workaround: IE/Edge doesn't fire load event?
         // Check window.name for port request
         let windowNameCheckMaxTries = 500;  // 25s
         const windowNameCheckHandle: number = setInterval(() => {
