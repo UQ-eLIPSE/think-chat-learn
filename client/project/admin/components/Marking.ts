@@ -66,13 +66,18 @@ export class Marking extends ComponentRenderable {
         const bridgeChannel = new MessageChannel();
         const ourPort = bridgeChannel.port1;
         const theirPort = bridgeChannel.port2;
-        const markingWindow = window.open(url, undefined, "menubar=0,toolbar=0,location=0,personalbar=0,directories=0,status=0,resizable=1,scrollbars=0");
+        const markingWindow = window.open("", undefined, "menubar=0,toolbar=0,location=0,personalbar=0,directories=0,status=0,resizable=1,scrollbars=0");
+
+        // Prevent leaking opener
+        markingWindow.opener = null;
 
         let applicationName: string | undefined;
         let $warning: JQuery | undefined;
 
         const sendPort = () => {
+            markingWindow.postMessage("test", "*");
             markingWindow.postMessage("mc_bridge_port", "*", [theirPort]);
+            // markingWindow.removeEventListener("load", sendPort);
         }
 
         const warnBridgeActiveOnBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -194,7 +199,25 @@ export class Marking extends ComponentRenderable {
         ourPort.start();
 
         // Once marking tool loaded, send MessagePort so it knows how to communicate back
-        markingWindow.addEventListener("load", sendPort);
+        // markingWindow.addEventListener("load", sendPort);
+
+        // Go to page
+        markingWindow.location.assign(url);
+
+        // Workaround: IE doesn't fire load event
+        // Check window.name for port request
+        let windowNameCheckMaxTries = 500;  // 25s
+        const windowNameCheckHandle: number = setInterval(() => {
+            if (markingWindow.name === "mc_bridge_port_request") {
+                sendPort();
+                return clearInterval(windowNameCheckHandle);
+            }
+
+            if (--windowNameCheckMaxTries === 0) {
+                alert(`Bridge application at "${url}" failed to connect to MOOCchat`);
+                clearInterval(windowNameCheckHandle);
+            }
+        }, 50);
     }
 
     private readonly processAction = (action: string, data?: any) => {

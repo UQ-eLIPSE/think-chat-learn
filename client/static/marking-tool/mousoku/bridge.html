@@ -99,6 +99,8 @@
             }
 
             function setupBridgePort(e) {
+                alert(e);
+                
                 // Set up marking bridge port
                 if (e.data === "mc_bridge_port" && !bridgePort && e.ports[0]) {
                     bridgePort = e.ports[0];
@@ -145,6 +147,10 @@
 
             window.addEventListener("message", setupBridgePort);
             window.addEventListener("beforeunload", onBeforeUnload);
+
+            // Workaround: IE doesn't fire load event
+            // Request port via. window.name - will be picked up by opener
+            window.name = "mc_bridge_port_request";
         })();
         </script>
 </head>
