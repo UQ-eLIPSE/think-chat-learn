@@ -125,7 +125,7 @@ export class QuizSchedules extends ComponentRenderable {
     private readonly setupListElemClick = () => {
         const $list = this.section$("#quiz-schedule-list");
 
-        $list.on("click", "li", (e) => {
+        $list.on("click", "li:not(.record-indicator)", (e) => {
             const $listElem = $(e.currentTarget);
 
             // Fetch data which should be tied to list element
@@ -226,6 +226,13 @@ export class QuizSchedules extends ComponentRenderable {
 
             return $li;
         });
+
+        // Add record indicator at end
+        $quizScheduleListElems.push(
+            $("<li>")
+                .addClass("record-indicator")
+                .text(`${data.payload.length} scheduled quiz${data.payload.length !== 1 ? "zes" : ""}`)
+        );
 
         this.emptyList();
 
