@@ -1,3 +1,5 @@
+import * as Flatpickr from "Flatpickr";
+
 import { Promise } from "es6-promise";
 
 import { XHRStore } from "../../../js/xhr/XHRStore";
@@ -39,6 +41,7 @@ export class QuizSchedulesCreate extends ComponentRenderable {
                     .promise
                     .then(this.showRelevantElements)
                     .then(this.setupForm)
+                    .then(this.enableDatePicker)
             ])
                 .then(([questionData]) => this.cullBadData(questionData))
                 .then((questionData) => {
@@ -93,8 +96,12 @@ export class QuizSchedulesCreate extends ComponentRenderable {
     private readonly setupForm = () => {
         this.section$("#create").one("click", () => {
             const questionId: string = this.section$("#question-id").val();
-            const availableStart: string = rfc3339LocalToDate(this.section$("#available-start").val()).toISOString();
-            const availableEnd: string = rfc3339LocalToDate(this.section$("#available-end").val()).toISOString();
+
+            const flatpickrAvailableStart: Flatpickr = this.section$("#available-start").data("flatpickr");
+            const flatpickrAvailableEnd: Flatpickr = this.section$("#available-end").data("flatpickr");
+
+            const availableStart: string = flatpickrAvailableStart.selectedDates[0].toISOString();
+            const availableEnd: string = flatpickrAvailableEnd.selectedDates[0].toISOString();
 
             const xhrCall = this.ajaxFuncs!.post<IMoocchatApi.ToClientResponseBase<IMoocchatApi.ToClientInsertionIdResponse>>
                 (`/api/admin/quiz`, {
@@ -124,6 +131,23 @@ export class QuizSchedulesCreate extends ComponentRenderable {
         });
     }
 
+    private readonly enableDatePicker = () => {
+        const $elems = [
+            this.section$("#available-start"),
+            this.section$("#available-end"),
+        ];
+
+        const config: FlatpickrOptions = {
+            defaultDate: new Date(),
+            enableTime: true,
+        };
+
+        // Save reference to flatpickr instance to the element itself
+        $elems.forEach(($elem) => {
+            $elem.data("flatpickr", new Flatpickr($elem.get(0), config));
+        });
+    }
+
     private readonly loadQuizScheduleIdInParent = (id: string) => {
         const parent = this.getParent();
 
@@ -149,31 +173,31 @@ export class QuizSchedulesCreate extends ComponentRenderable {
     }
 }
 
-function rfc3339LocalToDate(datetime: string) {
-    const dateTimeSplit = datetime.split("T");
+// function rfc3339LocalToDate(datetime: string) {
+//     const dateTimeSplit = datetime.split("T");
 
-    const yyyyMMdd = dateTimeSplit[0].split("-");
-    const yyyy = +yyyyMMdd[0];
-    const MM = +yyyyMMdd[1];
-    const dd = +yyyyMMdd[2];
+//     const yyyyMMdd = dateTimeSplit[0].split("-");
+//     const yyyy = +yyyyMMdd[0];
+//     const MM = +yyyyMMdd[1];
+//     const dd = +yyyyMMdd[2];
 
-    const HHmmss_ms = dateTimeSplit[1].split(":");
-    const HH = +HHmmss_ms[0];
-    const mm = +HHmmss_ms[1];
-    const ss_ms = (HHmmss_ms[2] || "").split(".");
-    const ss = +ss_ms[0] || 0;
-    const ms = +ss_ms[1] || 0;
+//     const HHmmss_ms = dateTimeSplit[1].split(":");
+//     const HH = +HHmmss_ms[0];
+//     const mm = +HHmmss_ms[1];
+//     const ss_ms = (HHmmss_ms[2] || "").split(".");
+//     const ss = +ss_ms[0] || 0;
+//     const ms = +ss_ms[1] || 0;
 
-    const date = new Date();
+//     const date = new Date();
 
-    date.setFullYear(yyyy);
-    date.setMonth(MM - 1);
-    date.setDate(dd);
+//     date.setFullYear(yyyy);
+//     date.setMonth(MM - 1);
+//     date.setDate(dd);
 
-    date.setHours(HH);
-    date.setMinutes(mm);
-    date.setSeconds(ss);
-    date.setMilliseconds(ms);
+//     date.setHours(HH);
+//     date.setMinutes(mm);
+//     date.setSeconds(ss);
+//     date.setMilliseconds(ms);
 
-    return date;
-}
+//     return date;
+// }
