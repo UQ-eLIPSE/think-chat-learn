@@ -1,3 +1,5 @@
+import * as Flatpickr from "Flatpickr";
+
 import { Promise } from "es6-promise";
 
 import { XHRStore } from "../../../js/xhr/XHRStore";
@@ -39,6 +41,7 @@ export class QuizSchedulesCreate extends ComponentRenderable {
                     .promise
                     .then(this.showRelevantElements)
                     .then(this.setupForm)
+                    .then(this.enableDatePicker)
             ])
                 .then(([questionData]) => this.cullBadData(questionData))
                 .then((questionData) => {
@@ -121,6 +124,23 @@ export class QuizSchedulesCreate extends ComponentRenderable {
                 .catch((error) => {
                     this.dispatchError(error);
                 });
+        });
+    }
+
+    private readonly enableDatePicker = () => {
+        const $elems = [
+            this.section$("#available-start"),
+            this.section$("#available-end"),
+        ];
+
+        const config: FlatpickrOptions = {
+            defaultDate: new Date(),
+            enableTime: true,
+        };
+
+        // Save reference to flatpickr instance to the element itself
+        $elems.forEach(($elem) => {
+            $elem.data("flatpickr", new Flatpickr($elem.get(0), config));
         });
     }
 

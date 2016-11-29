@@ -12,12 +12,16 @@ requirejs.config({
         
         "ckeditor": "./ckeditor/4.5.11/ckeditor",
         "file-saver": "./FileSaver/1.3.2/FileSaver.min",
-        "csv-js": "./CSV/3.6.4/csv.min"
+        "csv-js": "./CSV/3.6.4/csv.min",
+        "Flatpickr": "./flatpickr/2.2.3/flatpickr.min"
     },
 
     shim: {
         "ckeditor": {
             exports: "CKEDITOR"
+        },
+        "Flatpickr": {
+            exports: "Flatpickr"
         }
     },
 
