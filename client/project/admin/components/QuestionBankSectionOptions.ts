@@ -160,9 +160,12 @@ export class QuestionBankSectionOptions extends ComponentRenderable {
         const sequence = lastQuestionOption ? lastQuestionOption.sequence + 1 : 0;
 
         if (this.question) {
-
             return this.submitNewQuestionOption(content, sequence)
                 .then(_ => this.cullBadData(_))
+                .catch((err) => {
+                    // Just present the error; permit question options to be reloaded
+                    alert(`${err}`);
+                })
                 .then(this.loadQuestionOptionData)
                 .then(_ => this.cullBadData(_))
                 .then((data) => {
@@ -200,6 +203,10 @@ export class QuestionBankSectionOptions extends ComponentRenderable {
         if (this.question) {
             return this.submitDeleteQuestionOption(questionOption._id!)
                 .then(_ => this.cullBadData(_))
+                .catch((err) => {
+                    // Just present the error; permit question options to be reloaded
+                    alert(`${err}`);
+                })
                 .then(this.loadQuestionOptionData)
                 .then(_ => this.cullBadData(_))
                 .then((data) => {
@@ -235,6 +242,10 @@ export class QuestionBankSectionOptions extends ComponentRenderable {
             ])
                 .then(_arr => {
                     _arr.forEach(_ => this.cullBadData(_));
+                })
+                .catch((err) => {
+                    // Just present the error; permit question options to be reloaded
+                    alert(`${err}`);
                 })
                 .then(this.loadQuestionOptionData)
                 .then(_ => this.cullBadData(_))
@@ -273,7 +284,8 @@ export class QuestionBankSectionOptions extends ComponentRenderable {
 
             // Only if we were in edit mode shall we update
             if ($optionItem.hasClass("edit-mode")) {
-                updateQuestion();
+                updateQuestion()
+                    .catch((err) => { this.dispatchError(err) });
             }
         }
 
@@ -293,6 +305,10 @@ export class QuestionBankSectionOptions extends ComponentRenderable {
             if (this.question) {
                 return this.submitEditQuestionOption(questionOption)
                     .then(_ => this.cullBadData(_))
+                    .catch((err) => {
+                        // Just present the error; permit question options to be reloaded
+                        alert(`${err}`);
+                    })
                     .then(this.loadQuestionOptionData)
                     .then(_ => this.cullBadData(_))
                     .then((data) => {
@@ -318,7 +334,8 @@ export class QuestionBankSectionOptions extends ComponentRenderable {
                     e.preventDefault();
                     this.detachUpdateQuestionOnBodyClick();
 
-                    return updateQuestion();
+                    return updateQuestion()
+                        .catch((err) => { this.dispatchError(err) });
                 }
 
                 // Capture ESC key
@@ -331,9 +348,10 @@ export class QuestionBankSectionOptions extends ComponentRenderable {
                 }
 
                 return;
-            })
+            });
 
-            // Deemphasise siblings
+        // Deemphasise siblings
+        $optionItem
             .siblings()
             .not(".new")
             .addClass("deemphasise disabled");
@@ -400,8 +418,11 @@ export class QuestionBankSectionOptions extends ComponentRenderable {
 
                         const questionOptionPrev = $optionItemPrev.data("questionOption") as ToClientData.QuestionOption;
 
-                        return this.onSwapOrderQuestionOption(questionOption, questionOptionPrev);
+                        return this
+                            .onSwapOrderQuestionOption(questionOption, questionOptionPrev)
+                            .catch((err) => { this.dispatchError(err) });
                     }
+
                     case "down": {
                         const $optionItemNext = $optionItem.next().not(".new");
 
@@ -411,10 +432,18 @@ export class QuestionBankSectionOptions extends ComponentRenderable {
 
                         const questionOptionNext = $optionItemNext.data("questionOption") as ToClientData.QuestionOption;
 
-                        return this.onSwapOrderQuestionOption(questionOption, questionOptionNext);
+                        return this
+                            .onSwapOrderQuestionOption(questionOption, questionOptionNext)
+                            .catch((err) => { this.dispatchError(err) });
                     }
-                    case "edit": return this.onStartEditQuestionOption($optionItem, questionOption);
-                    case "delete": return this.onDeleteQuestionOption(questionOption);
+
+                    case "edit":
+                        return this.onStartEditQuestionOption($optionItem, questionOption);
+
+                    case "delete":
+                        return this
+                            .onDeleteQuestionOption(questionOption)
+                            .catch((err) => { this.dispatchError(err) });
                 }
 
                 return;
