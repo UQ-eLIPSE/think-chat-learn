@@ -186,7 +186,7 @@ export class QuizSchedulesCreate extends ComponentRenderable {
                 .prop({
                     value: question._id,
                 })
-                .text(`${(question.title && question.title.substr(0, 100)) || "[Undefined Title]"} (${question._id})`);
+                .text(`${question.title}`);
         });
 
         $dropdown.empty().append($dropdownOptionElems);
