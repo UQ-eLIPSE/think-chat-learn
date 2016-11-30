@@ -1293,13 +1293,26 @@ body > #content > section {
                 }
 
                 .info-left {
-                    width: 85%;
+                    width: 100%;
                     vertical-align: middle;
                 }
 
                 .info-right {
-                    width: 15%;
+                    font-size: 0.8em;
+                    color: rgba(0,0,0,0.7);
+
+                    padding-left: 1em;
                     text-align: right;
+
+                    & > .date > span {
+                        white-space: pre;
+                    }
+
+                    & > hr {
+                        margin: 0.5em 0;
+                        border: 0;
+                        border-top: 1px solid rgba(0,0,0,0.3);
+                    }
                 }
 
                 .id {
