@@ -1,5 +1,7 @@
 import { XHRStore } from "../../../js/xhr/XHRStore";
 
+import * as PromiseError from "../../../../common/js/error/PromiseError";
+
 import { Component } from "../../../js/ui/Component";
 import { ComponentRenderable } from "../../../js/ui/ComponentRenderable";
 
@@ -70,7 +72,10 @@ export class QuizSchedulesEdit extends ComponentRenderable {
     }
 
     private readonly setupForm = () => {
-        this.section$("#save-changes").one("click", () => {
+        const $saveButton = this.section$("#save-changes");
+        const $deleteButton = this.section$("#delete");
+
+        const onSaveButtonClick = () => {
             // const questionId: string = this.section$("#question-id").val();
             const questionId: string = this.section$("#question-title").text();
 
@@ -98,16 +103,26 @@ export class QuizSchedulesEdit extends ComponentRenderable {
                     return data;
                 })
                 .then(_ => this.cullBadData(_))
+                .catch((err) => {
+                    alert(`${err}`);
+
+                    // Reenable button
+                    $saveButton.on("click", onSaveButtonClick);
+
+                    throw new PromiseError.AbortChainError(err);
+                })
                 .then(() => {
                     // Load updated item in parent
                     this.loadQuizScheduleIdInParent(this.quizSchedule!._id!);
                 })
-                .catch((error) => {
-                    this.dispatchError(error);
-                });
-        });
+                .catch((err) => {
+                    PromiseError.AbortChainError.ContinueAbort(err);
 
-        this.section$("#delete").one("click", () => {
+                    this.dispatchError(err);
+                });
+        }
+
+        const onDeleteButtonClick = () => {
             const xhrCall = this.ajaxFuncs!.delete<IMoocchatApi.ToClientResponseBase<void>>
                 (`/api/admin/quiz/${this.quizSchedule!._id}`);
 
@@ -122,11 +137,24 @@ export class QuizSchedulesEdit extends ComponentRenderable {
                     return data;
                 })
                 .then(_ => this.cullBadData(_))
+                .catch((err) => {
+                    alert(`${err}`);
+
+                    // Reenable button
+                    $deleteButton.on("click", onDeleteButtonClick);
+
+                    throw new PromiseError.AbortChainError(err);
+                })
                 .then(this.reloadQuizSchedulesInParent)
-                .catch((error) => {
-                    this.dispatchError(error);
+                .catch((err) => {
+                    PromiseError.AbortChainError.ContinueAbort(err);
+
+                    this.dispatchError(err);
                 });
-        });
+        }
+
+        $saveButton.on("click", onSaveButtonClick);
+        $deleteButton.on("click", onDeleteButtonClick);
     }
 
     private readonly enableDatePicker = () => {
