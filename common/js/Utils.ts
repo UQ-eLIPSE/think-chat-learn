@@ -108,4 +108,15 @@ export namespace Utils {
             }
         }
     }
+
+    export namespace String {
+        export function padLeft(string: string, padChar: string, length: number) {
+            return repeat(padChar, length - string.length) + string;
+        }
+
+        export function repeat(string: string, n: number): string {
+            if (n === 0) return "";
+            return n <= 1 ? string : (string + repeat(string, n - 1));
+        }
+    }
 }

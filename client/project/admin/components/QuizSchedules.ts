@@ -18,6 +18,8 @@ import { QuizSchedulesSidebarEmpty } from "./QuizSchedulesSidebarEmpty";
 import * as IMoocchatApi from "../../../../common/interfaces/IMoocchatApi";
 import * as ToClientData from "../../../../common/interfaces/ToClientData";
 
+import { Utils } from "../../../../common/js/Utils";
+
 export class QuizSchedules extends ComponentRenderable {
     private activeComponent: Component | undefined;
 
@@ -202,6 +204,14 @@ export class QuizSchedules extends ComponentRenderable {
             const startDate = new Date(quizSchedule.availableStart!);
             const endDate = new Date(quizSchedule.availableEnd!);
 
+            const padNumLeft2 = (n: number) => Utils.String.padLeft(n.toString(), "0", 2);
+
+            const startDateStr = `${startDate.getFullYear()}-${padNumLeft2(startDate.getMonth() + 1)}-${padNumLeft2(startDate.getDate())}`;
+            const startTimeStr = `${padNumLeft2(startDate.getHours())}:${padNumLeft2(startDate.getMinutes())}`;
+
+            const endDateStr = `${endDate.getFullYear()}-${padNumLeft2(endDate.getMonth() + 1)}-${padNumLeft2(endDate.getDate())}`;
+            const endTimeStr = `${padNumLeft2(endDate.getHours())}:${padNumLeft2(endDate.getMinutes())}`;
+
             const $li = $("<li>")
                 .addClass("quiz-schedule-item")
                 .data("quizSchedule", quizSchedule)
@@ -211,8 +221,9 @@ export class QuizSchedules extends ComponentRenderable {
                                     <div class="question-title">...</div>
                                 </div>
                                 <div class="info-right">
-                                    <div class="date">${startDate.getDate()}/${startDate.getMonth() + 1}/${startDate.getFullYear()}<br>${startDate.getHours()}:${startDate.getMinutes()}</div>
-                                    <div class="date">${endDate.getDate()}/${endDate.getMonth() + 1}/${endDate.getFullYear()}<br>${endDate.getHours()}:${endDate.getMinutes()}</div>
+                                    <div class="date"><span>${startDateStr}</span><br>${startTimeStr}</div>
+                                    <hr>
+                                    <div class="date"><span>${endDateStr}</span><br>${endTimeStr}</div>
                                 </div>
                             </div>
                         </div> `);
@@ -220,8 +231,14 @@ export class QuizSchedules extends ComponentRenderable {
             // Fill in title when we have question data
             questionMapPromise
                 .then((questionMap) => {
-                    const question = questionMap.get(quizSchedule.questionId!);
-                    $(".question-title", $li).text(question!.title!);
+                    const question = questionMap.get(quizSchedule.questionId!) || {};
+                    let questionName = question.title;
+
+                    if (questionName === undefined) {
+                        questionName = "[Question not found]";
+                    }
+
+                    $(".question-title", $li).text(questionName);
                 });
 
             return $li;
