@@ -4,6 +4,8 @@ import { Promise } from "es6-promise";
 
 import { XHRStore } from "../../../js/xhr/XHRStore";
 
+import * as PromiseError from "../../../../common/js/error/PromiseError";
+
 import { Component } from "../../../js/ui/Component";
 import { ComponentRenderable } from "../../../js/ui/ComponentRenderable";
 
@@ -94,7 +96,9 @@ export class QuizSchedulesCreate extends ComponentRenderable {
     }
 
     private readonly setupForm = () => {
-        this.section$("#create").one("click", () => {
+        const $createButton = this.section$("#create");
+
+        const onCreateButtonClick = () => {
             const questionId: string = this.section$("#question-id").val();
 
             const flatpickrAvailableStart: Flatpickr = this.section$("#available-start").data("flatpickr");
@@ -102,6 +106,10 @@ export class QuizSchedulesCreate extends ComponentRenderable {
 
             const availableStart: string = flatpickrAvailableStart.selectedDates[0].toISOString();
             const availableEnd: string = flatpickrAvailableEnd.selectedDates[0].toISOString();
+
+            // Prevent double clicks
+            $createButton.off("click", onCreateButtonClick);
+
 
             const xhrCall = this.ajaxFuncs!.post<IMoocchatApi.ToClientResponseBase<IMoocchatApi.ToClientInsertionIdResponse>>
                 (`/api/admin/quiz`, {
@@ -121,14 +129,26 @@ export class QuizSchedulesCreate extends ComponentRenderable {
                     return data;
                 })
                 .then(_ => this.cullBadData(_))
+                .catch((err) => {
+                    alert(`${err}`);
+
+                    // Reenable button
+                    $createButton.on("click", onCreateButtonClick);
+
+                    throw new PromiseError.AbortChainError(err);
+                })
                 .then((data) => {
                     // Load newly inserted item via. parent
                     this.loadQuizScheduleIdInParent(data.payload.id);
                 })
-                .catch((error) => {
-                    this.dispatchError(error);
+                .catch((err) => {
+                    PromiseError.AbortChainError.ContinueAbort(err);
+
+                    this.dispatchError(err);
                 });
-        });
+        }
+
+        $createButton.on("click", onCreateButtonClick);
     }
 
     private readonly enableDatePicker = () => {

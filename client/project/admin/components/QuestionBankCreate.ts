@@ -3,6 +3,8 @@ import * as $ from "jquery";
 import { KVStore } from "../../../../common/js/KVStore";
 import { XHRStore } from "../../../js/xhr/XHRStore";
 
+import * as PromiseError from "../../../../common/js/error/PromiseError";
+
 import { Component } from "../../../js/ui/Component";
 import { ComponentRenderable } from "../../../js/ui/ComponentRenderable";
 
@@ -111,7 +113,9 @@ export class QuestionBankCreate extends ComponentRenderable {
     }
 
     private readonly setupForm = () => {
-        const handler = () => {
+        const $createButton = this.section$("#create");
+
+        const onCreateButtonClick = () => {
             const sectionContentComponent = this.getComponent<QuestionBankSectionContent>("content");
             const sectionOptionsComponent = this.getComponent<QuestionBankSectionOptions>("options");
 
@@ -128,10 +132,10 @@ export class QuestionBankCreate extends ComponentRenderable {
             }
 
             // Prevent double clicks
-            this.section$("#create").off("click", handler);
+            $createButton.off("click", onCreateButtonClick);
 
 
-            const apiPost = <PayloadType>(url: string, data: any) => {
+            const apiPostWithErrDetect = <PayloadType>(url: string, data: any) => {
                 const xhrCall = this.ajaxFuncs!.post<IMoocchatApi.ToClientResponseBase<PayloadType>>
                     (url, data);
 
@@ -153,10 +157,18 @@ export class QuestionBankCreate extends ComponentRenderable {
 
             let newQuestionId: string;
 
-            apiPost<IMoocchatApi.ToClientInsertionIdResponse>
+            apiPostWithErrDetect<IMoocchatApi.ToClientInsertionIdResponse>
                 (`/api/admin/question`, {
                     title,
                     content,
+                })
+                .catch((err) => {
+                    alert(`${err}`);
+
+                    // Reenable button
+                    $createButton.on("click", onCreateButtonClick);
+
+                    throw new PromiseError.AbortChainError(err);
                 })
                 .then((data) => {
                     // Keep track of new question ID
@@ -165,7 +177,7 @@ export class QuestionBankCreate extends ComponentRenderable {
                 .then(() => {
                     // Send posts for all question options -> wrap as Promises
                     const questionOptionPosts = questionOptions.map((questionOption) => {
-                        return apiPost<IMoocchatApi.ToClientInsertionIdResponse>
+                        return apiPostWithErrDetect<IMoocchatApi.ToClientInsertionIdResponse>
                             (`/api/admin/question/${newQuestionId}/option`, {
                                 content: questionOption.content,
                                 sequence: questionOption.sequence,
@@ -174,15 +186,27 @@ export class QuestionBankCreate extends ComponentRenderable {
 
                     return Promise.all(questionOptionPosts);
                 })
+                .catch((err) => {
+                    PromiseError.AbortChainError.ContinueAbort(err);
+
+                    alert(`${err}`);
+
+                    // Reenable button
+                    $createButton.on("click", onCreateButtonClick);
+
+                    throw new PromiseError.AbortChainError(err);
+                })
                 .then(() => {
                     this.loadQuestionIdInParent(newQuestionId);
                 })
-                .catch((error) => {
-                    this.dispatchError(error);
+                .catch((err) => {
+                    PromiseError.AbortChainError.ContinueAbort(err);
+
+                    this.dispatchError(err);
                 });
         }
 
-        this.section$("#create").on("click", handler);
+        $createButton.on("click", onCreateButtonClick);
     }
 
     private readonly loadQuestionIdInParent = (id: string) => {

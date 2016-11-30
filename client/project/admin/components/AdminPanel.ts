@@ -3,6 +3,9 @@ import { Promise } from "es6-promise";
 
 import { KVStore } from "../../../../common/js/KVStore";
 
+// Errors
+import * as PromiseError from "../../../../common/js/error/PromiseError";
+
 // UI
 import { Component } from "../../../js/ui/Component";
 import { ComponentRenderable } from "../../../js/ui/ComponentRenderable";
@@ -40,6 +43,7 @@ export class AdminPanel extends Component {
         this.contentElem = contentElem;
 
         this.setupErrorListener();
+        this.hideLeftBarLinks();
 
         // Set up LTI data wrapper object
         try {
@@ -56,12 +60,29 @@ export class AdminPanel extends Component {
 
         this.setInitFunc(() => {
             this.loginLti()
+                .catch((err) => {
+                    alert(`An error occurred during login:
+-----
+${err}
+-----
+Please try again, logging in directly through your LMS environment.
+If you are unable to log in, please contact support.`);
+                    
+                    // Disable features
+                    this.contentElem.empty();   // Empty content
+                    
+                    // Abort rest of promise chain
+                    throw new PromiseError.AbortChainError(err);
+                })
                 .then(() => {
+                    this.showLeftBarLinks();
                     this.setCourseName();
                     this.processAction("quizzes");
                 })
-                .catch((error: any) => {
-                    this.dispatchError(error);
+                .catch((err) => {
+                    PromiseError.AbortChainError.ContinueAbort(err);
+
+                    this.dispatchError(err);
                 });
         });
     }
@@ -82,6 +103,14 @@ export class AdminPanel extends Component {
             const $linkElem = $(e.target);
             this.processAction($linkElem.data("action"));
         });
+    }
+
+    private hideLeftBarLinks() {
+        $("#task-sections > li").hide();
+    }
+
+    private showLeftBarLinks() {
+        $("#task-sections > li").show();
     }
 
     private ajaxFactoryWithoutData(method: "GET" | "DELETE", includeSession: boolean = true) {
@@ -237,8 +266,8 @@ export class AdminPanel extends Component {
 
         // Show log in interstitial
         const logInInterstitial = new Layout("logging-in", this.layoutData).appendTo(this.contentElem);
-        logInInterstitial.promise.catch((error: any) => {
-            this.dispatchError(error);
+        logInInterstitial.promise.catch((err) => {
+            this.dispatchError(err);
         });
 
         // Request login with session ID
@@ -256,9 +285,6 @@ export class AdminPanel extends Component {
             })
             .then((data) => {
                 if (!data.success) { throw data.message; }
-
-                // Stop log in interstitial if still loading 
-                logInInterstitial.xhr.abort();
 
                 return data.success;
             });
@@ -333,12 +359,12 @@ export class AdminPanel extends Component {
 
     private setupErrorListener() {
         this.on("error", (error: any) => {
-            // TODO: Do something with error
-            alert(`An error occurred:
+            alert(`An unexpected error occurred:
 -----
 ${error}
 -----
-See console log for more info`);
+It might be necessary to restart your session to continue operation.
+Please contact support if this occurs again or you are unable to use MOOCchat.`);
             console.error(error);
         });
     }
