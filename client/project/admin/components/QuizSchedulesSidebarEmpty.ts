@@ -9,7 +9,7 @@ export class QuizSchedulesSidebarEmpty extends ComponentRenderable {
         super(renderTarget, layoutData, parent);
 
         this.setRenderFunc(() => {
-            new Layout("admin-quiz-schedule-sidebar-empty", this.getLayoutData())
+            return new Layout("admin-quiz-schedule-sidebar-empty", this.getLayoutData())
                 .wipeThenAppendTo(this.getRenderTarget())
                 .promise
                 .then(this.setupCreateLink)

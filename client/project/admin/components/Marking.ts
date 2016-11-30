@@ -24,7 +24,7 @@ export class Marking extends ComponentRenderable {
         });
 
         this.setRenderFunc(() => {
-            new Layout("admin-marking", this.getLayoutData())
+            return new Layout("admin-marking", this.getLayoutData())
                 .wipeThenAppendTo(this.getRenderTarget())
                 .promise
                 .then(this.setSectionActive)

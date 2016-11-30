@@ -31,7 +31,7 @@ export class System extends ComponentRenderable {
         });
 
         this.setRenderFunc(() => {
-            new Layout("admin-system-info", this.getLayoutData())
+            return new Layout("admin-system-info", this.getLayoutData())
                 .wipeThenAppendTo(this.getRenderTarget())
                 .promise
                 .then(this.setSectionActive)

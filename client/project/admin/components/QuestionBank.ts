@@ -51,7 +51,7 @@ export class QuestionBank extends ComponentRenderable {
         });
 
         this.setRenderFunc(() => {
-            Promise.all([
+            return Promise.all([
                 this.loadQuestionData(),
                 new Layout("admin-question-bank-layout", this.getLayoutData())
                     .wipeThenAppendTo(this.getRenderTarget())
@@ -74,11 +74,11 @@ export class QuestionBank extends ComponentRenderable {
     }
 
     private readonly setupListeners = () => {
-        const listenerApply = (action: string) => {
+        const listenerApply = (action: string, mapTo?: string) => {
             // If the result of processAction is true, then we have performed
             //   an action and wish not to bubble it any further by returning
             //   `false` from the callback.
-            this.on(action, (data) => (this.processAction(action, data) ? false : undefined));
+            this.on(action, (data) => (this.processAction(mapTo ? mapTo : action, data) ? false : undefined));
         }
 
         listenerApply("create");
@@ -86,6 +86,9 @@ export class QuestionBank extends ComponentRenderable {
         listenerApply("edit");
         listenerApply("reload-list-reset");
         listenerApply("reload-list-edit-id");
+
+        // Map "view-question" to "reload-list-edit-id"
+        listenerApply("view-question", "reload-list-edit-id");
     }
 
     private readonly fetchAjaxFuncs = () => {
@@ -285,7 +288,7 @@ export class QuestionBank extends ComponentRenderable {
                     });
             }
 
-            case "reload-list-edit-id": {   // @param data {string} Quiz Schedule ID
+            case "reload-list-edit-id": {   // @param data {string} Question ID
                 const id: string = data;
 
                 this.loadQuestionData()

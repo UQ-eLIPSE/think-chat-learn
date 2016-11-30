@@ -40,7 +40,7 @@ export class QuestionBankSectionOptions extends ComponentRenderable {
         });
 
         this.setRenderFunc(() => {
-            new Layout("admin-question-bank-section-options", this.getLayoutData())
+            return new Layout("admin-question-bank-section-options", this.getLayoutData())
                 .wipeThenAppendTo(this.getRenderTarget())
                 .promise
                 .then(this.emptyQuestionOptions)

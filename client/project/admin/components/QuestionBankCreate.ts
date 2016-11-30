@@ -39,7 +39,7 @@ export class QuestionBankCreate extends ComponentRenderable {
         });
 
         this.setRenderFunc(() => {
-            new Layout("admin-question-bank-edit-layout", this.getLayoutData())
+            return new Layout("admin-question-bank-edit-layout", this.getLayoutData())
                 .wipeThenAppendTo(this.getRenderTarget())
                 .promise
                 .then(this.showRelevantElements)

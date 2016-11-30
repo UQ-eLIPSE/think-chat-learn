@@ -29,11 +29,12 @@ export class Quizzes extends ComponentRenderable {
         });
 
         this.setRenderFunc(() => {
-            new Layout("admin-quizzes", this.getLayoutData())
+            return new Layout("admin-quizzes", this.getLayoutData())
                 .wipeThenAppendTo(this.getRenderTarget())
                 .promise
                 .then(this.setSectionActive)
                 .then(this.setupSubcomponents)
+                .then(this.setupListeners)
                 .then(this.setupTabs)
                 .then(this.launchFirstTab)
                 .catch((error) => {
@@ -51,6 +52,17 @@ export class Quizzes extends ComponentRenderable {
 
         this.components.put("quiz-schedules", new QuizSchedules(subcomponentRenderTarget, this.getLayoutData(), this));
         this.components.put("question-bank", new QuestionBank(subcomponentRenderTarget, this.getLayoutData(), this));
+    }
+
+    private readonly setupListeners = () => {
+        const listenerApply = (action: string) => {
+            // If the result of processAction is true, then we have performed
+            //   an action and wish not to bubble it any further by returning
+            //   `false` from the callback.
+            this.on(action, (data) => (this.processAction(action, data) ? false : undefined));
+        }
+
+        listenerApply("view-question");
     }
 
     private readonly setupTabs = () => {
@@ -88,10 +100,13 @@ export class Quizzes extends ComponentRenderable {
 
         this.destroyActiveComponent();
 
-        component.init(data)
+        return component.init(data)
             .then(() => {
                 this.activeComponent = component;
-                component.render();
+                return component.render();
+            })
+            .then(() => {
+                return component;
             })
             .catch((error) => {
                 this.dispatchError(error);
@@ -109,7 +124,7 @@ export class Quizzes extends ComponentRenderable {
             .siblings().removeClass("active");
     }
 
-    private readonly processAction = (action: string) => {
+    private readonly processAction = (action: string, data?: any) => {
         switch (action) {
             case "quiz-schedules": {
                 this.setTabActive(action);
@@ -122,10 +137,33 @@ export class Quizzes extends ComponentRenderable {
                 return;
             }
 
+            case "view-question": {
+                const id: string = data;
+
+                // Open question bank
+                this.setTabActive("question-bank");
+                const componentRenderPromise = this.renderComponent<QuestionBank>("question-bank");
+
+                // Give up if rendering not possible or if component not there
+                if (!componentRenderPromise) {
+                    return true;    // true = We have attempted to process this action
+                }
+
+                // Pass message back down to question bank component
+                componentRenderPromise
+                    .then((questionBank) => {
+                        questionBank.dispatch("view-question", id);
+                    });
+
+                return true;
+            }
+
             default: {
                 const className: string = (<any>this.constructor).name || "[class]";
                 this.dispatchError(new Error(`Action "${action}" is not recognised by ${className}`));
             }
         }
+
+        return false;
     }
 }

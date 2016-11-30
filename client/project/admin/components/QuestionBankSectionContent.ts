@@ -25,7 +25,7 @@ export class QuestionBankSectionContent extends ComponentRenderable {
         });
 
         this.setRenderFunc(() => {
-            new Layout("admin-question-bank-section-content", this.getLayoutData())
+            return new Layout("admin-question-bank-section-content", this.getLayoutData())
                 .wipeThenAppendTo(this.getRenderTarget())
                 .promise
                 .then(this.hideContent)

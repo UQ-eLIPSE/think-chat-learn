@@ -36,7 +36,7 @@ export class QuizSchedulesCreate extends ComponentRenderable {
         });
 
         this.setRenderFunc(() => {
-            Promise.all([
+            return Promise.all([
                 this.loadQuestions(),
                 new Layout("admin-quiz-schedule-edit-layout", this.getLayoutData())
                     .wipeThenAppendTo(this.getRenderTarget())
@@ -186,7 +186,7 @@ export class QuizSchedulesCreate extends ComponentRenderable {
                 .prop({
                     value: question._id,
                 })
-                .text(`${(question.title && question.title.substr(0, 100)) || "[Undefined Title]"} (${question._id})`);
+                .text(`${question.title}`);
         });
 
         $dropdown.empty().append($dropdownOptionElems);
