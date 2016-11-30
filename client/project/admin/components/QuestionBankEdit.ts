@@ -3,13 +3,13 @@ import { Promise } from "es6-promise";
 import { KVStore } from "../../../../common/js/KVStore";
 import { XHRStore } from "../../../js/xhr/XHRStore";
 
+import * as PromiseError from "../../../../common/js/error/PromiseError";
+
 import { Component } from "../../../js/ui/Component";
 import { ComponentRenderable } from "../../../js/ui/ComponentRenderable";
 
 import { Layout } from "../../../js/ui/Layout";
 import { LayoutData } from "../../../js/ui/LayoutData";
-
-// import { QuestionOptions } from "./QuestionOptions";
 
 import { AdminPanel, AjaxFuncFactoryResultCollection } from "./AdminPanel";
 import { QuestionBankSectionContent } from "./QuestionBankSectionContent";
@@ -106,11 +106,17 @@ export class QuestionBankEdit extends ComponentRenderable {
     }
 
     private readonly setupForm = () => {
-        this.section$("#save-changes").one("click", () => {
+        const $saveButton = this.section$("#save-changes");
+        const $deleteButton = this.section$("#delete");
+
+        const onSaveButtonClick = () => {
             const sectionContentComponent = this.getComponent<QuestionBankSectionContent>("content");
 
             const title = sectionContentComponent.getTitle();
             const content = sectionContentComponent.getContent();
+
+            // Prevent double clicks
+            $saveButton.off("click", onSaveButtonClick);
 
             const xhrCall = this.ajaxFuncs!.put<IMoocchatApi.ToClientResponseBase<void>>
                 (`/api/admin/question/${this.question!._id}`, {
@@ -129,16 +135,29 @@ export class QuestionBankEdit extends ComponentRenderable {
                     return data;
                 })
                 .then(_ => this.cullBadData(_))
+                .catch((err) => {
+                    alert(`${err}`);
+
+                    // Reenable button
+                    $saveButton.on("click", onSaveButtonClick);
+
+                    throw new PromiseError.AbortChainError(err);
+                })
                 .then(() => {
                     // Load updated item in parent
                     this.loadQuestionIdInParent(this.question!._id!);
                 })
-                .catch((error) => {
-                    this.dispatchError(error);
-                });
-        });
+                .catch((err) => {
+                    PromiseError.AbortChainError.ContinueAbort(err);
 
-        this.section$("#delete").one("click", () => {
+                    this.dispatchError(err);
+                });
+        }
+
+        const onDeleteButtonClick = () => {
+            // Prevent double clicks
+            $deleteButton.off("click", onDeleteButtonClick);
+
             const xhrCall = this.ajaxFuncs!.delete<IMoocchatApi.ToClientResponseBase<void>>
                 (`/api/admin/question/${this.question!._id}`);
 
@@ -153,11 +172,24 @@ export class QuestionBankEdit extends ComponentRenderable {
                     return data;
                 })
                 .then(_ => this.cullBadData(_))
+                .catch((err) => {
+                    alert(`${err}`);
+
+                    // Reenable button
+                    $deleteButton.on("click", onDeleteButtonClick);
+
+                    throw new PromiseError.AbortChainError(err);
+                })
                 .then(this.reloadQuestionsInParent)
-                .catch((error) => {
-                    this.dispatchError(error);
+                .catch((err) => {
+                    PromiseError.AbortChainError.ContinueAbort(err);
+
+                    this.dispatchError(err);
                 });
-        });
+        }
+
+        $saveButton.on("click", onSaveButtonClick);
+        $deleteButton.on("click", onDeleteButtonClick);
     }
 
     private readonly loadQuestionIdInParent = (id: string) => {
