@@ -9,7 +9,7 @@ export class QuestionBankSidebarEmpty extends ComponentRenderable {
         super(renderTarget, layoutData, parent);
 
         this.setRenderFunc(() => {
-            new Layout("admin-question-bank-sidebar-empty", this.getLayoutData())
+            return new Layout("admin-question-bank-sidebar-empty", this.getLayoutData())
                 .wipeThenAppendTo(this.getRenderTarget())
                 .promise
                 .then(this.setupCreateLink)

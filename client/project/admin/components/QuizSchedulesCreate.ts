@@ -36,7 +36,7 @@ export class QuizSchedulesCreate extends ComponentRenderable {
         });
 
         this.setRenderFunc(() => {
-            Promise.all([
+            return Promise.all([
                 this.loadQuestions(),
                 new Layout("admin-quiz-schedule-edit-layout", this.getLayoutData())
                     .wipeThenAppendTo(this.getRenderTarget())

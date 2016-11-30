@@ -11,7 +11,7 @@ export class Home extends ComponentRenderable {
         super(renderTarget, layoutData, parent);
 
         this.setRenderFunc(() => {
-            new Layout("admin-main", this.getLayoutData())
+            return new Layout("admin-main", this.getLayoutData())
                 .wipeThenAppendTo(this.getRenderTarget())
                 .promise
                 .then(this.setSectionActive)

@@ -6,7 +6,7 @@ export abstract class ComponentRenderable extends Component {
     private readonly renderTarget: JQuery;
     private readonly layoutData: LayoutData;
 
-    private renderFunc: ((renderTarget: JQuery) => void) | undefined;
+    private renderFunc: ((renderTarget: JQuery) => Promise<void>) | undefined;
 
     constructor(renderTarget: JQuery, layoutData: LayoutData, parent?: Component) {
         super(parent);
@@ -22,7 +22,7 @@ export abstract class ComponentRenderable extends Component {
         return this.layoutData;
     }
 
-    protected setRenderFunc(renderFunc: (renderTarget: JQuery) => void) {
+    protected setRenderFunc(renderFunc: (renderTarget: JQuery) => Promise<void>) {
         this.renderFunc = renderFunc;
     }
 
@@ -51,6 +51,10 @@ export abstract class ComponentRenderable extends Component {
     }
 
     public render() {
-        this.renderFunc && this.renderFunc(this.renderTarget);
+        if (this.renderFunc) {
+            return this.renderFunc(this.renderTarget);
+        }
+
+        return new Promise(resolve => resolve()) as Promise<void>;
     }
 }
