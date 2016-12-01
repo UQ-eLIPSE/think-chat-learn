@@ -76,6 +76,8 @@ export type ToClientResponseFailCode =
     "QUIZ_ATTEMPT_DOES_NOT_EXIST" |
     "QUIZ_ATTEMPT_ERROR" |
 
+    "FOREIGN_KEY_CONSTRAINT" |
+
     "MISSING_PARAMETERS" |
 
     "UNKNOWN_ERROR";
