@@ -295,18 +295,37 @@ export namespace Api {
             const db = moocchat.getDb();
             const questionId = data.questionId;
 
-            new DBQuestion(db).delete(
-                {
-                    _id: new mongodb.ObjectID(questionId),
-                },
-                (err, result) => {
-                    if (handleMongoError(err, res)) { return; }
+            const _questionId = new mongodb.ObjectID(questionId);
 
+            // Check that there are no quiz schedules with question to be deleted
+            new DBQuizSchedule(db).readWithCursor({
+                questionId: _questionId
+            }).count(false, (err, count) => {
+                if (handleMongoError(err, res)) { return; }
+
+                // Reject deletion requests when question in use
+                if (count > 0) {
                     return res({
-                        success: true,
-                        payload: undefined,
+                        success: false,
+                        code: "FOREIGN_KEY_CONSTRAINT",
+                        message: "Question is in use by one or more quiz schedules; detach question from quiz schedules before deletion",
                     });
-                });
+                }
+
+                // Delete question
+                new DBQuestion(db).delete(
+                    {
+                        _id: _questionId,
+                    },
+                    (err, result) => {
+                        if (handleMongoError(err, res)) { return; }
+
+                        return res({
+                            success: true,
+                            payload: undefined,
+                        });
+                    });
+            });
         }
     }
 
