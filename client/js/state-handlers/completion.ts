@@ -20,8 +20,8 @@ export const CompletionStateHandler: IStateHandler<STATE> =
                     session.pageManager.loadPage("completion", (page$) => {
                         section.setActive();
 
-                        // Session ID is split every 4th character to make it easier to read
-                        page$("#session-id").text(session.id.match(/.{1,4}/g).join(" "));
+                        // Quiz attempt ID is split every 4th character to make it easier to read
+                        page$("#quiz-attempt-id").text(session.quizAttemptId.match(/.{1,4}/g).join(" "));
                         page$("#time-now").text(new Date().toISOString());
 
                         page$("#print-receipt").on("click", () => {

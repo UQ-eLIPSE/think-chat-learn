@@ -1159,7 +1159,8 @@ body > #content > section {
 
 /********** Receipts **********/
 
-#session-id {
+#session-id,
+#quiz-attempt-id {
     @extend .monospace;
 
     font-size: 1.3em;
