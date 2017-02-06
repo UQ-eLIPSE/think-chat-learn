@@ -256,9 +256,13 @@ button.thin {
     }
 }
 
-.p-block {
-    display: block;
+.top-bottom-margin {
     margin: 1.2em 0;
+}
+
+.p-block {
+    @extend .top-bottom-margin;
+    display: block;
 }
 
 .main-colour-bg {
