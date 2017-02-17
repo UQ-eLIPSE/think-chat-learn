@@ -1,7 +1,7 @@
-import {Conf} from "../config/Conf";
+import { Conf } from "../config/Conf";
 
-import {PacSeq} from "./PacSeq";
-import {EventBox} from "./EventBox";
+import { PacSeq } from "./PacSeq";
+import { EventBox } from "./EventBox";
 import * as IPacSeqSocketPacket from "../interfaces/IPacSeqSocketPacket";
 
 declare type _SocketType = any;
@@ -177,15 +177,47 @@ export class PacSeqSocket<SocketType> {
         // in the case where the event manager is transferred
         const eventManager = this.eventManager;
 
-        eventManager.on(event, (data?: any) => {
-            // Execute callback then remove the handler immediately
+        const wrappedCallback = (data?: any) => {
+            // Remove the handler FIRST then run callback;
+            // otherwise if `fn` fails to return then we would be
+            // left with a dangling callback still attached to the event            
+            //
+            // Also, the callback to be removed is the WRAPPED callback
+            // and not the original one - this mirrors the `.on()` below
+            eventManager.off(event, wrappedCallback);
             fn(data);
-            eventManager.off(event, fn);
-        });
+        };
+
+        // Keep track of the original callback
+        (<any>wrappedCallback)["__originalCallback"] = fn;
+
+        eventManager.on(event, wrappedCallback);
     }
 
     public off(event: string, fn?: (data?: any) => any) {
-        this.eventManager.off(event, fn);
+        const eventManager = this.eventManager;
+        eventManager.off(event, fn);
+
+        // Specific `off` behaviour for wrapped callbacks due to `.once()`
+        // putting in wrapped callbacks, not the original callback
+        if (fn) {
+            const callbacks = this.eventManager.getCallbacksFor(event);
+
+            if (callbacks) {
+                // Copy out the list of callbacks for this event, then
+                // `.off()` wrapped callbacks which contain the original
+                // callback
+                const callbackArrayCopy = callbacks.slice();
+
+                callbackArrayCopy.forEach((wrappedCallback) => {
+                    const originalCallback: Function | undefined = (<any>wrappedCallback)["__originalCallback"];
+
+                    if (originalCallback && originalCallback === fn) {
+                        eventManager.off(event, wrappedCallback);
+                    }
+                });
+            }
+        }
     }
 
     public disconnect(close?: boolean) {
