@@ -28,7 +28,11 @@ export const LoginStateHandler: IStateHandler<STATE> =
                     if (data.survey) {
                         session.setSurvey(new MoocchatSurvey(data.survey))
                     } else {
-                        session.sectionManager.getSection("survey").elem.remove();
+                        const surveySection = session.sectionManager.getSection("survey");
+                        
+                        if (surveySection) {
+                            surveySection.elem.remove();
+                        }
                     }
 
                     if (data.researchConsentRequired) {
