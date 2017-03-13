@@ -842,6 +842,29 @@ body > #content > section {
     }
 }
 
+#answers.horizontal {
+    display: table;
+    border-collapse: collapse;
+
+    & > * {
+        @extend .thin-border;
+
+        display: table-cell;
+        width: auto;
+    }
+}
+
+#answers.labelless {
+    & > * {
+        padding-left: 0.7em;
+
+        &::before {
+            content: "";
+            display: none;
+        }
+    }
+}
+
 #option-list .option-controls {
     font-size: 0.8em;
 }
@@ -938,6 +961,10 @@ body > #content > section {
     display: inline-block;
     margin-right: 1em;
     color: #aaa;
+}
+
+#char-available.marginless {
+    margin: 0;
 }
 
 #char-available.invalid {
@@ -1583,21 +1610,21 @@ body > #content > section {
 
 /********** Media queries **********/
 
-// // Narrower devices (~1100px)
-// @media (max-width: 70rem) {
-//     html, body {
-//         font-size: $body-std-font-size * 0.9;
-//     }
+// Narrower devices (~1100px)
+@media (max-width: 70rem) {
+    html, body {
+        font-size: $body-std-font-size * 0.9;
+    }
     
-//     .table {
-//         &.narrow-block,
-//         &.narrow-block > .row,
-//         &.narrow-block > .row > * {
-//             display: block;
-//             width: 100%;
-//         }
-//     }
-// }
+    .table {
+        &.narrow-block,
+        &.narrow-block > .row,
+        &.narrow-block > .row > * {
+            display: block;
+            width: 100%;
+        }
+    }
+}
 
 // // Short height devices (< 600px in window, approx < 900px in Blackboard, device approx < 1000px)
 // @media (max-height: 650px) {
