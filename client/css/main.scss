@@ -1610,21 +1610,21 @@ body > #content > section {
 
 /********** Media queries **********/
 
-// // Narrower devices (~1100px)
-// @media (max-width: 70rem) {
-//     html, body {
-//         font-size: $body-std-font-size * 0.9;
-//     }
+// Narrower devices (~1100px)
+@media (max-width: 70rem) {
+    html, body {
+        font-size: $body-std-font-size * 0.9;
+    }
     
-//     .table {
-//         &.narrow-block,
-//         &.narrow-block > .row,
-//         &.narrow-block > .row > * {
-//             display: block;
-//             width: 100%;
-//         }
-//     }
-// }
+    .table {
+        &.narrow-block,
+        &.narrow-block > .row,
+        &.narrow-block > .row > * {
+            display: block;
+            width: 100%;
+        }
+    }
+}
 
 // // Short height devices (< 600px in window, approx < 900px in Blackboard, device approx < 1000px)
 // @media (max-height: 650px) {
