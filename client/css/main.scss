@@ -842,6 +842,29 @@ body > #content > section {
     }
 }
 
+#answers.horizontal {
+    display: table;
+    border-collapse: collapse;
+
+    & > * {
+        @extend .thin-border;
+
+        display: table-cell;
+        width: auto;
+    }
+}
+
+#answers.labelless {
+    & > * {
+        padding-left: 0.7em;
+
+        &::before {
+            content: "";
+            display: none;
+        }
+    }
+}
+
 #option-list .option-controls {
     font-size: 0.8em;
 }
@@ -938,6 +961,10 @@ body > #content > section {
     display: inline-block;
     margin-right: 1em;
     color: #aaa;
+}
+
+#char-available.marginless {
+    margin: 0;
 }
 
 #char-available.invalid {
