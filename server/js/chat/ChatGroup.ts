@@ -3,6 +3,8 @@ import { ChatGroup as DBChatGroup, IDB_ChatGroup } from "../data/models/ChatGrou
 
 import { KVStore } from "../../../common/js/KVStore";
 
+import { Utils } from "../../../common/js/Utils";
+
 // Refers to...
 import { QuizAttempt } from "../quiz/QuizAttempt";
 import { QuizSchedule } from "../quiz/QuizSchedule";
@@ -255,27 +257,30 @@ export class ChatGroup {
 
         quizAttemptsInGroup.forEach((quizAttempt) => {
             const socket = quizAttempt.getUserSession().getSocket();
-            
+
             if (!socket) {
                 return;
             }
 
+            const groupAnswers = quizAttemptsInGroup.map((_quizAttempt) => {
+                const responseInitial = _quizAttempt.getResponseInitial();
+
+                if (!responseInitial) {
+                    console.error(`Quiz attempt "${_quizAttempt.getId()}" has no response initial object during chat group formation`);
+                }
+
+                return {
+                    clientIndex: this.getQuizAttemptIndex(_quizAttempt),
+                    answer: responseInitial ? responseInitial.getData() : {},   // TODO: Returning object literal as placeholder; response initial should be required before proceeding to chat group formation in the first place 
+                };
+            });
+
+            Utils.Array.shuffleInPlace(groupAnswers);
+
             socket.emit("chatGroupFormed", {
                 groupId: chatGroupId,
                 groupSize: numberOfActiveClients,
-                groupAnswers: quizAttemptsInGroup.map((_quizAttempt) => {
-                    const responseInitial = _quizAttempt.getResponseInitial();
-
-                    if (!responseInitial) {
-                        console.error(`Quiz attempt "${_quizAttempt.getId()}" has no response initial object during chat group formation`);
-                    }
-
-                    return {
-                        clientIndex: this.getQuizAttemptIndex(_quizAttempt),
-                        answer: responseInitial ? responseInitial.getData() : {},   // TODO: Returning object literal as placeholder; response initial should be required before proceeding to chat group formation in the first place 
-                    };
-                }),
-
+                groupAnswers,
                 clientIndex: this.getQuizAttemptIndex(quizAttempt)
             });
         })

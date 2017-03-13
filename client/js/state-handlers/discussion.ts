@@ -9,7 +9,7 @@ import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
 
 import {MoocchatChat} from "../MoocchatChat";
 
-import * as AnswerComponents from "../AnswerComponents";
+// import * as AnswerComponents from "../AnswerComponents";
 
 export const DiscussionStateHandler: IStateHandler<STATE> =
     (session: MoocchatSession<STATE>, nextState: STATE = STATE.REVISED_ANSWER) => {
@@ -102,60 +102,65 @@ export const DiscussionStateHandler: IStateHandler<STATE> =
                     // Render question and answer choices
                     $questionReading.html(session.quiz.questionContent);
 
-                    const $answerOptElems = AnswerComponents.GenerateAnswerOptionElems(session.quiz.questionOptions, "<div>");
+                    // const $answerOptElems = AnswerComponents.GenerateAnswerOptionElems(session.quiz.questionOptions, "<div>");
 
                     // Go through each client's answers and add them into the answer choices
-                    const answerJustificationMap: { [optionId: string]: { clientIndex: number; justification: string; }[] } = {};
+                    // const answerJustificationMap: { [optionId: string]: { clientIndex: number; justification: string; }[] } = {};
 
-                    data.groupAnswers.forEach((clientAnswer) => {
-                        const clientIndex = clientAnswer.clientIndex;
+                    // data.groupAnswers.forEach((clientAnswer) => {
+                    //     const clientIndex = clientAnswer.clientIndex;
 
-                        let justification: string;
-                        let optionId: string;
+                    //     let justification: string;
+                    //     let optionId: string;
 
-                        // If we are given `null` for the client answer when we should have one (for ourselves)
-                        // it is most likely that we are in a virtualised server environment
-                        // --> Put data from our own session object in instead
-                        if (data.clientIndex === clientAnswer.clientIndex &&
-                            clientAnswer.answer.optionId === null && session.answers.initial.optionId !== null) {
-                            justification = session.answers.initial.justification;
-                            optionId = session.answers.initial.optionId;
-                        } else {
-                            justification = clientAnswer.answer.justification;
-                            optionId = clientAnswer.answer.optionId;
-                        }
+                    //     // If we are given `null` for the client answer when we should have one (for ourselves)
+                    //     // it is most likely that we are in a virtualised server environment
+                    //     // --> Put data from our own session object in instead
+                    //     if (data.clientIndex === clientAnswer.clientIndex &&
+                    //         clientAnswer.answer.optionId === null && session.answers.initial.optionId !== null) {
+                    //         justification = session.answers.initial.justification;
+                    //         optionId = session.answers.initial.optionId;
+                    //     } else {
+                    //         justification = clientAnswer.answer.justification;
+                    //         optionId = clientAnswer.answer.optionId;
+                    //     }
 
-                        // If no option ID then skip
-                        if (optionId === null || typeof optionId === "undefined") {
-                            return;
-                        }
+                    //     // If no option ID then skip
+                    //     if (optionId === null || typeof optionId === "undefined") {
+                    //         return;
+                    //     }
 
-                        if (!answerJustificationMap[optionId]) {
-                            answerJustificationMap[optionId] = [];
-                        }
+                    //     if (!answerJustificationMap[optionId]) {
+                    //         answerJustificationMap[optionId] = [];
+                    //     }
 
-                        answerJustificationMap[optionId].push({
-                            clientIndex: clientIndex,
-                            justification: justification
-                        });
-                    });
+                    //     answerJustificationMap[optionId].push({
+                    //         clientIndex: clientIndex,
+                    //         justification: justification
+                    //     });
+                    // });
 
-                    $answerOptElems.forEach(($answerListElem) => {
-                        const optionId = $answerListElem.data("optionId") as string;
+                    // $answerOptElems.forEach(($answerListElem) => {
+                    //     const optionId = $answerListElem.data("optionId") as string;
 
-                        if (answerJustificationMap[optionId]) {
-                            const $clientAnswerBlockUL = $("<ul>").addClass("client-justifications");
+                    //     if (answerJustificationMap[optionId]) {
+                    //         const $clientAnswerBlockUL = $("<ul>").addClass("client-justifications");
 
-                            answerJustificationMap[optionId].forEach((clientJustification) => {
-                                $("<li>")
-                                    .attr("data-client-id", clientJustification.clientIndex + 1)
-                                    .text(clientJustification.justification)
-                                    .appendTo($clientAnswerBlockUL);
-                            });
+                    //         answerJustificationMap[optionId].forEach((clientJustification) => {
+                    //             $("<li>")
+                    //                 .attr("data-client-id", clientJustification.clientIndex + 1)
+                    //                 .text(clientJustification.justification)
+                    //                 .appendTo($clientAnswerBlockUL);
+                    //         });
 
-                            $clientAnswerBlockUL.appendTo($answerListElem);
-                        }
-                    });
+                    //         $clientAnswerBlockUL.appendTo($answerListElem);
+                    //     }
+                    // });
+
+                    // Only present free text answers, not multiple choice ones (which are now confidence rankings to be hidden)
+                    const $answerOptElems = data.groupAnswers.map(
+                        answer => $("<div>").text(answer.answer.justification)
+                    );
 
                     $answers.append($answerOptElems);
 

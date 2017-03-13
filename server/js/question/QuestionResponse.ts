@@ -115,7 +115,10 @@ export class QuestionResponse {
     }
 
     public getData() {
-        return this.data;
+        // Don't leak answer `optionId` (which relates to confidence rating) publicly
+        const { justification } = this.data;
+
+        return { justification };
     }
 
     public getQuestionOption() {
