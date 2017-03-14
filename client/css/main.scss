@@ -28,6 +28,7 @@ $answer-option-heading-colour: $mc-colour-1;
 $client-1-colour: #000066;
 $client-2-colour: #993366;
 $client-3-colour: #669900;
+$client-4-colour: #cc6600;
 
 $input-bg-colour: #fff;
 $input-disabled-bg-colour: #ccc;
@@ -937,6 +938,14 @@ body > #content > section {
                 background: $client-3-colour;
             }
         }
+
+        &[data-client-id="4"] {
+            color: $client-4-colour;
+            
+            &::before {
+                background: $client-4-colour;
+            }
+        }
     }
 }
 
@@ -1059,6 +1068,14 @@ body > #content > section {
             
             &::after {
                 background: $client-3-colour;
+            }
+        }
+
+        &[data-client-id="4"] {
+            color: $client-4-colour;
+            
+            &::after {
+                background: $client-4-colour;
             }
         }
 
