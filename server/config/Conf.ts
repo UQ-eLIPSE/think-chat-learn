@@ -34,9 +34,9 @@ export const Conf: IConf = {
     },
     chat: {
         groups: {
-            desiredSize: 3,
+            desiredSize: 4,
             formationIntervalMs: 1000,
-            formationTimeoutMs: 120000
+            formationTimeoutMs: 300000,
         }
     },
     backupClient: {

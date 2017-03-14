@@ -40,16 +40,16 @@ export const AwaitGroupFormationStateHandler: IStateHandler<STATE> =
                         session.stateMachine.goTo(STATE.DISCUSSION, data);
                     });
 
-                    // If too long, force reconnect to see if we just missed something
-                    tooLongTimeoutHandle = setTimeout(() => {
-                        session.socket.restart();
+                    // // If too long, force reconnect to see if we just missed something
+                    // tooLongTimeoutHandle = setTimeout(() => {
+                    //     session.socket.restart();
 
-                        // If that fails then alert
-                        tooLongTimeoutHandle = setTimeout(() => {
-                            alert(`We can't seem to get you into a chat session. Please restart MOOCchat.`);
-                        }, 1 * 60 * 1000);
+                    //     // If that fails then alert
+                    //     tooLongTimeoutHandle = setTimeout(() => {
+                    //         alert(`We can't seem to get you into a chat session. Please restart MOOCchat.`);
+                    //     }, 1 * 60 * 1000);
 
-                    }, 2.5 * 60 * 1000);
+                    // }, 2.5 * 60 * 1000);
                 });
             },
             onLeave: () => {
