@@ -27,7 +27,7 @@ export const RevisedAnswerStateHandler: IStateHandler<STATE> =
                     const $submitAnswer = page$(".submit-answer-button");
                     const $charAvailable = page$("#char-available");
                     const $questionReading = page$("#question-reading");
-                    const $enableRevision = page$("#enable-revision");
+                    // const $enableRevision = page$("#enable-revision");
                     const $questionChatSection = page$("#question-chat-container");
                     const $showQuestionChat = page$("#show-hide-question-chat");
 
@@ -61,18 +61,18 @@ export const RevisedAnswerStateHandler: IStateHandler<STATE> =
                         AnswerComponents.UpdateJustificationCharAvailable($justification.val(), $charAvailable);
                     }).trigger("input");
 
-                    // Answer multiple choice highlighting
-                    $enableRevision.on("click", () => {
-                        page$(".pre-edit-enable").hide();
-                        page$(".post-edit-enable").show();
-                        $justification.prop("disabled", false).trigger("input");
+                    // // Answer multiple choice highlighting
+                    // $enableRevision.on("click", () => {
+                    //     page$(".pre-edit-enable").hide();
+                    //     page$(".post-edit-enable").show();
+                    //     $justification.prop("disabled", false).trigger("input");
 
                         $answers.on("click", "button", (e) => {
                             e.preventDefault();
                             $("button", $answers).removeClass("selected");
                             $(e.currentTarget).addClass("selected");
                         }).removeClass("locked");
-                    });
+                    // });
 
                     // Toggle question+chat section
                     $showQuestionChat.on("click", () => {
@@ -86,20 +86,20 @@ export const RevisedAnswerStateHandler: IStateHandler<STATE> =
                     $questionReading.html(session.quiz.questionContent);
                     $answers.append(AnswerComponents.GenerateAnswerOptionElems(session.quiz.questionOptions));
                 
-                    // Populate previous answer
-                    $justification.val(session.answers.initial.justification);
-                    $("button", $answers).each((i, elem) => {
-                        if ($(elem).data("optionId") === session.answers.initial.optionId) {
-                            $(elem).addClass("selected");
-                            return false;
-                        }
-                        return undefined;
-                    });
+                    // // Populate previous answer
+                    // $justification.val(session.answers.initial.justification);
+                    // $("button", $answers).each((i, elem) => {
+                    //     if ($(elem).data("optionId") === session.answers.initial.optionId) {
+                    //         $(elem).addClass("selected");
+                    //         return false;
+                    //     }
+                    //     return undefined;
+                    // });
 
-                    // Set pre-/post-edit-enable elements
-                    $justification.prop("disabled", true);
-                    page$(".post-edit-enable").hide();
-                    $answers.addClass("locked");
+                    // // Set pre-/post-edit-enable elements
+                    // $justification.prop("disabled", true);
+                    // page$(".post-edit-enable").hide();
+                    // $answers.addClass("locked");
 
                     // If passed chat object, clone window into expected chat area
                     if (data instanceof MoocchatChat) {
