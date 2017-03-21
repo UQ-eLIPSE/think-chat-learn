@@ -140,7 +140,7 @@ $(() => {
         ["initial-answer", "Initial Answer", CommonConf.timings.initialAnswerMs],
         ["await-group-formation", "Forming Group"],
         ["discussion", "Discussion", CommonConf.timings.discussionMs],
-        ["revised-answer", "Revised Answer", CommonConf.timings.revisedAnswerMs],
+        ["revised-answer", "Reflection", CommonConf.timings.revisedAnswerMs],
         ["survey", "Survey"],
         ["finish", "Finish"]
     ]);
