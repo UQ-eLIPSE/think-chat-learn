@@ -63,12 +63,12 @@ export function ProcessSubmission(optionId: string, justification: string, submi
     justification = TrimWhitespace(justification);
 
     if (justification.length === 0 || !optionId) {
-        alert("You must provide an answer and justification.");
+        alert("You must provide a free text answer response and select a confidence level.");
         return false;
     }
 
     if (justification.length > maxJustificationLength) {
-        alert("Justification is too long. Reduce your justification length.");
+        alert("Free text answer is too long. Reduce your answer length.");
         return false;
     }
 
@@ -89,7 +89,7 @@ export function ProcessForcedSubmission(optionId: string, justification: string,
     justification = TrimWhitespace(justification);
 
     if (justification.length === 0) {
-        justification = "[NO JUSTIFICATION]";
+        justification = "[NO FREE TEXT ANSWER]";
     }
 
     if (!optionId) {
