@@ -24,6 +24,7 @@ export const RevisedAnswerStateHandler: IStateHandler<STATE> =
                 session.pageManager.loadPage("revised-answer", (page$) => {
                     const $answers = page$("#answers");
                     const $justification = page$("#justification");
+                    const $initialJustification = page$("#initial-justification");
                     const $submitAnswer = page$(".submit-answer-button");
                     const $charAvailable = page$("#char-available");
                     const $questionReading = page$("#question-reading");
@@ -87,7 +88,7 @@ export const RevisedAnswerStateHandler: IStateHandler<STATE> =
                     $answers.append(AnswerComponents.GenerateAnswerOptionElems(session.quiz.questionOptions));
                 
                     // // Populate previous answer
-                    // $justification.val(session.answers.initial.justification);
+                    $initialJustification.val(session.answers.initial.justification);
                     // $("button", $answers).each((i, elem) => {
                     //     if ($(elem).data("optionId") === session.answers.initial.optionId) {
                     //         $(elem).addClass("selected");
@@ -97,7 +98,7 @@ export const RevisedAnswerStateHandler: IStateHandler<STATE> =
                     // });
 
                     // // Set pre-/post-edit-enable elements
-                    // $justification.prop("disabled", true);
+                    $initialJustification.prop("disabled", true);
                     // page$(".post-edit-enable").hide();
                     // $answers.addClass("locked");
 
