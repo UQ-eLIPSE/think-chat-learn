@@ -306,16 +306,16 @@ class UserLoginFunc {
     }
 
     public static NotifyClientOfLogin(socket: PacSeqSocket_Server, session: UserSession, user: User, quizSchedule: QuizSchedule, quizAttempt: QuizAttempt, question: Question, questionOptions: QuestionOption[], survey: Survey | undefined) {
-        const researchConsent = user.getResearchConsent();
+        // const researchConsent = user.getResearchConsent();
 
         let researchConsentRequired: boolean;
 
         // If previously explicitly set, consent not required
-        if (researchConsent === false || researchConsent === true) {
+        // if (researchConsent === false || researchConsent === true) {
             researchConsentRequired = false;
-        } else {
-            researchConsentRequired = true;
-        }
+        // } else {
+            // researchConsentRequired = true;
+        // }
 
         // Complete login by notifying client
         const quizScheduleData = quizSchedule.getData() as DBSchema.QuizSchedule<string, string>;
