@@ -949,7 +949,8 @@ body > #content > section {
     }
 }
 
-#justification {
+#justification,
+#initial-justification {
     @extend .thin-border;
 
     display: block;
