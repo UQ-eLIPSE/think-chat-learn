@@ -165,16 +165,10 @@ export const DiscussionStateHandler: IStateHandler<STATE> =
                     $answers.append($answerOptElems);
 
                     // Display system chat messages at top
-                    chat.displaySystemMessage(`Your discussion group has ${data.groupSize} member${(data.groupSize !== 1) ? "s" : ""}`);
+                    chat.displaySystemMessage(`Your group has ${data.groupSize} member${(data.groupSize !== 1) ? "s" : ""}`, true);
                     chat.displaySystemMessage(`You are Person #${data.clientIndex + 1}`);
 
-                    if (data.groupSize === 1) {
-                        chat.displaySystemMessage("Looks like you're alone.", true);
-                        chat.displaySystemMessage("Discuss with yourself about how you arrived at your answer and the possibilities of the other options.");
-                    } else {
-                        chat.displaySystemMessage("Talk with your group to develop a better understanding of the question and everyone's reasoning.", true);
-                        chat.displaySystemMessage("You can find group answers in the answers pane on the left.");
-                    }
+                    chat.displaySystemMessage("You can start the chat by looking at group answers on the left.", true, );
 
                     // Put focus to input field at start of chat so people can get started immediately
                     $chatInput.focus();
