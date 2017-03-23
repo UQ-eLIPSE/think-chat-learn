@@ -845,7 +845,9 @@ body > #content > section {
 
 #answers.horizontal {
     display: table;
-    border-collapse: collapse;
+
+    // Border-collapse causes issues with .scale-layout (borders don't render right)
+    // border-collapse: collapse;
 
     & > * {
         @extend .thin-border;
@@ -862,6 +864,35 @@ body > #content > section {
         &::before {
             content: "";
             display: none;
+        }
+    }
+}
+
+#answers.scale-layout {
+    font-size: 0.8em;
+
+    max-width: 100%;
+
+    & > * {
+        white-space: pre-line; 
+        text-align: center;
+
+        width: 7em;
+
+        &::first-letter {
+            font-size: 2.5em;
+        }
+
+        &.selected {
+            border-color: transparent;
+        }
+    }
+
+    // [Firefox] Fix for #answers.scale-layout item widths being inconsistent
+    // This is due to ::first-letter and the scaling of the font size
+    &.first-letter-fix > * {
+        &::first-letter {
+            font-size: 1.0em;
         }
     }
 }
