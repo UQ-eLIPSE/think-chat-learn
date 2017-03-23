@@ -159,9 +159,12 @@ export function UpdateJustificationCharAvailable(justification: string, $charAva
  * 
  * @return {JQuery[]} Array of JQuery DOM elements of available options
  */
-export function GenerateAnswerOptionElems(questionOptions: ToClientData.QuestionOption[], answerElement: "<button>" | "<div>" = "<button>") {
+export function GenerateAnswerOptionElems(questionOptions: ToClientData.QuestionOption[], answerElement: "<button>" | "<div>" = "<div>") {
     return questionOptions.map((option) => {
-        return $(answerElement).text(option.content).data("optionId", option._id);
+        return $(answerElement)
+            .text(option.content.replace(/\\n/g, "\n"))
+            .data("optionId", option._id)
+            .prop("tabindex", "0");
     });
 }
 
