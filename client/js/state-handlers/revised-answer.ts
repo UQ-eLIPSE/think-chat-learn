@@ -19,6 +19,9 @@ export const RevisedAnswerStateHandler: IStateHandler<STATE> =
             session.stateMachine.goTo(STATE.SURVEY);
         });
 
+        let onWindowResize: () => any | undefined;
+        let onWindowResizeTimeout: number | undefined;
+
         return {
             onEnter: (data) => {
                 session.pageManager.loadPage("revised-answer", (page$) => {
@@ -68,10 +71,18 @@ export const RevisedAnswerStateHandler: IStateHandler<STATE> =
                     //     page$(".post-edit-enable").show();
                     //     $justification.prop("disabled", false).trigger("input");
 
-                        $answers.on("click", "button", (e) => {
+                        $answers.on("click", (e) => {
+                            const $el = $(e.target);
+
+                            // Make sure the element we're getting the
+                            // click event from is the immediate child
+                            if (!$el.parent().is($answers)) {
+                                return;
+                            }
+
                             e.preventDefault();
-                            $("button", $answers).removeClass("selected");
-                            $(e.currentTarget).addClass("selected");
+                            $answers.children().removeClass("selected");
+                            $el.addClass("selected");
                         }).removeClass("locked");
                     // });
 
@@ -107,12 +118,31 @@ export const RevisedAnswerStateHandler: IStateHandler<STATE> =
                         const chat = data as MoocchatChat;
                         page$("#chat-clone").append(chat.chatWindow);
                     }
+
+
+                    // [Firefox] Fix for #answers.scale-layout item widths being inconsistent
+                    // This is due to ::first-letter and the scaling of the font size
+                    if ($answers.hasClass("scale-layout")) {
+                        // Apply first-letter-fix class then remove after a short period
+                        // This needs to be applied on window resize
+                        $(window).on("resize", onWindowResize = () => {
+                            $answers.addClass("first-letter-fix");
+                            
+                            // Clear out any existing timeout before setting this timeout
+                            clearTimeout(onWindowResizeTimeout);
+                            onWindowResizeTimeout = setTimeout(() => {
+                                $answers.removeClass("first-letter-fix");
+                            }, 1);
+                        }).trigger("resize");
+                    }
                 });
             },
             onLeave: () => {
                 section.unsetActive();
                 section.clearTimer();
                 section.hideTimer();
+
+                $(window).off("resize", onWindowResize);
             }
         }
     }
