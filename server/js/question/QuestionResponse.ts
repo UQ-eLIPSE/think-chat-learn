@@ -13,7 +13,7 @@ export class QuestionResponse {
     private static readonly Store = new KVStore<QuestionResponse>();
 
     private data: IDB_QuestionResponse;
-    private readonly questionOption: QuestionOption;
+    private readonly questionOption: QuestionOption | undefined;
 
     private readonly db: mongodb.Db;
 
@@ -35,10 +35,14 @@ export class QuestionResponse {
         return await QuestionResponse.Fetch(db, questionResponseId);
     }
 
-    public static async Create(db: mongodb.Db, data: IDB_QuestionResponse, questionOption: QuestionOption) {
+    public static async Create(db: mongodb.Db, data: IDB_QuestionResponse, questionOption: QuestionOption | undefined) {
         const dbQuestionResponse = new DBQuestionResponse(db).getCollection();
 
-        data.optionId = questionOption.getOID();
+        if (questionOption === undefined) {
+            data.optionId = null;
+        } else {
+            data.optionId = questionOption.getOID();
+        }
 
         await dbQuestionResponse.insertOne(data);
 
@@ -94,7 +98,7 @@ export class QuestionResponse {
     //     questionResponse.data = result.value;
     // }
 
-    private constructor(db: mongodb.Db, data: IDB_QuestionResponse, questionOption: QuestionOption) {
+    private constructor(db: mongodb.Db, data: IDB_QuestionResponse, questionOption: QuestionOption | undefined) {
         this.data = data;
         this.questionOption = questionOption;
         this.db = db;

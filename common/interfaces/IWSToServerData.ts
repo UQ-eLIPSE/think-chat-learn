@@ -11,7 +11,7 @@ interface QuizAttemptResponse {
 }
 
 export interface AnswerResponse extends QuizAttemptResponse {
-    optionId: string;
+    optionId: string | null;
     justification: string;
 }
 

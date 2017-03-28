@@ -67,7 +67,20 @@ export class MoocchatWaitPool {
             throw new Error(`Attempted to add quiz attempt to pool without response initial; quiz attempt ID = ${quizAttempt.getId()}`);
         }
 
-        const answerId = responseInitial.getQuestionOption().getId();
+        // We get the selected question option that was provided for the answer
+        // then use the option ID to place this quiz attempt into the queue for
+        // that option.
+        // 
+        // If there is no question option selected, then we place them into a
+        // default queue.
+        const answerQuestionOption = responseInitial.getQuestionOption();
+        let answerId: string;
+
+        if (answerQuestionOption === undefined) {
+            answerId = "";
+        } else {
+            answerId = answerQuestionOption.getId();
+        }
 
         // If answer ID is not in queue, create queue for it
         if (!this.answerQueues.hasKey(answerId)) {
@@ -168,7 +181,7 @@ export class MoocchatWaitPool {
 
     private popQuizAttemptFromAnswerQueue(queueKey: string) {
         const poppedFirstElem = this.answerQueues.get(queueKey)!.shift();
-        
+
         if (!poppedFirstElem) {
             return;
         }
