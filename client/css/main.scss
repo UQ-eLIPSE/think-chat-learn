@@ -719,6 +719,52 @@ body > #content > section {
     }
 }
 
+
+
+/********** Welcome section **********/
+
+ol.welcome-instructions {
+    counter-reset: instruction;
+
+    margin: 0;
+    padding: 0;
+
+    display: block;
+    max-width: 70em;
+    width: 100%;
+
+    li {
+        display: inline-block;
+        vertical-align: top;
+
+        margin: 0.3em 0.2em;
+        max-width: 30em;
+        width: 100%;
+
+        padding: 0 1em 0 5em;
+
+        border: $thin-border-width solid $mc-colour-1;
+        background: transparentize($mc-colour-1, 0.7);
+
+        &::before {
+            content: counter(instruction);
+            counter-increment: instruction;
+
+            font-size: 4em;
+
+            position: absolute;
+            margin-left: -0.9em;
+            margin-top: 0.2em;
+
+            color: #fff;
+        }
+    }
+}
+
+
+
+
+
 /********** Q&A sections **********/
 
 #question-reading {
