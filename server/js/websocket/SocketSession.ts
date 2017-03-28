@@ -8,8 +8,8 @@ import { UserSession } from "../user/UserSession";
 export class SocketSession {
     private static readonly Store = new KVStore<SocketSession>();
 
-    private readonly userSession: UserSession;
-    private readonly sockets: PacSeqSocket_Server[] = [];
+    private /*readonly*/ userSession: UserSession;
+    private /*readonly*/ sockets: PacSeqSocket_Server[] = [];
 
     public static Get(userSession: UserSession) {
         return SocketSession.Store.get(userSession.getId());

@@ -13,13 +13,13 @@ export class ChatGroup {
     private static readonly Store = new KVStore<ChatGroup>();
 
     private data: IDB_ChatGroup;
-    private readonly quizAttempts: QuizAttempt[];
-    private readonly quizSchedule: QuizSchedule;
+    private /*readonly*/ quizAttempts: QuizAttempt[];
+    private /*readonly*/ quizSchedule: QuizSchedule;
 
-    private readonly clientsCurrentlyTyping: QuizAttempt[] = [];
-    private readonly clientsThatQuit: QuizAttempt[] = [];
+    private /*readonly*/ clientsCurrentlyTyping: QuizAttempt[] = [];
+    private /*readonly*/ clientsThatQuit: QuizAttempt[] = [];
 
-    private readonly db: mongodb.Db;
+    private /*readonly*/ db: mongodb.Db;
 
     public static Get(chatGroupId: string) {
         return ChatGroup.Store.get(chatGroupId);
