@@ -26,7 +26,11 @@ export class QuestionOption {
         return QuestionOption.Store.getValues().filter(questionOption => questionOption.getQuestion() === question);
     }
 
-    public static async GetAutoFetch(db: mongodb.Db, questionOptionId: string) {
+    public static async GetAutoFetch(db: mongodb.Db, questionOptionId: string | null) {
+        if (questionOptionId === null) {
+            return undefined;
+        }
+        
         const questionOption = QuestionOption.Get(questionOptionId);
 
         if (questionOption) {

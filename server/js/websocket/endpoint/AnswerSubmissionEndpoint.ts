@@ -17,20 +17,23 @@ export class AnswerSubmissionEndpoint extends WSEndpoint {
         if (!quizAttempt) {
             return console.error("Attempted answer submission with invalid quiz attempt ID = " + data.quizAttemptId);
         }
-        
+
         const justification = data.justification;
         const questionOptionId = data.optionId;
 
         // Fetch question option
         const questionOption = await QuestionOption.GetAutoFetch(db, questionOptionId);
 
-        if (!questionOption) {
-            return console.error("Could not find question option ID = " + questionOptionId);
-        }
+        // We accept `null` as a valid answer to permit students to proceed with the activity
+        if (questionOptionId !== null) {
+            if (!questionOption) {
+                return console.error("Could not find question option ID = " + questionOptionId);
+            }
 
-        // Check it is valid to quiz
-        if (questionOption.getQuestion() !== quizAttempt.getQuizSchedule().getQuestion()) {
-            return console.error(`Question option ${questionOption.getId()} refers to question ${questionOption.getQuestion().getId()}, but quiz attempt ${quizAttempt.getId()} relies on quiz schedule referring to question ${quizAttempt.getQuizSchedule().getQuestion().getId()}`);
+            // Check it is valid to quiz
+            if (questionOption.getQuestion() !== quizAttempt.getQuizSchedule().getQuestion()) {
+                return console.error(`Question option ${questionOption.getId()} refers to question ${questionOption.getQuestion().getId()}, but quiz attempt ${quizAttempt.getId()} relies on quiz schedule referring to question ${quizAttempt.getQuizSchedule().getQuestion().getId()}`);
+            }
         }
 
         /** String for websocket event to be sent on success */

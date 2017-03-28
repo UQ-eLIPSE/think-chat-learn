@@ -43,7 +43,7 @@ export interface QuestionOptionCorrect<OID> {
 
 export interface QuestionResponse<OID, Date> {
     _id?: OID,
-    optionId?: OID,
+    optionId?: OID | null,
     justification?: string,
     timestamp?: Date
 }
