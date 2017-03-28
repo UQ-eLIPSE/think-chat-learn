@@ -157,7 +157,7 @@ export class QuestionBankSectionOptions extends ComponentRenderable {
         // Get the last sequence number
         const $last = this.section$("#option-list > *").not(".new").last();
         const lastQuestionOption = ($last.data("questionOption") as ToClientData.QuestionOption) || undefined;
-        const sequence = lastQuestionOption ? lastQuestionOption.sequence + 1 : 0;
+        const sequence = lastQuestionOption ? (lastQuestionOption.sequence || 0) + 1 : 0;
 
         if (this.question) {
             return this.submitNewQuestionOption(content, sequence)
@@ -197,7 +197,7 @@ export class QuestionBankSectionOptions extends ComponentRenderable {
                 alert("At least one question option is required");
 
                 resolve();
-            }) as Promise<void>;
+            });
         }
 
         if (this.question) {
@@ -257,7 +257,7 @@ export class QuestionBankSectionOptions extends ComponentRenderable {
                 this.renderQuestions(this.questionOptions);
 
                 resolve();
-            }) as Promise<void>;
+            });
         }
     }
 
@@ -319,7 +319,7 @@ export class QuestionBankSectionOptions extends ComponentRenderable {
                     this.renderQuestions(this.questionOptions);
 
                     resolve();
-                }) as Promise<void>;
+                });
             }
         }
 
@@ -473,7 +473,7 @@ export class QuestionBankSectionOptions extends ComponentRenderable {
                 .sort((a, b) => {
                     // Order by sequence number
                     if (a.sequence === b.sequence) { return 0; }
-                    return (a.sequence < b.sequence) ? -1 : 1;
+                    return (a.sequence || 0) < (b.sequence || 0) ? -1 : 1;
                 })
                 .map(questionOption =>
                     $("<div>")

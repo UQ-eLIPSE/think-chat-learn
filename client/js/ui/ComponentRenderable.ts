@@ -55,6 +55,6 @@ export abstract class ComponentRenderable extends Component {
             return this.renderFunc(this.renderTarget);
         }
 
-        return new Promise(resolve => resolve()) as Promise<void>;
+        return Promise.resolve();
     }
 }
