@@ -729,11 +729,13 @@ ol.welcome-instructions {
     margin: 0;
     padding: 0;
 
-    display: block;
+    display: flex;
+    flex-wrap: wrap;
+
     max-width: 70em;
     width: 100%;
 
-    li {
+    & > li {
         display: inline-block;
         vertical-align: top;
 
@@ -741,20 +743,32 @@ ol.welcome-instructions {
         max-width: 30em;
         width: 100%;
 
-        padding: 0 1em 0 5em;
+        padding: 1.5em 1.5em 1.5em 5em;
 
         border: $thin-border-width solid $mc-colour-1;
         background: transparentize($mc-colour-1, 0.7);
+
+        & > h1:first-child,
+        & > h2:first-child,
+        & > h3:first-child,
+        & > h4:first-child {
+            margin-top: 0;
+        }
+
+        & > ul {
+            padding-left: 1.5em;
+        }
 
         &::before {
             content: counter(instruction);
             counter-increment: instruction;
 
-            font-size: 4em;
+            font-size: 3.5em;
+            line-height: 1;
 
             position: absolute;
-            margin-left: -0.9em;
-            margin-top: 0.2em;
+            margin-left: -1em;
+            margin-top: -0.1em;
 
             color: #fff;
         }

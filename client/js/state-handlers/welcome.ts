@@ -15,8 +15,9 @@ export const WelcomeStateHandler: IStateHandler<STATE> =
                 session.pageManager.loadPage("welcome", (page$) => {
                     section.setActive();
 
-                    // Fill in the name
-                    page$("#name").text(_LTI_BASIC_LAUNCH_DATA.lis_person_name_full);
+                    // Fill in the names
+                    page$("#first-name").text(_LTI_BASIC_LAUNCH_DATA.lis_person_name_given);
+                    page$("#full-name").text(_LTI_BASIC_LAUNCH_DATA.lis_person_name_full);
 
                     page$("#not-you-help-link").on("click", (e) => {
                         e.preventDefault();
