@@ -99,7 +99,7 @@ $(() => {
         ["welcome", "Welcome"],
         ["backup-client-answer", "Provide Answer"],
         ["backup-client-wait", "Wait To Be Called"],
-        ["discussion", "Discussion", CommonConf.timings.initialAnswerMs],
+        ["discussion", "Discussion", CommonConf.timings.discussionMs],
         ["backup-client-logout", "Log Out"]
     ]);
 

@@ -1,8 +1,8 @@
 import * as $ from "jquery";
 
-import {IStateHandler, MoocchatState as STATE} from "../MoocchatStates";
+import { IStateHandler, MoocchatState as STATE } from "../MoocchatStates";
 
-import {WebsocketEvents} from "../WebsocketEvents";
+import { WebsocketEvents } from "../WebsocketEvents";
 import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
 
 import * as AnswerComponents from "../AnswerComponents";
@@ -20,6 +20,9 @@ export const BackupClientAnswerStateHandler: IStateHandler<STATE> =
                 session.stateMachine.goTo(STATE.BACKUP_CLIENT_WAIT);
             }
         });
+
+        let onWindowResize: () => any | undefined;
+        let onWindowResizeTimeout: number | undefined;
 
         return {
             onEnter: () => {
@@ -42,10 +45,18 @@ export const BackupClientAnswerStateHandler: IStateHandler<STATE> =
                     });
 
                     // Answer multiple choice highlighting
-                    $answers.on("click", "button", (e) => {
+                    $answers.on("click", (e) => {
+                        const $el = $(e.target);
+
+                        // Make sure the element we're getting the
+                        // click event from is the immediate child
+                        if (!$el.parent().is($answers)) {
+                            return;
+                        }
+
                         e.preventDefault();
-                        $("button", $answers).removeClass("selected");
-                        $(e.currentTarget).addClass("selected");
+                        $answers.children().removeClass("selected");
+                        $el.addClass("selected");
                     });
 
                     // Update char available
@@ -56,6 +67,22 @@ export const BackupClientAnswerStateHandler: IStateHandler<STATE> =
                     // Render question and answer choices
                     $questionReading.html(session.quiz.questionContent);
                     $answers.append(AnswerComponents.GenerateAnswerOptionElems(session.quiz.questionOptions));
+
+                    // [Firefox] Fix for #answers.scale-layout item widths being inconsistent
+                    // This is due to ::first-letter and the scaling of the font size
+                    if ($answers.hasClass("scale-layout")) {
+                        // Apply first-letter-fix class then remove after a short period
+                        // This needs to be applied on window resize
+                        $(window).on("resize", onWindowResize = () => {
+                            $answers.addClass("first-letter-fix");
+
+                            // Clear out any existing timeout before setting this timeout
+                            clearTimeout(onWindowResizeTimeout);
+                            onWindowResizeTimeout = setTimeout(() => {
+                                $answers.removeClass("first-letter-fix");
+                            }, 1);
+                        }).trigger("resize");
+                    }
                 });
             },
             onLeave: () => {
