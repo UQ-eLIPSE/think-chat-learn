@@ -1,6 +1,6 @@
 import * as socket from "socket.io-client";
 
-import {PacSeqSocket_Client} from "../../common/js/PacSeqSocket_Client";
+import { PacSeqSocket_Client } from "../../common/js/PacSeqSocket_Client";
 
 /**
  * MOOCchat
@@ -73,5 +73,16 @@ export class WebsocketManager {
         setTimeout(() => {
             socket.connect();
         }, 1000);
+    }
+
+    /**
+     * Workaround for bug #178
+     * 
+     * INTENDED ONLY FOR CLIENT-SIDE RESYNC EVENTS!
+     * 
+     * Resets the ack counter so that we don't run into issues with out-of-sync counters
+     */
+    public resetIncomingDataAckCounter() {
+        return this.socketProxy.resetIncomingDataAckCounter();
     }
 }

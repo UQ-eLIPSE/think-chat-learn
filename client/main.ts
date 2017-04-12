@@ -96,6 +96,9 @@ $(() => {
             websocket.emitData<IWSToServerData.SessionSocketResync>(WebsocketEvents.OUTBOUND.SESSION_SOCKET_RESYNC, {
                 sessionId: session.id
             });
+
+            // Workaround for bug #178
+            websocket.resetIncomingDataAckCounter();
         }
 
         session.analytics.trackEvent("WEBSOCKET", "Connect");

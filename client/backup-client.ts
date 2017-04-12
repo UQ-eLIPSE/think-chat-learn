@@ -1,29 +1,29 @@
-import {Conf as CommonConf} from "../common/config/Conf";
+import { Conf as CommonConf } from "../common/config/Conf";
 
 import * as $ from "jquery";
 
-import {WebsocketManager} from "./js/WebsocketManager";
-import {WebsocketEvents} from "./js/WebsocketEvents";
+import { WebsocketManager } from "./js/WebsocketManager";
+import { WebsocketEvents } from "./js/WebsocketEvents";
 import * as IWSToServerData from "../common/interfaces/IWSToServerData";
 
-import {MoocchatSession} from "./js/MoocchatSession";
+import { MoocchatSession } from "./js/MoocchatSession";
 
-import {MoocchatState as STATE} from "./js/MoocchatStates";
+import { MoocchatState as STATE } from "./js/MoocchatStates";
 
 
-import {StartupStateHandler} from "./js/state-handlers/startup";
-import {LoginStateHandler} from "./js/state-handlers/login";
-import {SetResearchConsentStateHandler} from "./js/state-handlers/set-research-consent";
-import {WelcomeStateHandler} from "./js/state-handlers/welcome";
-import {BackupClientAnswerStateHandler} from "./js/state-handlers/backup-client-answer";
-import {BackupClientWaitStateHandler} from "./js/state-handlers/backup-client-wait";
-import {DiscussionStateHandler} from "./js/state-handlers/discussion";
-import {BackupClientReturnToWaitStateHandler} from "./js/state-handlers/backup-client-return-to-wait";
-import {BackupClientLogoutStateHandler} from "./js/state-handlers/backup-client-logout";
-import {BackupClientEjectedStateHandler} from "./js/state-handlers/backup-client-ejected";
+import { StartupStateHandler } from "./js/state-handlers/startup";
+import { LoginStateHandler } from "./js/state-handlers/login";
+import { SetResearchConsentStateHandler } from "./js/state-handlers/set-research-consent";
+import { WelcomeStateHandler } from "./js/state-handlers/welcome";
+import { BackupClientAnswerStateHandler } from "./js/state-handlers/backup-client-answer";
+import { BackupClientWaitStateHandler } from "./js/state-handlers/backup-client-wait";
+import { DiscussionStateHandler } from "./js/state-handlers/discussion";
+import { BackupClientReturnToWaitStateHandler } from "./js/state-handlers/backup-client-return-to-wait";
+import { BackupClientLogoutStateHandler } from "./js/state-handlers/backup-client-logout";
+import { BackupClientEjectedStateHandler } from "./js/state-handlers/backup-client-ejected";
 
-import {NoLtiDataStateHandler} from "./js/state-handlers/no-lti-data";
-import {InvalidLoginStateHandler} from "./js/state-handlers/invalid-login";
+import { NoLtiDataStateHandler } from "./js/state-handlers/no-lti-data";
+import { InvalidLoginStateHandler } from "./js/state-handlers/invalid-login";
 
 
 /*
@@ -64,6 +64,9 @@ $(() => {
             websocket.emitData<IWSToServerData.SessionSocketResync>(WebsocketEvents.OUTBOUND.SESSION_SOCKET_RESYNC, {
                 sessionId: session.id
             });
+
+            // Workaround for bug #178
+            websocket.resetIncomingDataAckCounter();
         }
     });
 

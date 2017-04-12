@@ -420,4 +420,15 @@ export class PacSeqSocket<SocketType> {
     public disableOutboundLogging() {
         this.outboundLogging = false;
     }
+
+    /**
+     * Workaround for bug #178
+     * 
+     * INTENDED ONLY FOR CLIENT-SIDE RESYNC EVENTS!
+     * 
+     * Resets the ack counter so that we don't run into issues with out-of-sync counters
+     */
+    public resetIncomingDataAckCounter() {
+        this.lastAcknowledged = -1;
+    }
 }
