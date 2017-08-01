@@ -34,7 +34,7 @@ export const Conf: IConf = {
     },
     chat: {
         groups: {
-            desiredSize: 4,
+            desiredSize: 3,
             formationIntervalMs: Utils.DateTime.secToMs(1),
             formationTimeoutMs: Utils.DateTime.minToMs(5),
         }
