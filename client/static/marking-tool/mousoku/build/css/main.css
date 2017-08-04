@@ -1,0 +1,235 @@
+html, body {
+  box-sizing: border-box;
+  height: 100%;
+  background: #fafafa; }
+
+body {
+  padding: 1em; }
+
+*, *::before, *::after {
+  box-sizing: inherit; }
+
+#import-output {
+  height: 20em;
+  overflow-y: scroll;
+  background: #ddd;
+  font-family: monospace;
+  white-space: pre-wrap;
+  word-break: break-all; }
+
+#sessions-list > li {
+  margin-bottom: 1em; }
+
+#marking-layout {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-content: stretch;
+  width: 100%;
+  height: 100%;
+  padding: 0; }
+
+#marking-assessment-content {
+  display: flex;
+  flex-wrap: nowrap;
+  align-content: stretch;
+  flex-grow: 1;
+  height: calc(100% - 5em); }
+
+#marking-bar {
+  display: flex;
+  flex-wrap: nowrap;
+  align-content: stretch;
+  height: 5em;
+  border-top: 1px solid #888;
+  position: relative; }
+  #marking-bar > * {
+    padding: 0.5em;
+    flex-grow: 1; }
+  #marking-bar > #mark-value {
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    font-size: 3em;
+    flex-grow: 0;
+    flex-shrink: 0;
+    width: 2.5em;
+    background: black;
+    color: grey; }
+    #marking-bar > #mark-value.edit-mode {
+      background: darkred;
+      color: white; }
+    #marking-bar > #mark-value.saved {
+      background: green;
+      color: white; }
+
+#active-session-user-name {
+  font-weight: bold; }
+
+#session-info {
+  flex-grow: 10; }
+
+#message-press-insert-to-edit {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.8);
+  right: 0;
+  top: -2em;
+  margin-top: 0;
+  color: white;
+  height: 2em;
+  line-height: 1; }
+
+#marking-justifications {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-content: stretch;
+  flex-grow: 0;
+  flex-shrink: 1;
+  width: 50%;
+  position: relative; }
+  #marking-justifications > * {
+    flex-grow: 0;
+    flex-shrink: 0;
+    overflow-y: auto;
+    height: 50%;
+    white-space: pre-wrap;
+    padding: 1em; }
+    #marking-justifications > * .added,
+    #marking-justifications > * .removed > span {
+      background: rgba(0, 0, 0, 0.2); }
+    #marking-justifications > * ~ * {
+      border-top: 1px solid #888; }
+
+#marking-chats {
+  flex-grow: 0;
+  flex-shrink: 0;
+  width: 50%;
+  position: relative;
+  padding: 0 1em;
+  overflow-y: hidden;
+  border-left: 1px solid #888; }
+  #marking-chats blockquote {
+    display: block;
+    max-width: 40em;
+    padding: 0.3em 0.5em;
+    margin: 0.2em auto;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    border-right: 1em solid #fafafa;
+    border-left: 1em solid #fafafa; }
+
+body.loading #marking-chats::before {
+  content: "Loading data...";
+  color: red;
+  font-weight: bold;
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  text-align: center; }
+
+#marking-chats-overview-bar {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-content: stretch;
+  align-items: flex-end;
+  width: 1.5em; }
+  #marking-chats-overview-bar > * {
+    flex-grow: 1;
+    width: 100%; }
+    #marking-chats-overview-bar > *.hover {
+      background: black !important; }
+
+#marking-chats *[data-member-number="1"],
+#marking-chats-overview-bar *[data-member-number="1"] {
+  background: rgba(255, 0, 0, 0.3); }
+  #marking-chats *[data-member-number="1"].active,
+  #marking-chats-overview-bar *[data-member-number="1"].active {
+    border-color: rgba(255, 0, 0, 0.5); }
+
+#marking-chats *[data-member-number="2"],
+#marking-chats-overview-bar *[data-member-number="2"] {
+  background: rgba(0, 255, 0, 0.3); }
+  #marking-chats *[data-member-number="2"].active,
+  #marking-chats-overview-bar *[data-member-number="2"].active {
+    border-color: rgba(0, 255, 0, 0.5); }
+
+#marking-chats *[data-member-number="3"],
+#marking-chats-overview-bar *[data-member-number="3"] {
+  background: rgba(0, 0, 255, 0.3); }
+  #marking-chats *[data-member-number="3"].active,
+  #marking-chats-overview-bar *[data-member-number="3"].active {
+    border-color: rgba(0, 0, 255, 0.5); }
+
+#marking-chats.no-bg *[data-member-number="1"] {
+  background: transparent;
+  color: red; }
+  #marking-chats.no-bg *[data-member-number="1"].active {
+    border-top: 1px solid;
+    border-bottom: 1px solid;
+    border-color: rgba(255, 0, 0, 0.5); }
+
+#marking-chats.no-bg *[data-member-number="2"] {
+  background: transparent;
+  color: green; }
+  #marking-chats.no-bg *[data-member-number="2"].active {
+    border-top: 1px solid;
+    border-bottom: 1px solid;
+    border-color: rgba(0, 255, 0, 0.5); }
+
+#marking-chats.no-bg *[data-member-number="3"] {
+  background: transparent;
+  color: blue; }
+  #marking-chats.no-bg *[data-member-number="3"].active {
+    border-top: 1px solid;
+    border-bottom: 1px solid;
+    border-color: rgba(0, 0, 255, 0.5); }
+
+#marking-justification-initial::before {
+  content: "Initial";
+  display: block;
+  font-weight: bold;
+  border-bottom: 1px solid;
+  margin-bottom: 0.8em;
+  padding-bottom: 0.5em; }
+
+#marking-justification-final::before {
+  content: "Final";
+  display: block;
+  font-weight: bold;
+  border-bottom: 1px solid;
+  margin-bottom: 0.8em;
+  padding-bottom: 0.5em; }
+
+.virtserver-wrapper {
+  page-break-after: always; }
+  .virtserver-wrapper > p {
+    white-space: pre-wrap;
+    margin: 2em 0; }
+    .virtserver-wrapper > p:first-child {
+      margin-top: 0; }
+    .virtserver-wrapper > p.chat-message {
+      margin-top: -1em; }
+
+.left-handed #marking-chats {
+  border-left: none;
+  border-right: 1px solid #888;
+  order: -1; }
+
+.left-handed #marking-chats-overview-bar {
+  align-items: flex-start;
+  order: -2; }
+
+.hide-justification-diff-added #marking-justifications > * .added {
+  display: none; }
+
+.hide-justification-diff-removed #marking-justifications > * .removed {
+  display: none; }
+
+.traditional-scroll-chats #marking-chats {
+  overflow-y: scroll; }
+
+.traditional-scroll-chats #marking-chats-overview-bar {
+  display: none; }

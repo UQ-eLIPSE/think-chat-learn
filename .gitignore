@@ -47,3 +47,9 @@ build
 
 # SASS cache directory
 .sass-cache
+
+# Tests are compiled from `test`
+test-build
+
+# Include folders for marking tools
+!client/static/marking-tool/mousoku/*

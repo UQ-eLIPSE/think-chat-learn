@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>mousoku / Marking</title>
+    <link rel="stylesheet" href="./lib/css/normalize/4.1.1/normalize.css" />
+    <link rel="stylesheet" href="./build/css/main.css" />
+
+    <script src="./lib/js/require/2.2.0/require.min.js"></script>
+    <script src="./conf/js/main.require.conf.js"></script>
+    <script>
+        // This is the application code to load
+        require(["marking"]);
+    </script>
+</head>
+
+<body id="marking-layout" class="loading">
+    <div id="marking-assessment-content">
+        <div id="marking-justifications">
+            <div id="marking-justification-initial"></div>
+            <div id="marking-justification-final"></div>
+        </div>
+        <div id="marking-chats">
+        </div>
+        <div id="marking-chats-overview-bar"></div>
+    </div>
+    <div id="marking-bar">
+        <div style="font-size: 0.7em;">
+            <button id="toggle-left-hand">L/R</button>
+            <button id="toggle-traditional-scroll-chats">Scroll Mode</button><br>
+            <button id="toggle-no-bg">Chat BG</button>
+            <br><br>
+            <button id="exit" style="color: red;">Exit</button>
+            <!--<button id="toggle-diff-removed-visible">[r] Diff Removed <span class="state" style="font-size: 0.7em;"></span></button>-->
+            <!--<button id="toggle-diff-added-visible">[a] Diff Added <span class="state" style="font-size: 0.7em;"></span></button>-->
+        </div>
+        <div style="font-size: 0.7em;">
+            <button id="go-to-page">[g] 📄 <span id="active-session-number"></span>/<span id="number-of-sessions"></span></button>
+            <!--<button id="go-to-next-unmarked">[u] ➜ Unmarked</button>--><br>
+            <button id="lookup-session">🔍 Quiz Attempt</button>
+            <button id="lookup-user">🔍 User</button><br>
+            <!--<button id="delete-mark">✘ Mark</button>-->
+        </div>
+        <div id="session-info">
+            <span id="active-session-user-name"></span> (<span id="active-session-user-id"></span>)<br>
+            Quiz Attempt ID: <span id="active-session-id"></span><br>
+            Chat Group ID: <span id="active-session-chat-group-id"></span>
+        </div>
+        <div id="mark-value"></div>
+        <div id="message-press-insert-to-edit">Press [INSERT] key to edit</div>
+    </div>
+</body>
+
+</html>

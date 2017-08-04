@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>mousoku / List Quiz Attempts and Marks</title>
+    <link rel="stylesheet" href="./lib/css/normalize/4.1.1/normalize.css" />
+    <link rel="stylesheet" href="./build/css/main.css" />
+
+    <script src="./lib/js/require/2.2.0/require.min.js"></script>
+    <script src="./conf/js/main.require.conf.js"></script>
+    <script>
+        // This is the application code to load
+        require(["list-marks"]);
+    </script>
+</head>
+
+<body>
+    <h1>mousoku/MOOCchat</h1>
+    <h2>List Quiz Attempts and Marks</h2>
+    <h3 id="quiz-schedule-name"></h3>
+    <ul>
+        <li><a href="./export.html">Export marks</a></li>
+        <br>
+        <li><a href="./actions.html">Go back to actions</a></li>
+    </ul>
+    <table>
+        <thead>
+            <tr>
+                <th>Quiz Attempt ID</th>
+                <th>Username</th>
+                <th>Mark</th>
+            </tr>
+        </thead>
+        <tbody id="mark-list-table-body">
+
+        </tbody>
+    </table>
+</body>
+
+</html>
