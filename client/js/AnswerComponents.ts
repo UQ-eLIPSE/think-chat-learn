@@ -3,11 +3,11 @@
  * Shared components related to processing/showing answers on client
  */
 
-import {Conf as CommonConf} from "../../common/config/Conf";
+import { Conf as CommonConf } from "../../common/config/Conf";
 
 import * as $ from "jquery";
 
-import {MoocchatSession} from "./MoocchatSession";
+import { MoocchatSession } from "./MoocchatSession";
 
 import * as IWSToServerData from "../../common/interfaces/IWSToServerData";
 import * as ToClientData from "../../common/interfaces/ToClientData";
@@ -93,7 +93,12 @@ export function ProcessForcedSubmission(optionId: string, justification: string,
     }
 
     if (!optionId) {
-        justification = "[DID NOT ANSWER]";
+        // NOTE: Disabled this due to the "option" being a confidence level 
+        // option, rather than a multiple choice answer, so the option is no
+        // longer mandatory
+
+        // justification = "[DID NOT ANSWER]";
+
         optionId = null;
     }
 
