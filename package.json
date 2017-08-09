@@ -1,6 +1,6 @@
 {
   "name": "moocchat",
-  "version": "2.3.3",
+  "version": "2.3.6",
   "description": "",
   "main": "build/server/main.js",
   "scripts": {
