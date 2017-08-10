@@ -1,0 +1,88 @@
+import * as socket from "socket.io-client";
+
+import { PacSeqSocket_Client } from "../../common/js/PacSeqSocket_Client";
+
+/**
+ * MOOCchat
+ * Websocket management class module
+ * 
+ * Acts as thin layer over Socket.IO object; methods act approximately the same way.
+ */
+export class WebsocketManager {
+    protected socketProxy: PacSeqSocket_Client;
+
+    public open() {
+        this.socketProxy = new PacSeqSocket_Client(
+            socket.connect({
+                path: "/socket.io",
+
+                // Permit infinite reconnects
+                reconnection: true,
+                reconnectionAttempts: Infinity,
+                reconnectionDelay: 1500,
+                reconnectionDelayMax: 2000,
+
+                transports: ["websocket"]
+            })
+        );
+
+        this.on("terminated", () => {
+            alert("You or someone has requested a full termination of all sessions associated with this username.");
+        });
+    }
+
+    public close() {
+        this.socketProxy.pause();
+        return this.socketProxy.getSocket().close();
+    }
+
+    public emit(event: string, ...args: any[]) {
+        return this.socketProxy.emit(event, ...args);
+    }
+
+    public emitData<IData>(event: string, data: IData) {
+        return this.emit(event, data);
+    }
+
+    public on<IData>(event: string, fn: (data: IData) => void) {
+        return this.socketProxy.on(event, fn);
+    }
+
+    public off(event: string, fn?: (data?: any) => any) {
+        return this.socketProxy.off(event, fn);
+    }
+
+    public once<IData>(event: string, fn: (data?: IData) => void) {
+        return this.socketProxy.once(event, fn);
+    }
+
+    // TODO: Fix type
+    protected getListeners(event: string) {
+        return (<SocketIOClient.Socket>this.socketProxy.getSocket()).listeners(event);
+    }
+
+    protected get connected() {
+        return this.socketProxy.getSocket().connected;
+    }
+
+    public restart() {
+        const socket = this.socketProxy.getSocket();
+
+        socket.disconnect();
+
+        setTimeout(() => {
+            socket.connect();
+        }, 1000);
+    }
+
+    /**
+     * Workaround for bug #178
+     * 
+     * INTENDED ONLY FOR CLIENT-SIDE RESYNC EVENTS!
+     * 
+     * Resets the ack counter so that we don't run into issues with out-of-sync counters
+     */
+    public resetIncomingDataAckCounter() {
+        return this.socketProxy.resetIncomingDataAckCounter();
+    }
+}
