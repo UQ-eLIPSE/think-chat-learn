@@ -1,13 +1,15 @@
-import {IStateHandler, MoocchatState as STATE} from "../MoocchatStates";
-import {MoocchatChat} from "../MoocchatChat";
+import { IStateHandler, MoocchatState as STATE } from "../MoocchatStates";
+import { MoocchatChat } from "../MoocchatChat";
 
-import {OTLock} from "../../../common/js/OTLock";
+import { OTLock } from "../../../common/js/OTLock";
+import { Conf as CommonConf } from "../../../common/config/Conf";
+import { Utils } from "../../../common/js/Utils";
 
 export const AwaitGroupFormationStateHandler: IStateHandler<STATE> =
     (session) => {
         const section = session.sectionManager.getSection("await-group-formation");
-        
-        let tooLongTimeoutHandle: number;
+
+        let waitTimeProgressBarActive: boolean = true;
 
         const chatJoinOneTimeLock = new OTLock();
 
@@ -40,21 +42,35 @@ export const AwaitGroupFormationStateHandler: IStateHandler<STATE> =
                         session.stateMachine.goTo(STATE.DISCUSSION, data);
                     });
 
-                    // // If too long, force reconnect to see if we just missed something
-                    // tooLongTimeoutHandle = setTimeout(() => {
-                    //     session.socket.restart();
+                    // Set up wait time progress bar
+                    const $progressBarContainer = page$("#group-formation-loader");
+                    const progressBarWidth = $progressBarContainer.innerWidth();
+                    const $progressBar = $progressBarContainer.find(".progress");
 
-                    //     // If that fails then alert
-                    //     tooLongTimeoutHandle = setTimeout(() => {
-                    //         alert(`We can't seem to get you into a chat session. Please restart MOOCchat.`);
-                    //     }, 1 * 60 * 1000);
+                    // The expected maximum wait time is whatever the actual time is plus a minute for any potential backup client join requests
+                    const expectedMaxTime = CommonConf.timings.chatGroupFormationTimeoutMs + Utils.DateTime.minToMs(1);
+                    const startTime = Date.now();
 
-                    // }, 2.5 * 60 * 1000);
+                    const updateProgressBar = () => {
+                        const currentTime = Date.now();
+
+                        // Update width per frame
+                        $progressBar.width(((currentTime - startTime) / expectedMaxTime) * progressBarWidth);
+
+                        if (waitTimeProgressBarActive) {
+                            requestAnimationFrame(updateProgressBar);
+                        }
+                    };
+
+                    // Start
+                    requestAnimationFrame(updateProgressBar);
                 });
             },
             onLeave: () => {
                 section.unsetActive();
-                clearTimeout(tooLongTimeoutHandle);
+
+                // Stop progress bar callback loop
+                waitTimeProgressBarActive = false;
             }
         }
     }

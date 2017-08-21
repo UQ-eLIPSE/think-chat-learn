@@ -36,7 +36,6 @@ export const Conf: IConf = {
         groups: {
             desiredSize: 3,
             formationIntervalMs: Utils.DateTime.secToMs(1),
-            formationTimeoutMs: Utils.DateTime.minToMs(5),
         }
     },
     backupClient: {
@@ -85,7 +84,6 @@ interface IConf {
         groups: {
             desiredSize: number,
             formationIntervalMs: number,
-            formationTimeoutMs: number
         }
     },
     backupClient: {
