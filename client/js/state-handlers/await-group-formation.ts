@@ -43,9 +43,7 @@ export const AwaitGroupFormationStateHandler: IStateHandler<STATE> =
                     });
 
                     // Set up wait time progress bar
-                    const $progressBarContainer = page$("#group-formation-loader");
-                    const progressBarWidth = $progressBarContainer.innerWidth();
-                    const $progressBar = $progressBarContainer.find(".progress");
+                    const $progressBar = page$("#group-formation-loader .progress");
 
                     // The expected maximum wait time is whatever the actual time is plus a minute for any potential backup client join requests
                     const expectedMaxTime = CommonConf.timings.chatGroupFormationTimeoutMs + Utils.DateTime.minToMs(1);
@@ -55,7 +53,13 @@ export const AwaitGroupFormationStateHandler: IStateHandler<STATE> =
                         const currentTime = Date.now();
 
                         // Update width per frame
-                        $progressBar.width(((currentTime - startTime) / expectedMaxTime) * progressBarWidth);
+                        const progressPercent = ((currentTime - startTime) / expectedMaxTime) * 100;
+                        $progressBar.width(progressPercent + "%");
+
+                        // Stop when we hit 100%
+                        if (progressPercent >= 100) {
+                            return;
+                        }
 
                         if (waitTimeProgressBarActive) {
                             requestAnimationFrame(updateProgressBar);
