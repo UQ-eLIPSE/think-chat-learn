@@ -1,4 +1,5 @@
 import { Conf } from "../../config/Conf";
+import { Conf as CommonConf } from "../../../common/config/Conf";
 
 import { KVStore } from "../../../common/js/KVStore";
 import { MoocchatBackupClientQueue } from "./MoocchatBackupClientQueue";
@@ -9,7 +10,7 @@ import { Utils } from "../../../common/js/Utils";
 
 export class MoocchatWaitPool {
     private static DesiredGroupSize: number = Conf.chat.groups.desiredSize;
-    private static DesiredMaxWaitTime: number = Conf.chat.groups.formationTimeoutMs;
+    private static DesiredMaxWaitTime: number = CommonConf.timings.chatGroupFormationTimeoutMs;
     private static readonly WaitPools = new KVStore<MoocchatWaitPool>();
 
     private _quizSessionId: string;
