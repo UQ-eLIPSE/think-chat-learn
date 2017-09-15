@@ -24,10 +24,6 @@
     },
     "files": [
         "./index.d.ts",
-        "./main.ts",
-
-        // Below are files that don't get discovered
-        // when compiling `main` but are required elsewhere
-        "./js/data/models/VirtServerBackups"
+        "./main.ts"
     ]
 }

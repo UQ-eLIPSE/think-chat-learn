@@ -54,5 +54,15 @@ To restore, run `mongorestore`, with the `dir` flag if dump folder name was supp
     $ mongodump -o dump-folder-name
     $ mongorestore --drop --dir dump-folder-name
 
+## Utilities
+### MongoDB to PostgreSQL Translation
+1. Install "pg" locally on machine (this is not provided by default in 
+   "package.json" because it is not used in MOOCchat itself)
+   * `npm install pg@7.3.0`
+2. Configure the utility file directly at `server/util/m2p.js` to point to the
+   databases to read from and write to.
+3. To execute, run `npm run build_server` first to compile the necessary code 
+   this utility relies on, then `npm run m2p`.
+
 ## Important notes
 * Mongodb must be running before starting `npm start`

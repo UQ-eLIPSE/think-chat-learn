@@ -32,7 +32,8 @@ const Mark = require("../../build/server/js/data/models/Mark").Mark;
 // The source MongoDB and destination PostgreSQL database are assumed to be 
 // whatever the below values are configured as.
 // 
-// To execute, run `npm run m2p`.
+// To execute, run `npm run build_server` first to compile the necessary code 
+// this utility relies on, then `npm run m2p`.
 
 const config = {
     mongodb: {
@@ -47,108 +48,48 @@ const config = {
     }
 };
 
-
-
 // =============================================================================
 
 // Set up postgres client
-const pgPool = new pg.Pool(config.postgresql);
-var mongoDb;
-
-connectMongo()                      // Connect to mongo
-    .then(x => mongoDb = x)         // Assign mongo db reference
-
-    .then(pgPool.connect())         // Connect to postgres
-    .then(initPostgresDb())         // Initialise postgres DB
-
-    // ===== Start insertions =====
-
-    .then(() => {
-        console.log("Stage 1");
-        return Promise.all([
-            insertUsers(),
-            insertQuestions(),
-            insertSurveys()
-        ]);
-    })
-
-    .then(() => {
-        console.log("Stage 2");
-        return Promise.all([
-            insertUserSessions(),
-            insertQuizSchedules(),
-            insertQuestionOptions()
-        ]);
-    })
-
-    .then(() => {
-        console.log("Stage 3");
-        return Promise.all([
-            insertQuestionResponses()
-        ]);
-    })
-
-    .then(() => {
-        console.log("Stage 4");
-        return Promise.all([
-            insertQuizAttempts()
-        ]);
-    })
-
-    .then(() => {
-        console.log("Stage 5");
-        return Promise.all([
-            insertChatGroups(),
-            insertSurveyResponses(),
-            insertMarks()
-        ]);
-    })
-
-    .then(() => {
-        console.log("Stage 6");
-        return Promise.all([
-            insertChatMessages()
-        ]);
-    })
-
-    // ===== End insertions =====
-
-    .then(pgPool.end())             // Close postgres connection
-    .then(disconnectMongo())        // Close mongo connection
-
-    .then(() => console.log("All done"))
-
-    .catch((err) => {
-        console.error(err.message);
-    });
-
-// =============================================================================
+const pgClient = new pg.Client(config.postgresql);
+let mongoDb;
 
 function connectMongo() {
-    return Database.Connect(config.mongodb.uri);
+    return new Promise((resolve, reject) => {
+        Database.Connect(config.mongodb.uri, (err, db) => {
+            if (err) { return reject(err); }
+            resolve(db);
+        });
+    });
 }
 
-function disconnectMongo() {
+function disconnectMongo(mongoDb) {
     return Database.Close(mongoDb);
 }
 
 function initPostgresDb() {
     const query = `
 
-DROP TABLE IF EXISTS "uq_surveyResponse";
-DROP TABLE IF EXISTS "uq_survey";
+-- This list of drops must be the reverse order of 
+-- table insertions due to constraints
 
 DROP TABLE IF EXISTS "uq_chatMessage";
+    
+DROP TABLE IF EXISTS "uq_mark";
+DROP TABLE IF EXISTS "uq_surveyResponse";
+DROP TABLE IF EXISTS "uq_chatGroup";
 
-DROP TABLE IF EXISTS "uq_userSession";
+DROP TABLE IF EXISTS "uq_quizAttempt";
 
 DROP TABLE IF EXISTS "uq_questionResponse";
 
-DROP TABLE IF EXISTS "uq_quizSchedule";
 DROP TABLE IF EXISTS "uq_questionOption";
+DROP TABLE IF EXISTS "uq_quizSchedule";
+DROP TABLE IF EXISTS "uq_userSession";
 
-DROP TABLE IF EXISTS uq_question;
-DROP TABLE IF EXISTS uq_user;
+DROP TABLE IF EXISTS "uq_survey";
+DROP TABLE IF EXISTS "uq_question";
+DROP TABLE IF EXISTS "uq_user";
 
 ------------------------------------------ Table: uq_question
 
@@ -260,12 +201,18 @@ CREATE TABLE "uq_quizAttempt"
     "responseInitialId" character(24),
     "responseFinalId" character(24),
     CONSTRAINT "uq_quizAttempt_id" PRIMARY KEY (id),
-    CONSTRAINT "uq_quizAttempt_userSessionId_fkey" FOREIGN KEY ("userSessionId")
-        REFERENCES "uq_userSession" (id) MATCH SIMPLE
-        ON UPDATE NO ACTION ON DELETE NO ACTION,
-    CONSTRAINT "uq_quizAttempt_quizScheduleId_fkey" FOREIGN KEY ("quizScheduleId")
-        REFERENCES "uq_quizSchedule" (id) MATCH SIMPLE
-        ON UPDATE NO ACTION ON DELETE NO ACTION,
+
+    -- ########################################################
+    -- This is being relaxed because some data was removed
+    -- ########################################################
+    -- CONSTRAINT "uq_quizAttempt_userSessionId_fkey" FOREIGN KEY ("userSessionId")
+    --     REFERENCES "uq_userSession" (id) MATCH SIMPLE
+    --     ON UPDATE NO ACTION ON DELETE NO ACTION,
+    -- CONSTRAINT "uq_quizAttempt_quizScheduleId_fkey" FOREIGN KEY ("quizScheduleId")
+    --    REFERENCES "uq_quizSchedule" (id) MATCH SIMPLE
+    --    ON UPDATE NO ACTION ON DELETE NO ACTION,
+    -- ########################################################
+
     CONSTRAINT "uq_quizAttempt_responseInitialId_fkey" FOREIGN KEY ("responseInitialId")
         REFERENCES "uq_questionResponse" (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION,
@@ -284,10 +231,16 @@ CREATE TABLE "uq_chatGroup"
     id character(24) NOT NULL,
     "quizAttemptIds" character(24)[] NOT NULL,
     "quizScheduleId" character(24) NOT NULL,
-    CONSTRAINT "uq_chatGroup_id" PRIMARY KEY (id),
-    CONSTRAINT "uq_chatGroup_quizScheduleId_fkey" FOREIGN KEY ("quizScheduleId")
-        REFERENCES "uq_quizSchedule" (id) MATCH SIMPLE
-        ON UPDATE NO ACTION ON DELETE NO ACTION
+    CONSTRAINT "uq_chatGroup_id" PRIMARY KEY (id) --,
+    
+    -- ########################################################
+    -- This is being relaxed because some data was removed
+    -- ########################################################
+    -- CONSTRAINT "uq_chatGroup_quizScheduleId_fkey" FOREIGN KEY ("quizScheduleId")
+    --     REFERENCES "uq_quizSchedule" (id) MATCH SIMPLE
+    --     ON UPDATE NO ACTION ON DELETE NO ACTION
+    -- ########################################################
+
 )
 WITH (
     OIDS=FALSE
@@ -303,9 +256,15 @@ CREATE TABLE "uq_chatMessage"
     "timestamp" timestamp with time zone NOT NULL,
     content text,
     CONSTRAINT "uq_chatMessage_id" PRIMARY KEY (id),
-    CONSTRAINT "uq_chatMessage_quizAttemptId_fkey" FOREIGN KEY ("quizAttemptId")
-        REFERENCES "uq_quizAttempt" (id) MATCH SIMPLE
-        ON UPDATE NO ACTION ON DELETE NO ACTION,
+
+    -- ########################################################
+    -- This is being relaxed because some data was removed
+    -- ########################################################
+    -- CONSTRAINT "uq_chatMessage_quizAttemptId_fkey" FOREIGN KEY ("quizAttemptId")
+    --     REFERENCES "uq_quizAttempt" (id) MATCH SIMPLE
+    --     ON UPDATE NO ACTION ON DELETE NO ACTION,
+    -- ########################################################
+    
     CONSTRAINT "uq_chatMessage_chatGroupId_fkey" FOREIGN KEY ("chatGroupId")
         REFERENCES "uq_chatGroup" (id) MATCH SIMPLE
         ON UPDATE NO ACTION ON DELETE NO ACTION
@@ -373,7 +332,7 @@ WITH (
 );
 `;
 
-    return pgPool.query(query);
+    return pgClient.query(query);
 }
 
 /**
@@ -386,28 +345,26 @@ function insertionFactory(typeString, modelClass, mapFunction) {
     return function() {
         console.log(`Inserting ${typeString}...`);
 
-        return pgPool.query("BEGIN")
+        return pgClient.query("BEGIN")
 
             // Read in collection
-            .then(new Promise((resolve, reject) => {
-                new modelClass(db).readAsArray({}, (err, docs) => {
+            .then(() => new Promise((resolve, reject) => {
+                new modelClass(mongoDb).readAsArray({}, (err, docs) => {
                     if (err) { return reject(err); }
                     resolve(docs);
                 });
             }))
 
             // Go through all documents and do insertion queries
-            .then((docs) => {
-                return Promise.all(
-                    docs.map((doc, i) => {
-                        const queryParams = mapFunction(doc, i);
-                        return pgPool.query(queryParams.query, queryParams.values);
-                    })
-                );
-            })
+            .then((docs) => Promise.all(
+                docs.map((doc, i) => {
+                    const queryParams = mapFunction(doc, i);
+                    return pgClient.query(queryParams.query, queryParams.values);
+                })
+            ))
 
             // Commit once all insertion queries done
-            .then(pgPool.query("COMMIT"));
+            .then(() => pgClient.query("COMMIT"));
     };
 }
 
@@ -458,7 +415,7 @@ const insertQuizAttempts = insertionFactory("quiz attempts", QuizAttempt, (quizA
     }
 
     return {
-        query: `INSERT INTO "uq_chatGroup" ("id", "userSessionId", "quizScheduleId", "responseInitialId", "responseFinalId") VALUES ($1, $2, $3, $4, $5)`,
+        query: `INSERT INTO "uq_quizAttempt" ("id", "userSessionId", "quizScheduleId", "responseInitialId", "responseFinalId") VALUES ($1, $2, $3, $4, $5)`,
         values: [
             quizAttempt._id.toHexString(),
             quizAttempt.userSessionId.toHexString(),
@@ -534,11 +491,11 @@ const insertSurveys = insertionFactory("surveys", Survey, (survey) => {
 
 const insertChatGroups = insertionFactory("chat groups", ChatGroup, (chatGroup) => {
     // Map out quiz attempt IDs
-    const quizAttemptIds = chatMessage.quizAttemptIds.map(x => x.toHexString());
+    const quizAttemptIds = chatGroup.quizAttemptIds.map(x => x.toHexString());
 
     return {
         query: `INSERT INTO "uq_chatGroup" ("id", "quizAttemptIds", "quizScheduleId") VALUES ($1, $2, $3)`,
-        values: [chatMessage._id.toHexString(), quizAttemptIds, chatMessage.quizScheduleId.toHexString()]
+        values: [chatGroup._id.toHexString(), quizAttemptIds, chatGroup.quizScheduleId.toHexString()]
     };
 });
 
@@ -566,8 +523,8 @@ const insertMarks = insertionFactory("marks", Mark, (mark) => {
     /** @type {string | null} */
     let invalidatedTime;
 
-    if (surveyResponse.invalidated) {
-        invalidatedTime = surveyResponse.invalidated.toISOString();
+    if (mark.invalidated) {
+        invalidatedTime = mark.invalidated.toISOString();
     } else {
         invalidatedTime = null;
     }
@@ -575,13 +532,82 @@ const insertMarks = insertionFactory("marks", Mark, (mark) => {
     return {
         query: `INSERT INTO "uq_mark" ("id", "markerUserSessionId", "quizAttemptId", "value", "method", "timestamp", "invalidated") VALUES ($1, $2, $3, $4, $5, $6, $7)`,
         values: [
-            surveyResponse._id.toHexString(),
-            surveyResponse.markerUserSessionId.toHexString(),
-            surveyResponse.quizAttemptId.toHexString(),
-            surveyResponse.value,
-            surveyResponse.method,
-            surveyResponse.timestamp.toISOString(),
+            mark._id.toHexString(),
+            mark.markerUserSessionId.toHexString(),
+            mark.quizAttemptId.toHexString(),
+            mark.value,
+            mark.method,
+            mark.timestamp.toISOString(),
             invalidatedTime
         ]
     };
 });
+
+// =============================================================================
+
+connectMongo()                      // Connect to mongo
+    .then(x => { mongoDb = x })     // Assign mongo db reference
+
+    .then(() => pgClient.connect())   // Connect to postgres
+    .then(() => initPostgresDb())   // Initialise postgres DB
+
+    // ===== Start insertions =====
+
+    .then(() => {
+        console.log("Stage 1");
+        return Promise.all([
+            insertUsers(),
+            insertQuestions(),
+            insertSurveys()
+        ]);
+    })
+
+    .then(() => {
+        console.log("Stage 2");
+        return Promise.all([
+            insertUserSessions(),
+            insertQuizSchedules(),
+            insertQuestionOptions()
+        ]);
+    })
+
+    .then(() => {
+        console.log("Stage 3");
+        return Promise.all([
+            insertQuestionResponses()
+        ]);
+    })
+
+    .then(() => {
+        console.log("Stage 4");
+        return Promise.all([
+            insertQuizAttempts()
+        ]);
+    })
+
+    .then(() => {
+        console.log("Stage 5");
+        return Promise.all([
+            insertChatGroups(),
+            insertSurveyResponses(),
+            insertMarks()
+        ]);
+    })
+
+    .then(() => {
+        console.log("Stage 6");
+        return Promise.all([
+            insertChatMessages()
+        ]);
+    })
+
+    // ===== End insertions =====
+
+    .then(() => pgClient.end())               // Close postgres connection
+    .then(() => disconnectMongo(mongoDb))   // Close mongo connection
+
+    .then(() => console.log("All done"))
+
+    .catch((err) => {
+        console.error(err.message);
+    });
