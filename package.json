@@ -6,11 +6,11 @@
   "scripts": {
     "start": "node build/server/main.js",
     "seed": "node server/util/db_seed.js",
+    "m2p": "node server/util/m2p.js",
     "test_compile": "tsc --project ./test",
     "test_run": "mocha \"test-build/test/**/*.js\"",
     "test": "npm run clean_tests && npm run test_compile && npm run test_run",
     "clean": "rimraf build",
-
     "build_client_main": "tsc --project ./client/tsconfig.json",
     "build_client_backup_client": "tsc --project ./client/tsconfig-backup-client.json",
     "build_client_admin_client": "tsc --project ./client/project/admin/tsconfig.json",
@@ -18,11 +18,9 @@
     "build_client_combined_html": "node ./server/util/combineHTML.js",
     "build_client_copy_static": "copyfiles \"./client/static/**\" ./build",
     "build_client": "npm run build_client_main && npm run build_client_backup_client && npm run build_client_admin_client && npm run build_client_css && npm run build_client_combined_html && npm run build_client_copy_static",
-
     "build_server_main": "tsc --project ./server/tsconfig.json",
     "build_server_copy_static": "copyfiles \"./server/static/**\" ./build",
     "build_server": "npm run build_server_main && npm run build_server_copy_static",
-
     "build": "npm run clean && npm run build_client && npm run build_server"
   },
   "author": "eLIPSE",
