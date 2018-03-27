@@ -29,7 +29,7 @@ export const Conf: IConf = {
         }
     },
     piwik: {
-        url: "https://analytics.uqcloud.net/piwik",
+        url: "https://elipse-analytics.uqcloud.net/piwik",
         siteId: 2
     },
     chat: {
