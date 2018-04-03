@@ -53,3 +53,8 @@ test-build
 
 # Include folders for marking tools
 !client/static/marking-tool/mousoku/*
+
+# Ignore actual configuration files
+client/config/Conf.ts
+common/config/Conf.ts
+server/config/Conf.ts
