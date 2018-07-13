@@ -1,13 +1,13 @@
 import * as $ from "jquery";
 
-import {Conf} from "../../config/Conf";
+import { Conf } from "../../config/Conf";
 
-import {MoocchatSession} from "../MoocchatSession";
+import { MoocchatSession } from "../MoocchatSession";
 
-import {IStateHandler, MoocchatState as STATE} from "../MoocchatStates";
+import { IStateHandler, MoocchatState as STATE } from "../MoocchatStates";
 import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
 
-import {MoocchatChat} from "../MoocchatChat";
+import { MoocchatChat } from "../MoocchatChat";
 
 // import * as AnswerComponents from "../AnswerComponents";
 
@@ -29,6 +29,9 @@ export const DiscussionStateHandler: IStateHandler<STATE> =
                     const $chatBox = page$("#chat-box");
                     const $chatInput = page$("#chat-input");
                     const $chatInputWrapper = page$("#chat-input-wrapper");
+
+                    const $inChatTextBlock = page$("#in-chat-text-block");
+                    const $inChatTextBlockContent = page$("#in-chat-text-block-content");
 
                     const $answers = page$("#answers");
                     const $questionReading = page$("#question-reading");
@@ -53,7 +56,7 @@ export const DiscussionStateHandler: IStateHandler<STATE> =
 
                     function endChat() {
                         section.stopTimer();
-                        
+
                         clearInterval(typingCheckIntervalHandle);
                         chat.sendTypingState(false);
 
@@ -102,60 +105,21 @@ export const DiscussionStateHandler: IStateHandler<STATE> =
                     // Render question and answer choices
                     $questionReading.html(session.quiz.questionContent);
 
-                    // const $answerOptElems = AnswerComponents.GenerateAnswerOptionElems(session.quiz.questionOptions, "<div>");
+                    // Render in chat text block if question data contains it
+                    const inChatTextBlockHtml = session.quiz.questionInChatTextBlock;
 
-                    // Go through each client's answers and add them into the answer choices
-                    // const answerJustificationMap: { [optionId: string]: { clientIndex: number; justification: string; }[] } = {};
+                    if (inChatTextBlockHtml) {
+                        // Put content in
+                        $inChatTextBlockContent.html(inChatTextBlockHtml);
+                    } else {
+                        // Hide element entirely as there is no content to render
+                        $inChatTextBlock.hide();
+                    }
 
-                    // data.groupAnswers.forEach((clientAnswer) => {
-                    //     const clientIndex = clientAnswer.clientIndex;
-
-                    //     let justification: string;
-                    //     let optionId: string;
-
-                    //     // If we are given `null` for the client answer when we should have one (for ourselves)
-                    //     // it is most likely that we are in a virtualised server environment
-                    //     // --> Put data from our own session object in instead
-                    //     if (data.clientIndex === clientAnswer.clientIndex &&
-                    //         clientAnswer.answer.optionId === null && session.answers.initial.optionId !== null) {
-                    //         justification = session.answers.initial.justification;
-                    //         optionId = session.answers.initial.optionId;
-                    //     } else {
-                    //         justification = clientAnswer.answer.justification;
-                    //         optionId = clientAnswer.answer.optionId;
-                    //     }
-
-                    //     // If no option ID then skip
-                    //     if (optionId === null || typeof optionId === "undefined") {
-                    //         return;
-                    //     }
-
-                    //     if (!answerJustificationMap[optionId]) {
-                    //         answerJustificationMap[optionId] = [];
-                    //     }
-
-                    //     answerJustificationMap[optionId].push({
-                    //         clientIndex: clientIndex,
-                    //         justification: justification
-                    //     });
-                    // });
-
-                    // $answerOptElems.forEach(($answerListElem) => {
-                    //     const optionId = $answerListElem.data("optionId") as string;
-
-                    //     if (answerJustificationMap[optionId]) {
-                    //         const $clientAnswerBlockUL = $("<ul>").addClass("client-justifications");
-
-                    //         answerJustificationMap[optionId].forEach((clientJustification) => {
-                    //             $("<li>")
-                    //                 .attr("data-client-id", clientJustification.clientIndex + 1)
-                    //                 .text(clientJustification.justification)
-                    //                 .appendTo($clientAnswerBlockUL);
-                    //         });
-
-                    //         $clientAnswerBlockUL.appendTo($answerListElem);
-                    //     }
-                    // });
+                    // Hide in chat text block if close button clicked
+                    $inChatTextBlock.on("click", ".close-button", () => {
+                        $inChatTextBlock.hide();
+                    });
 
                     // Only present free text answers, not multiple choice ones (which are now confidence rankings to be hidden)
                     const $answerOptElems = data.groupAnswers.map(
