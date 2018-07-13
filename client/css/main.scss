@@ -1226,7 +1226,29 @@ ol.welcome-instructions {
     padding-left: 0.3rem;
 }
 
+#chat-ui-wrapper {
+    // When everything is shown (with in chat text block)
+    #chat-question-answers-block,
+    #chat-box-wrapper {
+        width: 40%;
+    }
 
+    #in-chat-text-block {
+        width: 20%;
+    }
+}
+
+#chat-ui-wrapper.hide-in-chat-text-block {
+    // When in chat text block hidden, there should be only two elements with 
+    // width 50%
+    #chat-question-answers-block,
+    #chat-box-wrapper {
+        width: 50%;
+    }
+    #in-chat-text-block {
+        display: none;
+    }
+}
 
 
 /********** Survey **********/
