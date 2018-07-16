@@ -160,8 +160,8 @@ If you are unable to log in, please contact support.`);
     }
 
     private ajaxFactoryWithData(method: "POST" | "PUT", includeSession: boolean = true) {
-        return <T>(url: string, data: { [key: string]: string | number | undefined } | string) => {
-            const headers: { [header: string]: string | undefined } = {};
+        return <T>(url: string, data: { [key: string]: string | number | undefined | null } | string) => {
+            const headers: { [header: string]: string | undefined | null } = {};
 
             if (includeSession) {
                 headers["Moocchat-Session-Id"] = this.sessionId;
@@ -380,4 +380,4 @@ export interface AjaxFuncFactoryResultCollection {
 }
 
 export type AjaxFuncWithoutData = <T>(url: string) => { promise: Promise<T>, xhr: JQueryXHR };
-export type AjaxFuncWithData = <T>(url: string, data: { [key: string]: string | number | undefined } | string) => { promise: Promise<T>, xhr: JQueryXHR }; 
+export type AjaxFuncWithData = <T>(url: string, data: { [key: string]: string | number | undefined | null } | string) => { promise: Promise<T>, xhr: JQueryXHR }; 
