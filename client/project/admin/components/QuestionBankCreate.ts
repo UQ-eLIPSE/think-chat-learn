@@ -112,6 +112,7 @@ export class QuestionBankCreate extends ComponentRenderable {
     private readonly renderSubcomponents = () => {
         this.renderComponent("content");
         this.renderComponent("options");
+        this.renderComponent("in-chat-text-block");
     }
 
     private readonly setupForm = () => {
