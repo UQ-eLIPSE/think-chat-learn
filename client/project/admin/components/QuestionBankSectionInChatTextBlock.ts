@@ -79,8 +79,12 @@ export class QuestionBankSectionInChatTextBlock extends ComponentRenderable {
         const onCheckboxChange = () => {
             const checked = $enabledCheckbox.is(":checked");
 
-            // Disable editor depending on enabled checkbox
-            this.questionContentEditor!.setReadOnly(!checked);
+            // Show/hide editor depending on enabled checkbox
+            if (checked) {
+                this.questionContentEditor!.container.show();
+            } else {
+                this.questionContentEditor!.container.hide();
+            }
         };
 
         // Attach event listener + run once now
