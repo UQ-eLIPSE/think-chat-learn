@@ -24,7 +24,7 @@ export interface Question<OID> {
      * Contains text that will appear to the side of the chat window; intended 
      * as a reminder to students during chat session.
      */
-    inChatTextBlock?: string,
+    inChatTextBlock?: string | null,
 }
 
 export interface QuestionAdvice<OID> {

@@ -246,6 +246,7 @@ export namespace Api {
                 title: data.title || "",
                 content: data.content || "",
                 course,
+                inChatTextBlock: data.inChatTextBlock || null,
             }, (err, result) => {
                 if (handleMongoError(err, res)) { return; }
 
@@ -267,6 +268,7 @@ export namespace Api {
 
             const title = data.title === undefined ? undefined : (data.title || "");
             const content = data.content === undefined ? undefined : (data.content || "");
+            const inChatTextBlock = data.inChatTextBlock === undefined ? undefined : (data.inChatTextBlock || null);
 
             new DBQuestion(db).updateOne(
                 {
@@ -276,6 +278,7 @@ export namespace Api {
                     $set: {
                         title,
                         content,
+                        inChatTextBlock,
                     }
                 },
                 (err, result) => {
