@@ -80,7 +80,7 @@ export class QuestionBankSectionContent extends ComponentRenderable {
     }
 
     public readonly getTitle = () => {
-        if (!this.isRendered) {
+        if (!this.isRendered()) {
             return;
         }
 
@@ -88,7 +88,7 @@ export class QuestionBankSectionContent extends ComponentRenderable {
     }
 
     public readonly getContent = () => {
-        if (!this.isRendered) {
+        if (!this.isRendered()) {
             return;
         }
 
