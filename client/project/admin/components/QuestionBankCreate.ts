@@ -14,6 +14,7 @@ import { LayoutData } from "../../../js/ui/LayoutData";
 import { AdminPanel, AjaxFuncFactoryResultCollection } from "./AdminPanel";
 import { QuestionBankSectionContent } from "./QuestionBankSectionContent";
 import { QuestionBankSectionOptions } from "./QuestionBankSectionOptions";
+import { QuestionBankSectionInChatTextBlock } from "./QuestionBankSectionInChatTextBlock";
 
 import * as IMoocchatApi from "../../../../common/interfaces/IMoocchatApi";
 
@@ -79,6 +80,7 @@ export class QuestionBankCreate extends ComponentRenderable {
     private readonly setupSubcomponents = () => {
         this.components.put("content", new QuestionBankSectionContent(this.section$(".question-bank-section-content"), this.getLayoutData(), this));
         this.components.put("options", new QuestionBankSectionOptions(this.section$(".question-bank-section-options"), this.getLayoutData(), this));
+        this.components.put("in-chat-text-block", new QuestionBankSectionInChatTextBlock(this.section$(".question-bank-section-in-chat-text-block"), this.getLayoutData(), this));
     }
 
     private readonly getComponent = <ComponentType extends Component>(componentName: string) => {
@@ -118,10 +120,15 @@ export class QuestionBankCreate extends ComponentRenderable {
         const onCreateButtonClick = () => {
             const sectionContentComponent = this.getComponent<QuestionBankSectionContent>("content");
             const sectionOptionsComponent = this.getComponent<QuestionBankSectionOptions>("options");
+            const sectionInChatTextBlockComponent = this.getComponent<QuestionBankSectionInChatTextBlock>("in-chat-text-block");
 
             const title = sectionContentComponent.getTitle();
             const content = sectionContentComponent.getContent();
             const questionOptions = sectionOptionsComponent.getQuestionOptions();
+
+            // Get the in chat text block content, or `null` when disabled
+            // NOTE: `undefined` does not serialised to a value in JSON
+            const inChatTextBlock = sectionInChatTextBlockComponent.getContent() || null;
 
             if (!title || $.trim(title).length === 0) {
                 return alert("Title must not be blank");
@@ -161,6 +168,7 @@ export class QuestionBankCreate extends ComponentRenderable {
                 (`/api/admin/question`, {
                     title,
                     content,
+                    inChatTextBlock,
                 })
                 .catch((err) => {
                     alert(`${err}`);
