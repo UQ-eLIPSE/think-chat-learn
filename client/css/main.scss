@@ -1226,27 +1226,31 @@ ol.welcome-instructions {
     padding-left: 0.3rem;
 }
 
-#chat-ui-wrapper {
-    // When everything is shown (with in chat text block)
-    #chat-question-answers-block,
-    #chat-box-wrapper {
-        width: 40%;
-    }
-
-    #in-chat-text-block {
-        width: 20%;
-    }
+// When everything is shown (with in chat text block)
+.chat-question-answers-block,
+.chat-box-wrapper {
+    width: 37.5%;
 }
 
-#chat-ui-wrapper.hide-in-chat-text-block {
+.in-chat-text-block {
+    width: 25%;
+    word-break: break-all;
+    word-break: break-word;
+}
+
+.in-chat-text-block-heading-table > .row > * {
+    vertical-align: middle;
+}
+
+.hide-in-chat-text-block {
     // When in chat text block hidden, there should be only two elements with 
     // width 50%
-    #chat-question-answers-block,
-    #chat-box-wrapper {
+    .chat-question-answers-block,
+    .chat-box-wrapper {
         width: 50%;
     }
-    #in-chat-text-block {
-        display: none;
+    div.in-chat-text-block {
+        display: none !important;
     }
 }
 

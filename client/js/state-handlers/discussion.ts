@@ -33,7 +33,6 @@ export const DiscussionStateHandler: IStateHandler<STATE> =
                     const $chatInputWrapper = page$("#chat-input-wrapper");
 
                     const $inChatTextBlockContent = page$("#in-chat-text-block-content");
-                    const $inChatTextBlockToggle = page$("#toggle-in-chat-text-block");
 
                     const $answers = page$("#answers");
                     const $questionReading = page$("#question-reading");
@@ -115,13 +114,13 @@ export const DiscussionStateHandler: IStateHandler<STATE> =
                         $inChatTextBlockContent.html(inChatTextBlockHtml);
 
                         // Hide in chat text block if close button clicked
-                        $inChatTextBlockToggle.on("click", () => {
+                        page$("section[data-name='discussion']").on("click", "button[data-click-action='toggle-in-chat-text-block']", () => {
                             $wrapper.toggleClass("hide-in-chat-text-block");
                         });
                     } else {
                         // Hide element entirely as there is no content to render
                         $wrapper.addClass("hide-in-chat-text-block");
-                        $inChatTextBlockToggle.hide();
+                        page$("button[data-click-action='toggle-in-chat-text-block']").hide();
                     }
 
                     // Only present free text answers, not multiple choice ones (which are now confidence rankings to be hidden)
