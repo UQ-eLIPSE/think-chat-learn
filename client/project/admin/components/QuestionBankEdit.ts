@@ -112,7 +112,7 @@ export class QuestionBankEdit extends ComponentRenderable {
 
         const onSaveButtonClick = () => {
             const sectionContentComponent = this.getComponent<QuestionBankSectionContent>("content");
-            const sectionInChatTextBlockComponent = this.getComponent<QuestionBankSectionContent>("in-chat-text-block");
+            const sectionInChatTextBlockComponent = this.getComponent<QuestionBankSectionInChatTextBlock>("in-chat-text-block");
 
             const title = sectionContentComponent.getTitle();
             const content = sectionContentComponent.getContent();
