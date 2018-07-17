@@ -21,7 +21,7 @@ export class MoocchatChat {
     private receiveMessageCallback: (data: IWSToClientData.ChatGroupMessage) => void;
     private receiveQuitStatusChangeCallback: (data: IWSToClientData.ChatGroupQuitStatusChange) => void;
     private receiveTypingNotificationCallback: (data: IWSToClientData.ChatGroupTypingNotification) => void;
-
+    private receiveSystemMessageCallback: (data: IWSToClientData.ChatGroupSystemMessage) => void;
     /**
      * @param {MoocchatSession} session MoocchatSession object for the current user
      * @param {ChatGroupData} groupData Data initially received from server when the chat session was first set up
@@ -78,6 +78,15 @@ export class MoocchatChat {
      */
     private receiveMessage(data: IWSToClientData.ChatGroupMessage) {
         this.displayMessage(data.clientIndex + 1, data.message);
+    }
+
+    /**
+     * Handler to display received system chat messages.
+     * 
+     * @param data
+     */
+    private receiveSystemMessage(data: IWSToClientData.ChatGroupSystemMessage) {
+        this.displaySystemMessage(data.message, true);
     }
 
     /**
@@ -182,8 +191,10 @@ export class MoocchatChat {
         this.receiveMessageCallback = this.receiveMessage.bind(this);
         this.receiveQuitStatusChangeCallback = this.receiveQuitStatusChange.bind(this);
         this.receiveTypingNotificationCallback = this.receiveTypingNotification.bind(this);
+        this.receiveSystemMessageCallback = this.receiveSystemMessage.bind(this);
 
         this.session.socket.on<IWSToClientData.ChatGroupMessage>(WebsocketEvents.INBOUND.CHAT_GROUP_RECEIVE_MESSAGE, this.receiveMessageCallback);
+        this.session.socket.on<IWSToClientData.ChatGroupSystemMessage>(WebsocketEvents.INBOUND.CHAT_GROUP_RECEIVE_SYSTEM_MESSAGE, this.receiveSystemMessageCallback);
         this.session.socket.on<IWSToClientData.ChatGroupQuitStatusChange>(WebsocketEvents.INBOUND.CHAT_GROUP_QUIT_STATUS_CHANGE, this.receiveQuitStatusChangeCallback);
         this.session.socket.on<IWSToClientData.ChatGroupTypingNotification>(WebsocketEvents.INBOUND.CHAT_GROUP_TYPING_NOTIFICATION, this.receiveTypingNotificationCallback);
     }

@@ -1,6 +1,6 @@
 import * as mongodb from "mongodb";
 import { ChatGroup as DBChatGroup, IDB_ChatGroup } from "../data/models/ChatGroup";
-
+import { ChatGroupMonitor } from "./ChatGroupMonitor";
 import { KVStore } from "../../../common/js/KVStore";
 
 import { Utils } from "../../../common/js/Utils";
@@ -9,6 +9,10 @@ import { Utils } from "../../../common/js/Utils";
 import { QuizAttempt } from "../quiz/QuizAttempt";
 import { QuizSchedule } from "../quiz/QuizSchedule";
 
+interface IntervalStatement {
+    timeDelay: number;
+    statement: string;
+}
 export class ChatGroup {
     private static readonly Store = new KVStore<ChatGroup>();
 
@@ -20,6 +24,9 @@ export class ChatGroup {
     private /*readonly*/ clientsThatQuit: QuizAttempt[] = [];
 
     private /*readonly*/ db: mongodb.Db;
+
+    private monitor: ChatGroupMonitor;
+    private intervalStatements: IntervalStatement[] = [{ timeDelay: Utils.DateTime.minToMs(3), statement: "This is a system help statement 1" }, { timeDelay: Utils.DateTime.minToMs(6), statement: "This is a system help statement 2" }, { timeDelay: Utils.DateTime.minToMs(9), statement: "This is a system help statement 3" }];
 
     public static Get(chatGroupId: string) {
         return ChatGroup.Store.get(chatGroupId);
@@ -125,7 +132,7 @@ export class ChatGroup {
         this.quizSchedule = quizSchedule;
         this.quizAttempts = quizAttempts;
         this.db = db;
-
+        
         this.addToStore();
 
         const id = this.getId();
@@ -135,6 +142,7 @@ export class ChatGroup {
         });
 
         this.notifyEveryoneOnJoin();
+        this.monitor = new ChatGroupMonitor(this.intervalStatements, 2, this);
     }
 
     // private getDb() {
@@ -188,13 +196,22 @@ export class ChatGroup {
         return this.quizAttempts.length - this.clientsThatQuit.length;
     }
 
+    public broadcastSystemMessage(message: string) {
+        const systemMessage = {
+            message: message,
+            timestamp: Date.now()
+        };
+        this.broadcast("chatGroupSystemMessage", systemMessage);
+    }
+
     public broadcastMessage(quizAttempt: QuizAttempt, message: string) {
-        this.broadcast("chatGroupMessage", {
+        const chatGroupMessage = {
             clientIndex: this.getQuizAttemptIndex(quizAttempt),
             message: message,
             timestamp: Date.now()
-        });
-
+        };
+        this.broadcast("chatGroupMessage", chatGroupMessage);
+        this.monitor.registerMessage(chatGroupMessage);
         // Remove the session that just sent the message from the typing sessions array
         this.setTypingState(quizAttempt, false);
     }
@@ -295,8 +312,9 @@ export class ChatGroup {
     }
 
     public destroyInstance() {
+        this.monitor.destroyMonitor();
         this.removeFromStore();
-
+        delete this.monitor;
         delete this.clientsCurrentlyTyping;
         delete this.clientsThatQuit;
         delete this.data;
