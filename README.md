@@ -46,6 +46,13 @@ All tests are currently broken. You can still find the old tests under `test`.
 
 To execute tests: ensure mongo is running; then build; then run `npm run test`.
 
+## Load testing
+
+A simulation test script has been created in order to load test moocchat. This can be found under `server/test/moocchat-load-test`. Run the test with `node test <number_of_connections>`. By default the test uses 1200 connections. After running the test, the logs can be found under the `server/test/moocchat-load-test/logs` directory.
+
+### The simulation script
+The script simulates the (internal) protocol that moocchat uses to enable communication between the server and the client. This protocol involves emitting/receiving various socket events (these events depend on the user's current progress in the moocchat session). The script starts out by logging in the user using dummy LTI information. The formation of chat groups (i.e. all connections are allocated into chat groups) is the extent of the simulation.
+
 ## Database dumps and restores
 `mongodump` is the command to use to dump the entirety of the database as BSON. The default directory is `./dump`, configurable by the `out` flag.
 
