@@ -26,7 +26,7 @@ export class ChatGroup {
     private /*readonly*/ db: mongodb.Db;
 
     private monitor: ChatGroupMonitor;
-    private intervalStatements: IntervalStatement[] = [{ timeDelay: Utils.DateTime.minToMs(3), statement: "This is a system help statement 1" }, { timeDelay: Utils.DateTime.minToMs(6), statement: "This is a system help statement 2" }, { timeDelay: Utils.DateTime.minToMs(9), statement: "This is a system help statement 3" }];
+    private intervalStatements: IntervalStatement[] = [{ timeDelay: Utils.DateTime.minToMs(1.5), statement: "This is a system help statement 1" }, { timeDelay: Utils.DateTime.minToMs(3), statement: "This is a system help statement 2" }, { timeDelay: Utils.DateTime.minToMs(4.5), statement: "This is a system help statement 3" }];
 
     public static Get(chatGroupId: string) {
         return ChatGroup.Store.get(chatGroupId);

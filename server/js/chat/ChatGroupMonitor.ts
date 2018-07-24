@@ -95,12 +95,16 @@ export class ChatGroupMonitor {
     private chatGroupStartTime: number;
     private chatGroup: any;
 
-    private lastMessageTimestamp: number;
+    // private lastMessageTimestamp: number;
     private currentTimeWindowMessageCount: number;
     private thresholdMessagesPerMinute: number;
+    /** This number keeps track of the number of times the minimum message threshold was violated and is reset when system message is broadcasted */
+    private violationCount: number;
 
     /** Keeps a reference to the timer so that it can be cleared later */
     private monitorIntervalTimer: NodeJS.Timer;
+
+    private monitorResetTimer: NodeJS.Timer;
 
     constructor(intervalStatements: IntervalStatement[], thresholdMessagesPerMinute: number, chatGroup: any) {
         // Reversing it now to avoid shift(ing) array later
@@ -119,39 +123,55 @@ export class ChatGroupMonitor {
     }
 
     startMonitor() {
-        const timer = setInterval(() => {
+
+        const resetTimer = setInterval(() => {
             this.resetMonitor();
+        }, this.timeWindow);
+
+        const timer = setInterval(() => {
+
             console.log('Checking timer . . .');
-            if(this.intervalStatements.length < 1) return;
-            
+
+            // Do nothing if there are no interval statements left
+            if (this.intervalStatements.length < 1) {
+                this.destroyMonitor();
+                return;
+            }
             const now = Date.now();
-            const previous = now - this.timeWindow;
+            // const previous = now - this.timeWindow;
             // Get the next interval statement
             const currentIntervalStatement = this.intervalStatements[this.intervalStatements.length - 1];
-            
+
 
             const minimumTimeDelay = this.chatGroupStartTime + currentIntervalStatement.timeDelay;
-            
-            if(this.lastMessageTimestamp !== undefined && this.lastMessageTimestamp > previous && this.lastMessageTimestamp < now) {
-                this.currentTimeWindowMessageCount++;
+
+            // if(this.lastMessageTimestamp !== undefined && this.lastMessageTimestamp > previous && this.lastMessageTimestamp < now) {
+            //     this.currentTimeWindowMessageCount++;
+            // }
+
+            if (this.thresholdMessagesPerMinute > this.currentTimeWindowMessageCount) {
+                this.violationCount++;
             }
 
-            if(minimumTimeDelay < now) {
+            if (minimumTimeDelay < now && this.violationCount > 0) {
                 // Messages can be broadcasted
                 // Check if threshold was violated
-                if (this.thresholdMessagesPerMinute > this.currentTimeWindowMessageCount) {
-                    this.chatGroup.broadcastSystemMessage(this.intervalStatements.pop()!.statement);
-                }
+                this.chatGroup.broadcastSystemMessage(this.intervalStatements.pop()!.statement);
+                
+                //reset violation count
+                this.violationCount = 0;
             }
-        }, this.timeWindow/2);
+        }, this.timeWindow / 2);
 
+        // Set timers
+        this.monitorResetTimer = resetTimer;
         this.monitorIntervalTimer = timer;
-        
+
     }
 
     public registerMessage(chatGroupMessage: any) {
         this.currentTimeWindowMessageCount++;
-        this.lastMessageTimestamp = chatGroupMessage.timestamp;
+        // this.lastMessageTimestamp = chatGroupMessage.timestamp;
     }
 
     public resetMonitor() {
@@ -160,5 +180,6 @@ export class ChatGroupMonitor {
 
     public destroyMonitor() {
         clearInterval(this.monitorIntervalTimer);
+        clearInterval(this.monitorResetTimer);
     }
 }
