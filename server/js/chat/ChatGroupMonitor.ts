@@ -104,7 +104,7 @@ export class ChatGroupMonitor {
     /** Keeps a reference to the timer so that it can be cleared later */
     private monitorIntervalTimer: NodeJS.Timer;
 
-    private monitorResetTimer: NodeJS.Timer;
+    // private monitorResetTimer: NodeJS.Timer;
 
     constructor(intervalStatements: IntervalStatement[], thresholdMessagesPerMinute: number, chatGroup: any) {
         // Reversing it now to avoid shift(ing) array later
@@ -118,19 +118,23 @@ export class ChatGroupMonitor {
         this.timeWindow = 60 * 1000;
         this.chatGroupStartTime = Date.now();
         this.currentTimeWindowMessageCount = 0;
+        this.violationCount = 0;
         this.chatGroup = chatGroup;
         this.startMonitor();
     }
 
     startMonitor() {
+        
+        let count = 0;
 
-        const resetTimer = setInterval(() => {
-            this.resetMonitor();
-        }, this.timeWindow);
+        // const resetTimer = setInterval(() => {
+        //     this.resetMonitor();
+        // }, this.timeWindow);
 
         const timer = setInterval(() => {
 
-            console.log('Checking timer . . .');
+            count++;
+            console.log('Count: ' + count + " | Current Message Count: " + this.currentTimeWindowMessageCount + " | Violation count: " + this.violationCount + " | Interval statements remaining: " + this.intervalStatements.length);
 
             // Do nothing if there are no interval statements left
             if (this.intervalStatements.length < 1) {
@@ -161,15 +165,20 @@ export class ChatGroupMonitor {
                 //reset violation count
                 this.violationCount = 0;
             }
+
+            if(count % 2 === 0) {
+                // Check if time specified in timeWindow has passed
+                this.resetMonitor();
+            }
         }, this.timeWindow / 2);
 
         // Set timers
-        this.monitorResetTimer = resetTimer;
+        // this.monitorResetTimer = resetTimer;
         this.monitorIntervalTimer = timer;
 
     }
 
-    public registerMessage(chatGroupMessage: any) {
+    public registerMessage(_chatGroupMessage: any) {
         this.currentTimeWindowMessageCount++;
         // this.lastMessageTimestamp = chatGroupMessage.timestamp;
     }
@@ -180,6 +189,6 @@ export class ChatGroupMonitor {
 
     public destroyMonitor() {
         clearInterval(this.monitorIntervalTimer);
-        clearInterval(this.monitorResetTimer);
+        // clearInterval(this.monitorResetTimer);
     }
 }

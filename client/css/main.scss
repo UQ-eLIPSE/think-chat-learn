@@ -1115,7 +1115,7 @@ ol.welcome-instructions {
 
         // Message coming from system
         &[data-client-id="-1"]::after {
-            content: "";
+            content: "\2139";
         }
 
         // VirtServer or unknown client
