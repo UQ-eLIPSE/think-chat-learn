@@ -1092,7 +1092,7 @@ ol.welcome-instructions {
         margin: 1rem 0.5rem;
         border-bottom: 0.2rem solid;
         border-image: linear-gradient(to right, currentColor, currentColor 3rem, transparent 60%, transparent) 1;
-
+        
         &::after {
             content: attr(data-client-id);
             display: inline-block;
@@ -1113,11 +1113,6 @@ ol.welcome-instructions {
             padding-top: 0.3rem;
         }
 
-        // Message coming from system
-        &[data-client-id="-1"]::after {
-            content: "\2139";
-        }
-
         // VirtServer or unknown client
         &[data-client-id="0"]::after {
             content: "?";
@@ -1136,6 +1131,23 @@ ol.welcome-instructions {
             & + p {
                 margin-top: -0.2rem;
                 border-top: 0;
+            }
+        }
+
+        // Message coming from system
+        &[data-client-id="-1"] {
+            @extend .mc-tint;
+            border-color: transparentize($color: $mc-colour-1, $amount: 0.8);
+            padding: 0.25rem;
+            border-radius: 6px;
+
+            &::after {
+                content: "\2139";
+                margin: auto;
+                border-radius: 50%;
+                background-color: $uq-colour-B4;
+                top: 0;
+                left: 0.25rem;
             }
         }
 

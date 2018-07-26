@@ -56,13 +56,13 @@ export class ChatGroupMonitor {
     }
 
     public monitor() {
-        this.monitorTimer = setTimeout(() => { this.inspector() }, this.timeWindow / 2);
+        this.monitorTimer = setTimeout(() => this.inspector(), this.timeWindow / 2);
     }
 
     public inspector() {
 
         this.monitorCount++;
-        // console.log('Count: ' + this.monitorCount + " | Current Message Count: " + this.currentTimeWindowMessageCount + " | Violation Count: " + this.violationCount + " | Interval statements remaining: " + this.intervalStatements.length);
+        console.log('Count: ' + this.monitorCount + " | Current Message Count: " + this.currentTimeWindowMessageCount + " | Violation Count: " + this.violationCount + " | Interval statements remaining: " + this.intervalStatements.length);
 
         // Do nothing if there are no interval statements left
         if (!this.intervalStatements || this.intervalStatements.length < 1) {
@@ -88,6 +88,7 @@ export class ChatGroupMonitor {
         }
 
         if (minimumTimeDelay < now && this.violationCount > 0) {
+            console.log('Sending interval statement ' + (now - minimumTimeDelay) + 'ms' + ' after scheduled time');
             // Messages can be broadcasted
             // Check if threshold was violated
             this.chatGroup.broadcastSystemMessage(this.intervalStatements.pop()!.statement);
