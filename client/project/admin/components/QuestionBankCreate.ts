@@ -81,6 +81,7 @@ export class QuestionBankCreate extends ComponentRenderable {
         this.components.put("content", new QuestionBankSectionContent(this.section$(".question-bank-section-content"), this.getLayoutData(), this));
         this.components.put("options", new QuestionBankSectionOptions(this.section$(".question-bank-section-options"), this.getLayoutData(), this));
         this.components.put("in-chat-text-block", new QuestionBankSectionInChatTextBlock(this.section$(".question-bank-section-in-chat-text-block"), this.getLayoutData(), this));
+        this.components.put("system-chat-prompts", new QuestionBankSectionSystemChatPrompts(this.section$(".question-bank-section-system-chat-prompts"), this.getLayoutData(), this));
     }
 
     private readonly getComponent = <ComponentType extends Component>(componentName: string) => {
