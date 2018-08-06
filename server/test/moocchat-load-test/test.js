@@ -2,12 +2,19 @@ const fs = require("fs");
 const process = require('process');
 const Client = require("./data/Client.js");
 
+// Replace URL if not testing MOOCchat locally, e.g. http://moocchat-tst.uqcloud.net 
 const url = "http://localhost:8080";
 const getUserData = require("./utils/user");
 
-const sessionWaitTime = 5.5 * 60 * 1000;
+// Not used for now, supposed to specify time interval between multiple sessions.
+//const sessionWaitTime = 5.5 * 60 * 1000;
+
 const time = Date.now();
+
+// Local directory to save logs
 const logsDirectoryPath = './logs';
+
+// Default number of connections for the test
 const DEFAULT_CONNECTIONS = 1200;
 
 /** Defines a moocchat test session */
@@ -30,11 +37,11 @@ function prepareLogFile(moocchatTestSession) {
         fs.mkdirSync(logsDirectoryPath);
     }
 
-    // Add test information
+    // Append test information to log file
     const moocchatTestSessionInformation = "Process ID: " + process.pid + '\nTime span for connections: ' + moocchatTestSession.connectionWaitTime + '\nTotal connections: ' + moocchatTestSession.total;
     fs.appendFileSync(logsDirectoryPath + '/' + time + '_log_' + moocchatTestSession.id + '.txt', moocchatTestSessionInformation);
 
-    // Add columns
+    // Append columns to log file
     const moocchatLogColumns = "\n\n#users in chat groups (/" + moocchatTestSession.total + "), Time of connection\n\n"
     fs.appendFileSync(logsDirectoryPath + '/' + time + '_log_' + moocchatTestSession.id + '.txt', moocchatLogColumns);
 }
@@ -47,12 +54,15 @@ function runTestSession(session, i) {
     for (let i = 0; i < moocchatTestSession.total; i++) {
         setTimeout(() => {
             const c = new Client(getUserData(), i);
+
+            // Add event listener for handling "chatGroupFormed" event
             c.on('addedToChatGroup', (_connectedId) => {
                 moocchatTestSession.stats.numberOfPeopleInChatGroup++;
                 const moocchatLogEntry = moocchatTestSession.stats.numberOfPeopleInChatGroup + ',' + Date.now() + '\n';
                 fs.appendFile(logsDirectoryPath + '/' + time + '_log_' + moocchatTestSession.id + '.txt', moocchatLogEntry, (_err) => { });
             });
 
+            // Initialize socket
             c.initSocket(url);
             moocchatTestSession.clients.push(c);
 
@@ -69,10 +79,14 @@ function getTotalConnections() {
     return DEFAULT_CONNECTIONS;
 }
 
-/** An array of test sessions that execute one after the other */
+/** 
+ * An array of test sessions that execute one after the other.
+ * `connectionWaitTime` specifies the time interval between every client connection attempt.
+ * */
 const testSessions = [{ total: getTotalConnections(), connectionWaitTime: 0 }];
 
 testSessions.forEach((session, i) => {
+    // Start session simulation
     runTestSession(session, i);
 });
 
