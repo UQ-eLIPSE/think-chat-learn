@@ -961,6 +961,75 @@ ol.welcome-instructions {
     font-size: 0.8em;
 }
 
+#prompt-list > * {
+    @extend .thin-border;
+    
+    padding: 0.7em;
+    padding-left: 2.8em;
+    
+    display: block;
+    width: 100%;
+
+    color: inherit;
+    text-align: inherit;
+
+    background: $input-bg-colour;
+    border-color: #000;
+    border-radius: 0;
+    
+    position: relative;
+
+    word-wrap: break-word;
+}
+
+#prompt-new {
+    @extend .thin-border;
+    
+    padding: 0.7em;
+    padding-left: 2.8em;
+    
+    display: block;
+    width: 100%;
+
+    color: inherit;
+    text-align: inherit;
+
+    background: $input-bg-colour;
+    border-color: #000;
+    border-radius: 0;
+    
+    position: relative;
+
+    word-wrap: break-word;
+
+
+    background: none;
+    border-color: transparent;
+
+    &::before {
+        padding: 0.1em 0;
+        line-height: 1;
+        background: #256;
+        color: white;
+        display: inline-block;
+        position: absolute;
+        left: 0.3em;
+        top: 50%;
+        margin-top: -0.55em;
+        font-weight: bold;
+        font-size: 1.6em;
+        width: 1.1em;
+        text-align: center;
+        content: "+";
+        background: rgba(0, 0, 0, 0.3);
+    }
+
+    &:empty::after {
+        content: "Type new prompt statement, then press ENTER";
+        font-style: italic;
+        opacity: 0.3;
+    }
+}
 .client-justifications {
     padding: 0;
     margin: 1em 0 0 0;
