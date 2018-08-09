@@ -1235,12 +1235,15 @@ ol.welcome-instructions {
             border-radius: 6px;
 
             &::after {
-                content: "\2139";
+                content: "i";
                 margin: auto;
                 border-radius: 50%;
                 background-color: $uq-colour-B4;
                 top: 0;
                 left: 0.25rem;
+                font-family: serif;
+                font-style: italic;
+                font-weight: 700;
             }
         }
 
