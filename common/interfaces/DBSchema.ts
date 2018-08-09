@@ -28,7 +28,7 @@ export interface Question<OID> {
 }
 
 export interface SystemChatPromptStatement {
-    absoluteTimeDelay: number,
+    absoluteTimeDelay: number | undefined,
     statement: string
 }
 

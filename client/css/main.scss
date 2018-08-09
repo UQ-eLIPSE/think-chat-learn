@@ -961,11 +961,16 @@ ol.welcome-instructions {
     font-size: 0.8em;
 }
 
+#prompt-check-wrapper {
+    display: block;
+    margin: 0.5rem 0;
+}
+
 #prompt-list > * {
     @extend .thin-border;
     
     padding: 0.7em;
-    padding-left: 2.8em;
+    padding-left: 2em;
     
     display: block;
     width: 100%;
@@ -973,20 +978,38 @@ ol.welcome-instructions {
     color: inherit;
     text-align: inherit;
 
-    background: $input-bg-colour;
+    background: #fefefefe;
     border-color: #000;
     border-radius: 0;
     
     position: relative;
 
     word-wrap: break-word;
+}
+
+#prompt-list > * + * {
+    border-top: 0;
+}
+
+#prompt-list .controls {
+    font-size: 0.8em;
+}
+
+#prompt-list .controls > * {
+    margin-right: 0.5rem;
 }
 
 #prompt-new {
+    margin: 1rem 0;
+}
+#prompt-new .statement-input-module {
+    display: flex;
+}
+
+#prompt-new .text-content {
     @extend .thin-border;
     
-    padding: 0.7em;
-    padding-left: 2.8em;
+    padding: 1em;
     
     display: block;
     width: 100%;
@@ -994,7 +1017,6 @@ ol.welcome-instructions {
     color: inherit;
     text-align: inherit;
 
-    background: $input-bg-colour;
     border-color: #000;
     border-radius: 0;
     
@@ -1002,34 +1024,26 @@ ol.welcome-instructions {
 
     word-wrap: break-word;
 
-
-    background: none;
     border-color: transparent;
+}
 
-    &::before {
-        padding: 0.1em 0;
-        line-height: 1;
-        background: #256;
-        color: white;
-        display: inline-block;
-        position: absolute;
-        left: 0.3em;
-        top: 50%;
-        margin-top: -0.55em;
-        font-weight: bold;
-        font-size: 1.6em;
-        width: 1.1em;
-        text-align: center;
-        content: "+";
-        background: rgba(0, 0, 0, 0.3);
-    }
-
-    &:empty::after {
-        content: "Type new prompt statement, then press ENTER";
-        font-style: italic;
-        opacity: 0.3;
+#prompt-list .prompt-list-item .text-content {
+    
+    &[contenteditable="true"]:focus {
+        background-color: #faffbd;
     }
 }
+
+#prompt-list .prompt-list-item .item-index {
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-size: 0.8em;
+    padding: 0.25rem;
+    background-color: $mc-colour-1;
+    color: white;
+}
+
 .client-justifications {
     padding: 0;
     margin: 1em 0 0 0;
