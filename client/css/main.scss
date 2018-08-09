@@ -966,11 +966,14 @@ ol.welcome-instructions {
     margin: 0.5rem 0;
 }
 
+#prompt-list {
+    counter-reset: prompt-counter;
+}
+
 #prompt-list > * {
     @extend .thin-border;
     
     padding: 0.7em;
-    padding-left: 2em;
     
     display: block;
     width: 100%;
@@ -985,6 +988,16 @@ ol.welcome-instructions {
     position: relative;
 
     word-wrap: break-word;
+
+    &::before {
+    display: flex;
+    padding: 0.5rem;
+    list-style-type: decimal;
+    content: 'Prompt #'counter(prompt-counter, decimal);
+    counter-increment: prompt-counter;
+    font-size: 0.8em;
+    font-weight: bold;
+    }
 }
 
 #prompt-list > * + * {
@@ -1027,21 +1040,18 @@ ol.welcome-instructions {
     border-color: transparent;
 }
 
-#prompt-list .prompt-list-item .text-content {
-    
-    &[contenteditable="true"]:focus {
-        background-color: #faffbd;
+#prompt-list .prompt-list-item {
+    &>* {
+        padding: 0.5rem;
     }
-}
 
-#prompt-list .prompt-list-item .item-index {
-    position: absolute;
-    top: 0;
-    left: 0;
-    font-size: 0.8em;
-    padding: 0.25rem;
-    background-color: $mc-colour-1;
-    color: white;
+    & .text-content {
+        &[contenteditable="true"]:focus {
+            background-color: #faffbd;
+        }
+    }
+    
+
 }
 
 .client-justifications {

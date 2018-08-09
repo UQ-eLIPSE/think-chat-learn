@@ -1,14 +1,10 @@
-// import { QuizAttempt } from "../quiz/QuizAttempt";
-
-interface IntervalStatement {
-    timeDelay: number;
-    statement: string;
-}
+import { SystemChatPromptStatement } from "../../../common/interfaces/DBSchema";
+import { ChatGroup } from "./ChatGroup";
 
 export class ChatGroupMonitor {
 
     private timeWindow: number;
-    private intervalStatements: IntervalStatement[] = [];
+    private intervalStatements: SystemChatPromptStatement[] = [];
     private chatGroupStartTime: number;
     private chatGroup: any;
 
@@ -25,7 +21,7 @@ export class ChatGroupMonitor {
     /** `monitorCount` is used to reduce the number of timers needed for implementing this feature */
     private monitorCount: number = 0;
 
-    constructor(intervalStatements: IntervalStatement[], thresholdMessagesPerMinute: number, chatGroup: any) {
+    constructor(intervalStatements: SystemChatPromptStatement[], thresholdMessagesPerMinute: number, chatGroup: ChatGroup) {
         // Reversing it now to avoid shift(ing) array later
         this.intervalStatements = intervalStatements.reverse();
 
@@ -77,7 +73,7 @@ export class ChatGroupMonitor {
         const currentIntervalStatement = this.intervalStatements[this.intervalStatements.length - 1];
 
 
-        const minimumTimeDelay = this.chatGroupStartTime + currentIntervalStatement.timeDelay;
+        const minimumTimeDelay = this.chatGroupStartTime + currentIntervalStatement.absoluteTimeDelay!;
 
         // if(this.lastMessageTimestamp !== undefined && this.lastMessageTimestamp > previous && this.lastMessageTimestamp < now) {
         //     this.currentTimeWindowMessageCount++;

@@ -9,10 +9,6 @@ import { Utils } from "../../../common/js/Utils";
 import { QuizAttempt } from "../quiz/QuizAttempt";
 import { QuizSchedule } from "../quiz/QuizSchedule";
 
-interface IntervalStatement {
-    timeDelay: number;
-    statement: string;
-}
 export class ChatGroup {
     private static readonly Store = new KVStore<ChatGroup>();
 
@@ -26,7 +22,6 @@ export class ChatGroup {
     private /*readonly*/ db: mongodb.Db;
 
     private monitor: ChatGroupMonitor;
-    private intervalStatements: IntervalStatement[] = [{ timeDelay: Utils.DateTime.minToMs(1.5), statement: "Have you considered the force of graviy acting upon the plane? You can discuss what this entails." }, { timeDelay: Utils.DateTime.minToMs(3), statement: "Discussing drag force could also be a good opportunity to explain why the pilot was late to the party." }, { timeDelay: Utils.DateTime.minToMs(4.5), statement: "The pilot wanted to party" }];
 
     public static Get(chatGroupId: string) {
         return ChatGroup.Store.get(chatGroupId);
@@ -142,7 +137,14 @@ export class ChatGroup {
         });
 
         this.notifyEveryoneOnJoin();
-        this.monitor = new ChatGroupMonitor(this.intervalStatements, 2, this);
+        const question = this.quizSchedule.getQuestion().getData();
+
+        // Check if system prompt statements are available
+        if(question !== undefined && question.systemChatPromptStatements !== null && question.systemChatPromptStatements !== undefined) {
+            // Init chat group monitor
+            this.monitor = new ChatGroupMonitor(question.systemChatPromptStatements, 2, this);
+        }
+        
     }
 
     // private getDb() {
