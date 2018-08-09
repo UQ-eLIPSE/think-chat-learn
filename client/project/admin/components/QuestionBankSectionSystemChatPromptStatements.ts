@@ -13,7 +13,6 @@ export class QuestionBankSectionSystemChatPromptStatements extends ComponentRend
 
     private question: ToClientData.Question | undefined;
     private systemChatPromptStatements: ToClientData.SystemChatPromptStatement[] | undefined;
-    // private systemPrompts = new Array();
 
 
 
@@ -22,7 +21,9 @@ export class QuestionBankSectionSystemChatPromptStatements extends ComponentRend
 
         this.setInitFunc((data?: ToClientData.Question) => {
             this.question = data;
+
             if(this.question !== undefined && this.question.systemChatPromptStatements && this.question.systemChatPromptStatements.length > 0) {
+                // Make `this.systemChatPromptStatements` the primary data source which will be used by all other methods in this component
                 this.systemChatPromptStatements = [...this.question.systemChatPromptStatements];
             } else {
                 this.systemChatPromptStatements = [];
@@ -37,25 +38,25 @@ export class QuestionBankSectionSystemChatPromptStatements extends ComponentRend
         
         this.setRenderFunc(() => {
             return new Layout("admin-question-bank-section-system-chat-prompt-statements", this.getLayoutData())
-                // NOTE: Do not change the order of calling these functions, side effects present
+                // NOTE: Do not change the order of function calls, side effects present
                 .wipeThenAppendTo(this.getRenderTarget())
                 .promise
                 .then(this.setupCheckboxListener)
                 .then(this.setupInputModule)
                 .then(this.insertData)
-                // .then(this.setupChatDurationMessage)
+                .then(this.setupChatDurationMessage)
                 .catch((error) => {
                     this.dispatchError(error);
                 });
         });
     }
 
-    // private readonly setupChatDurationMessage = () => {
-    //     const formattedChatDuration = Utils.DateTime.msToMinutes(Conf.timings.discussionMs);
-    //     this.section$("#chat-time-message").append($("<h4 />", {
-    //         text: "Chat discussion duration: " + formattedChatDuration + " minutes"
-    //     }));
-    // }
+    private readonly setupChatDurationMessage = () => {
+        const formattedChatDuration = Utils.DateTime.msToMinutes(Conf.timings.discussionMs);
+        this.section$("#chat-time-message").append($("<span />", {
+            text: "Total chat discussion duration: " + formattedChatDuration + " minutes"
+        }));
+    }
 
     private readonly setupCheckboxListener = () => {
         const $enabledCheckbox = this.section$("#prompt-check");
@@ -66,7 +67,7 @@ export class QuestionBankSectionSystemChatPromptStatements extends ComponentRend
             this.setEnabled(enabled);
         });
 
-        // Disabled initially
+        // Prompt functionality disabled by default
         $enabledCheckbox.prop("checked", false).trigger('change');
     }
 
@@ -89,6 +90,9 @@ export class QuestionBankSectionSystemChatPromptStatements extends ComponentRend
         return this.systemChatPromptStatements!.sort(this.compareTimeDelays);
     }
 
+    /**
+     * Populate page with the existing `question`'s data
+     */
     private readonly insertData = () => {
         if (!this.question) {
             return;
@@ -109,6 +113,10 @@ export class QuestionBankSectionSystemChatPromptStatements extends ComponentRend
         this.systemChatPromptStatements.push({ statement: text, absoluteTimeDelay: undefined });
         this.renderStatementList(this.systemChatPromptStatements);
     }
+
+    /**
+     * Sub component which contains the input field for the prompt statements
+     */
     private readonly getStatementInputModule = () => {
         const $module = $("<div/>", {
             'class': 'statement-input-module'
@@ -140,7 +148,9 @@ export class QuestionBankSectionSystemChatPromptStatements extends ComponentRend
         });
 
 
-
+        /**
+         * An "add" button component in addition to the "ENTER" handler for adding statements
+         */
         const $addButtonComponent = $("<button/>", {
             "type": "button",
             "text": "+",
@@ -151,17 +161,25 @@ export class QuestionBankSectionSystemChatPromptStatements extends ComponentRend
         return $module.append($textContentComponent, $addButtonComponent);
     }
 
+    /**
+     * Sets up view, event listeners and methods for the statement input field
+     */
     private readonly setupInputModule = () => {
         this.section$("#prompt-new").append(this.getStatementInputModule());
-
     }
 
+    /**
+     * A comparator function which is used to generate an array of prompt statements in ascending order of `absoluteTimeDelay`
+     */
     private readonly compareTimeDelays = (a: ToClientData.SystemChatPromptStatement, b: ToClientData.SystemChatPromptStatement) => {
         const aTimeDelay = a.absoluteTimeDelay === undefined ? 0 : a.absoluteTimeDelay;
         const bTimeDelay = b.absoluteTimeDelay === undefined ? 0 : b.absoluteTimeDelay;
         return aTimeDelay - bTimeDelay;
     }
 
+    /**
+     * A render method which is called after every data update of `systemChatPromptStatements`
+     */
     private readonly renderStatementList = (systemChatPromptStatements: ToClientData.SystemChatPromptStatement[] | undefined) => {
         const $promptListEl = this.section$("#prompt-list");
         $promptListEl.empty();
@@ -172,20 +190,16 @@ export class QuestionBankSectionSystemChatPromptStatements extends ComponentRend
             $('<div/>', {
                 "class": 'prompt-list-item',
             }).data("index", i)
-                // .append(this.getStatementNumberText(i))
                 .append(this.getTextContentBox(prompt.statement))
                 .append(this.getControls())
-                // .append(this.getAbsoluteTimeDelayBox(prompt, i))
+                .append(this.getAbsoluteTimeDelayBox(prompt, i))
                 .appendTo($promptListEl);
         });
     }
 
-    // private readonly getStatementNumberText = (index: number) => {
-    //     return $("<div />", {
-    //         text: "#" + (index + 1),
-    //         "class": "item-index"
-    //     });
-    // }
+    /**
+     * Contains the text content of the prompt statement
+     */
     private readonly getTextContentBox = (text: string) => {
         const $textBox = $("<div />", {
             "class": "text-content",
@@ -194,6 +208,9 @@ export class QuestionBankSectionSystemChatPromptStatements extends ComponentRend
         return $textBox;
     }
 
+    /**
+     * Returns the controls subcomponent which is attached to every prompt item in the prompt list
+     */
     private readonly getControls = () => {
         const $controls = $("<div/>", {
             "class": "controls"
@@ -335,9 +352,10 @@ export class QuestionBankSectionSystemChatPromptStatements extends ComponentRend
             this.systemChatPromptStatements[currentIndex].absoluteTimeDelay = Utils.DateTime.minToMs(numericalValue);
         });
 
-        const $timeDelayLabelWrapper = $("<label />", {
-            text: "Prompt at minute "
-        }).wrap($timeDelayInput);
+        const $timeDelayLabelWrapper = $("<label/>", {})
+            .append($timeDelayInput)
+            .prepend("Wait at least ")
+            .append(" minute(s) before prompting");
 
         return $timeDelayBox.append($timeDelayLabelWrapper);
     }

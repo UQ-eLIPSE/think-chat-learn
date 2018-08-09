@@ -6,7 +6,7 @@ export class ChatGroupMonitor {
     private timeWindow: number;
     private intervalStatements: SystemChatPromptStatement[] = [];
     private chatGroupStartTime: number;
-    private chatGroup: any;
+    private chatGroup: ChatGroup;
 
     private currentTimeWindowMessageCount: number;
 
