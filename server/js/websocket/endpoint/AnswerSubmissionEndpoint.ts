@@ -68,7 +68,7 @@ export class AnswerSubmissionEndpoint extends WSEndpoint {
             timestamp: new Date(),
         }, questionOption);
 
-        quizAttempt.setQuizResponse(answerType, questionResponse);
+        await quizAttempt.setQuizResponse(answerType, questionResponse);
 
         socket.emit(onSuccessWebsocketEvent);
     }
