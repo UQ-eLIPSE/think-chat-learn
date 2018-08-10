@@ -969,9 +969,6 @@ ol.welcome-instructions {
 #chat-time-message {
     padding: 0.5rem 0;
 }
-#prompt-list {
-    counter-reset: prompt-counter;
-}
 
 #prompt-list > * {
     @extend .thin-border;
@@ -990,15 +987,12 @@ ol.welcome-instructions {
 
     word-wrap: break-word;
 
-    &::before {
+    & .prompt-header {
         display: block;
         width: 100%;
         background: $mc-colour-1;
         color: white;
         padding: 0.3rem;
-        list-style-type: decimal;
-        content: 'Prompt #'counter(prompt-counter, decimal);
-        counter-increment: prompt-counter;
         font-size: 0.8em;
     }
 
@@ -1029,31 +1023,36 @@ ol.welcome-instructions {
 #prompt-new {
     margin: 1rem 0;
 }
+
 #prompt-new .statement-input-module {
     display: flex;
+
+    & #add-prompt {
+        &:disabled {
+            opacity: 0.4;
+        }
+    }
+    & .text-content {
+        @extend .thin-border;
+    
+        padding: 1em;
+        
+        display: block;
+        width: 100%;
+    
+        color: inherit;
+        text-align: inherit;
+    
+        border-color: #000;
+        border-radius: 0;
+        
+        position: relative;
+    
+        word-wrap: break-word;
+    
+        border-color: transparent;
+    }
 }
-
-#prompt-new .text-content {
-    @extend .thin-border;
-    
-    padding: 1em;
-    
-    display: block;
-    width: 100%;
-
-    color: inherit;
-    text-align: inherit;
-
-    border-color: #000;
-    border-radius: 0;
-    
-    position: relative;
-
-    word-wrap: break-word;
-
-    border-color: transparent;
-}
-
 
 .client-justifications {
     padding: 0;
