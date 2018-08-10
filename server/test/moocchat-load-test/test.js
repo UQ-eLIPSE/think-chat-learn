@@ -1,21 +1,19 @@
 const fs = require("fs");
 const process = require('process');
 const Client = require("./data/Client.js");
-
-// Replace URL if not testing MOOCchat locally, e.g. http://moocchat-tst.uqcloud.net 
-const url = "http://localhost:8080";
 const getUserData = require("./utils/user");
-
-// Not used for now, supposed to specify time interval between multiple sessions.
-//const sessionWaitTime = 5.5 * 60 * 1000;
-
+const TestConfig = require("./config.js");
+const url = TestConfig.url + ":" + TestConfig.port;
 const time = Date.now();
 
 // Local directory to save logs
 const logsDirectoryPath = './logs';
 
 // Default number of connections for the test
-const DEFAULT_CONNECTIONS = 1200;
+const DEFAULT_CONNECTIONS = TestConfig.defaultNumberOfConnections;
+
+// Not used for now, supposed to specify time interval between multiple sessions.
+//const sessionWaitTime = 5.5 * 60 * 1000;
 
 /** Defines a moocchat test session */
 class MoocchatTestSession {
