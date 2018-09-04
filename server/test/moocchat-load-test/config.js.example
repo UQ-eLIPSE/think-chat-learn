@@ -1,0 +1,7 @@
+const TestConfig = {
+    url: 'http://localhost',
+    port: 8080,
+    defaultNumberOfConnections: 1200
+}
+
+module.exports = TestConfig;
