@@ -26,7 +26,7 @@ export type User = DBSchema.User<OID>;
 export type UserSession = DBSchema.UserSession<OID, Date>;
 
 export type Mark = DBSchema.Mark<OID, Date>;
-
+export type SystemChatPromptStatement = DBSchema.SystemChatPromptStatement;
 // API specific
 export interface Quiz {
     question: Question;

@@ -1,6 +1,6 @@
 import * as mongodb from "mongodb";
 import { ChatGroup as DBChatGroup, IDB_ChatGroup } from "../data/models/ChatGroup";
-
+import { ChatGroupMonitor } from "./ChatGroupMonitor";
 import { KVStore } from "../../../common/js/KVStore";
 
 import { Utils } from "../../../common/js/Utils";
@@ -20,6 +20,8 @@ export class ChatGroup {
     private /*readonly*/ clientsThatQuit: QuizAttempt[] = [];
 
     private /*readonly*/ db: mongodb.Db;
+
+    private monitor: ChatGroupMonitor;
 
     public static Get(chatGroupId: string) {
         return ChatGroup.Store.get(chatGroupId);
@@ -125,7 +127,7 @@ export class ChatGroup {
         this.quizSchedule = quizSchedule;
         this.quizAttempts = quizAttempts;
         this.db = db;
-
+        
         this.addToStore();
 
         const id = this.getId();
@@ -135,6 +137,14 @@ export class ChatGroup {
         });
 
         this.notifyEveryoneOnJoin();
+        const question = this.quizSchedule.getQuestion().getData();
+
+        // Check if system prompt statements are available
+        if(question !== undefined && question.systemChatPromptStatements !== null && question.systemChatPromptStatements !== undefined) {
+            // Init chat group monitor
+            this.monitor = new ChatGroupMonitor(question.systemChatPromptStatements, 2, this);
+        }
+        
     }
 
     // private getDb() {
@@ -188,13 +198,22 @@ export class ChatGroup {
         return this.quizAttempts.length - this.clientsThatQuit.length;
     }
 
+    public broadcastSystemMessage(message: string) {
+        const systemMessage = {
+            message: message,
+            timestamp: Date.now()
+        };
+        this.broadcast("chatGroupSystemMessage", systemMessage);
+    }
+
     public broadcastMessage(quizAttempt: QuizAttempt, message: string) {
-        this.broadcast("chatGroupMessage", {
+        const chatGroupMessage = {
             clientIndex: this.getQuizAttemptIndex(quizAttempt),
             message: message,
             timestamp: Date.now()
-        });
-
+        };
+        this.broadcast("chatGroupMessage", chatGroupMessage);
+        this.monitor.registerMessage(chatGroupMessage);
         // Remove the session that just sent the message from the typing sessions array
         this.setTypingState(quizAttempt, false);
     }
@@ -295,8 +314,9 @@ export class ChatGroup {
     }
 
     public destroyInstance() {
+        this.monitor.destroyMonitor();
         this.removeFromStore();
-
+        delete this.monitor;
         delete this.clientsCurrentlyTyping;
         delete this.clientsThatQuit;
         delete this.data;

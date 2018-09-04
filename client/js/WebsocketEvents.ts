@@ -24,6 +24,8 @@ export const WebsocketEvents = {
         /** IWSToClientData.ChatGroupMessage */
         CHAT_GROUP_RECEIVE_MESSAGE: "chatGroupMessage",
 
+        CHAT_GROUP_RECEIVE_SYSTEM_MESSAGE: "chatGroupSystemMessage",
+
         /** IWSToClientData.ChatGroupQuitStatusChange */
         CHAT_GROUP_QUIT_STATUS_CHANGE: "chatGroupQuitChange",
 

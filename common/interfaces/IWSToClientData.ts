@@ -41,6 +41,11 @@ export interface ChatGroupMessage {
     message: string;
     timestamp: number;
 }
+
+export interface ChatGroupSystemMessage {
+    message: string;
+    timestamp: number;
+}
 export interface ChatGroupQuitStatusChange {
     groupId: string;
     groupSize: number;

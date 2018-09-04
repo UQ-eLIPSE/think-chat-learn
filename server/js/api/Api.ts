@@ -246,6 +246,7 @@ export namespace Api {
                 title: data.title || "",
                 content: data.content || "",
                 course,
+                systemChatPromptStatements: data.systemChatPromptStatements || null
             }, (err, result) => {
                 if (handleMongoError(err, res)) { return; }
 
@@ -267,7 +268,8 @@ export namespace Api {
 
             const title = data.title === undefined ? undefined : (data.title || "");
             const content = data.content === undefined ? undefined : (data.content || "");
-
+            const systemChatPromptStatements = data.systemChatPromptStatements === undefined? undefined: (data.systemChatPromptStatements || null);
+            
             new DBQuestion(db).updateOne(
                 {
                     _id: new mongodb.ObjectID(questionId),
@@ -276,6 +278,7 @@ export namespace Api {
                     $set: {
                         title,
                         content,
+                        systemChatPromptStatements,
                     }
                 },
                 (err, result) => {
