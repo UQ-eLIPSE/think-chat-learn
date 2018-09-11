@@ -467,6 +467,44 @@ export namespace Api {
             });
         }
 
+        @ApiDecorators.ApplySession
+        @ApiDecorators.AdminOnly
+        public static Get_WithSessionId(moocchat: Moocchat, res: ApiResponseCallback<IDB_User>, data: IMoocchatApi.ToServerUserId, session?: _UserSession): void {
+            const db = moocchat.getDb();
+
+            new DBUserSession(db).readAsArray({
+                _id: new mongodb.ObjectID(data.sessionId)
+            }, (err, result) => {
+                if (handleMongoError(err, res)) { return; }
+
+                if(result.length === 0) {
+                    return res({
+                        success: false,
+                        code: "RESOURCE_NOT_FOUND_OR_NOT_ACCESSIBLE",
+                        message: "User not found"
+                    })
+                }
+                const fetchedSession = result[0];
+                new DBUser(db).readAsArray({
+                    _id: fetchedSession.userId
+                }, (err, result) => {
+                    if(result.length === 0) {
+                        return res({
+                            success: false,
+                            code: "RESOURCE_NOT_FOUND_OR_NOT_ACCESSIBLE",
+                            message: "User not found"
+                        })
+                    }
+                    const fetchedUser = result[0];
+                    return res({
+                        success: true,
+                        payload: fetchedUser,
+                    });
+                })
+                
+            });
+        }
+
 
         @ApiDecorators.ApplySession
         @ApiDecorators.AdminOnly
