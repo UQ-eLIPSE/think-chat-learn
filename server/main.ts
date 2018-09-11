@@ -141,6 +141,7 @@ AssociateGETEndpoint("/api/admin/quiz/:quizId/chatGroup", Api.ChatGroup.Gets_Wit
 AssociateGETEndpoint("/api/admin/quiz/:quizId/chatMessage", Api.ChatMessage.Gets_WithQuizId);
 AssociateGETEndpoint("/api/admin/quiz/:quizId/questionResponse", Api.QuestionResponse.Gets_WithQuizId);
 AssociateGETEndpoint("/api/admin/quizAttempt/:quizAttemptId/mark", Api.Mark.Gets_WithQuizAttemptId);
+AssociateGETEndpoint("/api/admin/quizAttempt/:quizAttemptId/mark-multiple", Api.Mark.Gets_WithQuizAttemptId_Multiple_Markers_Mode);
 AssociateGETEndpoint("/api/admin/question", Api.Question.Gets);
 AssociateGETEndpoint("/api/admin/question/:questionId", Api.Question.Get);
 AssociateGETEndpoint("/api/admin/question/:questionId/option", Api.QuestionOption.Gets_WithQuestionId);
@@ -149,6 +150,7 @@ AssociateGETEndpoint("/api/admin/question/:questionId/correctOption", Api.Questi
 // AssociateGETEndpoint("/api/admin/questionOption/:questionOptionId", undefined);
 AssociateGETEndpoint("/api/admin/user", Api.User.Gets);
 AssociateGETEndpoint("/api/admin/user/:userId", Api.User.Get);
+AssociateGETEndpoint("/api/admin/user/multiple/:userId",  Api.User.Get_Multiple_Markers_Mode);
 AssociateGETEndpoint("/api/admin/user/:userId/session", Api.UserSession.Gets_WithUserId);
 AssociateGETEndpoint("/api/admin/system/info", Api.System.Get_Info);
 // AssociateGETEndpoint("/api/admin/mark/:markId", Api.Mark.Get);
@@ -157,6 +159,7 @@ AssociatePOSTEndpoint("/api/admin/quiz", Api.Quiz.Post);
 AssociatePOSTEndpoint("/api/admin/question", Api.Question.Post);
 AssociatePOSTEndpoint("/api/admin/question/:questionId/option", Api.QuestionOption.Post_WithQuestionId);
 AssociatePOSTEndpoint("/api/admin/mark", Api.Mark.Post);
+AssociatePOSTEndpoint("/api/admin/mark-multiple", Api.Mark.Post_Multiple_Markers_Mode);
 // PUTs
 AssociatePUTEndpoint("/api/admin/quiz/:quizId", Api.Quiz.Put);
 AssociatePUTEndpoint("/api/admin/question/:questionId", Api.Question.Put);
@@ -205,7 +208,6 @@ function AssociatePOSTEndpoint<PayloadType>(url: string, endpointHandler: ApiHan
         // Request body is the data we want
         // This would have been processed into a JS object via. Express
         const data = req.body || {};
-
         // Merge URL request params and session ID into body data
         Object.keys(req.params).forEach(key => data[key] = req.params[key]);
 
