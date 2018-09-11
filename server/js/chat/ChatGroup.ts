@@ -21,7 +21,7 @@ export class ChatGroup {
 
     private /*readonly*/ db: mongodb.Db;
 
-    private monitor: ChatGroupMonitor;
+    private monitor: ChatGroupMonitor | undefined;
 
     public static Get(chatGroupId: string) {
         return ChatGroup.Store.get(chatGroupId);
@@ -213,7 +213,9 @@ export class ChatGroup {
             timestamp: Date.now()
         };
         this.broadcast("chatGroupMessage", chatGroupMessage);
-        this.monitor.registerMessage(chatGroupMessage);
+        if(this.monitor !== undefined && this.monitor !== null) {
+            this.monitor.registerMessage(chatGroupMessage);
+        }
         // Remove the session that just sent the message from the typing sessions array
         this.setTypingState(quizAttempt, false);
     }
@@ -314,9 +316,12 @@ export class ChatGroup {
     }
 
     public destroyInstance() {
-        this.monitor.destroyMonitor();
+        if(this.monitor !== undefined && this.monitor !== null) {
+            this.monitor.destroyMonitor();
+            delete this.monitor;
+        }
         this.removeFromStore();
-        delete this.monitor;
+        
         delete this.clientsCurrentlyTyping;
         delete this.clientsThatQuit;
         delete this.data;
