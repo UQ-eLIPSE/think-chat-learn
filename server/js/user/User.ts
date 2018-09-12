@@ -153,6 +153,10 @@ export class User {
         return this.data.researchConsent;
     }
 
+    public getData() {
+        return this.data;
+    }
+
     public async setResearchConsent(researchConsent: boolean) {
         await User.Update(this, {
             researchConsent,

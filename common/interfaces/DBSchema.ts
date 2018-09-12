@@ -172,6 +172,7 @@ export interface Mark<OID, Date> {
     method?: MarkingMethod,
     timestamp?: Date,
     invalidated?: Date | null,
+    markerId?: OID
 }
 
 // export type MarkingMethod = "MOUSOKU";

@@ -469,9 +469,36 @@ export namespace Api {
 
         @ApiDecorators.ApplySession
         @ApiDecorators.AdminOnly
+        public static Get_Multiple_Markers_Mode(moocchat: Moocchat, res: ApiResponseCallback<IDB_User>, data: IMoocchatApi.ToServerUserId, session?: _UserSession): void {
+            const db = moocchat.getDb();
+
+            new DBUser(db).readAsArray({
+                _id: new mongodb.ObjectID(data.userId)
+            }, (err, result) => {
+                if (handleMongoError(err, res)) { return; }
+
+                if(result.length === 0) {
+                    return res({
+                        success: false,
+                        code: "RESOURCE_NOT_FOUND_OR_NOT_ACCESSIBLE",
+                        message: "User not found"
+                    })
+                }
+
+                const fetchedUser = result[0];
+
+                return res({
+                    success: true,
+                    payload: fetchedUser,
+                });
+            });
+        }
+
+        @ApiDecorators.ApplySession
+        @ApiDecorators.AdminOnly
         public static Gets(moocchat: Moocchat, res: ApiResponseCallback<IDB_User[]>, data: IMoocchatApi.ToServerStandardRequestBase, session?: _UserSession): void {
             const course = session!.getCourse();
-
+            
             // Look up all quiz schedules in course, then all user sessions, then map to users
             const db = moocchat.getDb();
 
@@ -750,6 +777,55 @@ export namespace Api {
             });
         }
 
+
+
+        @ApiDecorators.ApplySession
+        @ApiDecorators.AdminOnly
+        public static Gets_WithQuizAttemptId_Multiple_Markers_Mode(moocchat: Moocchat, res: ApiResponseCallback<IDB_Mark>, data: IMoocchatApi.ToServerQuizAttemptId, session?: _UserSession): void {
+            const db = moocchat.getDb();
+
+            (async () => {
+                const quizAttemptId = data.quizAttemptId!;
+
+                const quizAttempt = await _QuizAttempt.GetAutoFetch(db, quizAttemptId);
+
+                if (!quizAttempt) {
+                    throw new Error();      // TODO:
+                }
+
+                // Look up quiz course; check course matches admin course
+                const markerSessionCourse = session!.getCourse();
+                const quizCourse = quizAttempt.getQuizSchedule().getData().course!;
+                const markerId = session!.getUser().getData()._id;
+
+                if (markerSessionCourse !== quizCourse) {
+                    throw new Error(`Marker session course "${markerSessionCourse}" does not match quiz schedule course "${quizCourse}"`);
+                }
+
+                // Get mark for quiz attempt
+                new DBMark(db).readAsArray({
+                    quizAttemptId: quizAttempt.getOID(),
+                    markerId: markerId,
+                    invalidated: null,
+                }, (err, result) => {
+                    if (handleMongoError(err, res)) { return; }
+
+                    return res({
+                        success: true,
+                        payload: result[0],
+                    });
+                });
+            })().catch((e) => {
+                console.error(e);
+
+                return res({
+                    success: false,
+                    code: "UNKNOWN_ERROR",
+                    message: e.toString(),
+                });
+            });
+        }
+
         @ApiDecorators.ApplySession
         @ApiDecorators.AdminOnly
         public static Post(moocchat: Moocchat, res: ApiResponseCallback<IMoocchatApi.ToClientInsertionIdResponse>, data: IMoocchatApi.ToServerStandardRequestBase & FromClientData.Mark, session?: _UserSession): void {
@@ -805,7 +881,92 @@ export namespace Api {
                             quizAttemptId: quizAttempt.getOID(),
                             value: data.value,
                             timestamp: new Date(),
+                            invalidated: null
+                        }, (err, result) => {
+                            if (handleMongoError(err, res)) { return; }
+
+                            return res({
+                                success: true,
+                                payload: {
+                                    id: result.insertedId.toHexString(),
+                                }
+                            });
+                        });
+                    }
+                );
+            })().catch((e) => {
+                console.error(e);
+
+                return res({
+                    success: false,
+                    code: "UNKNOWN_ERROR",
+                    message: e.toString(),
+                });
+            });
+        }
+
+
+
+
+        @ApiDecorators.ApplySession
+        @ApiDecorators.AdminOnly
+        public static Post_Multiple_Markers_Mode(moocchat: Moocchat, res: ApiResponseCallback<IMoocchatApi.ToClientInsertionIdResponse>, data: IMoocchatApi.ToServerStandardRequestBase & FromClientData.Mark, session?: _UserSession): void {
+            const db = moocchat.getDb();
+
+            let missingParameters: string[] = [];
+
+            !data.method && missingParameters.push("method");
+            !data.quizAttemptId && missingParameters.push("quizAttemptId");
+            (data.value !== 0 && !data.value) && missingParameters.push("value");
+
+            if (missingParameters.length > 0) {
+                return res({
+                    success: false,
+                    code: "MISSING_PARAMETERS",
+                    message: `Input missing parameters: ${missingParameters.join(", ")}`
+                });
+            }
+
+            (async () => {
+                // Look up quiz attempt ID being marked and check that the course is equal to the marker user session course
+                const quizAttemptId = data.quizAttemptId!;
+                const quizAttempt = await _QuizAttempt.GetAutoFetch(db, quizAttemptId);
+
+                if (!quizAttempt) {
+                    throw new Error(`Quiz attempt ID "${quizAttemptId}" cannot be found`);
+                }
+
+                const markerSessionCourse = session!.getCourse();
+                const quizAttemptCourse = quizAttempt.getQuizSchedule().getData().course;
+                const markerId = session!.getUser().getData()._id;
+
+                if (markerSessionCourse !== quizAttemptCourse) {
+                    throw new Error(`Marker session course "${markerSessionCourse}" does not match marked quiz attempt course "${quizAttemptCourse}"`);
+                }
+
+                // Set previous marks invalid
+                new DBMark(db).getCollection().updateMany(
+                    {
+                        quizAttemptId: quizAttempt.getOID(),
+                        markerId: markerId,
+                        invalidated: null,
+                    },
+                    {
+                        $set: {
+                            invalidated: new Date(),
+                        },
+                    },
+                    (err, result) => {
+                        if (handleMongoError(err, res)) { return; }
+
+                        new DBMark(db).insertOne({
+                            method: data.method,
+                            markerUserSessionId: session!.getOID(),
+                            quizAttemptId: quizAttempt.getOID(),
+                            value: data.value,
+                            timestamp: new Date(),
                             invalidated: null,
+                            markerId: markerId
                         }, (err, result) => {
                             if (handleMongoError(err, res)) { return; }
 
