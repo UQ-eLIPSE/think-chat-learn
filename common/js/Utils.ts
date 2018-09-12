@@ -24,6 +24,13 @@ export namespace Utils {
             return secToMs(minutes * 60);
         }
 
+        export function secondsToMinutes(seconds: number) {
+            return seconds/60;
+        }
+        export function msToMinutes(milliseconds: number) {
+            return secondsToMinutes(milliseconds/1000);
+        }
+
         /**
          * Converts hours to milliseconds.
          * 

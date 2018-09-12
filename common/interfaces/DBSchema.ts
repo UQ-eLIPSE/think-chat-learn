@@ -25,6 +25,17 @@ export interface Question<OID> {
      * as a reminder to students during chat session.
      */
     inChatTextBlock?: string | null,
+
+    /**
+     * Contains system-generated chat prompts (when enabled). Used to send automatic message prompts when students have
+     * stopped chatting.
+     */
+    systemChatPromptStatements?: SystemChatPromptStatement[] | null;
+}
+
+export interface SystemChatPromptStatement {
+    absoluteTimeDelay: number | undefined,
+    statement: string
 }
 
 export interface QuestionAdvice<OID> {
@@ -109,7 +120,7 @@ export interface Survey_Content_MultipleChoiceList {
     values: string[],
 }
 
-export type Survey_Content = 
+export type Survey_Content =
     Survey_Content_Heading |
     Survey_Content_TextShort |
     Survey_Content_MultipleChoiceInline |
@@ -167,6 +178,7 @@ export interface Mark<OID, Date> {
     method?: MarkingMethod,
     timestamp?: Date,
     invalidated?: Date | null,
+    markerId?: OID
 }
 
 // export type MarkingMethod = "MOUSOKU";

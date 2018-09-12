@@ -22,6 +22,7 @@ import { Quizzes } from "./Quizzes";
 import * as IMoocchatApi from "../../../../common/interfaces/IMoocchatApi";
 import { ILTIData } from "../../../../common/interfaces/ILTIData";
 import { AuthDataWrapperLTI } from "../../../js/auth/AuthDataWrapperLTI";
+import { SystemChatPromptStatement } from "../../../../common/interfaces/ToClientData";
 
 // LTI data should be inserted on the page during LTI handover
 declare const _LTI_BASIC_LAUNCH_DATA: ILTIData | undefined;
@@ -380,4 +381,4 @@ export interface AjaxFuncFactoryResultCollection {
 }
 
 export type AjaxFuncWithoutData = <T>(url: string) => { promise: Promise<T>, xhr: JQueryXHR };
-export type AjaxFuncWithData = <T>(url: string, data: { [key: string]: string | number | undefined | null } | string) => { promise: Promise<T>, xhr: JQueryXHR }; 
+export type AjaxFuncWithData = <T>(url: string, data: { [key: string]: string | number | undefined | null | SystemChatPromptStatement[] } | string) => { promise: Promise<T>, xhr: JQueryXHR }; 

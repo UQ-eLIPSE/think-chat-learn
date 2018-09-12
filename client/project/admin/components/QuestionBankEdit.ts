@@ -18,7 +18,7 @@ import { QuestionBankSectionInChatTextBlock } from "./QuestionBankSectionInChatT
 
 import * as IMoocchatApi from "../../../../common/interfaces/IMoocchatApi";
 import * as ToClientData from "../../../../common/interfaces/ToClientData";
-
+import { QuestionBankSectionSystemChatPromptStatements } from "./QuestionBankSectionSystemChatPromptStatements";
 export class QuestionBankEdit extends ComponentRenderable {
     private ajaxFuncs: AjaxFuncFactoryResultCollection | undefined;
     private readonly components = new KVStore<Component>();
@@ -81,6 +81,8 @@ export class QuestionBankEdit extends ComponentRenderable {
         this.components.put("content", new QuestionBankSectionContent(this.section$(".question-bank-section-content"), this.getLayoutData(), this));
         this.components.put("options", new QuestionBankSectionOptions(this.section$(".question-bank-section-options"), this.getLayoutData(), this));
         this.components.put("in-chat-text-block", new QuestionBankSectionInChatTextBlock(this.section$(".question-bank-section-in-chat-text-block"), this.getLayoutData(), this));
+        this.components.put("system-chat-prompt-statements", new QuestionBankSectionSystemChatPromptStatements(this.section$(".question-bank-section-system-chat-prompt-statements"), this.getLayoutData(), this));
+        // this.components.put("options", new QuestionOptions(this.section$("#question-options"), this.getLayoutData(), this));
     }
 
     private readonly hideContent = () => {
@@ -113,14 +115,18 @@ export class QuestionBankEdit extends ComponentRenderable {
         const onSaveButtonClick = () => {
             const sectionContentComponent = this.getComponent<QuestionBankSectionContent>("content");
             const sectionInChatTextBlockComponent = this.getComponent<QuestionBankSectionInChatTextBlock>("in-chat-text-block");
+            const sectionSystemChatPromptStatements = this.getComponent<QuestionBankSectionSystemChatPromptStatements>("system-chat-prompt-statements");
 
             const title = sectionContentComponent.getTitle();
             const content = sectionContentComponent.getContent();
+            // Get the system prompt statements, or `null` when disabled
 
             // Get the in chat text block content, or `null` when disabled
             // NOTE: `undefined` does not serialised to a value in JSON
             const inChatTextBlock = sectionInChatTextBlockComponent.getContent() || null;
 
+            const systemChatPromptStatements = sectionSystemChatPromptStatements.getContent() || null;
+            
             // Prevent double clicks
             $saveButton.off("click", onSaveButtonClick);
 
@@ -129,6 +135,7 @@ export class QuestionBankEdit extends ComponentRenderable {
                     title,
                     content,
                     inChatTextBlock,
+                    systemChatPromptStatements
                 });
 
             // Store in XHR store to permit aborting when necessary
@@ -228,6 +235,7 @@ export class QuestionBankEdit extends ComponentRenderable {
         const sectionContentComponent = this.getComponent<QuestionBankSectionContent>("content");
         const sectionOptionsComponent = this.getComponent<QuestionBankSectionOptions>("options");
         const sectionInChatTextBlockComponent = this.getComponent<QuestionBankSectionInChatTextBlock>("in-chat-text-block");
+        const sectionSystemChatPromptStatements = this.getComponent<QuestionBankSectionSystemChatPromptStatements>("system-chat-prompt-statements");
 
         return Promise.all([
             sectionContentComponent.init(this.question)
@@ -242,6 +250,10 @@ export class QuestionBankEdit extends ComponentRenderable {
                 .then(() => {
                     sectionInChatTextBlockComponent.render();
                 }),
+            sectionSystemChatPromptStatements.init(this.question)
+                .then(() => {
+                    sectionSystemChatPromptStatements.render();
+                })
         ]);
     }
 }
