@@ -151,7 +151,6 @@ AssociateGETEndpoint("/api/admin/question/:questionId/correctOption", Api.Questi
 AssociateGETEndpoint("/api/admin/user", Api.User.Gets);
 AssociateGETEndpoint("/api/admin/user/:userId", Api.User.Get);
 AssociateGETEndpoint("/api/admin/user/multiple/:userId",  Api.User.Get_Multiple_Markers_Mode);
-// AssociateGETEndpoint("/api/admin/user/session/:sessionId", Api.User.Get_WithSessionId);
 AssociateGETEndpoint("/api/admin/user/:userId/session", Api.UserSession.Gets_WithUserId);
 AssociateGETEndpoint("/api/admin/system/info", Api.System.Get_Info);
 // AssociateGETEndpoint("/api/admin/mark/:markId", Api.Mark.Get);
