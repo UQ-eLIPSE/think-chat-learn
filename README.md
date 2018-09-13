@@ -9,6 +9,8 @@
 5. Ensure configuration files are set up correctly:
    * `common/config/Conf.ts` - shared configuration (PacSeqSocket, section timings, answers etc.)
    * `client/config/Conf.ts` - client config
+     * **Make sure that the Conf.server.url property is correctly set as the server's URL**
+       * `localhost:[PORT_NUMBER]` can be used for running the application locally
    * `server/config/Conf.ts` - server config
 6. Build source: `npm run build`
 7. Seed the database by running `npm run seed` (only needs to be done once and will wipe existing tables)

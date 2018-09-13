@@ -2,6 +2,8 @@ import * as socket from "socket.io-client";
 
 import { PacSeqSocket_Client } from "../../common/js/PacSeqSocket_Client";
 
+import { Conf } from "../config/Conf";
+
 /**
  * MOOCchat
  * Websocket management class module
@@ -13,7 +15,7 @@ export class WebsocketManager {
 
     public open() {
         this.socketProxy = new PacSeqSocket_Client(
-            socket.connect({
+            socket.connect('//' + Conf.server.url, {
                 path: "/socket.io",
 
                 // Permit infinite reconnects
