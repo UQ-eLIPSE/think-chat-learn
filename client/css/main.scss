@@ -1344,6 +1344,13 @@ ol.welcome-instructions {
     width: 25%;
     word-break: break-all;
     word-break: break-word;
+    
+    & img {
+        max-width: 100%;
+        // Unfortunately, need to have 'important' here since
+        // CKEDITOR sets the style attribute directly on image elements
+        height: auto !important;
+    }
 }
 
 .in-chat-text-block-heading-table > .row > * {

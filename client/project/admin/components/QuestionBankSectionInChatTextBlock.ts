@@ -114,11 +114,17 @@ export class QuestionBankSectionInChatTextBlock extends ComponentRenderable {
         return true;
     }
 
+    /** Performs basic empty content checks */
+    public readonly isEmpty = (content: string) => {
+        const contentNoSpaces = content.trim().replace(/&nbsp;|<p>|<\/p>|<span>|<\/span>|<br>| .*\s/g,'');
+        return (contentNoSpaces === '');   
+    }
+
     public readonly getContent = () => {
-        if (!this.isRendered() || !this.isValueEnabled()) {
+        if (!this.isRendered() || !this.isValueEnabled() || this.isEmpty(this.questionContentEditor!.getData())) {
             return;
         }
-
+        
         return this.questionContentEditor!.getData();
     }
 }
