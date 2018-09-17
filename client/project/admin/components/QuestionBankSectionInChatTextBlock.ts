@@ -8,7 +8,7 @@ import { LayoutData } from "../../../js/ui/LayoutData";
 
 import * as ToClientData from "../../../../common/interfaces/ToClientData";
 
-export class QuestionBankSectionContent extends ComponentRenderable {
+export class QuestionBankSectionInChatTextBlock extends ComponentRenderable {
     private questionContentEditor: ckeditor.editor | undefined;
     private question: ToClientData.Question | undefined;
 
@@ -25,12 +25,13 @@ export class QuestionBankSectionContent extends ComponentRenderable {
         });
 
         this.setRenderFunc(() => {
-            return new Layout("admin-question-bank-section-content", this.getLayoutData())
+            return new Layout("admin-question-bank-section-in-chat-text-block", this.getLayoutData())
                 .wipeThenAppendTo(this.getRenderTarget())
                 .promise
                 .then(this.hideContent)
                 .then(this.insertData)
                 .then(this.setupCkeditor)
+                .then(this.setupEnableCheckbox)
                 .then(this.showContent)
                 .catch((error) => {
                     this.dispatchError(error);
@@ -51,8 +52,15 @@ export class QuestionBankSectionContent extends ComponentRenderable {
             return;
         }
 
-        this.section$("#title").val(this.question.title!);
-        this.section$("#content").val(this.question.content!);
+        const inChatTextBlockValue = this.question.inChatTextBlock;
+
+        if (inChatTextBlockValue) {
+            this.section$("#enabled").prop("checked", true);
+            this.section$("#content").val(this.question.inChatTextBlock!);
+        } else {
+            this.section$("#enabled").prop("checked", false);
+            this.section$("#content").val("");
+        }
     }
 
     private readonly setupCkeditor = () => {
@@ -63,6 +71,33 @@ export class QuestionBankSectionContent extends ComponentRenderable {
                 resolve();
             });
         });
+    }
+
+    private readonly setupEnableCheckbox = () => {
+        const $enabledCheckbox = this.section$("#enabled");
+
+        const onCheckboxChange = () => {
+            const checked = $enabledCheckbox.is(":checked");
+
+            // Show/hide editor depending on enabled checkbox
+            if (checked) {
+                this.questionContentEditor!.container.show();
+            } else {
+                this.questionContentEditor!.container.hide();
+            }
+        };
+
+        // Attach event listener + run once now
+        $enabledCheckbox.on("change", onCheckboxChange);
+        onCheckboxChange();
+    }
+
+    public readonly isValueEnabled = () => {
+        if (!this.isRendered()) {
+            return false;
+        }
+
+        return this.section$("#enabled").is(":checked");
     }
 
     public readonly isRendered = () => {
@@ -79,19 +114,17 @@ export class QuestionBankSectionContent extends ComponentRenderable {
         return true;
     }
 
-    public readonly getTitle = () => {
-        if (!this.isRendered()) {
-            return;
-        }
-
-        return this.section$("#title").val() as string;
+    /** Performs basic empty content checks */
+    public readonly isEmpty = (content: string) => {
+        const contentNoSpaces = content.trim().replace(/&nbsp;|<p>|<\/p>|<span>|<\/span>|<br>| .*\s/g,'');
+        return (contentNoSpaces === '');   
     }
 
     public readonly getContent = () => {
-        if (!this.isRendered()) {
+        if (!this.isRendered() || !this.isValueEnabled() || this.isEmpty(this.questionContentEditor!.getData())) {
             return;
         }
-
+        
         return this.questionContentEditor!.getData();
     }
 }

@@ -161,8 +161,8 @@ If you are unable to log in, please contact support.`);
     }
 
     private ajaxFactoryWithData(method: "POST" | "PUT", includeSession: boolean = true) {
-        return <T>(url: string, data: { [key: string]: string | number | undefined } | string) => {
-            const headers: { [header: string]: string | undefined } = {};
+        return <T>(url: string, data: { [key: string]: string | number | undefined | null } | string) => {
+            const headers: { [header: string]: string | undefined | null } = {};
 
             if (includeSession) {
                 headers["Moocchat-Session-Id"] = this.sessionId;

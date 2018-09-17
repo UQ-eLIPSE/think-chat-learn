@@ -19,6 +19,12 @@ export interface Question<OID> {
     title?: string,
     content?: string,
     course?: string,
+    
+    /**
+     * Contains text that will appear to the side of the chat window; intended 
+     * as a reminder to students during chat session.
+     */
+    inChatTextBlock?: string | null,
 
     /**
      * Contains system-generated chat prompts (when enabled). Used to send automatic message prompts when students have
