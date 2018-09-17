@@ -1,6 +1,11 @@
 import {Utils} from "../../common/js/Utils";
 
 export const Conf = {
+    server: {
+        // Change url to localhost:[PORT_NUMBER] for runnning locally
+        // Replace with the absolute address where moocchat server is deployed
+        url: "moocchat-001.uqcloud.net"
+    },
     taskTimer: {
         outOfTimeRemainingMs: Utils.DateTime.secToMs(60)
     },
