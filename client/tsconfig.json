@@ -1,27 +1,40 @@
 {
-	"compilerOptions": {
-        "target": "es5",
-        "module": "amd",
-
-        "noImplicitAny": true,
-        "noImplicitThis": true,
-        "noImplicitReturns": true,
-        // "strictNullChecks": true,
-
-        "noUnusedLocals": true,
-        // "noUnusedParameters": true,
-        
-        "removeComments": true,
-        "preserveConstEnums": true,
-        "forceConsistentCasingInFileNames": true,
-        
-        "sourceMap": false,
-
-        "outDir": "../build/client",
-        "outFile": "../build/client/static/js/moocchat/main.js"
+    "compilerOptions": {
+      "target": "es5",
+      "module": "esnext",
+      "strict": true,
+      "jsx": "preserve",
+      "importHelpers": true,
+      "moduleResolution": "node",
+      "experimentalDecorators": true,
+      "allowJs": true,
+      "esModuleInterop": true,
+      "allowSyntheticDefaultImports": true,
+      "sourceMap": true,
+      "baseUrl": ".",
+      "types": [
+        "webpack-env",
+      ],
+      "paths": {
+        "@/*": [
+          "src/*"
+        ]
+      },
+      "lib": [
+        "esnext",
+        "dom",
+        "dom.iterable",
+        "scripthost"
+      ]
     },
-    "files": [
-        "./index.d.ts",
-        "./main.ts"
+    "include": [
+      "src/**/*.ts",
+      "src/**/*.tsx",
+      "src/**/*.vue",
+      "tests/**/*.ts",
+      "tests/**/*.tsx"
+    ],
+    "exclude": [
+      "node_modules"
     ]
-}
+}  

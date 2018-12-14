@@ -3,7 +3,7 @@
 ## Setting up
 
 1. Clone repo
-2. Install Nodejs 6.x LTS and MongoDB
+2. Install Nodejs 10.x LTS and MongoDB
 3. Start MongoDB, usually the command to run is `mongod`
 4. Run `npm install` from within MOOCchat folder
 5. Ensure configuration files are set up correctly:
