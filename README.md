@@ -16,6 +16,10 @@
 7. Seed the database by running `npm run seed` (only needs to be done once and will wipe existing tables)
 8. Run `npm start`
 
+## Running Client for Local Development (DeepConcepts)
+1. Go to client `cd client`
+2. Run `npm run serve`
+
 ## Compiling code
 Code must now be compiled prior to running the server or serving the client.
 
