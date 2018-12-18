@@ -61,6 +61,8 @@ server/config/Conf.ts
 
 # Config file to set up vue endpoint
 client/vue.config.js
+admin/vue.config.js
 
 # Front end dist files
 client/dist
+admin/dist

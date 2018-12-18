@@ -11,6 +11,7 @@ import { Moocchat } from "./js/Moocchat";
 import { Api, ApiHandlerBase } from "./js/api/Api";
 
 import { StudentPageLogin } from "./js/auth/StudentPageAuth"
+import { AdminPageLogin } from "./js/auth/AdminPageAuth"
 
 // Initialise logger proxy for timestamping console output
 Logger.Init({
@@ -157,6 +158,7 @@ AssociatePOSTEndpoint("/api/admin/mark-multiple", Api.Mark.Post_Multiple_Markers
 
 /** Note this post request is different as this redirects */
 app.post("/api/client/login", StudentPageLogin);
+app.post("/api/admin/login", AdminPageLogin);
 
 // PUTs
 AssociatePUTEndpoint("/api/admin/quiz/:quizId", Api.Quiz.Put);

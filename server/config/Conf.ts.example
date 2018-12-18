@@ -10,6 +10,12 @@ export const Conf: IConf = {
     http: {
         maxSockets: 65000
     },
+    adminPage: "http://localhost:8080/admin/#/login",
+    clientPage: "http://localhost:8080/client/#/login",
+    jwt: {
+        SECRET: "YOUR_SECRET",
+        TOKEN_LIFESPAN: "7h"
+    },
     socketIo: {
         pingInterval: 5000,
         pingTimeout: 16000
@@ -58,6 +64,13 @@ interface IConf {
     http: {
         maxSockets: number
     },
+    // JWT settings
+    jwt: {
+        SECRET: string,
+        TOKEN_LIFESPAN: string
+    },
+    clientPage: string,
+    adminPage: string,
     socketIo: {
         pingInterval: number,
         pingTimeout: number

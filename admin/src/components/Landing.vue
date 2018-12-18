@@ -1,0 +1,66 @@
+<template>
+    <div class="container">
+        <!-- All pages must specify <section data-name="..." /> as root element, with name **equal to the file name** -->
+        <section data-name="welcome">
+            <h1>Welcome, <span id="first-name">Some First Name</span></h1>
+            <button id="not-you-help-link" class="neutral thin link">Not you?</button>
+            <p id="not-you-help" class="mc-inline-message">
+                Is your name not <span id="full-name">Some First Name</span>?<br>
+                <br>
+                MOOCchat uses user data from Blackboard. If you would like to log in as someone else, please close MOOCchat, log out of Blackboard
+                and try again.
+            </p>
+
+            <h2>How to use MOOCchat</h2>
+            <ol class="welcome-instructions">
+                <li>
+                    <h3>Respond to scenario</h3>
+                    <ul>
+                        <li>Read and respond to the scenario presented</li>
+                        <li>Score yourself on your confidence in explaining the concept</li>
+                        <li>Make sure to also keep track of the timer in the left sidebar</li>
+                    </ul>
+                </li>
+                <li>
+                    <h3>Discuss as a group and agree on a best response</h3>
+                    <ul>
+                        <li>You'll be put into a group of up to 3 students</li>
+                        <li>Discuss the responses from you and other students</li>
+                        <li>Your group must agree on a best response before the chat ends</li>
+                    </ul>
+                </li>
+                <li>
+                    <h3>Reflect on how you changed your thinking</h3>
+                    <ul>
+                        <li>Reflect on whether your response changed, and how</li>
+                        <li>Score yourself again on your confidence in explaining the concept</li>
+                    </ul>
+                </li>
+                <li>
+                    <h3>Complete a brief survey and finish</h3>
+                    <ul>
+                        <li>Fill out a survey about your MOOCchat experience</li>
+                        <li>You'll be presented a receipt of completion at the end for you to save or print</li>
+                    </ul>
+                </li>
+            </ol>
+
+            <!--<h2>Experiencing issues?</h2>
+            <p>If you encounter issues, contact <a href="mailto:elearning@eait.uq.edu.au" target="_blank">elearning@eait.uq.edu.au</a> and supply a screenshot where possible.</p>-->
+
+            <h2>Ready?</h2>
+            <button id="start-session">Start your session</button>
+        </section>
+    </div>
+</template>
+
+<style scoped>
+</style>
+
+<script lang="ts">
+import {Vue, Component} from "vue-property-decorator";
+
+@Component({})
+export default class Landing extends Vue {
+}
+</script>

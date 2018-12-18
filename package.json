@@ -11,13 +11,12 @@
     "test_run": "mocha \"test-build/test/**/*.js\"",
     "test": "npm run clean_tests && npm run test_compile && npm run test_run",
     "clean": "rimraf build",
-    "build_client_main": "tsc --project ./client/tsconfig.json",
-    "build_client_backup_client": "tsc --project ./client/tsconfig-backup-client.json",
+    "build_admin": "cd ./admin && npm run build",
     "build_client": "cd ./client && npm run build",
     "build_server_main": "tsc --project ./server/tsconfig.json",
     "build_server_copy_static": "copyfiles \"./server/static/**\" ./build",
     "build_server": "npm run build_server_main && npm run build_server_copy_static",
-    "build": "npm run clean && npm run build_client && npm run build_server"
+    "build": "npm run clean && npm run build_client && npm run build_server && npm run build_admin"
   },
   "author": "eLIPSE",
   "license": "MIT",
