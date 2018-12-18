@@ -58,3 +58,9 @@ test-build
 client/config/Conf.ts
 common/config/Conf.ts
 server/config/Conf.ts
+
+# Config file to set up vue endpoint
+client/vue.config.js
+
+# Front end dist files
+client/dist

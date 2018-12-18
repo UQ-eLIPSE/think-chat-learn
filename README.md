@@ -8,9 +8,7 @@
 4. Go to client `cd client`
 5. Install the packages `npm install`
 
-## Running Client for Local Development (DeepConcepts)
-1. Go to client `cd client`
-2. Run `npm run serve`
-
-## Server
-Server has not been implemented as of 14/12/2018
+## Building and Running (DeepConcepts)
+1. Go to root directory
+2. Run `npm run build`
+3. Run `npm run start`

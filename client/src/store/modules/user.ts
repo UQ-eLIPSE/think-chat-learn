@@ -4,6 +4,7 @@ import { FrontEndUser } from "../../../../common/interfaces/User";
 
 export interface IState {
     user: FrontEndUser;
+    idToken: string;
 }
 
 const state: IState = {
@@ -13,7 +14,8 @@ const state: IState = {
         surname: "Person",
         username: "s123456",
         researchConsent: false
-    }
+    },
+    idToken: ""
 };
 
 const mutationKeys = {
@@ -26,13 +28,18 @@ const getters = {
     }
 };
 const actions = {
-
+    login({ commit }: {commit: Commit}, idToken: string) {
+        return commit("LOGIN", idToken);
+    },
 };
 
 const mutations = {
     [mutationKeys.SET_USER](funcState: IState, data: FrontEndUser) {
         Vue.set(funcState, "user", data);
-    }
+    },
+    ["LOGIN"](funcState: IState, idToken: string) {
+        Vue.set(funcState, "idToken", idToken);
+    },
 };
 
 export default {

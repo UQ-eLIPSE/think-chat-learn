@@ -10,6 +10,8 @@ import { Logger } from "../common/js/Logger";
 import { Moocchat } from "./js/Moocchat";
 import { Api, ApiHandlerBase } from "./js/api/Api";
 
+import { StudentPageLogin } from "./js/auth/StudentPageAuth"
+
 // Initialise logger proxy for timestamping console output
 Logger.Init({
     enableLogProxy: true,
@@ -40,7 +42,6 @@ const io = SocketIO(server, {
     pingInterval: Conf.socketIo.pingInterval,
     pingTimeout: Conf.socketIo.pingTimeout
 });
-
 console.log(`socket.io listening on ${Conf.portNum}`);
 
 
@@ -64,7 +65,11 @@ console.log("Setting up endpoints...");
 // If static content delivery by Express is enabled,
 // everything under URL/static/* will be statically delivered from PROJECT/build/client/*
 if (Conf.express && Conf.express.serveStaticContent) {
-    app.use("/static", express.static(__dirname + "/../client/static"));
+
+    // Note that express will attempt to find the file.
+    // For logging in we use the api endpoints (and redirect there)
+    app.use("/client", express.static(__dirname + "/../../client/dist/"));
+    app.use("/admin", express.static(__dirname + "/../../admin/dist/"));
 }
 
 // LTI launcher page only available in test mode
@@ -95,17 +100,6 @@ app.post("/backup-client", function(req, res) {
 app.get("/backup-client", function(req, res) {
     res.render("backup-client.ejs");
 });
-
-
-
-
-
-
-
-
-
-
-
 
 console.log("Launching MOOCchat...");
 const moocchat = new Moocchat(io);
@@ -160,6 +154,10 @@ AssociatePOSTEndpoint("/api/admin/question", Api.Question.Post);
 AssociatePOSTEndpoint("/api/admin/question/:questionId/option", Api.QuestionOption.Post_WithQuestionId);
 AssociatePOSTEndpoint("/api/admin/mark", Api.Mark.Post);
 AssociatePOSTEndpoint("/api/admin/mark-multiple", Api.Mark.Post_Multiple_Markers_Mode);
+
+/** Note this post request is different as this redirects */
+app.post("/api/client/login", StudentPageLogin);
+
 // PUTs
 AssociatePUTEndpoint("/api/admin/quiz/:quizId", Api.Quiz.Put);
 AssociatePUTEndpoint("/api/admin/question/:questionId", Api.Question.Put);

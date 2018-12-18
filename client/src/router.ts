@@ -6,9 +6,11 @@ import Discussion from "./components/Discussion.vue";
 import Reflection from "./components/Reflection.vue";
 import Survey from "./components/Survey.vue";
 import Finish from "./components/Finish.vue";
+import Login from "./components/Login.vue";
 
 Vue.use(Router);
 
+// Note that the router config is done in the vue.config.js file
 export default new Router({
   routes: [{
     path: "/",
@@ -34,5 +36,9 @@ export default new Router({
     path: "/finish",
     name: "Finish",
     component: Finish
+  }, {
+    path: "/login",
+    name: "Login",
+    component: Login
   }],
 });
