@@ -91,7 +91,8 @@ export class ChatGroup {
 
         chatGroup.quizAttemptIds.forEach((quizAttemptId) => {
             const promise = QuizAttempt.GetAutoFetch(db, quizAttemptId.toHexString());
-            quizAttemptFetchPromises.push(promise);
+            // TODO fix typing
+            quizAttemptFetchPromises.push(promise as any);
         });
 
         const quizAttempts = await Promise.all(quizAttemptFetchPromises);

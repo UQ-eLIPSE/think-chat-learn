@@ -88,7 +88,8 @@ export class QuestionOptionCorrect {
             throw new Error(`Question option "${optionId}" missing for question option correct "${questionOptionCorrectId}"`)
         }
 
-        return new QuestionOptionCorrect(db, questionOption, question, questionOption);
+        // TODO fix this 
+        return new QuestionOptionCorrect(db, questionOption as any, question, questionOption);
     }
 
     private static async Update(questionOptionCorrect: QuestionOptionCorrect, updateData: IDB_QuestionOptionCorrect) {

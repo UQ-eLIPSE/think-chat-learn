@@ -119,9 +119,9 @@ export class SurveyResponse {
         this.addToStore();
     }
 
-    // private getDb() {
-    //     return this.db;
-    // }
+    private getDb() {
+        return this.db;
+    }
 
     public getOID() {
         return this.data._id!;

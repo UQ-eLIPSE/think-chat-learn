@@ -17,5 +17,8 @@ import {Vue, Component} from "vue-property-decorator";
 
 @Component({})
 export default class Reflection extends Vue {
+    private mounted() {
+        this.$store.dispatch("someAction");
+    }
 }
 </script>

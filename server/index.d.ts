@@ -1,7 +1,4 @@
 /// Type definitions for server
-
-/// <reference path="./typings/index.d.ts" />
-
 // oauth-signature
 declare module "oauth-signature" {
     export function generate(

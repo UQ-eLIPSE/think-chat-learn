@@ -4,7 +4,8 @@ import * as express from "express";
 import * as http from "http";
 import * as SocketIO from "socket.io";
 import * as bodyParser from "body-parser";
-
+import * as expressJwt from "express-jwt";
+import * as jwt from "jsonwebtoken";
 import { Logger } from "../common/js/Logger";
 
 import { Moocchat } from "./js/Moocchat";
@@ -57,7 +58,9 @@ app.use(bodyParser.urlencoded({     // URL-encoded for LTI
     extended: true
 }));
 
-
+// Token refresher. Only runs during login
+app.use(authFilter("/api/client/login", expressJwt({ secret: Conf.jwt.SECRET })));
+app.use(authFilter("/api/client/login", refreshJWT));
 
 
 console.log("Setting up endpoints...");
@@ -261,4 +264,29 @@ function AssociateDELETEEndpoint<PayloadType>(url: string, endpointHandler: ApiH
         // Run endpoint handler, with the response request being JSON
         endpointHandler(moocchat, p => res.json(p), data);
     });
+}
+
+// Only login gets affected
+function authFilter(path: any, middleware: any) {
+    return function(req: express.Request, res: express.Response, next: express.NextFunction): void {
+        // Checks for authorisation and login
+        if ((req.path == path) || !req.header("authorization")) {
+            return next();
+        }
+        return middleware(req, res, next);
+    }
+}
+
+
+// Note that the user and the associated coures shouldn't change often
+function refreshJWT(req: express.Request, res: express.Response, next: express.NextFunction): void {
+    const oldToken = req.user;
+    delete oldToken.iat;
+    delete oldToken.exp;
+
+    const token = jwt.sign(oldToken, Conf.jwt.SECRET, { expiresIn: Conf.jwt.TOKEN_LIFESPAN });
+    res.setHeader("Access-Token", token);
+    res.setHeader("Access-Control-Expose-Headers", "Access-Token");
+
+    return next();
 }

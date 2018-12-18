@@ -14,6 +14,7 @@ export class ChatMessage {
     private readonly quizAttempt: QuizAttempt;
     private readonly chatGroup: ChatGroup;
 
+    // tslint:disable-next-line
     private readonly db: mongodb.Db;
 
     public static Get(chatMessageId: string) {

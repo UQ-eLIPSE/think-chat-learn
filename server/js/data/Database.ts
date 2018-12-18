@@ -10,8 +10,11 @@ export abstract class Database<CollectionData> {
     }
 
 
-    public static Connect(url: string, callback?: mongodb.MongoCallback<mongodb.Db>) {
-        mongodb.MongoClient.connect(url, callback);
+    public  static async Connect(url: string) {
+        const client = await mongodb.MongoClient.connect(url, { useNewUrlParser: true });
+        
+        return client.db();
+
     }
 
     public static Collection(db: mongodb.Db, collectionName: string, callback?: mongodb.MongoCallback<mongodb.Collection>) {
@@ -23,11 +26,11 @@ export abstract class Database<CollectionData> {
     }
 
     public static InsertOne<CollectionData>(collection: mongodb.Collection, data: CollectionData, callback?: mongodb.MongoCallback<mongodb.InsertOneWriteOpResult>) {
-        collection.insertOne(data, callback);
+        collection.insertOne(data, callback!);
     }
 
     public static InsertMany<CollectionData>(collection: mongodb.Collection, dataArray: CollectionData[], callback?: mongodb.MongoCallback<mongodb.InsertWriteOpResult>) {
-        collection.insertMany(dataArray, callback);
+        collection.insertMany(dataArray, callback!);
     }
 
     public static CursorToArray<CollectionData>(cursor: mongodb.Cursor, callback?: mongodb.MongoCallback<CollectionData[]>): void | Promise<any> {
@@ -43,20 +46,19 @@ export abstract class Database<CollectionData> {
     }
 
     public static UpdateOne(collection: mongodb.Collection, filter: Object, update: Object, callback?: mongodb.MongoCallback<mongodb.UpdateWriteOpResult>) {
-        collection.updateOne(filter, update, callback);
+        collection.updateOne(filter, update, callback!);
     }
 
     public static Delete(collection: mongodb.Collection, filter: Object, callback?: mongodb.MongoCallback<mongodb.DeleteWriteOpResultObject>) {
-        collection.deleteOne(filter, callback);
+        collection.deleteOne(filter, callback!);
     }
 
-    public static Close(db: mongodb.Db, callback?: mongodb.MongoCallback<void>): void | Promise<any> {
+    /*public static Close(db: mongodb.Db, callback?: mongodb.MongoCallback<void>): void | Promise<any> {
         if (callback) {
             return db.close(callback);
         }
-
         return db.close();
-    }
+    }*/
 
 
 

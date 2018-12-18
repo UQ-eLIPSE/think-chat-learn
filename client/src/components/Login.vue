@@ -3,7 +3,7 @@
 
 <script lang="ts">
 
-import { setIdToken } from "../utils/auth";
+import { setIdToken } from "../../../common/js/auth";
 import {Vue, Component} from "vue-property-decorator";
 
 @Component

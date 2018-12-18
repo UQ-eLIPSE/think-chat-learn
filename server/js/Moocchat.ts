@@ -21,16 +21,16 @@ export class Moocchat {
         this.setup();
     }
 
-    private setup() {
-        Database.Connect(Conf.database, (err, db) => {
-            if (err) {
-                return console.error(err.message);
-            }
+    private async setup() {
+        const db = await Database.Connect(Conf.database);
+            // , (err, db) => {
+            // if (err) {
+            //     return console.error(err.message);
+            // }
 
 
             // Set DB connection now that we have it
             this.db = db;
-
 
             // On each socket connection, join up to websocket endpoints
             this.socketIO.sockets.on("connection", (socketIoSocket) => {
@@ -67,7 +67,7 @@ export class Moocchat {
             });
 
             console.log("MOOCchat set up complete");
-        });
+        //});
     }
 
     public getDb() {

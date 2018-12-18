@@ -1,7 +1,8 @@
 import Vue from "vue";
 import { Commit } from "vuex";
 import { FrontEndUser } from "../../../../common/interfaces/User";
-
+import { API } from "../../../../common/js/DB_API";
+import { getIdToken } from '../../../../common/js/auth';
 export interface IState {
     user: FrontEndUser;
     idToken: string;
@@ -31,6 +32,9 @@ const actions = {
     login({ commit }: {commit: Commit}, idToken: string) {
         return commit("LOGIN", idToken);
     },
+    someAction() {
+        return API.request(API.POST, "session/lti", {});
+    }
 };
 
 const mutations = {
