@@ -2,10 +2,10 @@
     <div class="container">
         <!-- All pages must specify <section data-name="..." /> as root element, with name **equal to the file name** -->
         <section v-if="user" data-name="welcome">
-            <h1>Welcome, {{user.firstname}} </h1>
+            <h1>Welcome, {{user.firstName}} </h1>
             <button id="not-you-help-link" class="neutral thin link">Not you?</button>
             <p id="not-you-help" class="mc-inline-message">
-                Is your name not  {{user.firstname}}?<br>
+                Is your name not  {{user.firstName}}?<br>
                 <br>
                 MOOCchat uses user data from Blackboard. If you would like to log in as someone else, please close MOOCchat, log out of Blackboard
                 and try again.
@@ -62,11 +62,11 @@
 
 <script lang="ts">
 import {Vue, Component} from "vue-property-decorator";
-import { FrontEndUser } from "../../../common/interfaces/User";
+import { IUser } from "../../../common/interfaces/DBSchema";
 
 @Component({})
 export default class Landing extends Vue {
-    get user(): FrontEndUser | null {
+    get user(): IUser | null {
         return this.$store.getters.user;
     }
 }

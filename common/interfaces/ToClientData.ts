@@ -27,6 +27,12 @@ export type UserSession = DBSchema.UserSession<OID, Date>;
 
 export type Mark = DBSchema.Mark<OID, Date>;
 export type SystemChatPromptStatement = DBSchema.SystemChatPromptStatement;
+
+
+/** Deepconcepts remake */
+export type IUser = DBSchema.IUser;
+export type IQuizSchedule = DBSchema.IQuizSchedule;
+
 // API specific
 export interface Quiz {
     question: Question;
@@ -36,4 +42,9 @@ export interface Quiz {
 
 export interface QuizAttempt_User extends QuizAttempt {
     _user: User;
+}
+
+export interface LoginResponse {
+    user: IUser;
+    quiz: IQuizSchedule;
 }

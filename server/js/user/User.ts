@@ -58,6 +58,7 @@ export class User {
     }
 
     public static async GetAutoFetchAutoCreate(db: mongodb.Db, identity: IMoocchatIdentityInfo) {
+        // Cached storage
         const user = await User.Get(identity.identityId);
 
         if (user) {

@@ -1,7 +1,7 @@
 <template>
     <div class="sidebar">
         <h1 class="moochat-name">MOOCchat</h1>
-        <div class="course-name">Some Course Name</div>
+        <div class="course-name">{{user ? user.username : "No User" }}</div>
         <div class="logo"/>
         <!-- Add v-for later-->
         <ul>
@@ -50,8 +50,12 @@
 
 <script lang="ts">
 import {Vue, Component} from "vue-property-decorator";
+import { IUser } from "../../../common/interfaces/DBSchema";
+
 @Component({})
 export default class SideNav extends Vue {
-
+    get user(): IUser | null {
+        return this.$store.getters.user;
+    }
 }
 </script>

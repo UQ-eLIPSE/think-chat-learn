@@ -1,18 +1,6 @@
-import { Conf } from "./config/Conf";
-
-import * as express from "express";
-import * as http from "http";
-import * as SocketIO from "socket.io";
-import * as bodyParser from "body-parser";
-import * as expressJwt from "express-jwt";
-import * as jwt from "jsonwebtoken";
 import { Logger } from "../common/js/Logger";
+import App from "./App";
 
-import { Moocchat } from "./js/Moocchat";
-import { Api, ApiHandlerBase } from "./js/api/Api";
-
-import { StudentPageLogin } from "./js/auth/StudentPageAuth"
-import { AdminPageLogin } from "./js/auth/AdminPageAuth"
 
 // Initialise logger proxy for timestamping console output
 Logger.Init({
@@ -29,102 +17,12 @@ process.on("uncaughtException", (e: Error) => {
 
 console.log("Setting up server application...");
 
-
-
-// Generally the configuration for max sockets should be 65k to permit as many as possible
-http.globalAgent.maxSockets = Conf.http.maxSockets;
-
-
 // Launch the app
-const app = express();
-const server = http.createServer(app).listen(Conf.portNum);
-const io = SocketIO(server, {
-    serveClient: false,
+//const app = express();
+const app: App = new App();
+app.init();
 
-    pingInterval: Conf.socketIo.pingInterval,
-    pingTimeout: Conf.socketIo.pingTimeout
-});
-console.log(`socket.io listening on ${Conf.portNum}`);
-
-
-// Use ejs for templating on pages
-app.set("view engine", "ejs");
-app.set("views", __dirname + "/static/views");
-
-
-// POST body parsing
-app.use(bodyParser.json());         // JSON-encoded for MOOCchat API
-app.use(bodyParser.urlencoded({     // URL-encoded for LTI
-    extended: true
-}));
-
-// Token refresher. Only runs during login
-app.use(authFilter("/api/client/login", expressJwt({ secret: Conf.jwt.SECRET })));
-app.use(authFilter("/api/client/login", refreshJWT));
-
-
-console.log("Setting up endpoints...");
-
-
-// If static content delivery by Express is enabled,
-// everything under URL/static/* will be statically delivered from PROJECT/build/client/*
-if (Conf.express && Conf.express.serveStaticContent) {
-
-    // Note that express will attempt to find the file.
-    // For logging in we use the api endpoints (and redirect there)
-    app.use("/client", express.static(__dirname + "/../../client/dist/"));
-    app.use("/admin", express.static(__dirname + "/../../admin/dist/"));
-}
-
-// LTI launcher page only available in test mode
-if (Conf.lti && Conf.lti.testMode) {
-    app.get("/lti-launch", function(req, res) {
-        res.render("lti-launch.ejs");
-    });
-
-    app.get("/demo-login", function(req, res) {
-        res.render("lti-launch-2.ejs", { conf: Conf });
-    });
-}
-
-// LTI intermediary (for incoming requests from Blackboard)
-app.post("/lti.php", function(req, res) {
-    res.render("lti-intermediary.ejs", { postData: req.body });
-});
-
-app.get("/lti.php", function(req, res) {
-    res.render("lti-intermediary.ejs");
-});
-
-// Backup client
-app.post("/backup-client", function(req, res) {
-    res.render("backup-client.ejs", { postData: req.body });
-});
-
-app.get("/backup-client", function(req, res) {
-    res.render("backup-client.ejs");
-});
-
-console.log("Launching MOOCchat...");
-const moocchat = new Moocchat(io);
-
-
-
-// MOOCchat standard client
-app.post("/", (req, res) => {
-    res.render("index.ejs", { conf: Conf, postData: req.body });
-});
-
-app.get("/", (req, res) => {
-    res.render("index.ejs", { conf: Conf });
-});
-
-// Admin client
-app.post("/admin", function(req, res) {
-    res.render("admin.ejs", { postData: req.body });
-});
-
-
+/*
 // Admin
 
 // GETs
@@ -159,9 +57,7 @@ AssociatePOSTEndpoint("/api/admin/question/:questionId/option", Api.QuestionOpti
 AssociatePOSTEndpoint("/api/admin/mark", Api.Mark.Post);
 AssociatePOSTEndpoint("/api/admin/mark-multiple", Api.Mark.Post_Multiple_Markers_Mode);
 
-/** Note this post request is different as this redirects */
-app.post("/api/client/login", StudentPageLogin);
-app.post("/api/admin/login", AdminPageLogin);
+
 
 // PUTs
 AssociatePUTEndpoint("/api/admin/quiz/:quizId", Api.Quiz.Put);
@@ -264,29 +160,4 @@ function AssociateDELETEEndpoint<PayloadType>(url: string, endpointHandler: ApiH
         // Run endpoint handler, with the response request being JSON
         endpointHandler(moocchat, p => res.json(p), data);
     });
-}
-
-// Only login gets affected
-function authFilter(path: any, middleware: any) {
-    return function(req: express.Request, res: express.Response, next: express.NextFunction): void {
-        // Checks for authorisation and login
-        if ((req.path == path) || !req.header("authorization")) {
-            return next();
-        }
-        return middleware(req, res, next);
-    }
-}
-
-
-// Note that the user and the associated coures shouldn't change often
-function refreshJWT(req: express.Request, res: express.Response, next: express.NextFunction): void {
-    const oldToken = req.user;
-    delete oldToken.iat;
-    delete oldToken.exp;
-
-    const token = jwt.sign(oldToken, Conf.jwt.SECRET, { expiresIn: Conf.jwt.TOKEN_LIFESPAN });
-    res.setHeader("Access-Token", token);
-    res.setHeader("Access-Control-Expose-Headers", "Access-Token");
-
-    return next();
-}
+}*/

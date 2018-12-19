@@ -3,8 +3,8 @@
 
 <script lang="ts">
 
-import { setIdToken } from "../utils/auth";
 import {Vue, Component} from "vue-property-decorator";
+import { setIdToken } from "../../../common/js/front_end_auth";
 
 @Component
 export default class Login extends Vue {

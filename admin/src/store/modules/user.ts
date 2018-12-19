@@ -1,45 +1,51 @@
 import Vue from "vue";
 import { Commit } from "vuex";
-import { FrontEndUser } from "../../../../common/interfaces/User";
+import { setIdToken, getLoginResponse} from "../../../../common/js/front_end_auth";
+import { IUser, IQuizSchedule } from "../../../../common/interfaces/ToClientData";
 
 export interface IState {
-    user: FrontEndUser;
-    idToken: string;
+    idToken: string | null;
+    user: IUser | null;
+    quiz: IQuizSchedule | null;
 }
 
 const state: IState = {
-    user: {
-        id: "-1",
-        firstname: "Person",
-        surname: "Person",
-        username: "s123456",
-        researchConsent: false
-    },
-    idToken: ""
+    idToken: null,
+    user: null,
+    quiz: null
 };
 
 const mutationKeys = {
-  SET_USER: "Setting User"
+  SET_USER: "Setting User",
+  SET_LTI_RESPONSE: "Setting LTI Data"
 };
 
 const getters = {
-    user: (): FrontEndUser => {
+    user: (): IUser | null => {
         return state.user;
+    },
+    quiz: (): IQuizSchedule | null => {
+        return state.quiz;
     }
 };
 const actions = {
-    login({ commit }: {commit: Commit}, idToken: string) {
-        return commit("LOGIN", idToken);
-    },
+    setLti({ commit }: {commit: Commit}, idToken: string) {
+        return commit(mutationKeys.SET_LTI_RESPONSE, idToken);
+    }
 };
 
 const mutations = {
-    [mutationKeys.SET_USER](funcState: IState, data: FrontEndUser) {
-        Vue.set(funcState, "user", data);
-    },
-    ["LOGIN"](funcState: IState, idToken: string) {
-        Vue.set(funcState, "idToken", idToken);
-    },
+    [mutationKeys.SET_LTI_RESPONSE](funcState: IState, data: string) {
+        setIdToken(data);
+
+        const maybeResponse = getLoginResponse();
+        if (maybeResponse) {
+            Vue.set(funcState, "user", maybeResponse.user);
+            Vue.set(funcState, "quiz", maybeResponse.quiz);
+        } else {
+            throw Error("Invalid token for LTI");
+        }
+    }
 };
 
 export default {

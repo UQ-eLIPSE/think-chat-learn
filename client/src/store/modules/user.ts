@@ -1,46 +1,38 @@
 import Vue from "vue";
 import { Commit } from "vuex";
-import { FrontEndUser } from "../../../../common/interfaces/User";
 import { API } from "../../../../common/js/DB_API";
-import { setIdToken, getCurrentUser } from "../../../../common/js/auth";
+import { setIdToken, getLoginResponse} from "../../../../common/js/front_end_auth";
+import { IUser } from "../../../../common/interfaces/ToClientData";
+
 export interface IState {
-    user: FrontEndUser | null;
     idToken: string | null;
+    user: IUser | null;
 }
 
 const state: IState = {
-    user: null,
     idToken: null,
+    user: null
 };
 
 const mutationKeys = {
-  SET_USER: "Setting User"
+  SET_USER: "Setting User",
 };
 
 const getters = {
-    user: (): FrontEndUser | null => {
+    user: (): IUser | null => {
         return state.user;
     }
 };
 const actions = {
-    login({ commit }: {commit: Commit}, idToken: string) {
-        commit("LOGIN", idToken);
-        return commit(mutationKeys.SET_USER, getCurrentUser());
-    },
-    someAction() {
-        // TODO have session actually function
-        return API.request(API.POST, "session/lti", {});
+    setUser({ commit }: {commit: Commit}, user: IUser) {
+        return commit(mutationKeys.SET_USER, user);
     }
 };
 
 const mutations = {
-    [mutationKeys.SET_USER](funcState: IState, data: FrontEndUser) {
+    [mutationKeys.SET_USER](funcState: IState, data: IUser) {
         Vue.set(funcState, "user", data);
-    },
-    ["LOGIN"](funcState: IState, idToken: string) {
-        setIdToken(idToken);
-        Vue.set(funcState, "idToken", idToken);
-    },
+    }
 };
 
 export default {

@@ -1,5 +1,5 @@
 import axios, { AxiosPromise } from "axios";
-import { getIdToken, setIdToken } from "./auth";
+import { getIdToken, setIdToken } from "./front_end_auth";
 
 // TODO replace with an actual link
 const API_URL = "http://localhost:8080/api/";
