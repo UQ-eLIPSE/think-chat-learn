@@ -1,4 +1,5 @@
 import decode from "jwt-decode";
+import { FrontEndUser } from '../interfaces/User';
 const ID_TOKEN_KEY = "id_token";
 
 export function logout(): void {
@@ -24,12 +25,12 @@ export function isLoggedIn(): boolean {
     return !!idToken && !isTokenExpired(idToken);
 }
 
-export function getCurrentUser(): any {
+export function getCurrentUser(): FrontEndUser | null {
     const idToken = getIdToken();
     if (!idToken) {
         return null;
     }
-    const token = decode(idToken);
+    const token = decode(idToken) as FrontEndUser;
     return token;
 }
 
