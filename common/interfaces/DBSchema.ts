@@ -1,10 +1,13 @@
+// Determines what the type should be. Can be changed based on DB needs
+type OID = string;
+
 // The basic class of all elements in the DB
 export interface Document<OID> {
     _id?: OID;
 }
 
 // Contains details of user
-export interface IUser extends Document<string> {
+export interface IUser extends Document<OID> {
     username?: string;
     firstName?: string;
     lastName?: string;
@@ -12,7 +15,7 @@ export interface IUser extends Document<string> {
 }
 
 // Contains a quiz which contains questions that people can answer
-export interface IQuiz extends Document<string> {
+export interface IQuiz extends Document<OID> {
     pages?: IPage[];
     course?: string;
     availableStart?: Date;
@@ -30,7 +33,7 @@ export enum PageType {
 // A page to be rendered. All pages contain at the very
 // least a type (to indicate how to be rendered), 
 // a title and some content
-export interface IPage extends Document<string> {
+export interface IPage extends Document<OID> {
     type: PageType;
     title: string;
     content: string;
@@ -60,7 +63,7 @@ export interface ISurveyPage extends IPage {
     surveyId: string;
 }
 
-export interface IQuizSchedule extends Document<string> {
+export interface IQuizSchedule extends Document<OID> {
     questionId?: string;
     course?: string;
     availableStart?: Date;

@@ -1,5 +1,5 @@
 import { BaseRepository } from "./BaseRepository";
-import { IQuizSchedule } from "../../common/interfaces/DBSchema";
+import { IQuiz } from "../../common/interfaces/DBSchema";
 
-export class QuizRepository extends BaseRepository<IQuizSchedule>{
+export class QuizRepository extends BaseRepository<IQuiz>{
 }
