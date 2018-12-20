@@ -32,6 +32,12 @@ export type SystemChatPromptStatement = DBSchema.SystemChatPromptStatement;
 /** Deepconcepts remake */
 export type IUser = DBSchema.IUser;
 export type IQuizSchedule = DBSchema.IQuizSchedule;
+export type IQuiz = DBSchema.IQuiz;
+export type IPage = DBSchema.IPage;
+export type IInfoPage = DBSchema.IInfoPage;
+export type ISurveyPage = DBSchema.ISurveyPage;
+export type IQuestionAnswerPage = DBSchema.IQuestionAnswerPage;
+export type IDiscussionPage = DBSchema.IDiscussionPage;
 
 // API specific
 export interface Quiz {
@@ -44,7 +50,8 @@ export interface QuizAttempt_User extends QuizAttempt {
     _user: User;
 }
 
+// Essentially the user should only have one page 
 export interface LoginResponse {
     user: IUser;
-    quiz: IQuizSchedule;
+    quiz: IQuiz;
 }

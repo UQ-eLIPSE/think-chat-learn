@@ -1,16 +1,12 @@
 import Vue from "vue";
 import { Commit } from "vuex";
-import { API } from "../../../../common/js/DB_API";
-import { setIdToken, getLoginResponse} from "../../../../common/js/front_end_auth";
 import { IUser } from "../../../../common/interfaces/ToClientData";
 
 export interface IState {
-    idToken: string | null;
     user: IUser | null;
 }
 
 const state: IState = {
-    idToken: null,
     user: null
 };
 

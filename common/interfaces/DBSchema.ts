@@ -3,11 +3,61 @@ export interface Document<OID> {
     _id?: OID;
 }
 
+// Contains details of user
 export interface IUser extends Document<string> {
     username?: string;
     firstName?: string;
     lastName?: string;
     researchConsent?: boolean | null;
+}
+
+// Contains a quiz which contains questions that people can answer
+export interface IQuiz extends Document<string> {
+    pages?: IPage[];
+    course?: string;
+    availableStart?: Date;
+    availableEnd?: Date;
+}
+
+// Type of pages supported in DEEPConcepts
+export enum PageType {
+    DISCUSSION_PAGE = "DISCUSSION_PAGE",
+    INFO_PAGE = "INFO_PAGE",
+    QUESTION_ANSWER_PAGE = "QUESTION_ANSWER_PAGE",
+    SURVEY_PAGE = "SURVEY_PAGE"
+}
+
+// A page to be rendered. All pages contain at the very
+// least a type (to indicate how to be rendered), 
+// a title and some content
+export interface IPage extends Document<string> {
+    type: PageType;
+    title: string;
+    content: string;
+}
+
+// As of now, the existence of type indicates
+// a particular set of chat boxes, could also 
+// link to a question if necessary but content should be enough
+export interface IDiscussionPage extends IPage {
+    type: PageType.DISCUSSION_PAGE;
+}
+
+// Contains a linkage to a question/prompt which could be used
+// to populate the page
+export interface IQuestionAnswerPage extends IPage {
+    type: PageType.QUESTION_ANSWER_PAGE;
+    questionId: string;
+}
+
+// Info pages are simply pages with content, existence should be enough to determine the rendering
+export interface IInfoPage extends IPage {
+    type: PageType.INFO_PAGE;
+}
+
+export interface ISurveyPage extends IPage {
+    type: PageType.SURVEY_PAGE;
+    surveyId: string;
 }
 
 export interface IQuizSchedule extends Document<string> {
