@@ -41,8 +41,12 @@ export default class App extends Vue {
       this.$store.dispatch("refreshToken").then(() => {
         // Set up the user again
         const login = getLoginResponse();
-        this.$store.dispatch("setUser", login.user);
-        this.$store.dispatch("setQuiz", login.quiz);
+
+        // If there is no login response, then the action is to do nothing
+        if (login) {
+          this.$store.dispatch("setUser", login.user);
+          this.$store.dispatch("setQuiz", login.quiz);
+        }
       });
     }
   }
