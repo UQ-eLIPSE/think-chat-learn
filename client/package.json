@@ -7,7 +7,8 @@
     "test": "test",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "build_dev": "vue-cli-service build --mode development"    
+    "build_dev": "vue-cli-service build --mode development",
+    "build_dev_watch": "vue-cli-service build --mode developemnt --watch"    
   },
   "dependencies": {
     "postcss-import": "^12.0.1",

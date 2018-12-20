@@ -26,6 +26,10 @@ const getters = {
 const actions = {
     setUser({ commit }: {commit: Commit}, user: IUser) {
         return commit(mutationKeys.SET_USER, user);
+    },
+
+    refreshToken() {
+        return API.request(API.POST, API.USER + "me", {});
     }
 };
 

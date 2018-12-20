@@ -27,6 +27,7 @@
 <script lang="ts">
 import {Vue, Component} from "vue-property-decorator";
 import SideNav from "./components/SideNav.vue";
+import { getIdToken, getLoginResponse } from "../../common/js/front_end_auth";
 @Component({
   components: {
     SideNav,
@@ -35,6 +36,15 @@ import SideNav from "./components/SideNav.vue";
 export default class App extends Vue {
 
   private mounted() {
+    // Didn't login, attempt to refresh
+    if (!this.$store.getters.user) {
+      this.$store.dispatch("refreshToken").then(() => {
+        // Set up the user again
+        const login = getLoginResponse();
+        this.$store.dispatch("setUser", login.user);
+        this.$store.dispatch("setQuiz", login.quiz);
+      });
+    }
   }
 
 }

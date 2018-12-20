@@ -10,8 +10,11 @@
 6. Install the client packages `npm install`
 7. Go to admin `cd ../admin`
 8. Install the admin packages `npm install`
+9. Change the config files for the common, admin, client and server. Examples are provided.
 
 ## Building and Running (DeepConcepts)
 1. Go to root directory
-2. Run `npm run build` for production `npm run build_dev`
+2. Run `npm run build` for production or `npm run build_dev` for dev
 3. Run `npm run start`
+4. If watchers are needed for client. `cd ./client` and then `npm run build_dev_watch`
+5. If watchers are needed for admin. `cd ./admin` and then `npm run build_dev_watch`

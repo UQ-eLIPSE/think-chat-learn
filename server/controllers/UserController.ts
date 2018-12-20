@@ -22,7 +22,12 @@ export class UserController extends BaseController {
 
     }
 
+    private refreshToken(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
+        res.sendStatus(200);
+    }
+
     public setupRoutes() {
         this.router.post("/login", this.handleLTILogin.bind(this));
+        this.router.post("/me", this.refreshToken.bind(this));
     }
 }
