@@ -13,5 +13,5 @@
 
 ## Building and Running (DeepConcepts)
 1. Go to root directory
-2. Run `npm run build`
+2. Run `npm run build` for production `npm run build_dev`
 3. Run `npm run start`
