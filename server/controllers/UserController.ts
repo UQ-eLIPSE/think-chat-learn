@@ -29,9 +29,13 @@ export class UserController extends BaseController {
             res.redirect(Conf.adminPage + "?q=" + token);
         });
     }
+    private refreshToken(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
+        res.sendStatus(200);
+    }
 
     public setupRoutes() {
         this.router.post("/admin", this.handleAdminLogin.bind(this));
         this.router.post("/login", this.handleLTILogin.bind(this));
+        this.router.post("/me", this.refreshToken.bind(this));
     }
 }

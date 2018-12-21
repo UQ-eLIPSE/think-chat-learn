@@ -100,8 +100,8 @@ export default class App {
         }));
         
         // Token refresher. Only runs during login
-        //this.express.use(this.authFilter("/user/login", expressJwt({ secret: Conf.jwt.SECRET })));
-        //this.express.use(this.authFilter("/user/login", this.refreshJWT));
+        this.express.use(this.authFilter("/user/login", expressJwt({ secret: Conf.jwt.SECRET })));
+        this.express.use(this.authFilter("/user/login", this.refreshJWT));
         
         
         console.log("Setting up endpoints...");

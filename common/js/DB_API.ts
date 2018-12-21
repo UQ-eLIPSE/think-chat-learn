@@ -41,8 +41,8 @@ export const API: IApi = {
     DELETE: "delete",
     PUT: "put",
 
-    USER: "users/",
-    QUIZ: "quiz/"
+    QUIZ: "quiz/",
+    USER: "user/"
 };
 
 export default API;
