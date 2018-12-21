@@ -2,7 +2,7 @@ import axios, { AxiosPromise } from "axios";
 import { getIdToken, setIdToken } from "./front_end_auth";
 
 // TODO replace with an actual link
-const API_URL = "http://localhost:8080/api/";
+const API_URL = "http://localhost:8080/";
 
 export interface IApi {
     // HTTP verbs
@@ -13,6 +13,7 @@ export interface IApi {
 
     // API routes
     USER: string;
+    QUIZ: string;
 
     request(method: string, url: string, data: {}, contentType?: string | undefined): any;
 }
@@ -41,6 +42,7 @@ export const API: IApi = {
     PUT: "put",
 
     USER: "users/",
+    QUIZ: "quiz/"
 };
 
 export default API;

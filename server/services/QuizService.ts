@@ -17,7 +17,7 @@ export class QuizService extends BaseService{
         // Creates a new quiz based on the information.
 
         // Note we create ids for each page associated at the same time
-        // The create operation returns the id as wel
+        // The create operation returns the id as well
         if (data.pages && data.pages.length) {
             data.pages.forEach((page) => {
                 page._id = (new ObjectId()).toHexString();

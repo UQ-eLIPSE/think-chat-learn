@@ -147,6 +147,8 @@ export default class CreateQuiz extends Vue {
             pages: outgoingPages
         };
 
+        this.$store.dispatch("createQuiz", outgoingQuiz);
+
     }
 
     // The reason for the mounted id is that we need it for rendering purposes

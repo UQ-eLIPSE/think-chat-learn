@@ -1,50 +1,33 @@
 import Vue from "vue";
 import { Commit } from "vuex";
-import { setIdToken, getLoginResponse} from "../../../../common/js/front_end_auth";
-import { IUser, IQuizSchedule } from "../../../../common/interfaces/ToClientData";
+import { IUser } from "../../../../common/interfaces/ToClientData";
 
 export interface IState {
-    idToken: string | null;
     user: IUser | null;
-    quiz: IQuizSchedule | null;
 }
 
 const state: IState = {
-    idToken: null,
-    user: null,
-    quiz: null
+    user: null
 };
 
 const mutationKeys = {
   SET_USER: "Setting User",
-  SET_LTI_RESPONSE: "Setting LTI Data"
 };
 
 const getters = {
     user: (): IUser | null => {
         return state.user;
-    },
-    quiz: (): IQuizSchedule | null => {
-        return state.quiz;
     }
 };
 const actions = {
-    setLti({ commit }: {commit: Commit}, idToken: string) {
-        return commit(mutationKeys.SET_LTI_RESPONSE, idToken);
+    setUser({ commit }: {commit: Commit}, user: IUser) {
+        return commit(mutationKeys.SET_USER, user);
     }
 };
 
 const mutations = {
-    [mutationKeys.SET_LTI_RESPONSE](funcState: IState, data: string) {
-        setIdToken(data);
-
-        const maybeResponse = getLoginResponse();
-        if (maybeResponse) {
-            Vue.set(funcState, "user", maybeResponse.user);
-            Vue.set(funcState, "quiz", maybeResponse.quiz);
-        } else {
-            throw Error("Invalid token for LTI");
-        }
+    [mutationKeys.SET_USER](funcState: IState, data: IUser) {
+        Vue.set(funcState, "user", data);
     }
 };
 

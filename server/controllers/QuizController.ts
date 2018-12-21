@@ -5,6 +5,7 @@ import { UserService } from "../services/UserService";
 import { ILTIData } from "../../common/interfaces/ILTIData";
 import { Conf } from "../config/Conf";
 import { QuizService } from "../services/QuizService";
+import { IQuiz } from "../../common/interfaces/ToClientData";
 
 export class QuizController extends BaseController {
 
@@ -16,7 +17,7 @@ export class QuizController extends BaseController {
     }
 
     private createQuiz(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        this.quizService.createQuiz(req.body).then((outgoingId) => {
+        this.quizService.createQuiz(req.body as IQuiz).then((outgoingId) => {
             if (outgoingId !== null) {
                 res.json({
                     outgoingId

@@ -42,6 +42,42 @@ export class UserService extends BaseService{
 
         return Promise.resolve(output);
     }
+
+    // Returns just the user details for now
+    public async handleAdminLogin(request: ILTIData): Promise<IUser> {
+        // Get user+quiz info, check validity
+        const identity = await UserServiceHelper.ProcessLtiObject(request);
+        UserServiceHelper.CheckUserId(identity);
+
+        const user = await UserServiceHelper.RetrieveUser(this.userRepo, identity);
+
+        // TODO fix for active sesssions
+        //             UserLoginFunc.CheckNoActiveSession(user);
+        if (!identity.course) {
+            throw new Error(`No course associated with identity`);
+        }
+
+        const adminRoles = [
+            "instructor",
+            "teachingassistant",
+            "administrator",
+        ];
+
+        const isAdmin = (identity.roles || []).some(role => {
+            return adminRoles.findIndex((element) => {
+                return element === role.toLowerCase();
+            }) !== -1;
+        });
+
+        if (!isAdmin) {
+            throw new Error("Not an admin");
+        }
+
+        // TODO check for previous attempts and retrieve the questions associated with the selected quiz
+        //await UserLoginFunc.CheckQuizNotPreviouslyAttempted(db, user, quizSchedule);
+
+        return Promise.resolve(user);
+    }    
 }
 
 // Helper functions for the service
