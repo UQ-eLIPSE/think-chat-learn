@@ -1,9 +1,5 @@
 import * as express from "express";
-import * as jwt from "jsonwebtoken";
 import { BaseController } from "./BaseController";
-import { UserService } from "../services/UserService";
-import { ILTIData } from "../../common/interfaces/ILTIData";
-import { Conf } from "../config/Conf";
 import { QuizService } from "../services/QuizService";
 import { IQuiz } from "../../common/interfaces/ToClientData";
 

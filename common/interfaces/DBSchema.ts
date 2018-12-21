@@ -1,6 +1,10 @@
 // Determines what the type should be. Can be changed based on DB needs
 type OID = string;
-
+// A page of 4 types, note that IPage itself cannot be used as a viable page
+export type Page = IQuestionAnswerPage | IInfoPage | IDiscussionPage | ISurveyPage;
+// A question associated with an IQuestioNAnswerPage. Can either be an MCQ or Qualitative one
+// TODO remove the old Question interface in favour of the new one
+export type TypeQuestion = IQuestionMCQ | IQuestionQualitative;
 // The basic class of all elements in the DB
 export interface Document<OID> {
     _id?: OID;
@@ -14,10 +18,41 @@ export interface IUser extends Document<OID> {
     researchConsent?: boolean | null;
 }
 
+// Contains a question in which people can answer.
+// It may be multi choice or it could be qualitative
+export interface IQuestion extends Document<OID> {
+    type: QuestionType;
+    content?: string;
+    title?: string;
+}
+
+export enum QuestionType {
+    MCQ = "MCQ",
+    QUALITATIVE = "QUALITATIVE"
+}
+
+// A question that can be answered based on options
+export interface IQuestionMCQ extends IQuestion {
+    type: QuestionType.MCQ;
+    options: IQuestionOption[];
+}
+
+// A question which is answered purely by confidence values
+export interface IQuestionQualitative extends IQuestion {
+    type: QuestionType.QUALITATIVE;
+}
+
+// An option that could be used in MCQs
+export interface IQuestionOption extends Document<OID> {
+    content?: string;
+    isCorrect?: boolean;
+    index: number;
+}
+
 // Contains a quiz which contains questions that people can answer
 export interface IQuiz extends Document<OID> {
     title?: string;
-    pages?: IPage[];
+    pages?: Page[];
     course?: string;
     availableStart?: Date;
     availableEnd?: Date;

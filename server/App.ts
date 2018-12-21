@@ -7,10 +7,13 @@ import * as jwt from "jsonwebtoken";import { Db, MongoClient } from "mongodb";
 
 import { Conf } from "./config/Conf";
 import { UserRepository } from "./repositories/UserRepository";
+import { QuestionRepository } from "./repositories/QuestionRepository";
 import { QuizRepository } from "./repositories/QuizRepository";
 import { UserService } from "./services/UserService";
+import { QuestionService } from "./services/QuestionService";
 import { QuizService } from "./services/QuizService";
 import { UserController } from "./controllers/UserController";
+import { QuestionController } from "./controllers/QuestionController";
 import { QuizController } from "./controllers/QuizController";
 import { Moocchat } from "./js/Moocchat";
 export default class App {
@@ -24,14 +27,17 @@ export default class App {
     // Repos
     private userRepository: UserRepository;
     private quizRepository: QuizRepository;
+    private questionRepository: QuestionRepository;
 
     // Services
     private userService: UserService;
     private quizService: QuizService;
+    private questionService: QuestionService;
 
     // Controllers
     private userController: UserController;
     private quizController: QuizController;
+    private questionController: QuestionController;
 
     constructor() {
         this.express = express();
@@ -59,15 +65,19 @@ export default class App {
     private bootstrap(): void {
         this.userRepository = new UserRepository(this.database, "uq_user");
         this.quizRepository = new QuizRepository(this.database, "uq_quizSchedule");
+        this.questionRepository = new QuestionRepository(this.database, "uq_question");
 
         this.userService = new UserService(this.userRepository, this.quizRepository);
         this.quizService = new QuizService(this.quizRepository);
+        this.questionService = new QuestionService(this.questionRepository);
 
         this.userController = new UserController(this.userService);
         this.quizController = new QuizController(this.quizService);
+        this.questionController = new QuestionController(this.questionService);
 
         this.userController.setupRoutes();
         this.quizController.setupRoutes();
+        this.questionController.setupRoutes();
     }
 
     private setupSockets(): void {
@@ -166,6 +176,7 @@ export default class App {
         
         this.express.use("/user", this.userController.getRouter());
         this.express.use("/quiz", this.quizController.getRouter());
+        this.express.use("/question", this.questionController.getRouter());
     }
 
     // Only login gets affected
