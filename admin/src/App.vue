@@ -1,5 +1,7 @@
 <template>
   <div id="app">
+    <!-- TODO move this somewhere else -->
+    <link rel="stylesheet" href="//cdn.materialdesignicons.com/2.5.94/css/materialdesignicons.min.css">
     <side-nav/>
     <router-view id="routerpanel"/>
   </div>

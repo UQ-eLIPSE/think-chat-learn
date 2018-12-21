@@ -16,6 +16,7 @@ export interface IUser extends Document<OID> {
 
 // Contains a quiz which contains questions that people can answer
 export interface IQuiz extends Document<OID> {
+    title?: string;
     pages?: IPage[];
     course?: string;
     availableStart?: Date;
@@ -31,7 +32,7 @@ export enum PageType {
 }
 
 // A page to be rendered. All pages contain at the very
-// least a type (to indicate how to be rendered), 
+// least a type (to indicate how to be rendered),
 // a title and some content
 export interface IPage extends Document<OID> {
     type: PageType;
@@ -40,7 +41,7 @@ export interface IPage extends Document<OID> {
 }
 
 // As of now, the existence of type indicates
-// a particular set of chat boxes, could also 
+// a particular set of chat boxes, could also
 // link to a question if necessary but content should be enough
 export interface IDiscussionPage extends IPage {
     type: PageType.DISCUSSION_PAGE;

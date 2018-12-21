@@ -50,7 +50,7 @@ export interface QuizAttempt_User extends QuizAttempt {
     _user: User;
 }
 
-// Essentially the user should only have one page 
+// Essentially the user should only have one page
 export interface LoginResponse {
     user: IUser;
     quiz: IQuiz;

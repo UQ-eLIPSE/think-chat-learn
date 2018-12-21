@@ -5,6 +5,8 @@
         <!-- Add v-for later-->
         <ul>
             <router-link tag="li" to="/">Welcome</router-link>
+            <router-link tag="li" to="/createQuiz">Create Quiz</router-link>
+
         </ul>
     </div>
 </template>

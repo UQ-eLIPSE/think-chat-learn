@@ -13,8 +13,6 @@ export interface IApi {
 
     // API routes
     USER: string;
-    SCENARIO: string;
-    COURSE: string;
 
     request(method: string, url: string, data: {}, contentType?: string | undefined): any;
 }
@@ -43,8 +41,6 @@ export const API: IApi = {
     PUT: "put",
 
     USER: "users/",
-    SCENARIO: "scenarios/",
-    COURSE: "courses/"
 };
 
 export default API;

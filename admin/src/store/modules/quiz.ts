@@ -1,7 +1,8 @@
 import Vue from "vue";
 import { Commit } from "vuex";
 import { FrontEndQuiz } from "../../../../common/interfaces/Quiz";
-
+import { IQuiz } from "../../../../common/interfaces/ToClientData";
+import { API } from "../../../../common/js/DB_API";
 export interface IState {
     quizzes: FrontEndQuiz[];
 }
@@ -21,6 +22,8 @@ const getters = {
     }
 };
 const actions = {
+    createQuiz({ commit }: {commit: Commit}, data: IQuiz) {
+    }
 };
 
 const mutations = {
