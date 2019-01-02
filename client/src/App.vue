@@ -1,40 +1,79 @@
 <template>
   <div id="app">
-    <side-nav/>
-    <router-view id="routerpanel"/>
+    <Nav />
+    <router-view id="routerpanel" />
+    <Footer />
   </div>
 </template>
 
-<style lang="scss" scoped>
+<style lang="scss">
+body {
+  background-color: #f9fbfc;
+  box-sizing: border-box;
+  font-family: "Open Sans", sans-serif;
+  margin: 0;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 
-#app {
-    font-family: 'Robot-Light', sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+  #app {
     height: 100vh;
-    width: 100vw;
-    overflow: hidden;
+    max-width: 1970px;
+    margin: 0 auto;
+  }
 
-    display: flex;
-    flex-direction: row;
-    flex-wrap: no-wrap;
-}
-#routerpanel{
+  #routerpanel {
     overflow-y: scroll;
+  }
+
+  .center {
+    text-align: center;
+  }
+
+  h1 {
+    color: #005151;
+    font-size: 2.25em;
+    font-weight: 600;
+  }
+
+  button {
+    border: none;
+    border-radius: 5px;
+    color: #fff;
+    cursor: pointer;
+    font-family: "Open Sans", sans-serif;
+    font-size: 1.4em;
+    font-weight: 600;
+    height: 46px;
+    min-width: 215px;
+    padding: 0 30px;
+    &:hover {
+    }
+    &.primary {
+      background-color: #225566;
+    }
+  }
 }
 </style>
 
 <script lang="ts">
-import {Vue, Component} from "vue-property-decorator";
-import SideNav from "./components/SideNav.vue";
+import { Vue, Component } from "vue-property-decorator";
 import { getIdToken, getLoginResponse } from "../../common/js/front_end_auth";
+import Nav from "./components/Nav.vue";
+import Footer from "./components/Footer.vue";
+import Buefy from "buefy";
+import "buefy/dist/buefy.css";
+import "./styles.scss";
+
+Vue.use(Buefy);
+
 @Component({
   components: {
-    SideNav,
-  },
+    Nav,
+    Footer
+  }
 })
 export default class App extends Vue {
-
   private mounted() {
     // Didn't login, attempt to refresh
     if (!this.$store.getters.user) {
@@ -50,6 +89,5 @@ export default class App extends Vue {
       });
     }
   }
-
 }
 </script>
