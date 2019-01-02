@@ -6,6 +6,7 @@
         <ul>
             <router-link tag="li" to="/">Welcome</router-link>
             <router-link tag="li" to="/createQuiz">Create Quiz</router-link>
+            <router-link tag="li" to="/createQuestion">Create Question</router-link>
         </ul>
     </div>
 </template>

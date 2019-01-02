@@ -20,10 +20,16 @@ export interface IUser extends Document<OID> {
 
 // Contains a question in which people can answer.
 // It may be multi choice or it could be qualitative
+
+// Note we associate the courseId with the question so that
+// the admins can see their own questions. E.g. MECH courses can't see BIOL course
+// data. Of course runs into the problem of different semesters of the same course
+// having different ids
 export interface IQuestion extends Document<OID> {
     type: QuestionType;
     content?: string;
     title?: string;
+    courseId?: string;
 }
 
 export enum QuestionType {

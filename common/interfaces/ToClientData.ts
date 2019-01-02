@@ -33,6 +33,7 @@ export type SystemChatPromptStatement = DBSchema.SystemChatPromptStatement;
 export type IUser = DBSchema.IUser;
 export type IQuizSchedule = DBSchema.IQuizSchedule;
 export type IQuiz = DBSchema.IQuiz;
+export type IQuestion = DBSchema.IQuestion;
 export type IPage = DBSchema.IPage;
 export type IInfoPage = DBSchema.IInfoPage;
 export type ISurveyPage = DBSchema.ISurveyPage;
@@ -54,4 +55,13 @@ export interface QuizAttempt_User extends QuizAttempt {
 export interface LoginResponse {
     user: IUser;
     quiz: IQuiz;
+    courseId: string;
+}
+
+// Also handles the initial retrieval
+export interface AdminLoginResponse {
+    user: IUser;
+    quizzes: IQuiz[];
+    questions: IQuestion[];
+    courseId: string;
 }

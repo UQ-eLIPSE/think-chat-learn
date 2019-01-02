@@ -5,17 +5,20 @@ import { ILTIData } from "../../common/interfaces/ILTIData";
 import { LTIAuth } from "../js/auth/lti/LTIAuth";
 import { IMoocchatIdentityInfo } from "../js/auth/IMoocchatIdentityInfo";
 import { IUser, IQuiz, PageType } from "../../common/interfaces/DBSchema";
-import { LoginResponse, IQuestionAnswerPage, IInfoPage } from "../../common/interfaces/ToClientData";
+import { LoginResponse, IQuestionAnswerPage, IInfoPage, AdminLoginResponse } from "../../common/interfaces/ToClientData";
+import { QuestionRepository } from "../repositories/QuestionRepository";
 
 export class UserService extends BaseService{
 
     protected readonly userRepo: UserRepository;
     protected readonly quizRepo: QuizRepository;
+    protected readonly questionRepo: QuestionRepository;
 
-    constructor(_userRepo: UserRepository, _quizRepo: QuizRepository){
+    constructor(_userRepo: UserRepository, _quizRepo: QuizRepository, _questionRepo: QuestionRepository){
         super();
         this.userRepo = _userRepo;
         this.quizRepo = _quizRepo;
+        this.questionRepo = _questionRepo;
     }
 
     public async handleLogin(request: ILTIData): Promise<LoginResponse> {
@@ -37,14 +40,15 @@ export class UserService extends BaseService{
 
         const output: LoginResponse = {
             user,
-            quiz: quizSchedule
+            quiz: quizSchedule,
+            courseId: identity.course
         };
 
         return Promise.resolve(output);
     }
 
     // Returns just the user details for now
-    public async handleAdminLogin(request: ILTIData): Promise<IUser> {
+    public async handleAdminLogin(request: ILTIData): Promise<AdminLoginResponse> {
         // Get user+quiz info, check validity
         const identity = await UserServiceHelper.ProcessLtiObject(request);
         UserServiceHelper.CheckUserId(identity);
@@ -75,8 +79,18 @@ export class UserService extends BaseService{
 
         // TODO check for previous attempts and retrieve the questions associated with the selected quiz
         //await UserLoginFunc.CheckQuizNotPreviouslyAttempted(db, user, quizSchedule);
+        const quizzes = await this.quizRepo.findAll({ course: identity.course });
+        const questions = await this.questionRepo.findAll({ courseId: identity.course });
 
-        return Promise.resolve(user);
+        const output: AdminLoginResponse = {
+            user,
+            quizzes,
+            courseId: identity.course,
+            questions
+        }
+
+
+        return Promise.resolve(output);
     }    
 }
 

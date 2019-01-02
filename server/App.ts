@@ -67,7 +67,7 @@ export default class App {
         this.quizRepository = new QuizRepository(this.database, "uq_quizSchedule");
         this.questionRepository = new QuestionRepository(this.database, "uq_question");
 
-        this.userService = new UserService(this.userRepository, this.quizRepository);
+        this.userService = new UserService(this.userRepository, this.quizRepository, this.questionRepository);
         this.quizService = new QuizService(this.quizRepository);
         this.questionService = new QuestionService(this.questionRepository);
 

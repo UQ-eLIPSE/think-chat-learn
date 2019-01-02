@@ -6,6 +6,8 @@
         <b-datepicker v-model="endDate" placeholder="Select the End Date" icon="calendar-today"></b-datepicker>
         <b-timepicker v-model="endTime" rounded placeholder="Select the End Time" icon="clock" hour-formart="format" ></b-timepicker>
 
+        <!-- Note that the order is not necessarily in creation due to Object.keys used in dictionary rendering 
+             Shouldn't matter too much. -->
         <div v-for="(page, index) in pages" :key="index">
             <span>Page Title</span><input v-model="page.title" type="text" placeholder="Set the Question Title"/>
             <span>Page Type</span>
@@ -18,7 +20,7 @@
             <!-- Business logic for rendering based on page type -->
             <!-- TODO make this a proper select box once Questions and Answers are implemented -->
             <select v-model="page.questionId" v-if="page.type === PageType.QUESTION_ANSWER_PAGE">
-                <option>Some Default option</option>
+                <option v-for="question in questions" :key="question._id" :value="question._id">{{question.title}}</option>
             </select>
             <select v-model="page.surveryId" v-else-if="page.type === PageType.SURVEY_PAGE">
                 <option> Some Default survey</option>
@@ -40,14 +42,10 @@
 <script lang="ts">
 
 import {Vue, Component} from "vue-property-decorator";
-import { IPage, PageType, 
-    IQuestionAnswerPage, IInfoPage, IDiscussionPage, ISurveyPage, IQuiz } from "../../../common/interfaces/DBSchema";
-// The front end version of the quiz. Slightly different due to
-// mounted id
-interface FrontEndPage extends IPage {
-    mountedId: number;
-}
-type Page = IQuestionAnswerPage | IInfoPage | IDiscussionPage | ISurveyPage;
+import { IPage, PageType,
+    IQuestionAnswerPage, IInfoPage,
+    IDiscussionPage, ISurveyPage, IQuiz, Page } from "../../../common/interfaces/DBSchema";
+import { getAdminLoginResponse } from "../../../common/js/front_end_auth";
 
 @Component({
 })
@@ -71,8 +69,8 @@ export default class CreateQuiz extends Vue {
 
     // Converts the dictionary to an array based on key number
     get pages() {
-        const temp: (IQuestionAnswerPage | IInfoPage | IDiscussionPage | ISurveyPage)[] = [];
-        
+        const temp: Page[] = [];
+
         // Sort the keys then push the elements in order
         Object.keys(this.pageDict).sort((a, b) => {
             return parseInt(a, 10) - parseInt(b, 10);
@@ -87,6 +85,17 @@ export default class CreateQuiz extends Vue {
         return PageType;
     }
 
+    get questions() {
+        return this.$store.getters.questions;
+    }
+
+    // Course id based on token
+    get courseId() {
+        const loginDetails = getAdminLoginResponse();
+
+        return loginDetails ? loginDetails.courseId : "";
+    }
+
     private createQuiz() {
         // For each quiz we have to figure out the type and assign the appropiate types
         // Output pages
@@ -94,6 +103,8 @@ export default class CreateQuiz extends Vue {
 
         // Iterate through each page and strip the appropaite values
         this.pages.forEach((element) => {
+            // Note it is possile for unique elements to be stored in the front end
+            // but only the relevant data is sent over to the back end
             switch (element.type) {
                 case PageType.DISCUSSION_PAGE:
                     outgoingPages.push({
@@ -144,7 +155,8 @@ export default class CreateQuiz extends Vue {
             title: this.quizTitle,
             availableStart,
             availableEnd,
-            pages: outgoingPages
+            pages: outgoingPages,
+            course: this.courseId
         };
 
         this.$store.dispatch("createQuiz", outgoingQuiz);
@@ -163,6 +175,11 @@ export default class CreateQuiz extends Vue {
 
         // Remember vue set is need for rendering to occur
         Vue.set(this.pageDict, this.mountedId++, output);
+    }
+
+    // At least spawn one page at the start
+    private mounted() {
+        this.createPage();
     }
 }
 </script>

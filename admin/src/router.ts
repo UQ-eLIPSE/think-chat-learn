@@ -3,6 +3,7 @@ import Router from "vue-router";
 import Landing from "./components/Landing.vue";
 import Login from "./components/Login.vue";
 import CreateQuiz from "./components/CreateQuiz.vue";
+import CreateQuestion from "./components/CreateQuestion.vue";
 
 Vue.use(Router);
 
@@ -20,5 +21,9 @@ export default new Router({
     path: "/createQuiz",
     name: "Create Quiz",
     component: CreateQuiz
+  }, {
+    path: "/createQuestion",
+    name: "Create Question",
+    component: CreateQuestion
   }],
 });

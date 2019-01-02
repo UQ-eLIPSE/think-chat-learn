@@ -43,7 +43,7 @@ export abstract class BaseRepository<T extends Document<string>>{
 
     async updateOne(item: Partial<T>, _id?: string): Promise<boolean>{
         const id = item._id ? this.convertStringIdToObjectId(item._id) : this.convertStringIdToObjectId(_id);
-        console.log(item);
+        
         if(typeof(id) === "undefined"){
             throw new Error("No id given");
         }

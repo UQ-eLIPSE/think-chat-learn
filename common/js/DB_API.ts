@@ -14,6 +14,7 @@ export interface IApi {
     // API routes
     USER: string;
     QUIZ: string;
+    QUESTION: string;
 
     request(method: string, url: string, data: {}, contentType?: string | undefined): any;
 }
@@ -42,7 +43,8 @@ export const API: IApi = {
     PUT: "put",
 
     QUIZ: "quiz/",
-    USER: "user/"
+    USER: "user/",
+    QUESTION: "question/",
 };
 
 export default API;
