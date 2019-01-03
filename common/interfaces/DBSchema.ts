@@ -60,8 +60,10 @@ export interface IQuiz extends Document<OID> {
     title?: string;
     pages?: Page[];
     course?: string;
-    availableStart?: Date;
-    availableEnd?: Date;
+    // Note while the functionality-wise the start and end are dates,
+    // they are stored as strings due the fact that sending a date over is not feasible
+    availableStart?: string;
+    availableEnd?: string;
 }
 
 // Type of pages supported in DEEPConcepts

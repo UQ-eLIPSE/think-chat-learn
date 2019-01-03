@@ -37,7 +37,7 @@
 
         <!-- Note for now, qualitative questions only need be known that it is a qualitative for its definition -->
 
-        <button type="button" @click="createQuestion()">Create Question</button>
+        <button type="button" @click="submitQuestion()">{{ isEditing ? "Edit Question" : "Create Question" }}</button>
     </div>
 </template>
 
@@ -47,8 +47,9 @@
 }
 </style>
 <script lang="ts">
-import { Vue, Component } from "vue-property-decorator";
-import { TypeQuestion, QuestionType, IQuestionMCQ, IQuestionOption } from "../../../common/interfaces/DBSchema";
+import { Vue, Component, Prop } from "vue-property-decorator";
+import { TypeQuestion, QuestionType, 
+    IQuestionMCQ, IQuestionOption, IQuestion } from "../../../common/interfaces/DBSchema";
 import { getAdminLoginResponse } from "../../../common/js/front_end_auth";
 
 
@@ -72,7 +73,11 @@ const defaultQuestion: IQuestionMCQ = {
 
 @Component({
 })
-export default class CreateQuestion extends Vue {
+export default class QuestionPage extends Vue {
+
+    // Based on the existence of the id, we may initialize the question differently
+    @Prop({ default: "" }) private id!: string;
+
 
     // Setting default question
     private pageQuestion: TypeQuestion = Object.assign({}, defaultQuestion);
@@ -86,11 +91,19 @@ export default class CreateQuestion extends Vue {
         return QuestionType;
     }
 
+    get isEditing(): boolean {
+        return this.id !== '';
+    }
+
     // Course id based on token
     get courseId() {
         const loginDetails = getAdminLoginResponse();
 
         return loginDetails ? loginDetails.courseId : "";
+    }
+
+    get questions(): TypeQuestion[] {
+        return this.$store.getters.questions;
     }
 
 
@@ -105,7 +118,7 @@ export default class CreateQuestion extends Vue {
 
     }
 
-    private createQuestion() {
+    private submitQuestion() {
         // Remember to strip the data appropiately for backend purposes
 
         let outgoingQuestion: TypeQuestion;
@@ -137,7 +150,29 @@ export default class CreateQuestion extends Vue {
             throw Error("Somehow outgoing question is assigned an invalid type");
         }
 
-        this.$store.dispatch("createQuestion", outgoingQuestion);
+        if (this.isEditing) {
+            outgoingQuestion._id = this.id;
+            
+            this.$store.dispatch("editQuestion", outgoingQuestion);
+        } else {
+            this.$store.dispatch("createQuestion", outgoingQuestion);
+        }
+
+    }
+
+    private mounted() {
+        // Based on the id, potentially grab the details from the question
+        if (this.id !== "") {
+            const maybeQuestion = this.questions.find((element) => {
+                return element._id === this.id;
+            });
+
+            if (!maybeQuestion) {
+                throw Error("Retrieved question does not exist");
+            } else {
+                this.pageQuestion = Object.assign({}, maybeQuestion);
+            }
+        }
     }
 
 }

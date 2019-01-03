@@ -13,17 +13,31 @@ const state: IState = {
 
 const mutationKeys = {
     SET_QUIZ: "Setting a quiz",
-    SET_QUIZZES: "Setting a quizzes"
+    SET_QUIZZES: "Setting a quizzes",
+    DELETE_QUIZ: "Deleting a quiz",
+    EDIT_QUIZ: "Editing a quiz"
 };
 
 const getters = {
-    quiz: (): IQuiz[] | null => {
+    quizzes: (): IQuiz[] | null => {
         return state.quiz;
     }
 };
 const actions = {
     createQuiz({ commit }: {commit: Commit}, data: IQuiz) {
-        API.request(API.PUT, API.QUIZ + "create", data);
+        API.request(API.PUT, API.QUIZ + "create", data).then((outcome: string) => {
+            if (outcome) {
+                commit(mutationKeys.SET_QUIZ, data);
+            }
+        });
+    },
+
+    updateQuiz({ commit }: {commit: Commit}, data: IQuiz) {
+        API.request(API.POST, API.QUIZ + "update", data).then((outcome: boolean) => {
+            if (outcome) {
+                commit(mutationKeys.EDIT_QUIZ, data);
+            }
+        });
     },
 
     getQuizzes({ commit }: {commit: Commit}, courseId: string) {
@@ -34,6 +48,14 @@ const actions = {
 
     setQuizzes({ commit }: {commit: Commit}, data: IQuiz[]) {
         commit(mutationKeys.SET_QUIZZES, data);
+    },
+
+    deleteQuiz({ commit }: {commit: Commit}, data: string) {
+        API.request(API.DELETE, API.QUIZ + "delete/" + data, {}).then((outcome: boolean) => {
+            if (outcome) {
+                commit(mutationKeys.DELETE_QUIZ, data);
+            }
+        });
     }
 };
 
@@ -43,6 +65,22 @@ const mutations = {
     },
     [mutationKeys.SET_QUIZZES](funcState: IState, data: IQuiz[]) {
         Vue.set(funcState, "quiz", data);
+    },
+    [mutationKeys.DELETE_QUIZ](funcState: IState, data: string) {
+        const index = funcState.quiz.findIndex((element) => {
+            return element._id === data;
+        });
+
+        Vue.delete(funcState.quiz, index);
+    },
+    [mutationKeys.EDIT_QUIZ](funcState: IState, data: IQuiz) {
+        const index = funcState.quiz.findIndex((element) => {
+            return element._id === data._id;
+        });
+
+        if (index !== -1) {
+            Vue.set(funcState.quiz, index, data);
+        }
     }
 };
 

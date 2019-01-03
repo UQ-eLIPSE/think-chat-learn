@@ -2,8 +2,10 @@ import Vue from "vue";
 import Router from "vue-router";
 import Landing from "./components/Landing.vue";
 import Login from "./components/Login.vue";
-import CreateQuiz from "./components/CreateQuiz.vue";
-import CreateQuestion from "./components/CreateQuestion.vue";
+import QuizPage from "./components/QuizPage.vue";
+import QuestionPage from "./components/QuestionPage.vue";
+import QuestionList from "./components/QuestionList.vue";
+import QuizList from "./components/QuizList.vue";
 
 Vue.use(Router);
 
@@ -18,12 +20,22 @@ export default new Router({
     name: "Login",
     component: Login
   }, {
-    path: "/createQuiz",
-    name: "Create Quiz",
-    component: CreateQuiz
+    path: "/quizPage",
+    name: "Quiz Page",
+    component: QuizPage,
+    props: (route) => ({ id: route.query.q })
   }, {
-    path: "/createQuestion",
-    name: "Create Question",
-    component: CreateQuestion
+    path: "/questionPage",
+    name: "Question Page",
+    component: QuestionPage,
+    props: (route) => ({ id: route.query.q })
+  }, {
+    path: "/questionList",
+    name: "Question List",
+    component: QuestionList
+  }, {
+    path: "/quizList",
+    name: "Quiz List",
+    component: QuizList
   }],
 });

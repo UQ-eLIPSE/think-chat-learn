@@ -18,7 +18,6 @@
                 <option :value="PageType.DISCUSSION_PAGE">Discussion Page</option>
             </select>
             <!-- Business logic for rendering based on page type -->
-            <!-- TODO make this a proper select box once Questions and Answers are implemented -->
             <select v-model="page.questionId" v-if="page.type === PageType.QUESTION_ANSWER_PAGE">
                 <option v-for="question in questions" :key="question._id" :value="question._id">{{question.title}}</option>
             </select>
@@ -30,7 +29,7 @@
         </div>
         <br>
         <button type="button" @click="createPage()">Create new page</button>
-        <button type="button" @click="createQuiz()">Create Quiz</button>
+        <button type="button" @click="createQuiz()">{{ isEditing ? "Edit Quiz" : "Create Quiz" }}</button>
     </div>
 </template>
 
@@ -41,17 +40,20 @@
 </style>
 <script lang="ts">
 
-import {Vue, Component} from "vue-property-decorator";
+import { Vue, Component, Prop } from "vue-property-decorator";
 import { IPage, PageType,
     IQuestionAnswerPage, IInfoPage,
-    IDiscussionPage, ISurveyPage, IQuiz, Page } from "../../../common/interfaces/DBSchema";
+    IDiscussionPage, ISurveyPage, IQuiz, Page, TypeQuestion } from "../../../common/interfaces/DBSchema";
 import { getAdminLoginResponse } from "../../../common/js/front_end_auth";
 
 @Component({
 })
-export default class CreateQuiz extends Vue {
+export default class QuizPage extends Vue {
     // Default values for quizzes
     private quizTitle: string = "";
+
+    @Prop({ default: "" }) private id!: string;
+
 
     // The start date in ISO8601. Note that Buefy doesn't really have datetime just date and time unfortunately
     private startDate: Date | null = null;
@@ -62,7 +64,7 @@ export default class CreateQuiz extends Vue {
     // The pages that are wanted to be created. Use
     // a dictionary as we would like to use the temp id
     // instead of index
-    private pageDict: {[key: number]: Page} = {};
+    private pageDict: {[key: string]: Page} = {};
 
     // The internal id of pages created. Tossed away when sending
     private mountedId: number = 0;
@@ -85,9 +87,18 @@ export default class CreateQuiz extends Vue {
         return PageType;
     }
 
-    get questions() {
-        return this.$store.getters.questions;
+    // Based on the prop id, determines whether or not we are in editing mode
+    get isEditing(): boolean {
+        return this.id !== '';
     }
+
+    get quizzes(): IQuiz[] {
+        return this.$store.getters.quizzes;
+    }
+
+    get questions(): TypeQuestion[] {
+        return this.$store.getters.questions;
+    }    
 
     // Course id based on token
     get courseId() {
@@ -145,11 +156,11 @@ export default class CreateQuiz extends Vue {
 
         const availableStart = new Date(this.startDate.getFullYear(),
             this.startDate.getMonth(), this.startDate.getDate(),
-            this.startTime.getHours(), this.startTime.getMinutes(), this.startTime.getSeconds());
+            this.startTime.getHours(), this.startTime.getMinutes(), this.startTime.getSeconds()).toString();
 
         const availableEnd = new Date(this.endDate.getFullYear(),
             this.endDate.getMonth(), this.endDate.getDate(),
-            this.endTime.getHours(), this.endTime.getMinutes(), this.endTime.getSeconds());
+            this.endTime.getHours(), this.endTime.getMinutes(), this.endTime.getSeconds()).toString();
 
         const outgoingQuiz: IQuiz = {
             title: this.quizTitle,
@@ -159,7 +170,13 @@ export default class CreateQuiz extends Vue {
             course: this.courseId
         };
 
-        this.$store.dispatch("createQuiz", outgoingQuiz);
+        if (this.isEditing) {
+            outgoingQuiz._id = this.id;
+            this.$store.dispatch("updateQuiz", outgoingQuiz);
+        } else {
+            this.$store.dispatch("createQuiz", outgoingQuiz);
+        }
+
 
     }
 
@@ -174,12 +191,41 @@ export default class CreateQuiz extends Vue {
         };
 
         // Remember vue set is need for rendering to occur
-        Vue.set(this.pageDict, this.mountedId++, output);
+        Vue.set(this.pageDict, (this.mountedId++).toString(), output);
     }
 
-    // At least spawn one page at the start
+    // At least spawn one page at the start or do a load
     private mounted() {
-        this.createPage();
+        if (this.id === "") {
+            this.createPage();
+        } else {
+            const loadedQuiz = this.quizzes.find((element) => {
+                return element._id === this.id;
+            });
+
+            if (!loadedQuiz || !loadedQuiz.pages || !loadedQuiz.title) {
+                throw Error("Could not load quiz");
+            } else {
+                // Load the page values instead
+                this.startDate = new Date(loadedQuiz.availableStart!);
+                this.startTime = new Date(loadedQuiz.availableStart!);
+                this.endDate = new Date(loadedQuiz.availableEnd!);
+                this.endTime = new Date(loadedQuiz.availableEnd!);
+
+                this.quizTitle = loadedQuiz.title;
+
+                const emptyDict: {[key: string]: Page} = {};
+
+                // At this point, the loaded quiz and their elemenets should not have null values
+                // Remember to use the mounted values as we must be able to mix the loaded
+                // values with the non-loaded.
+                this.pageDict = loadedQuiz.pages.reduce((dict, element) => {
+                    dict[(this.mountedId++).toString()] = element;
+                    return dict;
+                }, emptyDict);
+            }
+        }
+
     }
 }
 </script>
