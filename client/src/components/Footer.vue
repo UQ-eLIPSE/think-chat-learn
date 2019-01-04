@@ -27,11 +27,8 @@
 <style lang="scss" scoped>
 footer {
   background-color: #005151;
-  position: absolute;
   width: 100%;
-  bottom: 0;
-  left: 0;
-  padding: 0.4em 0;
+  padding: 1.5em 0;
 
   .columns {
     margin: 0 auto;

@@ -7,6 +7,7 @@ import Reflection from "./views/Reflection.vue";
 import Survey from "./views/Survey.vue";
 import Finish from "./views/Finish.vue";
 import Login from "./views/Login.vue";
+import GroupAllocation from "./views/GroupAllocation.vue";
 
 Vue.use(Router);
 
@@ -47,6 +48,11 @@ export default new Router({
       path: "/login",
       name: "Login",
       component: Login
+    },
+    {
+      path: "/allocation",
+      name: "Group Allocation",
+      component: GroupAllocation
     }
   ]
 });

@@ -29,8 +29,6 @@ header {
   height: 75px;
   left: 0;
   padding: 1.5em 3em;
-  position: absolute;
-  top: 0;
   width: 100%;
 
   .nav-item {

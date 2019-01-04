@@ -15,6 +15,7 @@
 
 <style lang="scss" scoped>
 .overviewContainer {
+  margin-right: 2em;
   label {
     border-radius: 50%;
     color: #fff;
@@ -23,8 +24,10 @@
     font-weight: 700;
     height: 60px;
     left: 0;
+    margin-top: 45px;
     position: absolute;
     text-align: center;
+    text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.15);
     top: 0;
     width: 60px;
 
@@ -52,7 +55,7 @@
     float: left;
     height: 215px;
     margin-left: 25px;
-    margin-bottom: 50px;
+    margin-top: 45px;
     padding: 0.75em 2em 2em 3.25em;
     position: relative;
     width: 675px;
@@ -72,6 +75,12 @@
         color: #515456;
         font-size: 19px;
       }
+      // li:before {
+      //   font-family: "FontAwesome";
+      //   content: "\f111";
+      //   margin: 0 5px 0 -15px;
+      //   color: #f00;
+      // }
       li::before {
         content: "•";
         color: #869b03;
