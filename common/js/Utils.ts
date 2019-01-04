@@ -6,7 +6,7 @@ export namespace Utils {
     export namespace DateTime {
         /**
          * Converts seconds to milliseconds.
-         * 
+         *
          * @param {number} seconds
          * @return {number} Value of input in milliseconds
          */
@@ -16,7 +16,7 @@ export namespace Utils {
 
         /**
          * Converts minutes to milliseconds.
-         * 
+         *
          * @param {number} minutes
          * @return {number} Value of input in milliseconds
          */
@@ -25,15 +25,15 @@ export namespace Utils {
         }
 
         export function secondsToMinutes(seconds: number) {
-            return seconds/60;
+            return seconds / 60;
         }
         export function msToMinutes(milliseconds: number) {
-            return secondsToMinutes(milliseconds/1000);
+            return secondsToMinutes(milliseconds / 1000);
         }
 
         /**
          * Converts hours to milliseconds.
-         * 
+         *
          * @param {number} hours
          * @return {number} Value of input in milliseconds
          */
@@ -43,9 +43,9 @@ export namespace Utils {
 
         /**
          * Format a time interval as mm:ss.
-         * 
+         *
          * Minute is variable length, seconds is always 2 places.
-         * 
+         *
          * @param {number} ms Time interval in milliseconds
          * @returns {string} Formatted time interval
          */
@@ -64,7 +64,7 @@ export namespace Utils {
          * ES2016 near-equivalent.
          *
          * https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Array/includes#Polyfill
-         * 
+         *
          * @param {T[]} array
          * @param {T} searchElement
          * @returns {boolean} Whether searchElement exists in array
@@ -73,7 +73,7 @@ export namespace Utils {
             const len = array.length;
             let k = 0;
 
-            var currentElement: T;
+            let currentElement: T;
             while (k < len) {
                 currentElement = array[k];
                 if (searchElement === currentElement ||
@@ -87,9 +87,9 @@ export namespace Utils {
 
         /**
          * Lighter version of .includes(), using Array#indexOf() internally.
-         * 
+         *
          * Note that Array#indexOf() slightly differently to ES2016 Array#includes() with regards to NaN.
-         * 
+         *
          * @param {T[]} array
          * @param {T} searchElement
          * @returns Whether searchElement exists in array
@@ -100,13 +100,15 @@ export namespace Utils {
 
         /**
          * Shuffles array in place.
-         * 
+         *
          * http://stackoverflow.com/a/6274381
-         * 
+         *
          * @param {T[]} a The array containing the items.
          */
         export function shuffleInPlace<T>(a: T[]) {
-            let j: number, x: T, i: number;
+            let j: number;
+            let x: T;
+            let i: number;
             for (i = a.length; i; i -= 1) {
                 j = Math.floor(Math.random() * i);
                 x = a[i - 1];
@@ -117,13 +119,16 @@ export namespace Utils {
     }
 
     export namespace String {
-        export function padLeft(string: string, padChar: string, length: number) {
-            return repeat(padChar, length - string.length) + string;
+        export function padLeft(str: string, padChar: string, length: number) {
+            return repeat(padChar, length - str.length) + str;
         }
 
-        export function repeat(string: string, n: number): string {
-            if (n === 0) return "";
-            return n <= 1 ? string : (string + repeat(string, n - 1));
+        export function repeat(str: string, n: number): string {
+            if (n === 0) {
+                return "";
+            }
+
+            return n <= 1 ? str : (str + repeat(str, n - 1));
         }
     }
 }

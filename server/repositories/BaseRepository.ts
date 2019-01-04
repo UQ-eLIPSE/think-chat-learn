@@ -2,7 +2,7 @@ import { Collection, Db, ObjectID } from "mongodb";
 import { Document } from "../../common/interfaces/DBSchema";
 
 // Assumes strings for id transfers
-export abstract class BaseRepository<T extends Document<string>>{
+export abstract class BaseRepository<T extends Document>{
 
     protected collection: Collection;
 

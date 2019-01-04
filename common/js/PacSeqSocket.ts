@@ -15,33 +15,6 @@ export enum PacSeqSocketMode {
 // TODO: Fix `SocketType` and `_SocketType` types as they are
 // not type-safe ("any")
 export class PacSeqSocket<SocketType> {
-    protected nativeSocket: _SocketType;
-    private mode: PacSeqSocketMode = PacSeqSocketMode.QUEUE_ONLY;
-
-    private sequencer: PacSeq = new PacSeq();
-    private sendTimeoutHandle: number = 1000;
-
-    private inboundLogging: boolean = false;
-    private outboundLogging: boolean = false;
-
-    private lastAcknowledged: number = -1;
-
-    private eventManager: EventBox = new EventBox();
-
-    /** Holds pointer to new socket from which this socket was copied */
-    private transferredTo: PacSeqSocket<SocketType> | undefined = undefined;
-
-    protected enableInternalEventDispatch: boolean = false;
-
-
-    /* ===== FOR TESTING PURPOSES ONLY ===== */
-
-    /** Number of times a packet is sent over wire */
-    protected __numberOfTimesToSendOverWirePerEmit: number = 1;
-
-    /** Number of times a socket message will be emitted (as separate messages) */
-    protected __numberOfTimesToRepeatEmit: number = 1;
-
 
     public static Copy<T>(fromSocket: PacSeqSocket<T>, toSocket: PacSeqSocket<T>) {
         const fromSocketState = fromSocket.mode;
@@ -78,7 +51,7 @@ export class PacSeqSocket<SocketType> {
         psSocket.disconnect(true);
 
         // NOTE: ***Do not destroy*** #eventManager as it refers to the same
-        // EventBox which was carried over to the new PacSeqSocket obj when .Copy() is run 
+        // EventBox which was carried over to the new PacSeqSocket obj when .Copy() is run
         // EventBox.Destroy(psSocket.eventManager);
 
         delete psSocket.mode;
@@ -87,7 +60,7 @@ export class PacSeqSocket<SocketType> {
         delete psSocket.eventManager;
     }
 
-    /** 
+    /**
      * Gets the latest known socket from which given socket was copied to
      */
     public static GetLatest<T>(psSocket: PacSeqSocket<T>): PacSeqSocket<T> {
@@ -97,6 +70,33 @@ export class PacSeqSocket<SocketType> {
 
         return psSocket;
     }
+
+    protected nativeSocket: _SocketType;
+    private mode: PacSeqSocketMode = PacSeqSocketMode.QUEUE_ONLY;
+
+    private sequencer: PacSeq = new PacSeq();
+    private sendTimeoutHandle: number = 1000;
+
+    private inboundLogging: boolean = false;
+    private outboundLogging: boolean = false;
+
+    private lastAcknowledged: number = -1;
+
+    private eventManager: EventBox = new EventBox();
+
+    /** Holds pointer to new socket from which this socket was copied */
+    private transferredTo: PacSeqSocket<SocketType> | undefined = undefined;
+
+    protected enableInternalEventDispatch: boolean = false;
+
+
+    /* ===== FOR TESTING PURPOSES ONLY ===== */
+
+    /** Number of times a packet is sent over wire */
+    protected __numberOfTimesToSendOverWirePerEmit: number = 1;
+
+    /** Number of times a socket message will be emitted (as separate messages) */
+    protected __numberOfTimesToRepeatEmit: number = 1;
 
     constructor(socket: SocketType) {
         this.nativeSocket = socket;
@@ -122,8 +122,8 @@ export class PacSeqSocket<SocketType> {
         if (this.outboundLogging) {
             const loggedData = [
                 `PacSeqSocket/${this.id}`,
-                'OUTBOUND',
-                '[' + event + ']'
+                "OUTBOUND",
+                "[" + event + "]"
             ];
 
             if (typeof args[0] !== "undefined") {
@@ -156,15 +156,15 @@ export class PacSeqSocket<SocketType> {
 
                 const loggedData = [
                     `PacSeqSocket/${activeSocket.id}`,
-                    'INBOUND',
-                    '[' + event + ']'
+                    "INBOUND",
+                    "[" + event + "]"
                 ];
 
                 if (typeof data !== "undefined") {
                     loggedData.push(data);
                 }
 
-                console.log.apply(undefined, loggedData);
+                console.log.apply(undefined, loggedData as any);
             });
         }
         this.eventManager.on(event, fn);
@@ -178,7 +178,7 @@ export class PacSeqSocket<SocketType> {
         const wrappedCallback = (data?: any) => {
             // Remove the handler FIRST then run callback;
             // otherwise if `fn` fails to return then we would be
-            // left with a dangling callback still attached to the event            
+            // left with a dangling callback still attached to the event
             //
             // Also, the callback to be removed is the WRAPPED callback
             // and not the original one - this mirrors the `.on()` below
@@ -187,7 +187,7 @@ export class PacSeqSocket<SocketType> {
         };
 
         // Keep track of the original callback
-        (<any>wrappedCallback)["__originalCallback"] = fn;
+        (wrappedCallback as any)["__originalCallback"] = fn;
 
         eventManager.on(event, wrappedCallback);
     }
@@ -208,7 +208,7 @@ export class PacSeqSocket<SocketType> {
                 const callbackArrayCopy = callbacks.slice();
 
                 callbackArrayCopy.forEach((wrappedCallback) => {
-                    const originalCallback: Function | undefined = (<any>wrappedCallback)["__originalCallback"];
+                    const originalCallback: Function | undefined = (wrappedCallback as any)["__originalCallback"];
 
                     if (originalCallback && originalCallback === fn) {
                         eventManager.off(event, wrappedCallback);
@@ -228,6 +228,41 @@ export class PacSeqSocket<SocketType> {
 
     public getSocket() {
         return this.nativeSocket;
+    }
+
+    public enableInboundLogging() {
+        this.inboundLogging = true;
+    }
+
+    public disableInboundLogging() {
+        this.inboundLogging = false;
+    }
+
+    public enableOutboundLogging() {
+        this.outboundLogging = true;
+    }
+
+    public disableOutboundLogging() {
+        this.outboundLogging = false;
+    }
+
+    /**
+     * Workaround for bug #178
+     *
+     * INTENDED ONLY FOR CLIENT-SIDE RESYNC EVENTS!
+     *
+     * Resets the ack counter so that we don't run into issues with out-of-sync counters
+     */
+    public resetIncomingDataAckCounter() {
+        this.lastAcknowledged = -1;
+    }
+
+    public resume() {
+        this.onConnect();
+    }
+
+    public pause() {
+        this.onDisconnect();
     }
 
     private setupNativeEventsToManager() {
@@ -284,14 +319,6 @@ export class PacSeqSocket<SocketType> {
         }
     }
 
-    public resume() {
-        this.onConnect();
-    }
-
-    public pause() {
-        this.onDisconnect();
-    }
-
     private onACK(ackPacket: IPacSeqSocketPacket.Packet.ACK) {
         console.log(`PacSeqSocket/${this.id} INCOMING ACK ${ackPacket.ack}`);
         this.processACK(ackPacket.ack);
@@ -343,8 +370,8 @@ export class PacSeqSocket<SocketType> {
     private sendDAT(event: string, data: any) {
         const datPacket: IPacSeqSocketPacket.Packet.DAT = {
             seq: -1,        // This is filled in later below
-            event: event,
-            data: data
+            event,
+            data
         };
 
         // We can only know the sequence number
@@ -374,7 +401,8 @@ export class PacSeqSocket<SocketType> {
         const datPacket: IPacSeqSocketPacket.Packet.DAT = this.sequencer.next();
 
         if (datPacket && attempt > 500) {
-            console.error(`PacSeqSocket/${this.id} STOPPING - ATTEMPT LIMIT EXCEEDED - SEQ ${datPacket.seq} ATTEMPT ${attempt}`);
+            console.error(`PacSeqSocket/${this.id} STOPPING -
+                ATTEMPT LIMIT EXCEEDED - SEQ ${datPacket.seq} ATTEMPT ${attempt}`);
             return;
         }
 
@@ -384,7 +412,7 @@ export class PacSeqSocket<SocketType> {
             if (this.enableInternalEventDispatch) {
                 EventBox.GlobalDispatch("PacSeq::InternalEvent::EmitStart", {
                     seq: datPacket.seq,
-                    attempt: attempt
+                    attempt
                 });
             }
 
@@ -399,32 +427,5 @@ export class PacSeqSocket<SocketType> {
 
             this.sendTimeoutHandle = timerHandle;
         }
-    }
-
-    public enableInboundLogging() {
-        this.inboundLogging = true;
-    }
-
-    public disableInboundLogging() {
-        this.inboundLogging = false;
-    }
-
-    public enableOutboundLogging() {
-        this.outboundLogging = true;
-    }
-
-    public disableOutboundLogging() {
-        this.outboundLogging = false;
-    }
-
-    /**
-     * Workaround for bug #178
-     * 
-     * INTENDED ONLY FOR CLIENT-SIDE RESYNC EVENTS!
-     * 
-     * Resets the ack counter so that we don't run into issues with out-of-sync counters
-     */
-    public resetIncomingDataAckCounter() {
-        this.lastAcknowledged = -1;
     }
 }

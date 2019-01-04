@@ -6,12 +6,12 @@ export type Page = IQuestionAnswerPage | IInfoPage | IDiscussionPage | ISurveyPa
 // TODO remove the old Question interface in favour of the new one
 export type TypeQuestion = IQuestionMCQ | IQuestionQualitative;
 // The basic class of all elements in the DB
-export interface Document<OID> {
+export interface Document {
     _id?: OID;
 }
 
 // Contains details of user
-export interface IUser extends Document<OID> {
+export interface IUser extends Document {
     username?: string;
     firstName?: string;
     lastName?: string;
@@ -25,7 +25,7 @@ export interface IUser extends Document<OID> {
 // the admins can see their own questions. E.g. MECH courses can't see BIOL course
 // data. Of course runs into the problem of different semesters of the same course
 // having different ids
-export interface IQuestion extends Document<OID> {
+export interface IQuestion extends Document {
     type: QuestionType;
     content?: string;
     title?: string;
@@ -49,14 +49,14 @@ export interface IQuestionQualitative extends IQuestion {
 }
 
 // An option that could be used in MCQs
-export interface IQuestionOption extends Document<OID> {
+export interface IQuestionOption extends Document {
     content?: string;
     isCorrect?: boolean;
     index: number;
 }
 
 // Contains a quiz which contains questions that people can answer
-export interface IQuiz extends Document<OID> {
+export interface IQuiz extends Document {
     title?: string;
     pages?: Page[];
     course?: string;
@@ -77,7 +77,7 @@ export enum PageType {
 // A page to be rendered. All pages contain at the very
 // least a type (to indicate how to be rendered),
 // a title and some content
-export interface IPage extends Document<OID> {
+export interface IPage extends Document {
     type: PageType;
     title: string;
     content: string;
@@ -107,7 +107,7 @@ export interface ISurveyPage extends IPage {
     surveyId: string;
 }
 
-export interface IQuizSchedule extends Document<OID> {
+export interface IQuizSchedule extends Document {
     questionId?: string;
     course?: string;
     availableStart?: Date;

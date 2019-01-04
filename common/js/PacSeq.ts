@@ -15,9 +15,9 @@ export class PacSeq {
                 this.queued.shift();
                 continue;
             }
-            
+
             // If we still have queued packets not yet acknowledged,
-            // then stop and let the system refetch this later. 
+            // then stop and let the system refetch this later.
             break;
         }
     }
@@ -30,11 +30,24 @@ export class PacSeq {
 
         this.queued.push({
             timestamp: new Date(),
-            seq: seq,
-            data: data,
+            seq,
+            data,
         });
 
         return seq;
+    }
+
+    /**
+     * Returns the next queued data.
+     */
+    public next() {
+        const obj = this.nextQueuedObj();
+
+        if (!obj) {
+            return;
+        }
+
+        return obj.data;
     }
 
     /**
@@ -54,17 +67,4 @@ export class PacSeq {
         return this.queued[0];
     }
 
-
-    /**
-     * Returns the next queued data.
-     */
-    public next() {
-        const obj = this.nextQueuedObj();
-
-        if (!obj) {
-            return;
-        }
-
-        return obj.data;
-    }
 }
