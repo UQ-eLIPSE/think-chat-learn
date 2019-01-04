@@ -62,7 +62,7 @@ export namespace Utils {
          * Determines whether a given search element exists in array.
          *
          * ES2016 near-equivalent.
-         * 
+         *
          * https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Array/includes#Polyfill
          * 
          * @param {T[]} array

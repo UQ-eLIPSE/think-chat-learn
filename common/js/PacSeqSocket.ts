@@ -15,11 +15,11 @@ export enum PacSeqSocketMode {
 // TODO: Fix `SocketType` and `_SocketType` types as they are
 // not type-safe ("any")
 export class PacSeqSocket<SocketType> {
-    private nativeSocket: _SocketType;
+    protected nativeSocket: _SocketType;
     private mode: PacSeqSocketMode = PacSeqSocketMode.QUEUE_ONLY;
 
     private sequencer: PacSeq = new PacSeq();
-    private sendTimeoutHandle: number;
+    private sendTimeoutHandle: number = 1000;
 
     private inboundLogging: boolean = false;
     private outboundLogging: boolean = false;
@@ -130,7 +130,7 @@ export class PacSeqSocket<SocketType> {
                 loggedData.push(args[0]);
             }
 
-            console.log.apply(undefined, loggedData);
+            console.log.apply(undefined, loggedData as any);
         }
 
         for (let i = 0; i < this.__numberOfTimesToRepeatEmit; ++i) {
@@ -144,7 +144,6 @@ export class PacSeqSocket<SocketType> {
 
     public on(event: string, fn: (data?: any) => any) {
         const callbacksOfEvent = this.eventManager.getCallbacksFor(event);
-
         if (!callbacksOfEvent || callbacksOfEvent.length === 0) {
             this.eventManager.on(event, (data?: any) => {
                 // This socket session may be transferred; so event handlers don't
@@ -168,7 +167,6 @@ export class PacSeqSocket<SocketType> {
                 console.log.apply(undefined, loggedData);
             });
         }
-
         this.eventManager.on(event, fn);
     }
 
@@ -231,8 +229,6 @@ export class PacSeqSocket<SocketType> {
     public getSocket() {
         return this.nativeSocket;
     }
-
-
 
     private setupNativeEventsToManager() {
         // Both server and client Socket.IO events

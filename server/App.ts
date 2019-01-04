@@ -16,6 +16,7 @@ import { UserController } from "./controllers/UserController";
 import { QuestionController } from "./controllers/QuestionController";
 import { QuizController } from "./controllers/QuizController";
 import { Moocchat } from "./js/Moocchat";
+import { PacSeqSocket_Server } from "../common/js/PacSeqSocket_Server";
 export default class App {
 
     // Express things
@@ -38,6 +39,9 @@ export default class App {
     private userController: UserController;
     private quizController: QuizController;
     private questionController: QuestionController;
+
+    // Socket io things
+    private socketIO: SocketIO.Server;
 
     constructor() {
         this.express = express();
@@ -90,7 +94,9 @@ export default class App {
             pingInterval: Conf.socketIo.pingInterval,
             pingTimeout: Conf.socketIo.pingTimeout
         });
-        const moocchat = new Moocchat(io);
+
+        // Used to set up the moocchat sockets
+        this.socketIO = new Moocchat(io).getSocketIO();
     }
 
     // For now we also open up teh sockets and h
@@ -112,7 +118,6 @@ export default class App {
         // Token refresher. Only runs during login
         this.express.use(this.authFilter("/user/login", expressJwt({ secret: Conf.jwt.SECRET })));
         this.express.use(this.authFilter("/user/login", this.refreshJWT));
-        
         
         console.log("Setting up endpoints...");
         

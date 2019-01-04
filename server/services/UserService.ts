@@ -157,8 +157,8 @@ class UserServiceHelper {
             _id: "123123123",
             pages: [sampleInfo, sampleQuestion],
             course: "SomeSuperString",
-            availableStart: new Date(Date.now() - 10000000),
-            availableEnd: new Date(Date.now() + 1000000),
+            availableStart: (new Date(Date.now() - 10000000)).toString(),
+            availableEnd: (new Date(Date.now() + 1000000)).toString(),
         }
 
         // TODO fix for active quizzes, currently retrieves just the quiz schedule for a particular course

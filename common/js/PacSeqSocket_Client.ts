@@ -1,5 +1,4 @@
-/// <reference path="../../client/index.d.ts" />
-
+import * as SocketIOClient from "socket.io-client";
 import {PacSeqSocket} from "./PacSeqSocket";
 
 export class PacSeqSocket_Client extends PacSeqSocket<SocketIOClient.Socket> {

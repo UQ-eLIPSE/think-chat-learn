@@ -42,7 +42,6 @@ export class Moocchat {
                 socket.enableInboundLogging();
                 socket.enableOutboundLogging();
 
-
                 // This registration of a dummy function is kept to allow PacSeqSocket
                 // to log disconnects (by triggering an event handler registration)
                 //
@@ -73,4 +72,8 @@ export class Moocchat {
     public getDb() {
         return this.db;
     }
+
+    public getSocketIO() {
+        return this.socketIO;
+    }    
 }
