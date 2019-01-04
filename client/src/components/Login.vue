@@ -5,6 +5,8 @@
 
 import {Vue, Component} from "vue-property-decorator";
 import { setIdToken, getLoginResponse } from "../../../common/js/front_end_auth";
+import { IUserSession } from "../../../common/interfaces/ToClientData";
+import { LTIRoles } from "../../../common/interfaces/DBSchema";
 
 @Component
 export default class Login extends Vue {
@@ -19,6 +21,16 @@ export default class Login extends Vue {
         if (response) {
             await this.$store.dispatch("setUser", response.user);
             await this.$store.dispatch("setQuiz", response.quiz);
+
+            // Don't send the end time
+            const session: IUserSession = {
+                userId: response.user._id,
+                course: response.courseId,
+                startTime: (new Date()).toString(),
+                role: LTIRoles.STUDENT
+            }
+
+            await this.$store.dispatch("createSession", session);
             this.$router.push("/");
         }
     }

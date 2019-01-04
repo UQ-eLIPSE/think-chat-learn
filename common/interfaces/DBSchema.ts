@@ -5,6 +5,12 @@ export type Page = IQuestionAnswerPage | IInfoPage | IDiscussionPage | ISurveyPa
 // A question associated with an IQuestioNAnswerPage. Can either be an MCQ or Qualitative one
 // TODO remove the old Question interface in favour of the new one
 export type TypeQuestion = IQuestionMCQ | IQuestionQualitative;
+
+export enum LTIRoles {
+    ADMIN = "ADMIN",
+    STUDENT = "STUDENT"
+}
+
 // The basic class of all elements in the DB
 export interface Document {
     _id?: OID;
@@ -16,6 +22,17 @@ export interface IUser extends Document {
     firstName?: string;
     lastName?: string;
     researchConsent?: boolean | null;
+}
+
+// A user session is defined every time the enter the page/login successfully
+export interface IUserSession extends Document {
+    userId?: OID;
+    // Note these two times should be the tostring of a valid date
+    startTime?: string;
+    endTime?: string;
+    course?: string;
+    // Currently an enum
+    role?: LTIRoles
 }
 
 // Contains a question in which people can answer.

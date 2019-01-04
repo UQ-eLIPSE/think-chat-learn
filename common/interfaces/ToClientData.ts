@@ -39,6 +39,7 @@ export type IInfoPage = DBSchema.IInfoPage;
 export type ISurveyPage = DBSchema.ISurveyPage;
 export type IQuestionAnswerPage = DBSchema.IQuestionAnswerPage;
 export type IDiscussionPage = DBSchema.IDiscussionPage;
+export type IUserSession = DBSchema.IUserSession;
 
 // API specific
 export interface Quiz {

@@ -119,12 +119,29 @@ class UserServiceHelper {
     // Gets the user from the DB based on id
     public static async RetrieveUser(userRepo: UserRepository, identity: IMoocchatIdentityInfo): Promise<IUser> {
         
-        const user = await userRepo.findOne({
+        let user = await userRepo.findOne({
             username: identity.identityId
         });
 
+        // Create a new user
         if(!user) {
-            throw Error("No such user");
+            const maybeId = await userRepo.create({
+                username: identity.identityId,
+                firstName: identity.name.given,
+                lastName: identity.name.family,
+                researchConsent: false
+            });
+
+            if (maybeId) {
+                user = {
+                    username: identity.identityId,
+                    firstName: identity.name.given,
+                    lastName: identity.name.family,
+                    researchConsent: false
+                };
+            } else {
+                throw Error("Failed to create new user");
+            }
         }
 
         return Promise.resolve(user);

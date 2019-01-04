@@ -6,17 +6,22 @@ import * as expressJwt from "express-jwt";
 import * as jwt from "jsonwebtoken";import { Db, MongoClient } from "mongodb";
 
 import { Conf } from "./config/Conf";
+// Repos
 import { UserRepository } from "./repositories/UserRepository";
 import { QuestionRepository } from "./repositories/QuestionRepository";
 import { QuizRepository } from "./repositories/QuizRepository";
+import { UserSessionRepository } from "./repositories/UserSessionRepository";
+// Services
 import { UserService } from "./services/UserService";
 import { QuestionService } from "./services/QuestionService";
 import { QuizService } from "./services/QuizService";
+import { UserSessionService } from "./services/UserSessionService";
+// Controllers
 import { UserController } from "./controllers/UserController";
 import { QuestionController } from "./controllers/QuestionController";
 import { QuizController } from "./controllers/QuizController";
+import { UserSessionController } from "./controllers/UserSessionController";
 import { Moocchat } from "./js/Moocchat";
-import { PacSeqSocket_Server } from "../common/js/PacSeqSocket_Server";
 export default class App {
 
     // Express things
@@ -29,16 +34,19 @@ export default class App {
     private userRepository: UserRepository;
     private quizRepository: QuizRepository;
     private questionRepository: QuestionRepository;
+    private userSessionRepository: UserSessionRepository;
 
     // Services
     private userService: UserService;
     private quizService: QuizService;
     private questionService: QuestionService;
+    private userSessionService: UserSessionService;
 
     // Controllers
     private userController: UserController;
     private quizController: QuizController;
     private questionController: QuestionController;
+    private userSessionController: UserSessionController;
 
     // Socket io things
     private socketIO: SocketIO.Server;
@@ -70,18 +78,22 @@ export default class App {
         this.userRepository = new UserRepository(this.database, "uq_user");
         this.quizRepository = new QuizRepository(this.database, "uq_quizSchedule");
         this.questionRepository = new QuestionRepository(this.database, "uq_question");
+        this.userSessionRepository = new UserSessionRepository(this.database, "uq_userSession");
 
         this.userService = new UserService(this.userRepository, this.quizRepository, this.questionRepository);
         this.quizService = new QuizService(this.quizRepository);
         this.questionService = new QuestionService(this.questionRepository);
+        this.userSessionService = new UserSessionService(this.userSessionRepository);
 
         this.userController = new UserController(this.userService);
         this.quizController = new QuizController(this.quizService);
         this.questionController = new QuestionController(this.questionService);
+        this.userSessionController = new UserSessionController(this.userSessionService);
 
         this.userController.setupRoutes();
         this.quizController.setupRoutes();
         this.questionController.setupRoutes();
+        this.userSessionController.setupRoutes();
     }
 
     private setupSockets(): void {
@@ -182,6 +194,7 @@ export default class App {
         this.express.use("/user", this.userController.getRouter());
         this.express.use("/quiz", this.quizController.getRouter());
         this.express.use("/question", this.questionController.getRouter());
+        this.express.use("/usersession", this.userSessionController.getRouter());
     }
 
     // Only login gets affected

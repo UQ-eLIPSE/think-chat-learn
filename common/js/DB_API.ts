@@ -15,6 +15,7 @@ export interface IApi {
     USER: string;
     QUIZ: string;
     QUESTION: string;
+    USERSESSION: string;
 
     request(method: string, url: string, data: {}, contentType?: string | undefined): any;
 }
@@ -45,6 +46,7 @@ export const API: IApi = {
     QUIZ: "quiz/",
     USER: "user/",
     QUESTION: "question/",
+    USERSESSION: "usersession/"
 };
 
 export default API;
