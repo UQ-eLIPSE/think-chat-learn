@@ -12,7 +12,7 @@ export abstract class BaseRepository<T extends Document<string>>{
 
     protected convertItemToDocument(item:Partial<T>):any {
         let document: any = Object.assign({}, item);
-        if(item._id){
+        if (item._id) {
             document._id = this.convertStringIdToObjectId(item._id);
         }
         return document;

@@ -9,10 +9,10 @@ import { Conf } from "./config/Conf";
 import { UserRepository } from "./repositories/UserRepository";
 import { QuizRepository } from "./repositories/QuizRepository";
 import { UserService } from "./services/UserService";
+import { QuizService } from "./services/QuizService";
 import { UserController } from "./controllers/UserController";
+import { QuizController } from "./controllers/QuizController";
 import { Moocchat } from "./js/Moocchat";
-import { StudentPageLogin } from "./js/auth/StudentPageAuth"
-import { AdminPageLogin } from "./js/auth/AdminPageAuth"
 export default class App {
 
     // Express things
@@ -27,10 +27,11 @@ export default class App {
 
     // Services
     private userService: UserService;
-    
+    private quizService: QuizService;
 
     // Controllers
     private userController: UserController;
+    private quizController: QuizController;
 
     constructor() {
         this.express = express();
@@ -60,10 +61,13 @@ export default class App {
         this.quizRepository = new QuizRepository(this.database, "uq_quizSchedule");
 
         this.userService = new UserService(this.userRepository, this.quizRepository);
+        this.quizService = new QuizService(this.quizRepository);
 
         this.userController = new UserController(this.userService);
+        this.quizController = new QuizController(this.quizService);
 
         this.userController.setupRoutes();
+        this.quizController.setupRoutes();
     }
 
     private setupSockets(): void {
@@ -161,6 +165,7 @@ export default class App {
         });
         
         this.express.use("/user", this.userController.getRouter());
+        this.express.use("/quiz", this.quizController.getRouter());
     }
 
     // Only login gets affected

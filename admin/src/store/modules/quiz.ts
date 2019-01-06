@@ -1,34 +1,34 @@
 import Vue from "vue";
 import { Commit } from "vuex";
-import { FrontEndQuiz } from "../../../../common/interfaces/Quiz";
+import { IQuiz } from "../../../../common/interfaces/ToClientData";
+import { API } from "../../../../common/js/DB_API";
 
 export interface IState {
-    quizzes: FrontEndQuiz[];
+    quiz: IQuiz | null;
 }
 
 const state: IState = {
-    quizzes: []
+    quiz: null
 };
 
 const mutationKeys = {
-    SET_QUIZZES: "Setting list of quizzes",
     SET_QUIZ: "Setting a quiz"
 };
 
 const getters = {
-    quizzes: (): FrontEndQuiz[] => {
-        return state.quizzes;
+    quiz: (): IQuiz | null => {
+        return state.quiz;
     }
 };
 const actions = {
+    createQuiz({ commit }: {commit: Commit}, data: IQuiz) {
+        API.request(API.PUT, API.QUIZ + "create", data);
+    }
 };
 
 const mutations = {
-    [mutationKeys.SET_QUIZZES](funcState: IState, data: FrontEndQuiz[]) {
-        Vue.set(funcState, "quizzes", data);
-    },
-    [mutationKeys.SET_QUIZ](funcState: IState, data: { quiz: FrontEndQuiz, index: number }) {
-        Vue.set(funcState.quizzes, data.index, data.quiz);
+    [mutationKeys.SET_QUIZ](funcState: IState, data: IQuiz) {
+        Vue.set(funcState, "quiz", data);
     }
 };
 

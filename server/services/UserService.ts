@@ -4,8 +4,8 @@ import { QuizRepository } from "../repositories/QuizRepository";
 import { ILTIData } from "../../common/interfaces/ILTIData";
 import { LTIAuth } from "../js/auth/lti/LTIAuth";
 import { IMoocchatIdentityInfo } from "../js/auth/IMoocchatIdentityInfo";
-import { IUser, IQuizSchedule } from "../../common/interfaces/DBSchema";
-import { LoginResponse } from "../../common/interfaces/ToClientData";
+import { IUser, IQuiz, PageType } from "../../common/interfaces/DBSchema";
+import { LoginResponse, IQuestionAnswerPage, IInfoPage } from "../../common/interfaces/ToClientData";
 
 export class UserService extends BaseService{
 
@@ -42,6 +42,42 @@ export class UserService extends BaseService{
 
         return Promise.resolve(output);
     }
+
+    // Returns just the user details for now
+    public async handleAdminLogin(request: ILTIData): Promise<IUser> {
+        // Get user+quiz info, check validity
+        const identity = await UserServiceHelper.ProcessLtiObject(request);
+        UserServiceHelper.CheckUserId(identity);
+
+        const user = await UserServiceHelper.RetrieveUser(this.userRepo, identity);
+
+        // TODO fix for active sesssions
+        //             UserLoginFunc.CheckNoActiveSession(user);
+        if (!identity.course) {
+            throw new Error(`No course associated with identity`);
+        }
+
+        const adminRoles = [
+            "instructor",
+            "teachingassistant",
+            "administrator",
+        ];
+
+        const isAdmin = (identity.roles || []).some(role => {
+            return adminRoles.findIndex((element) => {
+                return element === role.toLowerCase();
+            }) !== -1;
+        });
+
+        if (!isAdmin) {
+            throw new Error("Not an admin");
+        }
+
+        // TODO check for previous attempts and retrieve the questions associated with the selected quiz
+        //await UserLoginFunc.CheckQuizNotPreviouslyAttempted(db, user, quizSchedule);
+
+        return Promise.resolve(user);
+    }    
 }
 
 // Helper functions for the service
@@ -80,10 +116,36 @@ class UserServiceHelper {
         return Promise.resolve(user);
     }
 
-    public static async RetrieveQuizSchedule(quizRepo: QuizRepository, course: string): Promise<IQuizSchedule> {
-        const quiz = await quizRepo.findAll({
+    public static async RetrieveQuizSchedule(quizRepo: QuizRepository, course: string): Promise<IQuiz> {
+
+        // Since the admin end points have not been made, return dummy values
+
+        /*const quiz = await quizRepo.findAll({
             course
-        });
+        });*/
+
+        const sampleQuestion: IQuestionAnswerPage = {
+            _id: "SampleQuestionId",
+            type: PageType.QUESTION_ANSWER_PAGE,
+            title: "Some Question Page",
+            content: "Note there is no QuestionId linked yet",
+            questionId: "123123"
+        }
+
+        const sampleInfo: IInfoPage = {
+            _id: "SampleInfoPageId",
+            type: PageType.INFO_PAGE,
+            title: "Some Info Page",
+            content: "Some form of content"
+        }
+
+        const quiz: IQuiz = {
+            _id: "123123123",
+            pages: [sampleInfo, sampleQuestion],
+            course: "SomeSuperString",
+            availableStart: new Date(Date.now() - 10000000),
+            availableEnd: new Date(Date.now() + 1000000),
+        }
 
         // TODO fix for active quizzes, currently retrieves just the quiz schedule for a particular course
 
@@ -91,6 +153,7 @@ class UserServiceHelper {
             throw new Error("[30] No scheduled quiz found.");
         }
 
-        return Promise.resolve(quiz[0]);
-    }    
+        return Promise.resolve(quiz);
+    }
+
 }

@@ -13,6 +13,7 @@ export interface IApi {
 
     // API routes
     USER: string;
+    QUIZ: string;
 
     request(method: string, url: string, data: {}, contentType?: string | undefined): any;
 }
@@ -40,6 +41,7 @@ export const API: IApi = {
     DELETE: "delete",
     PUT: "put",
 
+    QUIZ: "quiz/",
     USER: "user/"
 };
 
