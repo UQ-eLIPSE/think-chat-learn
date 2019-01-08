@@ -16,18 +16,17 @@ export type QuizSchedule = DBSchema.QuizSchedule<OID, Date>;
 export type QuizAttempt = DBSchema.QuizAttempt<OID>;
 
 export type Survey = DBSchema.Survey<OID, Date>;
-export type Survey_Content = DBSchema.Survey_Content;
-export type Survey_Content_Heading = DBSchema.Survey_Content_Heading;
-export type Survey_Content_TextShort = DBSchema.Survey_Content_TextShort;
-export type Survey_Content_MultipleChoiceInline = DBSchema.Survey_Content_MultipleChoiceInline;
-export type Survey_Content_MultipleChoiceList = DBSchema.Survey_Content_MultipleChoiceList;
+export type SurveyContent = DBSchema.SurveyContent;
+export type SurveyContentHeading = DBSchema.SurveyContentHeading;
+export type SurveyContentTextShort = DBSchema.SurveyContentTextShort;
+export type SurveyContentMultipleChoiceInline = DBSchema.SurveyContentMultipleChoiceInline;
+export type SurveyContentMultipleChoiceList = DBSchema.SurveyContentMultipleChoiceList;
 
 export type User = DBSchema.User<OID>;
 export type UserSession = DBSchema.UserSession<OID, Date>;
 
 export type Mark = DBSchema.Mark<OID, Date>;
 export type SystemChatPromptStatement = DBSchema.SystemChatPromptStatement;
-
 
 /** Deepconcepts remake */
 export type IUser = DBSchema.IUser;
@@ -41,17 +40,17 @@ export type IDiscussionPage = DBSchema.IDiscussionPage;
 
 // API specific
 export interface Quiz {
-    question: Question;
-    questionOptions: QuestionOption[];
-    quizSchedule: QuizSchedule;
+  question: Question;
+  questionOptions: QuestionOption[];
+  quizSchedule: QuizSchedule;
 }
 
-export interface QuizAttempt_User extends QuizAttempt {
-    _user: User;
+export interface QuizAttemptUser extends QuizAttempt {
+  _user: User;
 }
 
 // Essentially the user should only have one page
 export interface LoginResponse {
-    user: IUser;
-    quiz: IQuiz;
+  user: IUser;
+  quiz: IQuiz;
 }
