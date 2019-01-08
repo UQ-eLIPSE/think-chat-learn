@@ -4,20 +4,29 @@ import { Conf } from "../config/Conf";
 import { Database } from "./data/Database";
 
 import { ChatEndpoint } from "./websocket/endpoint/ChatEndpoint";
-import { UserLoginEndpoint } from "./websocket/endpoint/UserLoginEndpoint";
+/*import { UserLoginEndpoint } from "./websocket/endpoint/UserLoginEndpoint";
 import { AnswerSubmissionEndpoint } from "./websocket/endpoint/AnswerSubmissionEndpoint";
 import { SurveyEndpoint } from "./websocket/endpoint/SurveyEndpoint";
-import { BackupClientEndpoint } from "./websocket/endpoint/BackupClientEndpoint";
+import { BackupClientEndpoint } from "./websocket/endpoint/BackupClientEndpoint";*/
 import { SocketResyncEndpoint } from "./websocket/endpoint/SocketResyncEndpoint";
 
 import { PacSeqSocket_Server } from "../../common/js/PacSeqSocket_Server";
+import { ChatGroupService } from "../services/ChatGroupService";
+import { ResponseService } from "../services/ResponseService";
 
 export class Moocchat {
     private socketIO: SocketIO.Server;
     private db: mongodb.Db;
+    private chatGroupService: ChatGroupService;
+    private responseService: ResponseService;
+    // Temporarily null
+    //private chatMessageService: ChatMessageService;
 
-    constructor(socketIO: SocketIO.Server) {
+    // Put in the appropiate services as well
+    constructor(socketIO: SocketIO.Server, chatGroupService: ChatGroupService, responseService: ResponseService) {
         this.socketIO = socketIO;
+        this.chatGroupService = chatGroupService;
+        this.responseService = responseService;
         this.setup();
     }
 
@@ -29,43 +38,43 @@ export class Moocchat {
             // }
 
 
-            // Set DB connection now that we have it
-            this.db = db;
+        // Set DB connection now that we have it
+        this.db = db;
 
-            // On each socket connection, join up to websocket endpoints
-            this.socketIO.sockets.on("connection", (socketIoSocket) => {
-                console.log(`socket.io/${socketIoSocket.id} CONNECTION`);
-
-
-                // Wrap socket with PacSeqSocket
-                const socket = new PacSeqSocket_Server(socketIoSocket);
-                socket.enableInboundLogging();
-                socket.enableOutboundLogging();
-
-                // This registration of a dummy function is kept to allow PacSeqSocket
-                // to log disconnects (by triggering an event handler registration)
-                //
-                // Logouts are now explicit and are handled through user session related endpoints
-                socket.on("disconnect", () => { });
+        // On each socket connection, join up to websocket endpoints
+        this.socketIO.sockets.on("connection", (socketIoSocket) => {
+            console.log(`socket.io/${socketIoSocket.id} CONNECTION`);
 
 
-                // Set up websocket endpoints
-                const chatEndpoint = new ChatEndpoint(socket, this.db);
-                const userLoginEndpoint = new UserLoginEndpoint(socket, this.db);
-                const answerSubmissionEndpoint = new AnswerSubmissionEndpoint(socket, this.db);
-                const surveyEndpoint = new SurveyEndpoint(socket, this.db);
-                const backupClientEndpoint = new BackupClientEndpoint(socket, this.db);
-                const socketResyncEndpoint = new SocketResyncEndpoint(socket);
+            // Wrap socket with PacSeqSocket
+            const socket = new PacSeqSocket_Server(socketIoSocket);
+            socket.enableInboundLogging();
+            socket.enableOutboundLogging();
 
-                chatEndpoint.registerAllEndpointSocketEvents();
-                userLoginEndpoint.registerAllEndpointSocketEvents();
-                answerSubmissionEndpoint.registerAllEndpointSocketEvents();
-                surveyEndpoint.registerAllEndpointSocketEvents();
-                backupClientEndpoint.registerAllEndpointSocketEvents();
-                socketResyncEndpoint.registerAllEndpointSocketEvents();
-            });
+            // This registration of a dummy function is kept to allow PacSeqSocket
+            // to log disconnects (by triggering an event handler registration)
+            //
+            // Logouts are now explicit and are handled through user session related endpoints
+            socket.on("disconnect", () => { });
 
-            console.log("MOOCchat set up complete");
+
+            // Set up websocket endpoints
+            const chatEndpoint = new ChatEndpoint(socket, this.responseService, this.chatGroupService, null);
+            //const userLoginEndpoint = new UserLoginEndpoint(socket, this.db);
+            //const answerSubmissionEndpoint = new AnswerSubmissionEndpoint(socket, this.db);
+            //const surveyEndpoint = new SurveyEndpoint(socket, this.db);
+            //const backupClientEndpoint = new BackupClientEndpoint(socket, this.db);
+            const socketResyncEndpoint = new SocketResyncEndpoint(socket);
+
+            chatEndpoint.registerAllEndpointSocketEvents();
+            //userLoginEndpoint.registerAllEndpointSocketEvents();
+            //answerSubmissionEndpoint.registerAllEndpointSocketEvents();
+            //surveyEndpoint.registerAllEndpointSocketEvents();
+            //backupClientEndpoint.registerAllEndpointSocketEvents();
+            socketResyncEndpoint.registerAllEndpointSocketEvents();
+        });
+
+        console.log("MOOCchat set up complete");
         //});
     }
 

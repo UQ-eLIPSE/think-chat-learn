@@ -11,17 +11,24 @@ import { UserRepository } from "./repositories/UserRepository";
 import { QuestionRepository } from "./repositories/QuestionRepository";
 import { QuizRepository } from "./repositories/QuizRepository";
 import { UserSessionRepository } from "./repositories/UserSessionRepository";
+import { QuizSessionRepository } from "./repositories/QuizSessionRepository";
+import { ChatGroupRepository } from "./repositories/ChatGroupRepository";
 // Services
 import { UserService } from "./services/UserService";
 import { QuestionService } from "./services/QuestionService";
 import { QuizService } from "./services/QuizService";
 import { UserSessionService } from "./services/UserSessionService";
+import { QuizSessionService } from "./services/QuizSessionService";
+import { ChatGroupService } from "./services/ChatGroupService";
+
 // Controllers
 import { UserController } from "./controllers/UserController";
 import { QuestionController } from "./controllers/QuestionController";
 import { QuizController } from "./controllers/QuizController";
 import { UserSessionController } from "./controllers/UserSessionController";
 import { Moocchat } from "./js/Moocchat";
+import { ResponseRepository } from "./repositories/ResponseRepository";
+import { ResponseService } from "./services/ResponseService";
 export default class App {
 
     // Express things
@@ -35,12 +42,18 @@ export default class App {
     private quizRepository: QuizRepository;
     private questionRepository: QuestionRepository;
     private userSessionRepository: UserSessionRepository;
+    private quizSessionRepository: QuizSessionRepository;
+    private chatGroupRepository: ChatGroupRepository;
+    private responseRepository: ResponseRepository;
 
     // Services
     private userService: UserService;
     private quizService: QuizService;
     private questionService: QuestionService;
     private userSessionService: UserSessionService;
+    private quizSessionService: QuizSessionService;
+    private chatGroupService: ChatGroupService;
+    private responseService: ResponseService;
 
     // Controllers
     private userController: UserController;
@@ -61,8 +74,9 @@ export default class App {
 
     public async init(): Promise<void> {
         this.database = await this.connectDb();
-        this.setupSockets();
+
         this.bootstrap();
+        this.setupSockets();
         this.setupRoutes();
     }
 
@@ -79,11 +93,17 @@ export default class App {
         this.quizRepository = new QuizRepository(this.database, "uq_quizSchedule");
         this.questionRepository = new QuestionRepository(this.database, "uq_question");
         this.userSessionRepository = new UserSessionRepository(this.database, "uq_userSession");
+        this.quizSessionRepository = new QuizSessionRepository(this.database, "uq_quizSession");
+        this.chatGroupRepository = new ChatGroupRepository(this.database, "uq_chatGroup");
+        this.responseRepository = new ResponseRepository(this.database, "uq_responses");
 
         this.userService = new UserService(this.userRepository, this.quizRepository, this.questionRepository);
         this.quizService = new QuizService(this.quizRepository);
         this.questionService = new QuestionService(this.questionRepository);
         this.userSessionService = new UserSessionService(this.userSessionRepository);
+        this.quizSessionService = new QuizSessionService(this.quizSessionRepository);
+        this.chatGroupService = new ChatGroupService(this.chatGroupRepository);
+        this.responseService = new ResponseService(this.responseRepository);
 
         this.userController = new UserController(this.userService);
         this.quizController = new QuizController(this.quizService);
@@ -108,7 +128,7 @@ export default class App {
         });
 
         // Used to set up the moocchat sockets
-        this.socketIO = new Moocchat(io).getSocketIO();
+        this.socketIO = new Moocchat(io, this.chatGroupService, this.responseService).getSocketIO();
     }
 
     // For now we also open up teh sockets and h

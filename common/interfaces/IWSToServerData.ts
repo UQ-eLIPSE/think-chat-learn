@@ -6,8 +6,12 @@ interface SessionResponse {
     sessionId: string;
 }
 
+// An attempt is a combination of quiz and question addition to a response
 interface QuizAttemptResponse {
-    quizAttemptId: string;
+    responseId: string;
+    quizId: string;
+    questionId: string;
+    quizSessionId: string;
 }
 
 export interface AnswerResponse extends QuizAttemptResponse {

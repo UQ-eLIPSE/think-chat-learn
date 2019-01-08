@@ -19,7 +19,6 @@ export class QuizController extends BaseController {
                     outgoingId
                 });
             } else {
-                console.log("A");
                 res.sendStatus(400);
             }
         }).catch((e: Error) => {

@@ -6,6 +6,9 @@ export type Page = IQuestionAnswerPage | IInfoPage | IDiscussionPage | ISurveyPa
 // TODO remove the old Question interface in favour of the new one
 export type TypeQuestion = IQuestionMCQ | IQuestionQualitative;
 
+// We either answer an MCQ or a qualitative
+export type Response = IResponseMCQ | IResponseQualitative;
+
 export enum LTIRoles {
     ADMIN = "ADMIN",
     STUDENT = "STUDENT"
@@ -32,7 +35,17 @@ export interface IUserSession extends Document {
     endTime?: string;
     course?: string;
     // Currently an enum
-    role?: LTIRoles
+    role?: LTIRoles;
+}
+
+// A quiz session is when a user decides to take on/attempt a quiz
+// Note we record the whole thing such as what questions they answered
+export interface IQuizSession extends Document {
+    userSessionId?: OID;
+    quizId?: OID;
+    // A response is defined by a referral to a page
+    // with the appropiate content
+    responses?: OID[];
 }
 
 // Contains a question in which people can answer.
@@ -70,6 +83,29 @@ export interface IQuestionOption extends Document {
     content?: string;
     isCorrect?: boolean;
     index: number;
+}
+
+// A response could either be from an MCQ or qualitative
+// Therefore we accomodate for an option or simply a string
+// In both cases there is a confidence value and a link to the question
+// (Whether or not we want redundancy here is yet to be known)
+export interface IResponse extends Document {
+    type: QuestionType;
+    confidence: number;
+    questionId: OID;
+    quizId: OID;
+}
+
+// MCQ answers points to an option
+export interface IResponseMCQ extends IResponse {
+    type: QuestionType.MCQ;
+    optionId: OID;
+}
+
+// Qualitative is simply a string
+export interface IResponseQualitative extends IResponse {
+    type: QuestionType.QUALITATIVE;
+    content: string;
 }
 
 // Contains a quiz which contains questions that people can answer
@@ -129,6 +165,24 @@ export interface IQuizSchedule extends Document {
     course?: string;
     availableStart?: Date;
     availableEnd?: Date;
+}
+
+// A message that was sent. Within a chat group. Contains
+// a user id which is presumably good (as in the user is part of the group)
+export interface IChatMessage extends Document {
+    userId?: OID;
+    content: string;
+}
+
+// A chat group contains multiple people talking.
+// A group is formed within a quiz id hence we generally search by it
+// Assumes that the quiz sessions ids inside are good/valid
+// Also a quiz group can only be in one session.
+export interface IChatGroup extends Document {
+    messages?: IChatMessage[];
+    quizSessionIds?: IQuizSession[];
+    quizId?: OID;
+    questionId?: OID;
 }
 
 export interface ChatMessage<OID, Date> {

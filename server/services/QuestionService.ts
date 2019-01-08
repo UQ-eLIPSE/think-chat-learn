@@ -46,13 +46,11 @@ export class QuestionService extends BaseService{
                 throw Error("Missing options in an MCQ question");
             }            
         }
-        console.log(data);
         return this.questionRepo.updateOne(data);
     }
 
     // Deletes a question based on the incoming id
     public async deleteQuiz(id: string) {
-        console.log(id);
         return this.questionRepo.deleteOne(id);
     }
 

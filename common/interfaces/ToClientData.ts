@@ -40,7 +40,8 @@ export type ISurveyPage = DBSchema.ISurveyPage;
 export type IQuestionAnswerPage = DBSchema.IQuestionAnswerPage;
 export type IDiscussionPage = DBSchema.IDiscussionPage;
 export type IUserSession = DBSchema.IUserSession;
-
+export type IQuizSession = DBSchema.IQuizSession;
+export type IChatGroup = DBSchema.IChatGroup;
 // API specific
 export interface Quiz {
     question: Question;

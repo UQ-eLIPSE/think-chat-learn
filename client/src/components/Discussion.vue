@@ -37,6 +37,8 @@ export default class Discussion extends Vue {
         return this.$store.getters.quiz;
     }
 
+    // Based on the quetions within the quiz?
+
     // Creates the socket for working
     private createSocket() {
         this.socket = new WebsocketManager();
@@ -56,8 +58,12 @@ export default class Discussion extends Vue {
         }
 
         this.socket.once<IWSToClientData.ChatGroupFormed>(WebsocketEvents.INBOUND.CHAT_GROUP_FORMED, callback);
+        //5c32e50dda750ec31e0bad62
         this.socket.emitData<IWSToServerData.ChatGroupJoin>(WebsocketEvents.OUTBOUND.CHAT_GROUP_JOIN_REQUEST, {
-            quizAttemptId: this.quiz!._id!
+            quizId: this.quiz!._id!,
+            questionId: this.quiz!.pages![0]._id!,
+            quizSessionId: "55",
+            responseId: "5c32e50dda750ec31e0bad62"
         });
     }
 
@@ -66,7 +72,6 @@ export default class Discussion extends Vue {
         if (this.quiz && !this.socket) {
             this.createSocket();
             this.emitJoinRequest((data) => {
-                console.log(data);
             });
         }
     }

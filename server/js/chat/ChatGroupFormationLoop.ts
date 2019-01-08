@@ -4,14 +4,15 @@ import { KVStore } from "../../../common/js/KVStore";
 
 import { MoocchatWaitPool } from "../queue/MoocchatWaitPool";
 
-import { QuizAttempt } from "../quiz/QuizAttempt";
+import { Response } from "../../../common/interfaces/DBSchema";
 
 export class ChatGroupFormationLoop {
     private static readonly CGFLInstances = new KVStore<ChatGroupFormationLoop>();
     private static TimeBetweenChecks = Conf.chat.groups.formationIntervalMs;
 
     public static GetChatGroupFormationLoop(waitPool: MoocchatWaitPool) {
-        const cgfl = ChatGroupFormationLoop.CGFLInstances.get(waitPool.getQuizSessionId());
+        // Remember the ids are based on quiz and question ids
+        const cgfl = ChatGroupFormationLoop.CGFLInstances.get(waitPool.getQuizId() + waitPool.getQuestionId());
 
         if (!cgfl) {
             return new ChatGroupFormationLoop(waitPool);
@@ -20,8 +21,8 @@ export class ChatGroupFormationLoop {
         return cgfl;
     }
 
-    public static GetChatGroupFormationLoopWithQuizScheduleFrom(quizAttempt: QuizAttempt) {
-        const waitPool = MoocchatWaitPool.GetPoolWithQuizScheduleFrom(quizAttempt);
+    public static GetChatGroupFormationLoopWithQuizScheduleFrom(userResponse: Response) {
+        const waitPool = MoocchatWaitPool.GetPoolWithQuestionresponse(userResponse);
         return ChatGroupFormationLoop.GetChatGroupFormationLoop(waitPool);
     }
 
@@ -31,7 +32,7 @@ export class ChatGroupFormationLoop {
     private timerHandle: NodeJS.Timer;
     private waitPool: MoocchatWaitPool;
 
-    private onGroupCoalesced: (quizAttempts: QuizAttempt[]) => void;
+    private onGroupCoalesced: (quizResponse: Response[]) => void;
 
     private started: boolean = false;
 
@@ -45,10 +46,10 @@ export class ChatGroupFormationLoop {
         this.waitPool = waitPool;
 
         // Put into singleton map
-        ChatGroupFormationLoop.CGFLInstances.put(waitPool.getQuizSessionId(), this);
+        ChatGroupFormationLoop.CGFLInstances.put(waitPool.getQuizId() + waitPool.getQuestionId(), this);
     }
 
-    public registerOnGroupCoalesced(handler: (quizAttempts: QuizAttempt[]) => void) {
+    public registerOnGroupCoalesced(handler: (userResponses: Response[]) => void) {
         this.onGroupCoalesced = handler;
     }
 
@@ -79,7 +80,6 @@ export class ChatGroupFormationLoop {
         clearTimeout(this.timerHandle);
 
         const quizAttemptsInGroup = this.waitPool.tryFormGroup();
-
         if (quizAttemptsInGroup && quizAttemptsInGroup.length > 0) {
             if (this.onGroupCoalesced) {
                 this.onGroupCoalesced(quizAttemptsInGroup);
