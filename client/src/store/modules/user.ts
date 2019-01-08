@@ -22,7 +22,7 @@ const getters = {
     user: (): IUser | null => {
         return state.user;
     },
-    session: (): IUserSession | null => {
+    userSession: (): IUserSession | null => {
         return state.session;
     }
 };

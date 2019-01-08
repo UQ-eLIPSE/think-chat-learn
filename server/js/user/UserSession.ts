@@ -161,7 +161,8 @@ export class UserSession {
     }
 
     public getSocketSession() {
-        return SocketSession.Get(this);
+        // TODO REMOVE
+        return SocketSession.Get("A");
     }
 
     public getSocket() {

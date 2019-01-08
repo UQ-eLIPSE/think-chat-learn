@@ -5,34 +5,75 @@ import { PacSeqSocket_Server } from "../../../common/js/PacSeqSocket_Server";
 // Refers to...
 import { UserSession } from "../user/UserSession";
 
+// A socket session is created when a user decides to send a join request
+// which is located in the chatEndPoint. The reason for this is because
+// the socket is only created/used for chatting rather than for submitting
+// answers which is done via HTTP. We store the QuizSessionId because this
+// would be marked as an attempt rather than any arbitrary session (userSession)
+
+// Additionally we also store the groups associated here as well
 export class SocketSession {
     private static readonly Store = new KVStore<SocketSession>();
+    private static readonly GroupStore = new KVStore<SocketSession[]>();
 
-    private /*readonly*/ userSession: UserSession;
+    private /*readonly*/ quizSessionId: string;
     private /*readonly*/ sockets: PacSeqSocket_Server[] = [];
 
-    public static Get(userSession: UserSession) {
-        return SocketSession.Store.get(userSession.getId());
+    public static Get(quizSessionId: string) {
+        return SocketSession.Store.get(quizSessionId);
     }
 
-    public static GetAutoCreate(userSession: UserSession) {
-        const socketSession = SocketSession.Get(userSession);
+    // Similar to a single get except it is in a group
+    public static GetAutoCreateGroup(groupId: string) {
+        const socketArray = SocketSession.GroupStore.get(groupId);
+
+        if (socketArray) {
+            return socketArray;
+        }
+
+        return SocketSession.CreateGroup(groupId);
+    }
+
+    public static GetAutoCreate(quizSession: string) {
+        const socketSession = SocketSession.Get(quizSession);
 
         if (socketSession) {
             return socketSession;
         }
 
-        return SocketSession.Create(userSession);
+        return SocketSession.Create(quizSession);
     }
 
-    public static Create(userSession: UserSession) {
-        return new SocketSession(userSession);
+    // Places a socket into a group assuming the socket is in the store already
+    public static PutInGroup(groupId: string, quizSession: string) {
+        const socket = SocketSession.Store.get(quizSession);
+        const socketArray = SocketSession.GroupStore.get(groupId);
+        if (socket && socketArray) {
+            if (socketArray.findIndex((element) => element === socket) !== -1) {
+                socketArray.push(socket);
+                SocketSession.GroupStore.put(groupId, socketArray);
+            }
+            console.error(`Attempted to add duplicate socket in array GroupId: ${groupId}, SessionId: ${quizSession}`);
+        } else {
+            console.error(`Invalid socket with session id ${quizSession}`);
+        }
     }
 
-    private constructor(userSession: UserSession) {
-        this.userSession = userSession;
+    public static Create(quizSession: string) {
+        return new SocketSession(quizSession);
+    }
 
-        SocketSession.Store.put(userSession.getId(), this);
+    // Creates a group which is default to an empty array 
+    public static CreateGroup(groupId: string): SocketSession[] {
+        SocketSession.GroupStore.put(groupId, []);
+        return [];
+    }
+
+
+    private constructor(quizSessionId: string) {
+        this.quizSessionId = quizSessionId;
+
+        SocketSession.Store.put(quizSessionId, this);
     }
 
     public setSocket(socket: PacSeqSocket_Server) {
@@ -67,13 +108,13 @@ export class SocketSession {
     }
 
     private removeFromStore() {
-        SocketSession.Store.delete(this.userSession.getId());
+        SocketSession.Store.delete(this.quizSessionId);
     }
 
     public destroyInstance() {
         this.removeFromStore();
 
-        delete this.userSession;
+        delete this.quizSessionId;
         delete this.sockets;
     }
 }

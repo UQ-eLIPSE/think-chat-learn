@@ -8,6 +8,7 @@
         </div>
         <div id="chatBody">
         </div>
+        <button type="button" @click="sendJoin">Send A Join Request</button>
     </div>
 </template>
 
@@ -16,7 +17,7 @@
 </style>
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
-import { IQuiz } from "../../../common/interfaces/DBSchema";
+import { IQuiz, IUserSession, IQuizSession, Response, QuestionType } from "../../../common/interfaces/DBSchema";
 
 
 // Websocket interfaces
@@ -35,6 +36,21 @@ export default class Discussion extends Vue {
     // Based on the quiz
     get quiz(): IQuiz | null {
         return this.$store.getters.quiz;
+    }
+
+    // Based on stored user details
+    get userSession(): IUserSession | null {
+        return this.$store.getters.userSession;
+    }
+
+    // Gets the quizSession
+    get quizSession(): IQuizSession | null {
+        return this.$store.getters.quizSession;
+    }
+
+    // Gets the response
+    get response(): Response {
+        return this.$store.getters.response;
     }
 
     // Based on the quetions within the quiz?
@@ -58,22 +74,65 @@ export default class Discussion extends Vue {
         }
 
         this.socket.once<IWSToClientData.ChatGroupFormed>(WebsocketEvents.INBOUND.CHAT_GROUP_FORMED, callback);
-        //5c32e50dda750ec31e0bad62
+        //5c343da8da750ec31e0bad64
+        //5c343da5da750ec31e0bad63
         this.socket.emitData<IWSToServerData.ChatGroupJoin>(WebsocketEvents.OUTBOUND.CHAT_GROUP_JOIN_REQUEST, {
             quizId: this.quiz!._id!,
             questionId: this.quiz!.pages![0]._id!,
-            quizSessionId: "55",
-            responseId: "5c32e50dda750ec31e0bad62"
+            quizSessionId: this.quizSession!._id!,
+            responseId: this.response!._id!
         });
+    }
+
+    // Requests for a creation of a session. Handles both the HTTP request and the socket
+    private createSessionInServer() {
+        if (this.userSession && this.quiz && this.socket) {
+            // Should have passed the checks
+
+            const outgoingQuizSession: IQuizSession = {
+                quizId: this.quiz!._id,
+                userSessionId: this.userSession!._id,
+                responses: []
+            } 
+
+            // Instantiate the quiz session and then the socket
+            this.$store.dispatch("createQuizSession", outgoingQuizSession).then((id: string) => {
+                // Wait for an acknowledge?
+                this.socket!.once(WebsocketEvents.INBOUND.STORE_SESSION_ACK, () => {
+                });
+
+                // Send the data
+                this.socket!.emitData<IWSToServerData.StoreSession>(WebsocketEvents.OUTBOUND.STORE_QUIZ_SESSION_SOCKET, {
+                    quizSessionId: id
+                });
+            });
+        }
     }
 
     private mounted() {
         // Attempt to join the chat. Also instantiate the socket
         if (this.quiz && !this.socket) {
+            // Instantitates a socket and then sends a reqest
             this.createSocket();
-            this.emitJoinRequest((data) => {
-            });
+            this.createSessionInServer();
         }
+    }
+
+    private async sendJoin() {
+        // Send dummy data in first
+        const outgoingResponse: Response = {
+            type: QuestionType.QUALITATIVE,
+            confidence: 5,
+            questionId: "PizzaHut",
+            quizId: "Dominos",
+            content: "DOTA",
+            quizSessionId: this.quizSession!._id!
+        }
+        await this.$store.dispatch("sendResponse", outgoingResponse);
+
+        // Sends a join request
+        this.emitJoinRequest((data) => {
+        });        
     }
 
     private destroy() {

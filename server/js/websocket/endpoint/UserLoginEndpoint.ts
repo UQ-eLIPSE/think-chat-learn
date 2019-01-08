@@ -24,13 +24,15 @@ import { Survey } from "../../survey/Survey";
 import { ChatGroup } from "../../chat/ChatGroup";
 
 import { ChatGroupFormationLoop } from "../../chat/ChatGroupFormationLoop";
-import { MoocchatBackupClientQueue } from "../../queue/MoocchatBackupClientQueue";
+//import { MoocchatBackupClientQueue } from "../../queue/MoocchatBackupClientQueue";
 
 import { LTIAuth } from "../../auth/lti/LTIAuth";
 import { IMoocchatIdentityInfo } from "../../auth/IMoocchatIdentityInfo";
 
 import { Utils } from "../../../../common/js/Utils";
 
+// DB imports
+import { QuizSessionService } from "../../../services/QuizSessionService";
 
 export class UserLoginEndpoint extends WSEndpoint {
     private static NotifyClientOnError(socket: PacSeqSocket_Server, e: Error) {
@@ -41,7 +43,7 @@ export class UserLoginEndpoint extends WSEndpoint {
         // TODO: Logins will be split from the actual "quiz attempt"; most of
         //         the below code is related more to quiz stuff than logins
         
-        try {
+        /*try {
             // Get user+quiz info, check validity
             const identity = await UserLoginFunc.ProcessLtiObject(data);
             UserLoginFunc.CheckUserId(identity);
@@ -75,11 +77,13 @@ export class UserLoginEndpoint extends WSEndpoint {
             UserLoginFunc.NotifyClientOfLogin(socket, session, user, quizSchedule, quizAttempt, question, questionOptions, survey);
         } catch (e) {
             UserLoginEndpoint.NotifyClientOnError(socket, e);
-        }
+        }*/
     }
 
     private static async HandleLogout(socket: PacSeqSocket_Server, data: IWSToServerData.Logout, db: mongodb.Db) {
-        const session = UserSession.Get(data.sessionId);
+
+        // TODO replace with quizSession
+        /*const session = UserSession.Get(data.quizSessionId);
 
         if (!session) {
             return console.error("Attempted logout with invalid session ID = " + data.sessionId);
@@ -93,11 +97,11 @@ export class UserLoginEndpoint extends WSEndpoint {
 
         socket.emitData<IWSToClientData.LogoutSuccess>("logoutSuccess", {
             sessionId,
-        });
+        });*/
     }
 
     private static async HandleTerminateSessions(socket: PacSeqSocket_Server, data: IWSToServerData.TerminateSessions, db: mongodb.Db) {
-        const username = data.username;
+        /*const username = data.username;
 
         if (!username || typeof username !== "string") {
             return console.error("Attempted terminate session with invalid username = " + username);
@@ -117,11 +121,11 @@ export class UserLoginEndpoint extends WSEndpoint {
         userSessions.forEach(_ => _.destroyInstance());
 
         // Reply direct to the user that sent the request, as at this point no session is available
-        socket.emit("terminateSessionsComplete");
+        socket.emit("terminateSessionsComplete");*/
     }
 
     private static async HandleResearchConsentSet(socket: PacSeqSocket_Server, data: IWSToServerData.LoginResearchConsent, db: mongodb.Db) {
-        const session = UserSession.Get(data.sessionId);
+        /*const session = UserSession.Get(data.sessionId);
 
         if (!session) {
             return console.error("Attempted research consent set with invalid session ID = " + data.sessionId);
@@ -135,42 +139,70 @@ export class UserLoginEndpoint extends WSEndpoint {
 
         await session.getUser().setResearchConsent(researchConsent);
 
-        socket.emit("researchConsentSaved");
+        socket.emit("researchConsentSaved");*/
     }
 
-    private db: mongodb.Db;
+    // This officially stores the quiz session for storage purposes. On the front end, its should be when the user selects a start
+    // This is avoid superflous requests
+    private static async StoreQuizSessionSocket(socket: PacSeqSocket_Server, 
+            data: IWSToServerData.StoreSession, quizSessionService: QuizSessionService) {
+        // Check if it is a valid session
+        const quizSession = await quizSessionService.getQuizSession(data.quizSessionId);
 
-    constructor(socket: PacSeqSocket_Server, db: mongodb.Db) {
+        if (!quizSession || !quizSession._id) {
+            console.error(`Could not find quiz session with quiz id ${data.quizSessionId}`);
+            throw Error("Invalid quiz session");
+        }
+
+        // At this point it is valid, we can then use the store the socket in memory
+
+
+        const session = SocketSession.GetAutoCreate(quizSession._id);
+        session.setSocket(socket);
+        socket.emit("StoreSessionAcknowledged");
+
+    }
+
+    // Service which points to the quizSession table
+    private quizSessionService: QuizSessionService;
+
+    constructor(socket: PacSeqSocket_Server, quizSessionService: QuizSessionService) {
         super(socket);
-        this.db = db;
+        this.quizSessionService = quizSessionService;
     }
 
     public get onLoginLti() {
         return (data: IWSToServerData.LoginLti) => {
-            UserLoginEndpoint.HandleLoginLTI(this.getSocket(), data, this.db)
-                .catch(e => console.error(e));
+            //UserLoginEndpoint.HandleLoginLTI(this.getSocket(), data, this.db)
+            //   .catch(e => console.error(e));
         };
     }
 
     public get onLogout() {
         return (data: IWSToServerData.Logout) => {
-            UserLoginEndpoint.HandleLogout(this.getSocket(), data, this.db)
-                .catch(e => console.error(e));
+            //UserLoginEndpoint.HandleLogout(this.getSocket(), data, this.db)
+            //    .catch(e => console.error(e));
         };
     }
 
     public get onTerminateSessions() {
         return (data: IWSToServerData.TerminateSessions) => {
-            UserLoginEndpoint.HandleTerminateSessions(this.getSocket(), data, this.db)
-                .catch(e => console.error(e));
+            //UserLoginEndpoint.HandleTerminateSessions(this.getSocket(), data, this.db)
+            //    .catch(e => console.error(e));
         };
     }
 
     public get onResearchConsentSet() {
         return (data: IWSToServerData.LoginResearchConsent) => {
-            UserLoginEndpoint.HandleResearchConsentSet(this.getSocket(), data, this.db)
-                .catch(e => console.error(e));
+            //UserLoginEndpoint.HandleResearchConsentSet(this.getSocket(), data, this.db)
+            //    .catch(e => console.error(e));
         };
+    }
+
+    public get onStoreQuizSessionSocket() {
+        return (data: IWSToServerData.StoreSession) => {
+            UserLoginEndpoint.StoreQuizSessionSocket(this.getSocket(), data, this.quizSessionService);
+        }
     }
 
     public returnEndpointEventHandler(name: string): (data: any) => void {
@@ -179,6 +211,7 @@ export class UserLoginEndpoint extends WSEndpoint {
             case "logout": return this.onLogout;
             case "terminateSessions": return this.onTerminateSessions;
             case "researchConsentSet": return this.onResearchConsentSet;
+            case "storeQuizSessionSocket": return this.onStoreQuizSessionSocket;
         }
 
         throw new Error(`No endpoint event handler for "${name}"`);
@@ -190,6 +223,7 @@ export class UserLoginEndpoint extends WSEndpoint {
             "logout",
             "terminateSessions",
             "researchConsentSet",
+            "storeQuizSessionSocket"
         ]);
     }
 }
@@ -286,7 +320,7 @@ class UserLoginFunc {
     }
 
     public static SetupChatGroupFormationLoop(db: mongodb.Db, quizAttempt: QuizAttempt) {
-        const quizSchedule = quizAttempt.getQuizSchedule();
+        /*const quizSchedule = quizAttempt.getQuizSchedule();
         const quizSessionId = quizSchedule.getId();
         const loop = ChatGroupFormationLoop.GetChatGroupFormationLoopWithQuizScheduleFrom(quizAttempt);
 
@@ -302,7 +336,7 @@ class UserLoginFunc {
             });
 
             loop.start();
-        }
+        }*/
     }
 
     public static NotifyClientOfLogin(socket: PacSeqSocket_Server, session: UserSession, user: User, quizSchedule: QuizSchedule, quizAttempt: QuizAttempt, question: Question, questionOptions: QuestionOption[], survey: Survey | undefined) {
@@ -318,7 +352,7 @@ class UserLoginFunc {
         // }
 
         // Complete login by notifying client
-        const quizScheduleData = quizSchedule.getData() as DBSchema.QuizSchedule<string, string>;
+        /*const quizScheduleData = quizSchedule.getData() as DBSchema.QuizSchedule<string, string>;
         const questionData = question.getData() as DBSchema.Question<string>;
         const questionOptionsData = questionOptions.map(questionOption => questionOption.getData()) as DBSchema.QuestionOption<string>[];
         const surveyData = survey ? survey.getData() as DBSchema.Survey<string, string> : null;
@@ -334,7 +368,7 @@ class UserLoginFunc {
             },
             survey: surveyData,
             researchConsentRequired,
-        });
+        });*/
     }
 
 }

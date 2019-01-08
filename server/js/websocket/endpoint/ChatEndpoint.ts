@@ -12,12 +12,14 @@ import { ChatMessage } from "../../chat/ChatMessage";
 import { ChatGroupFormationLoop } from "../../chat/ChatGroupFormationLoop";
 import { ResponseService } from "../../../services/ResponseService";
 import { ChatGroupService } from "../../../services/ChatGroupService";
+import { IChatGroup } from "../../../../common/interfaces/DBSchema";
+import { SocketSession } from "../SocketSession";
 
 export class ChatEndpoint extends WSEndpoint {
     private static async HandleJoinRequest(socket: PacSeqSocket_Server, data: IWSToServerData.ChatGroupJoin, responseService: ResponseService,
         chatGroupService: ChatGroupService) {
 
-        // Grabs the resposne 
+        // Grabs the response 
         const userResponse = await responseService.getResponse(data.responseId);
 
         if (!userResponse || !userResponse._id) {
@@ -53,7 +55,56 @@ export class ChatEndpoint extends WSEndpoint {
         // Run the chat group formation loop now
         const cgfl = ChatGroupFormationLoop.GetChatGroupFormationLoop(waitPool);
 
-        if (cgfl) {
+        // Politely ask for the loop to start. If it has not started, remember to set up the function
+        // when the group has been formed.
+        if (!cgfl.hasStarted) {
+            cgfl.registerOnGroupCoalesced((output) => {
+
+                // Create the group, note that we just need to grab
+                // one instance of the responses and use their quiz and question ids
+                
+                if (!output.length) {
+                    throw Error("Somehow a 0 length group was formed");
+                }
+
+                const chatGroup: IChatGroup = {
+                    messages: [],
+                    quizSessionIds: output.reduce((arr, value) => { arr.push(value._id!); return arr; }, [] as string[]),
+                    quizId: output[0].quizId,
+                    questionId: output[0].questionId
+                };
+
+                chatGroupService.createChatGroup(chatGroup).then((groupId) => {
+                    // Instantiate the croup
+                    SocketSession.CreateGroup(groupId)
+
+                    // Grab the associated sockets and emit
+                    output.forEach((element) => {
+                        // Place in the group
+                        SocketSession.PutInGroup(groupId, element.quizSessionId);
+
+                        // Grab the socket 
+                        const maybeSession = SocketSession.Get(element.quizSessionId);
+                        if (maybeSession) {
+                            const socket = maybeSession.getSocket();
+                            if (socket) {
+                                // TODO fix the hard code answers and client index
+                                socket.emit("chatGroupFormed", {
+                                    groupId: groupId,
+                                    groupSize: chatGroup.quizSessionIds!.length,
+                                    groupAnswers: [],
+                                    clientIndex: 5})
+                            } else {
+                                console.error("no socket");
+                            }
+                        } else {
+                            console.error("invalid session");
+                        }
+                    });
+                });
+            });
+            cgfl.start();
+        } else {
             cgfl.forceRun();
         }
 
@@ -138,7 +189,16 @@ export class ChatEndpoint extends WSEndpoint {
 
     public get onJoinRequest() {
         return (data: IWSToServerData.ChatGroupJoin) => {
-            ChatEndpoint.HandleJoinRequest(this.getSocket(), data, this.responseService, this.chatGroupService);
+            ChatEndpoint.HandleJoinRequest(this.getSocket(), data, this.responseService, this.chatGroupService).then(() => {
+                // Returns whether or not the request was successful
+                return true;
+            }).catch((e: Error) => {
+                // Something bad happened
+                return false;
+            });
+            
+
+
         };
     }
 

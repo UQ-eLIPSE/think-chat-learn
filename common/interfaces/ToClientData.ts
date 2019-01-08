@@ -42,6 +42,7 @@ export type IDiscussionPage = DBSchema.IDiscussionPage;
 export type IUserSession = DBSchema.IUserSession;
 export type IQuizSession = DBSchema.IQuizSession;
 export type IChatGroup = DBSchema.IChatGroup;
+export type Response = DBSchema.Response;
 // API specific
 export interface Quiz {
     question: Question;

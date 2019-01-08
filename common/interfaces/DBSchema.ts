@@ -94,6 +94,7 @@ export interface IResponse extends Document {
     confidence: number;
     questionId: OID;
     quizId: OID;
+    quizSessionId: OID;
 }
 
 // MCQ answers points to an option
@@ -180,7 +181,7 @@ export interface IChatMessage extends Document {
 // Also a quiz group can only be in one session.
 export interface IChatGroup extends Document {
     messages?: IChatMessage[];
-    quizSessionIds?: IQuizSession[];
+    quizSessionIds?: OID[];
     quizId?: OID;
     questionId?: OID;
 }

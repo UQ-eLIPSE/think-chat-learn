@@ -202,7 +202,7 @@ export class MoocchatWaitPool {
 
             const waitTime = Date.now() - firstInQueueData.timestamp;
 
-            return waitTime > MoocchatWaitPool.DesiredMaxWaitTime;
+            return waitTime > MoocchatWaitPool.DesiredMaxWaitTime - 10000;
         });
     }
 
@@ -261,6 +261,7 @@ export class MoocchatWaitPool {
             }
 
             // Create chat group (up to desired group size)
+            console.log("DONE_SERVER");
             return this.popGroup();
         }
 
