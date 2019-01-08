@@ -2,6 +2,7 @@
   <div id="app">
     <Nav />
     <section>
+      <!-- <Countdown deadline="January 8, 2019"></Countdown> -->
       <div class="content-container">
         <router-view class="router-panel" />
       </div>
@@ -13,7 +14,7 @@
 <style lang="scss">
 body {
   background-color: #fff;
-  font-family: "Open Sans", sans-serif;
+  font-family: "Open Sans", sans-serif !important;
   margin: 0;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -72,6 +73,10 @@ body {
     &.primary {
       background-color: #225566;
     }
+    &.secondary {
+      background-color: #fead00;
+      height: 40px;
+    }
   }
   section {
     background-color: #f9fbfc;
@@ -116,7 +121,30 @@ body {
     background: rgba(254, 173, 0, 0.9);
   }
   .switch input[type="checkbox"]:checked + .check {
-    background: #7957d5;
+    background: #fead00;
+  }
+
+  // Countdown Timer styling
+  .vuejs-countdown {
+    background-color: rgba(96, 175, 161, 0.1);
+    border: 3px solid #60afa1;
+    border-radius: 5px;
+    color: #60afa1;
+    font-size: 20px;
+    height: 50px;
+    margin: 0 auto;
+    text-align: center;
+    width: 250px;
+    li {
+      &:first-child {
+        display: none;
+      }
+      p {
+        &.text {
+          display: none;
+        }
+      }
+    }
   }
 }
 </style>
@@ -125,16 +153,14 @@ body {
 import { Vue, Component } from "vue-property-decorator";
 import { getIdToken, getLoginResponse } from "../../common/js/front_end_auth";
 import Nav from "./components/Nav.vue";
+// import Countdown from "vuejs-countdown";
 import Footer from "./components/Footer.vue";
-import Buefy from "buefy";
-import "buefy/dist/buefy.css";
 import "./styles.scss";
-
-Vue.use(Buefy);
 
 @Component({
   components: {
     Nav,
+    // Countdown,
     Footer
   }
 })

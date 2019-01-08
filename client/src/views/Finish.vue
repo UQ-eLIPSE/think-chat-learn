@@ -25,7 +25,9 @@
     border: 3px solid #fead00;
     border-radius: 10px;
     color: #fead00;
+    display: inline-block;
     font-size: 1.5em;
+    margin-top: 1.5em;
     padding: 10px 40px;
   }
   .content {

@@ -8,52 +8,18 @@
         <p>“In some cases the growth of a population can be represented by an S-shaped curve. Such a population exhibits logistic growth, a pattern in which its abundance increases rapidly at first, then stabilises at a population size known as its carrying capacity. The growth rate of the population decreases as the population size nears carrying capacity because resources such as food, water or space begin to be short in supply.”</p>
       </div>
       <div class="column pane2">
-        <form>
-          <h2>Your Response</h2>
-          <b-field>
-            <b-input
-              type="textarea"
-              minlength="10"
-              maxlength="500"
-              placeholder="Explain your response..."
-            >
-            </b-input>
-          </b-field>
-          <div class="block">
-            <h3>Confidence:</h3>
-            <b-radio
-              v-model="radio"
-              native-value="1"
-            >
-              1
-            </b-radio>
-            <b-radio
-              v-model="radio"
-              native-value="2"
-            >
-              2
-            </b-radio>
-            <b-radio
-              v-model="radio"
-              native-value="3"
-            >
-              3
-            </b-radio>
-            <b-radio
-              v-model="radio"
-              native-value="4"
-            >
-              4
-            </b-radio>
-            <b-radio
-              v-model="radio"
-              native-value="5"
-            >
-              5
-            </b-radio>
-          </div>
-          <button class="primary">Submit</button>
-        </form>
+        <h2>Your Response</h2>
+        <b-field>
+          <b-input
+            type="textarea"
+            minlength="10"
+            maxlength="500"
+            placeholder="Explain your response..."
+          >
+          </b-input>
+        </b-field>
+        <Confidence />
+        <button class="primary">Submit</button>
       </div>
     </div>
   </div>
@@ -62,10 +28,6 @@
 <style lang="scss" scoped>
 .magic {
   height: 100%;
-  h3 {
-    display: inline-block;
-    margin-right: 1em;
-  }
   .columns {
     height: 100%;
     margin-bottom: 0;
@@ -84,9 +46,15 @@
   }
 }
 </style>
+
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
+import Confidence from "../components/Confidence.vue";
 
-@Component({})
+@Component({
+  components: {
+    Confidence
+  }
+})
 export default class InitialAnswer extends Vue {}
 </script>

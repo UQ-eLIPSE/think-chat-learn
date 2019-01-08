@@ -22,39 +22,7 @@
             >
             </b-input>
           </b-field>
-          <div class="block">
-            <h3>Confidence:</h3>
-            <b-radio
-              v-model="radio"
-              native-value="1"
-            >
-              1
-            </b-radio>
-            <b-radio
-              v-model="radio"
-              native-value="2"
-            >
-              2
-            </b-radio>
-            <b-radio
-              v-model="radio"
-              native-value="3"
-            >
-              3
-            </b-radio>
-            <b-radio
-              v-model="radio"
-              native-value="4"
-            >
-              4
-            </b-radio>
-            <b-radio
-              v-model="radio"
-              native-value="5"
-            >
-              5
-            </b-radio>
-          </div>
+          <Confidence />
           <button class="primary">Submit</button>
         </form>
       </div>
@@ -89,7 +57,12 @@
 </style>
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
+import Confidence from "../components/Confidence.vue";
 
-@Component({})
+@Component({
+  components: {
+    Confidence
+  }
+})
 export default class Reflection extends Vue {}
 </script>

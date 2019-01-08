@@ -20,31 +20,31 @@
         <div class="block">
           <p><b>This activity was:</b></p>
           <b-radio
-            v-model="radio"
+            v-model="activityEnjoyment"
             native-value="Not enjoyable"
           >
             Not enjoyable
           </b-radio>
           <b-radio
-            v-model="radio"
+            v-model="activityEnjoyment"
             native-value="Not fun"
           >
             Not fun
           </b-radio>
           <b-radio
-            v-model="radio"
+            v-model="activityEnjoyment"
             native-value="Ok"
           >
             Ok
           </b-radio>
           <b-radio
-            v-model="radio"
+            v-model="activityEnjoyment"
             native-value="Fun"
           >
             Fun
           </b-radio>
           <b-radio
-            v-model="radio"
+            v-model="activityEnjoyment"
             native-value="Enjoyable"
           >
             Enjoyable
@@ -56,7 +56,7 @@
           <p><b>After the chat, my level of understanding of the concepts discussed in this question is:</b></p>
           <div class="field">
             <b-radio
-              v-model="radio"
+              v-model="postChatUnderstanding"
               native-value="I do not understand the concepts"
             >
               I do not understand the concepts
@@ -64,7 +64,7 @@
           </div>
           <div class="field">
             <b-radio
-              v-model="radio"
+              v-model="postChatUnderstanding"
               native-value="I understand the concepts only a bit"
             >
               I understand the concepts only a bit
@@ -72,7 +72,7 @@
           </div>
           <div class="field">
             <b-radio
-              v-model="radio"
+              v-model="postChatUnderstanding"
               native-value="I somewhat understand the concepts"
             >
               I somewhat understand the concepts
@@ -80,7 +80,7 @@
           </div>
           <div class="field">
             <b-radio
-              v-model="radio"
+              v-model="postChatUnderstanding"
               native-value="I fully understand the concepts"
             >
               I fully understand the concepts
@@ -95,7 +95,7 @@
           <p><b>In this discussion:</b></p>
           <div class="field">
             <b-radio
-              v-model="radio"
+              v-model="interactionQuality"
               native-value="I gave my own ideas but did not really consider others ideas"
             >
               I gave my own ideas but did not really consider others ideas
@@ -103,7 +103,7 @@
           </div>
           <div class="field">
             <b-radio
-              v-model="radio"
+              v-model="interactionQuality"
               native-value="I considered others ideas but did not really state my own"
             >
               I considered others ideas but did not really state my own
@@ -111,7 +111,7 @@
           </div>
           <div class="field">
             <b-radio
-              v-model="radio"
+              v-model="interactionQuality"
               native-value="I gave my own ideas and I considered others ideas"
             >
               I gave my own ideas and I considered others ideas
@@ -119,7 +119,7 @@
           </div>
           <div class="field">
             <b-radio
-              v-model="radio"
+              v-model="interactionQuality"
               native-value="I persisted in trying to understand and discuss even when others disagreed or
 wanted to give up"
             >
@@ -133,7 +133,7 @@ wanted to give up"
           <p><b>In the discussion, our group…</b></p>
           <div class="field">
             <b-radio
-              v-model="radio"
+              v-model="groupReview"
               native-value="All stated their own ideas but with no real interaction"
             >
               All stated their own ideas but with no real interaction
@@ -141,7 +141,7 @@ wanted to give up"
           </div>
           <div class="field">
             <b-radio
-              v-model="radio"
+              v-model="groupReview"
               native-value="Mostly just agreed with the person/s who seem to know the answer"
             >
               Mostly just agreed with the person/s who seem to know the answer
@@ -149,7 +149,7 @@ wanted to give up"
           </div>
           <div class="field">
             <b-radio
-              v-model="radio"
+              v-model="groupReview"
               native-value="Discussed enough to get the correct answer but not to understand why"
             >
               Discussed enough to get the correct answer but not to understand why
@@ -157,7 +157,7 @@ wanted to give up"
           </div>
           <div class="field">
             <b-radio
-              v-model="radio"
+              v-model="groupReview"
               native-value="Discussed ideas to gain some understanding"
             >
               Discussed ideas to gain some understanding
@@ -165,7 +165,7 @@ wanted to give up"
           </div>
           <div class="field">
             <b-radio
-              v-model="radio"
+              v-model="groupReview"
               native-value="Debated ideas until all agreed and fully understood"
             >
               Debated ideas until all agreed and fully understood
@@ -193,8 +193,6 @@ wanted to give up"
     margin-top: 0;
     .column {
       padding: 2em 3em 3em 3em;
-      &.pane1 {
-      }
 
       &.pane2 {
         background-color: #fafafa;
@@ -213,5 +211,10 @@ wanted to give up"
 import { Vue, Component } from "vue-property-decorator";
 
 @Component({})
-export default class Survey extends Vue {}
+export default class Survey extends Vue {
+  private activityEnjoyment: string | null = null;
+  private postChatUnderstanding: string | null = null;
+  private interactionQuality: string | null = null;
+  private groupReview: string | null = null;
+}
 </script>
