@@ -7,47 +7,13 @@
       <h2>{{title}}</h2>
       <slot />
     </div>
-    <label :class="color">
-      {{number}}
-    </label>
+    <CircularNumberLabel :numeral="numeral" />
   </div>
 </template>
 
 <style lang="scss" scoped>
 .overviewContainer {
   margin-right: 2em;
-  label {
-    border-radius: 50%;
-    color: #fff;
-    display: inline-block;
-    font-size: 2.2em;
-    font-weight: 700;
-    height: 60px;
-    left: 0;
-    margin-top: 45px;
-    position: absolute;
-    text-align: center;
-    text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.15);
-    top: 0;
-    width: 60px;
-
-    &.base1 {
-      background-color: #6dc7b7;
-      border: 3px solid #60afa1;
-    }
-    &.base2 {
-      background-color: #99b204;
-      border: 3px solid #869b03;
-    }
-    &.base3 {
-      background-color: #ffae00;
-      border: 3px solid #e8a004;
-    }
-    &.base4 {
-      background-color: #ff7659;
-      border: 3px solid #e26a51;
-    }
-  }
   .overview {
     background: #f9fbfc;
     border: 1px solid #eff2f4;
@@ -75,12 +41,6 @@
         color: #515456;
         font-size: 19px;
       }
-      // li:before {
-      //   font-family: "FontAwesome";
-      //   content: "\f111";
-      //   margin: 0 5px 0 -15px;
-      //   color: #f00;
-      // }
       li::before {
         content: "•";
         color: #869b03;
@@ -94,11 +54,16 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from "vue-property-decorator";
-@Component
+import CircularNumberLabel from "../components/CircularNumberLabel.vue";
+
+@Component({
+  components: {
+    CircularNumberLabel
+  }
+})
 export default class OverviewContainer extends Vue {
   @Prop({}) private title!: string;
-  @Prop({}) private number!: number;
-  @Prop({}) private color!: string;
+  @Prop({}) private numeral!: number;
 }
 </script>
 

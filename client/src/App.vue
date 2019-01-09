@@ -76,6 +76,7 @@ body {
     &.secondary {
       background-color: #fead00;
       height: 40px;
+      width: 100%;
     }
   }
   section {
@@ -160,7 +161,6 @@ import "./styles.scss";
 @Component({
   components: {
     Nav,
-    // Countdown,
     Footer
   }
 })

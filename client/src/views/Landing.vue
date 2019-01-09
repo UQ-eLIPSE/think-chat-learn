@@ -3,8 +3,7 @@
     <h1>Overview</h1>
     <div class="content-inner-container">
       <OverviewContainer
-        color="base1"
-        number="1"
+        numeral="1"
         title="Respond to Scenario"
       >
         <ul>
@@ -14,8 +13,7 @@
         </ul>
       </OverviewContainer>
       <OverviewContainer
-        color="base2"
-        number="2"
+        numeral="2"
         title="Formulate answer with Group"
       >
         <ul>
@@ -26,8 +24,7 @@
         </ul>
       </OverviewContainer>
       <OverviewContainer
-        color="base3"
-        number="3"
+        numeral="3"
         title="Reflect on discussion"
       >
         <ul>
@@ -38,8 +35,7 @@
       </OverviewContainer>
       <div class="spacer"></div>
       <OverviewContainer
-        color="base4"
-        number="4"
+        numeral="4"
         title="Complete Survey"
       >
         <ul>
