@@ -18,6 +18,7 @@ export class SocketSession {
 
     private /*readonly*/ quizSessionId: string;
     private /*readonly*/ sockets: PacSeqSocket_Server[] = [];
+    private isTyping: boolean = false;
 
     public static Get(quizSessionId: string) {
         return SocketSession.Store.get(quizSessionId);
@@ -48,10 +49,10 @@ export class SocketSession {
     public static PutInGroup(groupId: string, quizSession: string) {
         const socket = SocketSession.Store.get(quizSession);
         const socketArray = SocketSession.GroupStore.get(groupId);
+        console.log("PUTTING IN GROUP");
         if (socket && socketArray) {
-            if (socketArray.findIndex((element) => element === socket) !== -1) {
+            if (socketArray.findIndex((element) => element === socket) === -1) {
                 socketArray.push(socket);
-                SocketSession.GroupStore.put(groupId, socketArray);
             }
             console.error(`Attempted to add duplicate socket in array GroupId: ${groupId}, SessionId: ${quizSession}`);
         } else {
@@ -67,6 +68,27 @@ export class SocketSession {
     public static CreateGroup(groupId: string): SocketSession[] {
         SocketSession.GroupStore.put(groupId, []);
         return [];
+    }
+
+    public static SetSessionTypingState(quizSession: string, state: boolean) {
+        const socketSession = SocketSession.Store.get(quizSession);
+
+        if (!socketSession) {
+            throw Error(`Invalid quiz session with id ${quizSession}`);
+        }
+
+        socketSession.isTyping = state;
+    }
+
+    public static GetTypingStatesForGroup(groupId: string): number[] {
+        const socketSessions = SocketSession.GroupStore.get(groupId);
+
+        if (!socketSessions) {
+            throw Error(`Invalid quiz session with id ${groupId}`);
+        }        
+
+        return socketSessions.reduce((arr: number[], element, index) => { if (element.isTyping) { arr.push(index); } return arr; }, [])
+
     }
 
 
@@ -116,5 +138,6 @@ export class SocketSession {
 
         delete this.quizSessionId;
         delete this.sockets;
+        delete this.isTyping;
     }
 }
