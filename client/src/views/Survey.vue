@@ -3,8 +3,10 @@
     <div class="columns">
       <div class="column pane1">
         <h1>Feedback</h1>
-        <p>By completing this survey, you’ll be providing essential information that we’ll use to be
-          able to improve the efficiency of MOOCchat.</p>
+        <p>
+          By completing this survey, you’ll be providing essential information
+          that we’ll use to be able to improve the efficiency of MOOCchat.
+        </p>
 
         <h2>General</h2>
         <p><b>Provide comments on MOOCchat and these questions</b></p>
@@ -19,41 +21,29 @@
         </b-field>
         <div class="block">
           <p><b>This activity was:</b></p>
-          <b-radio
-            v-model="activityEnjoyment"
-            native-value="Not enjoyable"
-          >
+          <b-radio v-model="activityEnjoyment" native-value="Not enjoyable">
             Not enjoyable
           </b-radio>
-          <b-radio
-            v-model="activityEnjoyment"
-            native-value="Not fun"
-          >
+          <b-radio v-model="activityEnjoyment" native-value="Not fun">
             Not fun
           </b-radio>
-          <b-radio
-            v-model="activityEnjoyment"
-            native-value="Ok"
-          >
-            Ok
-          </b-radio>
-          <b-radio
-            v-model="activityEnjoyment"
-            native-value="Fun"
-          >
+          <b-radio v-model="activityEnjoyment" native-value="Ok"> Ok </b-radio>
+          <b-radio v-model="activityEnjoyment" native-value="Fun">
             Fun
           </b-radio>
-          <b-radio
-            v-model="activityEnjoyment"
-            native-value="Enjoyable"
-          >
+          <b-radio v-model="activityEnjoyment" native-value="Enjoyable">
             Enjoyable
           </b-radio>
         </div>
 
         <div class="question">
           <h2>Understanding</h2>
-          <p><b>After the chat, my level of understanding of the concepts discussed in this question is:</b></p>
+          <p>
+            <b
+              >After the chat, my level of understanding of the concepts
+              discussed in this question is:</b
+            >
+          </p>
           <div class="field">
             <b-radio
               v-model="postChatUnderstanding"
@@ -123,8 +113,8 @@
               native-value="I persisted in trying to understand and discuss even when others disagreed or
 wanted to give up"
             >
-              I persisted in trying to understand and discuss even when others disagreed or
-              wanted to give up
+              I persisted in trying to understand and discuss even when others
+              disagreed or wanted to give up
             </b-radio>
           </div>
         </div>
@@ -152,7 +142,8 @@ wanted to give up"
               v-model="groupReview"
               native-value="Discussed enough to get the correct answer but not to understand why"
             >
-              Discussed enough to get the correct answer but not to understand why
+              Discussed enough to get the correct answer but not to understand
+              why
             </b-radio>
           </div>
           <div class="field">

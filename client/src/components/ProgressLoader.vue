@@ -1,11 +1,8 @@
 <template>
   <div class="progress-loader">
-    {{percentLoaded}}%
+    {{ percentLoaded }}%
     <div class="loader-container">
-      <div
-        class="loader-bar"
-        :style="style"
-      ></div>
+      <div class="loader-bar" :style="style"></div>
     </div>
   </div>
 </template>

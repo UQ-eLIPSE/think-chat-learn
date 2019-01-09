@@ -1,9 +1,6 @@
 <template>
   <div class="create-chat-message">
-    <textarea
-      type="text"
-      placeholder="Share your ideas"
-    />
+    <textarea type="text" placeholder="Share your ideas" />
     <button class="secondary">Send</button>
   </div>
 </template>

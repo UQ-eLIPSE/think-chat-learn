@@ -5,35 +5,19 @@
       alt="MOOCchat"
       src="../../public/moocchat-logo.svg"
       title="MOOCchat"
-    >
-    <div class="nav-item course-name">{{user ? user.username : "No User" }}</div>
+    />
+    <div class="nav-item course-name">
+      {{ user ? user.username : "No User" }}
+    </div>
     <div class="nav-item">
-      <span>{{user ? `Welcome, ${user.firstName}` : "Please login via Blackboard" }}</span>
-      <!-- <span><button
-          @click="toggleChat = !toggleChat"
-          style="color: black"
-        >SHOW CHAT!</button>
-        <transition name="slide">
-          <Chat v-if="toggleChat" />
-        </transition>
-      </span> -->
-      <span>
-        <!-- <i
-          class="fas fa-comment"
-          @click="toggleChat = !toggleChat"
-          style="color: black; width: 35px;"
-        /> -->
-        <div class="block">
-          <b-icon
-            pack="fas"
-            icon="user"
-            size="is-small"
-          >
-          </b-icon>
-        </div>
-        <transition name="slide">
-          <Chat v-if="toggleChat" />
-        </transition>
+      <span>{{
+        user ? `Welcome, ${user.firstName}` : "Please login via Blackboard"
+      }}</span>
+      <span
+        ><button @click="toggleChat = !toggleChat" style="color: black">
+          SHOW CHAT!
+        </button>
+        <transition name="slide"> <Chat v-if="toggleChat" /> </transition>
       </span>
     </div>
 

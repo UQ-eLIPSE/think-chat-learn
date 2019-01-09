@@ -1,14 +1,10 @@
 <template>
   <div class="chat-message">
     <CircularNumberLabel :numeral="numeral" />
-    <div
-      class="message"
-      :class="`base${+ numeral}`"
-    >
-      <p>{{content}}</p>
+    <div class="message" :class="`base${+numeral}`">
+      <p>{{ content }}</p>
     </div>
   </div>
-
 </template>
 
 <style lang="scss" scoped>

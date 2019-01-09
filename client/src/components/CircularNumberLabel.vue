@@ -1,7 +1,5 @@
 <template>
-  <label :class="`base${+ numeral}`">
-    {{numeral}}
-  </label>
+  <label :class="`base${+numeral}`"> {{ numeral }} </label>
 </template>
 
 <style lang="scss" scoped>

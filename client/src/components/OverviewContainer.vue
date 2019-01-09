@@ -1,10 +1,7 @@
 <template>
-  <div
-    class="overviewContainer"
-    style="position: relative;"
-  >
+  <div class="overviewContainer" style="position: relative;">
     <div class="overview">
-      <h2>{{title}}</h2>
+      <h2>{{ title }}</h2>
       <slot />
     </div>
     <CircularNumberLabel :numeral="numeral" />
@@ -66,4 +63,3 @@ export default class OverviewContainer extends Vue {
   @Prop({}) private numeral!: number;
 }
 </script>
-

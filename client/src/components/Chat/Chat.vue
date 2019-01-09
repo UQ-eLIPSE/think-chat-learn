@@ -2,23 +2,10 @@
   <div class="chat">
     <!-- <div v-bind="messages" v-for="message in messages"> -->
     <div class="message-container">
-      <ChatMessage
-        color="base1"
-        numeral="3"
-        content="THis is so cool"
-      />
-      <ChatMessage
-        numeral="1"
-        content="I'm having fun"
-      />
-      <ChatMessage
-        numeral="4"
-        content="Woohoo"
-      />
-      <ChatMessage
-        numeral="2"
-        content="How great is this?"
-      />
+      <ChatMessage color="base1" numeral=" 3" content="THis is so cool" />
+      <ChatMessage numeral="1" content="I'm having fun" />
+      <ChatMessage numeral="4" content="Woohoo" />
+      <ChatMessage numeral="2" content="How great is this?" />
       <ChatMessage
         numeral="1"
         content="Cake pudding brownie ice cream croissant gingerbread biscuit. Cake marshmallow carrot cake carrot cake chocolate cake dessert lollipop carrot cake gummies. Toffee bonbon jujubes halvah halvah carrot cake pie. Jelly-o apple pie jelly-o croissant biscuit. Topping icing chocolate bar candy sesame snaps danish. Tootsie roll chocolate cake pudding pie bear claw. Gummies muffin dessert carrot cake chocolate bar sweet roll bear claw. Croissant tart marzipan powder tart chocolate cake topping. Toffee macaroon liquorice icing topping dragée gummi bears croissant cookie. Candy muffin chocolate bar gummies jujubes donut caramels jujubes."
@@ -40,9 +27,7 @@
         content="Cake pudding brownie ice cream croissant gingerbread biscuit. Cake marshmallow carrot cake carrot cake chocolate cake dessert lollipop carrot cake gummies. Toffee bonbon jujubes halvah halvah carrot cake pie. Jelly-o apple pie jelly-o croissant biscuit. Topping icing chocolate bar candy sesame snaps danish. Tootsie roll chocolate cake pudding pie bear claw. Gummies muffin dessert carrot cake chocolate bar sweet roll bear claw. Croissant tart marzipan powder tart chocolate cake topping. Toffee macaroon liquorice icing topping dragée gummi bears croissant cookie. Candy muffin chocolate bar gummies jujubes donut caramels jujubes."
       />
     </div>
-    <div class="input-container">
-      <CreateChatMessage />
-    </div>
+    <div class="input-container"><CreateChatMessage /></div>
     <!-- </div> -->
   </div>
 </template>

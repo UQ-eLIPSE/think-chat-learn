@@ -1,6 +1,5 @@
 <template>
-  <div class="content-container">
-  </div>
+  <div class="content-container"></div>
 </template>
 
 <style lang="scss" scoped>
@@ -19,4 +18,3 @@ import { Vue, Component } from "vue-property-decorator";
 @Component({})
 export default class ContentContainer extends Vue {}
 </script>
-

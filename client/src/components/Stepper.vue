@@ -26,7 +26,5 @@ import { Vue, Component } from "vue-property-decorator";
 import "../styles.scss";
 
 @Component({})
-export default class Confidence extends Vue {
-  private confidence: string | undefined = "";
-}
+export default class Stepper extends Vue {}
 </script>

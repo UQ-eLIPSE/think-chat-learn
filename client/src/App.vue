@@ -3,9 +3,8 @@
     <Nav />
     <section>
       <!-- <Countdown deadline="January 8, 2019"></Countdown> -->
-      <div class="content-container">
-        <router-view class="router-panel" />
-      </div>
+      <Stepper />
+      <div class="content-container"><router-view class="router-panel" /></div>
     </section>
     <Footer />
   </div>
@@ -154,6 +153,7 @@ body {
 import { Vue, Component } from "vue-property-decorator";
 import { getIdToken, getLoginResponse } from "../../common/js/front_end_auth";
 import Nav from "./components/Nav.vue";
+import Stepper from "./components/Stepper.vue";
 // import Countdown from "vuejs-countdown";
 import Footer from "./components/Footer.vue";
 import "./styles.scss";
@@ -161,6 +161,7 @@ import "./styles.scss";
 @Component({
   components: {
     Nav,
+    Stepper,
     Footer
   }
 })

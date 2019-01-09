@@ -3,16 +3,42 @@
     <div class="columns">
       <div class="column pane1">
         <h1>Reflection of <b>Question 1: What’s more amazing?</b></h1>
-        <img src="https://s3.amazonaws.com/fp.strategy11.com/images/knowledgebase/graph_type-examples.png" /><br /><br />
-        <p>Now read the following passage on the Logistic Equation, found in your textbook in Chapter 9, page 214 (Bowman’s Ecology 2nd Edition)</p><br />
-        <p>“In some cases the growth of a population can be represented by an S-shaped curve. Such a population exhibits logistic growth, a pattern in which its abundance increases rapidly at first, then stabilises at a population size known as its carrying capacity. The growth rate of the population decreases as the population size nears carrying capacity because resources such as food, water or space begin to be short in supply.”</p>
+        <img
+          src="https://s3.amazonaws.com/fp.strategy11.com/images/knowledgebase/graph_type-examples.png"
+        /><br /><br />
+        <p>
+          Now read the following passage on the Logistic Equation, found in your
+          textbook in Chapter 9, page 214 (Bowman’s Ecology 2nd Edition)
+        </p>
+        <br />
+        <p>
+          “In some cases the growth of a population can be represented by an
+          S-shaped curve. Such a population exhibits logistic growth, a pattern
+          in which its abundance increases rapidly at first, then stabilises at
+          a population size known as its carrying capacity. The growth rate of
+          the population decreases as the population size nears carrying
+          capacity because resources such as food, water or space begin to be
+          short in supply.”
+        </p>
       </div>
       <div class="column pane2">
         <form>
           <h2>Your Response</h2>
-          <p>Cotton candy chocolate cake wafer wafer. Marzipan chocolate cake caramels danish. Pastry lemon drops candy jelly beans topping gummi bears toffee. Jujubes powder liquorice topping caramels. Muffin lemon drops biscuit jelly soufflé chocolate bar liquorice liquorice donut. Candy canes soufflé halvah topping cake tiramisu soufflé biscuit.</p>
+          <p>
+            Cotton candy chocolate cake wafer wafer. Marzipan chocolate cake
+            caramels danish. Pastry lemon drops candy jelly beans topping gummi
+            bears toffee. Jujubes powder liquorice topping caramels. Muffin
+            lemon drops biscuit jelly soufflé chocolate bar liquorice liquorice
+            donut. Candy canes soufflé halvah topping cake tiramisu soufflé
+            biscuit.
+          </p>
           <p>&nbsp;</p>
-          <p><b>Has your thinking changed from your initial response and in what way?</b></p>
+          <p>
+            <b
+              >Has your thinking changed from your initial response and in what
+              way?</b
+            >
+          </p>
           <b-field>
             <b-input
               type="textarea"

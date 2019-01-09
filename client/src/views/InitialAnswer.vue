@@ -3,9 +3,23 @@
     <div class="columns">
       <div class="column pane1">
         <h1>Question 1: What’s more amazing?</h1>
-        <img src="https://s3.amazonaws.com/fp.strategy11.com/images/knowledgebase/graph_type-examples.png" /><br /><br />
-        <p>Now read the following passage on the Logistic Equation, found in your textbook in Chapter 9, page 214 (Bowman’s Ecology 2nd Edition)</p><br />
-        <p>“In some cases the growth of a population can be represented by an S-shaped curve. Such a population exhibits logistic growth, a pattern in which its abundance increases rapidly at first, then stabilises at a population size known as its carrying capacity. The growth rate of the population decreases as the population size nears carrying capacity because resources such as food, water or space begin to be short in supply.”</p>
+        <img
+          src="https://s3.amazonaws.com/fp.strategy11.com/images/knowledgebase/graph_type-examples.png"
+        /><br /><br />
+        <p>
+          Now read the following passage on the Logistic Equation, found in your
+          textbook in Chapter 9, page 214 (Bowman’s Ecology 2nd Edition)
+        </p>
+        <br />
+        <p>
+          “In some cases the growth of a population can be represented by an
+          S-shaped curve. Such a population exhibits logistic growth, a pattern
+          in which its abundance increases rapidly at first, then stabilises at
+          a population size known as its carrying capacity. The growth rate of
+          the population decreases as the population size nears carrying
+          capacity because resources such as food, water or space begin to be
+          short in supply.”
+        </p>
       </div>
       <div class="column pane2">
         <h2>Your Response</h2>
