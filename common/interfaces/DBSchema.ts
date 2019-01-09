@@ -162,47 +162,47 @@ export interface QuizAttemptTransition<OID, Date> {
 export interface Survey<OID, Date> {
   _id?: OID;
   availableStart?: Date;
-  content?: SurveyContent[];
+  content?: Survey_Content[];
   course?: string;
 }
 
-export interface SurveyContentHeading {
+export interface Survey_Content_Heading {
   type: "HEADING";
   headingContent: string;
 }
 
-export interface SurveyContentTextShort {
+export interface Survey_Content_TextShort {
   type: "TEXT_SHORT";
   questionStatement: string;
 }
 
-export interface SurveyContentMultipleChoiceInline {
+export interface Survey_Content_MultipleChoiceInline {
   type: "MULTIPLECHOICE_INLINE";
   questionStatement: string;
   values: string[];
 }
 
-export interface SurveyContentMultipleChoiceList {
+export interface Survey_Content_MultipleChoiceList {
   type: "MULTIPLECHOICE_LIST";
   questionStatement: string;
   values: string[];
 }
 
-export type SurveyContent =
-  | SurveyContentHeading
-  | SurveyContentTextShort
-  | SurveyContentMultipleChoiceInline
-  | SurveyContentMultipleChoiceList;
+export type Survey_Content =
+  | Survey_Content_Heading
+  | Survey_Content_TextShort
+  | Survey_Content_MultipleChoiceInline
+  | Survey_Content_MultipleChoiceList;
 
 export interface SurveyResponse<OID, Date> {
   _id?: OID;
   quizAttemptId?: OID;
   surveyId?: OID;
   timestamp?: Date;
-  content?: SurveyResponseContent[];
+  content?: SurveyResponse_Content[];
 }
 
-export interface SurveyResponseContent {
+export interface SurveyResponse_Content {
   index: number;
 
   /**

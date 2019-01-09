@@ -16,11 +16,11 @@ export type QuizSchedule = DBSchema.QuizSchedule<OID, Date>;
 export type QuizAttempt = DBSchema.QuizAttempt<OID>;
 
 export type Survey = DBSchema.Survey<OID, Date>;
-export type SurveyContent = DBSchema.SurveyContent;
-export type SurveyContentHeading = DBSchema.SurveyContentHeading;
-export type SurveyContentTextShort = DBSchema.SurveyContentTextShort;
-export type SurveyContentMultipleChoiceInline = DBSchema.SurveyContentMultipleChoiceInline;
-export type SurveyContentMultipleChoiceList = DBSchema.SurveyContentMultipleChoiceList;
+export type Survey_Content = DBSchema.Survey_Content;
+export type Survey_Content_Heading = DBSchema.Survey_Content_Heading;
+export type Survey_Content_TextShort = DBSchema.Survey_Content_TextShort;
+export type Survey_Content_MultipleChoiceInline = DBSchema.Survey_Content_MultipleChoiceInline;
+export type Survey_Content_MultipleChoiceList = DBSchema.Survey_Content_MultipleChoiceList;
 
 export type User = DBSchema.User<OID>;
 export type UserSession = DBSchema.UserSession<OID, Date>;
@@ -45,7 +45,7 @@ export interface Quiz {
   quizSchedule: QuizSchedule;
 }
 
-export interface QuizAttemptUser extends QuizAttempt {
+export interface QuizAttempt_User extends QuizAttempt {
   _user: User;
 }
 
