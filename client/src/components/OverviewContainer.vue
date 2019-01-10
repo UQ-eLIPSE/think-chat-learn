@@ -1,5 +1,8 @@
 <template>
-  <div class="overviewContainer" style="position: relative;">
+  <div
+    class="overviewContainer"
+    style="position: relative;"
+  >
     <div class="overview">
       <h2>{{ title }}</h2>
       <slot />

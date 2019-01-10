@@ -2,9 +2,10 @@
   <div id="app">
     <Nav />
     <section>
-      <!-- <Countdown deadline="January 8, 2019"></Countdown> -->
       <Stepper />
-      <div class="content-container"><router-view class="router-panel" /></div>
+      <div class="content-container">
+        <router-view class="router-panel" />
+      </div>
     </section>
     <Footer />
   </div>
@@ -21,8 +22,6 @@ body {
 
   #app {
     height: 86vh;
-    // max-width: 1970px;
-    // margin: 0 auto;
   }
 
   .center {
@@ -34,7 +33,7 @@ body {
   }
 
   h1 {
-    color: #005151;
+    // color: $primary;
     font-size: 2.25em;
     font-weight: 600;
     line-height: 45px;
@@ -81,7 +80,6 @@ body {
   section {
     background-color: #f9fbfc;
     height: 100%;
-    padding-top: 6em;
 
     .content-container {
       background-color: white;
@@ -154,9 +152,7 @@ import { Vue, Component } from "vue-property-decorator";
 import { getIdToken, getLoginResponse } from "../../common/js/front_end_auth";
 import Nav from "./components/Nav.vue";
 import Stepper from "./components/Stepper.vue";
-// import Countdown from "vuejs-countdown";
 import Footer from "./components/Footer.vue";
-import "./styles.scss";
 
 @Component({
   components: {

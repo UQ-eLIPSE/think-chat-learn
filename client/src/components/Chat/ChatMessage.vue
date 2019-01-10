@@ -1,7 +1,10 @@
 <template>
   <div class="chat-message">
     <CircularNumberLabel :numeral="numeral" />
-    <div class="message" :class="`base${+numeral}`">
+    <div
+      class="message"
+      :class="`base${+numeral}`"
+    >
       <p>{{ content }}</p>
     </div>
   </div>
@@ -50,7 +53,6 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from "vue-property-decorator";
-import "../../styles.scss";
 import CircularNumberLabel from "../CircularNumberLabel.vue";
 
 @Component({

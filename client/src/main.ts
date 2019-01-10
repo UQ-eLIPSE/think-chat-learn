@@ -4,8 +4,21 @@ import router from "./router";
 import store from "./store";
 import Buefy from "buefy";
 import "buefy/dist/buefy.css";
+import { library } from "@fortawesome/fontawesome-svg-core";
+import {
+  faChalkboard,
+  faCheck,
+  faComment,
+  faPrint,
+  faRedoAlt,
+  faStar
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+
+library.add(faChalkboard, faCheck, faComment, faPrint, faRedoAlt, faStar);
 
 Vue.use(Buefy);
+Vue.component("font-awesome-icon", FontAwesomeIcon);
 Vue.config.productionTip = false;
 
 new Vue({

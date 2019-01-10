@@ -1,9 +1,11 @@
 <template>
-  <div class="container center" v-if="user">
+  <div
+    class="container center"
+    v-if="user"
+  >
     <h1>Thank you, {{ user.firstName }} for completing these questions!</h1>
-    <label class="attempt"
-      ><b>Attempt ID:</b> 1cc5 b3c4 f05b da34 6d73 3584</label
-    >
+    <label class="attempt">
+      <font-awesome-icon icon="star" />&nbsp;<b>Attempt ID:</b> 1cc5 b3c4 f05b da34 6d73 3584</label>
     <div class="content">
       <p><b>Save</b> or <b>print</b> this for your records.</p>
 
@@ -13,8 +15,10 @@
       </p>
     </div>
 
-    <button class="primary">Blackboard</button>
-    <button class="primary">Print Receipt</button>
+    <button class="primary">
+      <font-awesome-icon icon="chalkboard" /> Blackboard</button>
+    <button class="primary">
+      <font-awesome-icon icon="print" /> Print Receipt</button>
   </div>
 </template>
 

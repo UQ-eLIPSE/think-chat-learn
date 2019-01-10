@@ -12,24 +12,20 @@
     <div class="nav-item">
       <span>{{
         user ? `Welcome, ${user.firstName}` : "Please login via Blackboard"
-      }}</span>
-      <span
-        ><button @click="toggleChat = !toggleChat" style="color: black">
-          SHOW CHAT!
-        </button>
-        <transition name="slide"> <Chat v-if="toggleChat" /> </transition>
+        }}
+      </span>
+      <span>
+        <a
+          @click="toggleChat = !toggleChat"
+          style="color: black"
+        >
+          <font-awesome-icon icon="comment" />
+        </a>
+        <transition name="slide">
+          <Chat v-if="toggleChat" />
+        </transition>
       </span>
     </div>
-
-    <!-- Add v-for later-->
-    <!-- <ul>
-            <router-link tag="li" to="/">Welcome</router-link>
-            <router-link tag="li" to="/initial-answer">Intial Answer</router-link>
-            <router-link tag="li" to="/discussion">Discussion</router-link>
-            <router-link tag="li" to="/reflection">Reflection</router-link>
-            <router-link tag="li" to="/survey">Survey</router-link>
-            <router-link tag="li" to="/finish">Finish</router-link>
-        </ul> -->
   </header>
 </template>
 
@@ -68,11 +64,6 @@ header {
   .slide-leave-to {
     transform: translate(100%, 0);
   }
-}
-
-.moochat-name {
-  line-height: 1;
-  margin: 2rem 2rem 1rem;
 }
 </style>
 

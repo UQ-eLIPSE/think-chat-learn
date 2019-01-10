@@ -649,32 +649,32 @@ body > #content > section {
       $mc-sidebar-padding-tb 2.5em;
     margin: 0;
 
-    background-image: url(../../img/task-section-link-mid-open.png);
-    background-repeat: no-repeat;
-    background-position: 1em center;
-    background-size: 1.05em 10.5em;
+    // background-image: url(../../img/task-section-link-mid-open.png);
+    // background-repeat: no-repeat;
+    // background-position: 1em center;
+    // background-size: 1.05em 10.5em;
 
-    &:first-child {
-      background-image: url(../../img/task-section-link-top-open.png);
-    }
+    // &:first-child {
+    //   background-image: url(../../img/task-section-link-top-open.png);
+    // }
 
-    &:last-child {
-      background-image: url(../../img/task-section-link-btm-open.png);
-    }
+    // &:last-child {
+    //   background-image: url(../../img/task-section-link-btm-open.png);
+    // }
 
-    &.active {
-      font-weight: bold;
+    // &.active {
+    //   font-weight: bold;
 
-      background-image: url(../../img/task-section-link-mid-closed.png);
+    //   background-image: url(../../img/task-section-link-mid-closed.png);
 
-      &:first-child {
-        background-image: url(../../img/task-section-link-top-closed.png);
-      }
+    //   &:first-child {
+    //     background-image: url(../../img/task-section-link-top-closed.png);
+    //   }
 
-      &:last-child {
-        background-image: url(../../img/task-section-link-btm-closed.png);
-      }
-    }
+    //   &:last-child {
+    //     background-image: url(../../img/task-section-link-btm-closed.png);
+    //   }
+    // }
 
     &.timer {
       padding-right: 4.5rem;
@@ -1107,45 +1107,6 @@ ol.welcome-instructions {
       padding-top: 0.1rem;
       margin-top: -0.7rem;
     }
-
-    // VirtServer or unknown client
-    &[data-client-id="0"] {
-      &::before {
-        content: "?";
-      }
-    }
-
-    &[data-client-id="1"] {
-      color: $client-1-colour;
-
-      &::before {
-        background: $client-1-colour;
-      }
-    }
-
-    &[data-client-id="2"] {
-      color: $client-2-colour;
-
-      &::before {
-        background: $client-2-colour;
-      }
-    }
-
-    &[data-client-id="3"] {
-      color: $client-3-colour;
-
-      &::before {
-        background: $client-3-colour;
-      }
-    }
-
-    &[data-client-id="4"] {
-      color: $client-4-colour;
-
-      &::before {
-        background: $client-4-colour;
-      }
-    }
   }
 }
 
@@ -1267,38 +1228,6 @@ ol.welcome-instructions {
         font-family: serif;
         font-style: italic;
         font-weight: 700;
-      }
-    }
-
-    &[data-client-id="1"] {
-      color: $client-1-colour;
-
-      &::after {
-        background: $client-1-colour;
-      }
-    }
-
-    &[data-client-id="2"] {
-      color: $client-2-colour;
-
-      &::after {
-        background: $client-2-colour;
-      }
-    }
-
-    &[data-client-id="3"] {
-      color: $client-3-colour;
-
-      &::after {
-        background: $client-3-colour;
-      }
-    }
-
-    &[data-client-id="4"] {
-      color: $client-4-colour;
-
-      &::after {
-        background: $client-4-colour;
       }
     }
 

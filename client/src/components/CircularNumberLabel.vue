@@ -39,7 +39,6 @@ label {
 
 <script lang="ts">
 import { Vue, Component, Prop } from "vue-property-decorator";
-import "../styles.scss";
 
 @Component({})
 export default class CircularNumberLabel extends Vue {

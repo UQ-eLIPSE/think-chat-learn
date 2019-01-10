@@ -46,7 +46,6 @@ footer {
 
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
-import "../styles.scss";
 
 @Component({})
 export default class Footer extends Vue {}

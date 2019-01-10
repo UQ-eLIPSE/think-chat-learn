@@ -2,7 +2,11 @@
   <div class="progress-loader">
     {{ percentLoaded }}%
     <div class="loader-container">
-      <div class="loader-bar" :style="style"></div>
+      <div
+        class="loader-bar"
+        :style="style"
+      >
+      </div>
     </div>
   </div>
 </template>
@@ -34,13 +38,9 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from "vue-property-decorator";
-import "../styles.scss";
 
 @Component({})
 export default class ProgressLoader extends Vue {
   @Prop({}) private percentLoaded!: number;
-  // style() {
-  //   return "width: " + `${this.percentLoaded}%`;
-  // }
 }
 </script>
