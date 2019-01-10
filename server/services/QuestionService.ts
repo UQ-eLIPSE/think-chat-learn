@@ -1,6 +1,7 @@
 import { BaseService } from "./BaseService";
 import { QuestionRepository } from "../repositories/QuestionRepository";
-import { TypeQuestion, QuestionType } from "../../common/interfaces/DBSchema";
+import { TypeQuestion } from "../../common/interfaces/DBSchema";
+import { QuestionType } from "../../common/enums/DBEnums";
 import { ObjectId } from "bson";
 
 export class QuestionService extends BaseService{

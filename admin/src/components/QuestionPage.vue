@@ -48,8 +48,9 @@
 </style>
 <script lang="ts">
 import { Vue, Component, Prop } from "vue-property-decorator";
-import { TypeQuestion, QuestionType, 
-    IQuestionMCQ, IQuestionOption, IQuestion } from "../../../common/interfaces/DBSchema";
+import { TypeQuestion,
+    IQuestionMCQ, IQuestionOption, IQuestion } from "../../../common/interfaces/ToClientData";
+import { QuestionType } from "../../../common/enums/DBEnums";
 import { getAdminLoginResponse } from "../../../common/js/front_end_auth";
 
 

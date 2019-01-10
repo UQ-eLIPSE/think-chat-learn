@@ -2,6 +2,8 @@ import { BaseService } from "./BaseService";
 import { QuizRepository } from "../repositories/QuizRepository";
 import { IQuiz } from "../../common/interfaces/DBSchema";
 import { ObjectId } from "bson";
+import { IQuizOverNetwork } from "../../common/interfaces/NetworkData";
+import { convertNetworkQuizIntoQuiz } from "../../common/js/NetworkDataUtils";
 
 export class QuizService extends BaseService{
 
@@ -13,7 +15,7 @@ export class QuizService extends BaseService{
 }
 
     // Creates a quiz in the DB based on the request body. Assumes the request body is valid
-    public async createQuiz(data: IQuiz): Promise<string> {
+    public async createQuiz(data: IQuizOverNetwork): Promise<string> {
         // Creates a new quiz based on the information.
 
         // Note we create ids for each page associated at the same time
@@ -26,7 +28,7 @@ export class QuizService extends BaseService{
             throw Error("Missing pages or pages are empty");
         }
 
-        return this.quizRepo.create(data);
+        return this.quizRepo.create(convertNetworkQuizIntoQuiz(data));
     }
 
     // You can think of it as a replacement based on the _id

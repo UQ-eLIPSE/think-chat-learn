@@ -25,7 +25,8 @@
 </style>
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
-import { IQuiz, IUserSession, IQuizSession, Response, QuestionType } from "../../../common/interfaces/DBSchema";
+import { IQuiz, IUserSession, IQuizSession, Response } from "../../../common/interfaces/ToClientData";
+import { QuestionType } from "../../../common/enums/DBEnums";
 
 
 // Websocket interfaces

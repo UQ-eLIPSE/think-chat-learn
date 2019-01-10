@@ -5,7 +5,8 @@
 
 import {Vue, Component} from "vue-property-decorator";
 import { getAdminLoginResponse, setIdToken } from "../../../common/js/front_end_auth";
-
+import { convertNetworkQuizIntoQuiz } from "../../../common/js/NetworkDataUtils";
+import { IQuiz } from "../../../common/interfaces/ToClientData";
 @Component
 export default class Login extends Vue {
   private async created() {
@@ -17,7 +18,13 @@ export default class Login extends Vue {
       // If we have a response , set the appropiate data and so on
       if (response) {
           await this.$store.dispatch("setUser", response.user);
-          await this.$store.dispatch("setQuizzes", response.quizzes);
+
+          // Remember to convert network quizzes to one with dates
+          await this.$store.dispatch("setQuizzes", response.quizzes.reduce((arr: IQuiz[], element) => {
+            arr.push(convertNetworkQuizIntoQuiz(element)); 
+            return arr;
+          }, []));
+          
           await this.$store.dispatch("setQuestions", response.questions);
           this.$router.push("/");
       }

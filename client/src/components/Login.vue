@@ -6,7 +6,8 @@
 import {Vue, Component} from "vue-property-decorator";
 import { setIdToken, getLoginResponse } from "../../../common/js/front_end_auth";
 import { IUserSession } from "../../../common/interfaces/ToClientData";
-import { LTIRoles } from "../../../common/interfaces/DBSchema";
+import { LTIRoles } from "../../../common/enums/DBEnums";
+import { convertNetworkQuizIntoQuiz } from "../../../common/js/NetworkDataUtils";
 
 @Component
 export default class Login extends Vue {
@@ -20,8 +21,7 @@ export default class Login extends Vue {
         // If we have a response , set the appropiate data and so on
         if (response) {
             await this.$store.dispatch("setUser", response.user);
-            await this.$store.dispatch("setQuiz", response.quiz);
-
+            await this.$store.dispatch("setQuiz", convertNetworkQuizIntoQuiz(response.quiz));
             // Don't send the end time
             const session: IUserSession = {
                 userId: response.user._id,

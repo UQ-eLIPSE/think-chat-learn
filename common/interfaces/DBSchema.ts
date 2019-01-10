@@ -1,3 +1,5 @@
+import { PageType, QuestionType, LTIRoles } from "../enums/DBEnums";
+
 // Determines what the type should be. Can be changed based on DB needs
 type OID = string;
 // A page of 4 types, note that IPage itself cannot be used as a viable page
@@ -8,11 +10,6 @@ export type TypeQuestion = IQuestionMCQ | IQuestionQualitative;
 
 // We either answer an MCQ or a qualitative
 export type Response = IResponseMCQ | IResponseQualitative;
-
-export enum LTIRoles {
-    ADMIN = "ADMIN",
-    STUDENT = "STUDENT"
-}
 
 // The basic class of all elements in the DB
 export interface Document {
@@ -60,11 +57,6 @@ export interface IQuestion extends Document {
   content?: string;
   title?: string;
   courseId?: string;
-}
-
-export enum QuestionType {
-  MCQ = "MCQ",
-  QUALITATIVE = "QUALITATIVE"
 }
 
 // A question that can be answered based on options
@@ -116,16 +108,8 @@ export interface IQuiz extends Document {
     course?: string;
     // Note while the functionality-wise the start and end are dates,
     // they are stored as strings due the fact that sending a date over is not feasible
-    availableStart?: string;
-    availableEnd?: string;
-}
-
-// Type of pages supported in DEEPConcepts
-export enum PageType {
-  DISCUSSION_PAGE = "DISCUSSION_PAGE",
-  INFO_PAGE = "INFO_PAGE",
-  QUESTION_ANSWER_PAGE = "QUESTION_ANSWER_PAGE",
-  SURVEY_PAGE = "SURVEY_PAGE"
+    availableStart?: Date;
+    availableEnd?: Date;
 }
 
 // A page to be rendered. All pages contain at the very

@@ -49,7 +49,6 @@ export class SocketSession {
     public static PutInGroup(groupId: string, quizSession: string) {
         const socket = SocketSession.Store.get(quizSession);
         const socketArray = SocketSession.GroupStore.get(groupId);
-        console.log("PUTTING IN GROUP");
         if (socket && socketArray) {
             if (socketArray.findIndex((element) => element === socket) === -1) {
                 socketArray.push(socket);

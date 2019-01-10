@@ -86,10 +86,12 @@
 <script lang="ts">
 
 import { Vue, Component, Prop } from "vue-property-decorator";
-import { IPage, PageType,
+import { IPage,
     IQuestionAnswerPage, IInfoPage,
-    IDiscussionPage, ISurveyPage, IQuiz, Page, TypeQuestion } from "../../../common/interfaces/DBSchema";
+    IDiscussionPage, ISurveyPage, IQuiz, Page, TypeQuestion } from "../../../common/interfaces/ToClientData";
+import { PageType } from "../../../common/enums/DBEnums";
 import { getAdminLoginResponse } from "../../../common/js/front_end_auth";
+import { IQuizOverNetwork } from "../../../common/interfaces/NetworkData";
 
 @Component({
 })
@@ -207,7 +209,7 @@ export default class QuizPage extends Vue {
       this.endDate.getMonth(), this.endDate.getDate(),
       this.endTime.getHours(), this.endTime.getMinutes(), this.endTime.getSeconds()).toString();
 
-    const outgoingQuiz: IQuiz = {
+    const outgoingQuiz: IQuizOverNetwork = {
       title: this.quizTitle,
       availableStart,
       availableEnd,

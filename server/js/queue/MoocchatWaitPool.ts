@@ -7,8 +7,8 @@ import { KVStore } from "../../../common/js/KVStore";
 import { QuizAttempt } from "../quiz/QuizAttempt";
 
 import { Utils } from "../../../common/js/Utils";
-import { IQuizSession, Response, QuestionType, IResponseMCQ, IResponseQualitative } from "../../../common/interfaces/DBSchema";
-
+import { IQuizSession, Response, IResponseMCQ, IResponseQualitative } from "../../../common/interfaces/DBSchema";
+import { QuestionType } from "../../../common/enums/DBEnums";
 /**
  * The idea is that for each quiz-question combination we set up a pool. Each pool
  * has a queue linked to each question.
