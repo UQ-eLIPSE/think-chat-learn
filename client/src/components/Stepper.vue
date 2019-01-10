@@ -1,8 +1,5 @@
 <template>
   <div class="stepper">
-
-    <font-awesome-icon icon="redoAlt" />
-
     <ul>
       <li v-for="step in steps">
         <span

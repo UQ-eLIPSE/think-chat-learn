@@ -22,7 +22,7 @@
       />
       <ChatMessage
         numeral="4"
-        content="Woohoo"
+        content="is typing..."
       />
       <ChatMessage
         numeral="2"

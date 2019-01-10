@@ -5,7 +5,9 @@
       class="message"
       :class="`base${+numeral}`"
     >
-      <p>{{ content }}</p>
+      <span>{{ content }}</span>
+      <!-- <p>is typing</p> -->
+      <Spinner />
     </div>
   </div>
 </template>
@@ -43,7 +45,7 @@
       border: 1px solid #fd7558;
     }
 
-    p {
+    span {
       font-weight: 400;
       margin-left: 15px;
     }
@@ -54,10 +56,12 @@
 <script lang="ts">
 import { Vue, Component, Prop } from "vue-property-decorator";
 import CircularNumberLabel from "../CircularNumberLabel.vue";
+import Spinner from "../Spinner.vue";
 
 @Component({
   components: {
-    CircularNumberLabel
+    CircularNumberLabel,
+    Spinner
   }
 })
 export default class ChatMessage extends Vue {

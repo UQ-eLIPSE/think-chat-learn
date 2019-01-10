@@ -41,12 +41,12 @@
         color: #515456;
         font-size: 19px;
       }
-      li::before {
-        content: "•";
-        color: #869b03;
-        height: 20px;
-        width: 20px;
-      }
+      // li::before {
+      //   content: "•";
+      //   color: #869b03;
+      //   height: 20px;
+      //   width: 20px;
+      // }
     }
   }
 }

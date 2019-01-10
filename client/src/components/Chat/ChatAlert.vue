@@ -1,6 +1,7 @@
 <template>
   <div class="chat-alert">
-    <label :class="alertType">{{ alertMessage }}</label>
+    <label :class="alertType">
+      <font-awesome-icon icon="exclamation-circle" /> {{ alertMessage }}</label>
   </div>
 </template>
 
