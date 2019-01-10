@@ -33,7 +33,7 @@ body {
   }
 
   h1 {
-    // color: $primary;
+    color: #005151;
     font-size: 2.25em;
     font-weight: 600;
     line-height: 45px;
