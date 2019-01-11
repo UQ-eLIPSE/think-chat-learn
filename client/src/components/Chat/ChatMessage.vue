@@ -13,6 +13,8 @@
 </template>
 
 <style lang="scss" scoped>
+@import "../../../css/variables.scss";
+
 .chat-message {
   margin-bottom: 10px;
   margin-left: 15px;
@@ -30,19 +32,23 @@
     transform: translateY(20%);
   }
   .message {
-    background-color: #fff;
+    background-color: $white;
     padding: 0.5em;
+
     &.base1 {
-      border: 1px solid #6cc5b5;
+      border: 1px solid $baseLight1;
     }
+
     &.base2 {
-      border: 1px solid #97b003;
+      border: 1px solid $baseLight2;
     }
+
     &.base3 {
-      border: 1px solid #ffae00;
+      border: 1px solid $baseLight3;
     }
+
     &.base4 {
-      border: 1px solid #fd7558;
+      border: 1px solid $baseLight4;
     }
 
     span {

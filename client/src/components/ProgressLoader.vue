@@ -4,7 +4,7 @@
     <div class="loader-container">
       <div
         class="loader-bar"
-        :style="style"
+        :style="`width: ${percentLoaded}%`"
       >
       </div>
     </div>
@@ -12,8 +12,10 @@
 </template>
 
 <style lang="scss" scoped>
+@import "../../css/variables.scss";
+
 .progress-loader {
-  color: #fead00;
+  color: $baseLight3;
   font-size: 12em;
   font-weight: 600;
   line-height: 1;
@@ -21,16 +23,16 @@
   width: 365px;
   .loader-container {
     border-radius: 20px;
-    box-shadow: inset 0 0 0 2px rgba(165, 165, 165, 0.5), inset 0 0 0 10px #fff;
+    box-shadow: inset 0 0 0 2px rgba(165, 165, 165, 0.5),
+      inset 0 0 0 10px $white;
     height: 35px;
     margin: 0 auto;
     padding: 10px;
     .loader-bar {
       content: " ";
-      background: linear-gradient(to right, #fead00 0%, #ff7659 100%);
+      background: linear-gradient(to right, $baseLight3 0%, $baseLight4 100%);
       border-radius: 20px;
       height: 15px;
-      width: 26%;
     }
   }
 }

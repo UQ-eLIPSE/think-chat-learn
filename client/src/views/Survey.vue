@@ -1,5 +1,5 @@
 <template>
-  <div class="magic">
+  <div class="survey">
     <div class="columns">
       <div class="column pane1">
         <h1>Feedback</h1>
@@ -21,17 +21,32 @@
         </b-field>
         <div class="block">
           <p><b>This activity was:</b></p>
-          <b-radio v-model="activityEnjoyment" native-value="Not enjoyable">
+          <b-radio
+            v-model="activityEnjoyment"
+            native-value="Not enjoyable"
+          >
             Not enjoyable
           </b-radio>
-          <b-radio v-model="activityEnjoyment" native-value="Not fun">
+          <b-radio
+            v-model="activityEnjoyment"
+            native-value="Not fun"
+          >
             Not fun
           </b-radio>
-          <b-radio v-model="activityEnjoyment" native-value="Ok"> Ok </b-radio>
-          <b-radio v-model="activityEnjoyment" native-value="Fun">
+          <b-radio
+            v-model="activityEnjoyment"
+            native-value="Ok"
+          > Ok </b-radio>
+          <b-radio
+            v-model="activityEnjoyment"
+            native-value="Fun"
+          >
             Fun
           </b-radio>
-          <b-radio v-model="activityEnjoyment" native-value="Enjoyable">
+          <b-radio
+            v-model="activityEnjoyment"
+            native-value="Enjoyable"
+          >
             Enjoyable
           </b-radio>
         </div>
@@ -39,10 +54,8 @@
         <div class="question">
           <h2>Understanding</h2>
           <p>
-            <b
-              >After the chat, my level of understanding of the concepts
-              discussed in this question is:</b
-            >
+            <b>After the chat, my level of understanding of the concepts
+              discussed in this question is:</b>
           </p>
           <div class="field">
             <b-radio
@@ -170,7 +183,9 @@ wanted to give up"
 </template>
 
 <style lang="scss" scoped>
-.magic {
+@import "../../css/variables.scss";
+
+.survey {
   height: 100%;
   h3 {
     display: inline-block;
@@ -186,7 +201,7 @@ wanted to give up"
       padding: 2em 3em 3em 3em;
 
       &.pane2 {
-        background-color: #fafafa;
+        background-color: $secondaryBg;
       }
     }
   }

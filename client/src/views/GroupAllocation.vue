@@ -1,7 +1,7 @@
 <template>
   <div class="container center">
     <h1>Searching for others to join...</h1>
-    <ProgressLoader percentLoaded="54" />
+    <ProgressLoader percentLoaded="88" />
     <p>You’ll be teamed up with a group discussion shortly.</p>
     <br />
     <p>
@@ -11,17 +11,18 @@
     </p>
     <span class="notifyTone">
       <b-switch></b-switch>
-      <span
-        >Play <b>notification tone</b> when my group is ready (keep window/tab
-        open)</span
-      >
+      <span>Play <b>notification tone</b> when my group is ready (keep window/tab
+        open)</span>
     </span>
   </div>
 </template>
 
 <style lang="scss" scoped>
+@import "../../css/variables.scss";
+
 .container {
   padding: 4em 0;
+
   .notifyTone {
     display: flex;
     justify-content: center;

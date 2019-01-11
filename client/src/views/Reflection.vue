@@ -1,11 +1,9 @@
 <template>
-  <div class="magic">
+  <div class="reflection">
     <div class="columns">
       <div class="column pane1">
         <h1>Reflection of <b>Question 1: What’s more amazing?</b></h1>
-        <img
-          src="https://s3.amazonaws.com/fp.strategy11.com/images/knowledgebase/graph_type-examples.png"
-        /><br /><br />
+        <img src="https://s3.amazonaws.com/fp.strategy11.com/images/knowledgebase/graph_type-examples.png" /><br /><br />
         <p>
           Now read the following passage on the Logistic Equation, found in your
           textbook in Chapter 9, page 214 (Bowman’s Ecology 2nd Edition)
@@ -34,10 +32,8 @@
           </p>
           <p>&nbsp;</p>
           <p>
-            <b
-              >Has your thinking changed from your initial response and in what
-              way?</b
-            >
+            <b>Has your thinking changed from your initial response and in what
+              way?</b>
           </p>
           <b-field>
             <b-input
@@ -57,25 +53,28 @@
 </template>
 
 <style lang="scss" scoped>
-.magic {
+@import "../../css/variables.scss";
+
+.reflection {
   height: 100%;
+
   h3 {
     display: inline-block;
     margin-right: 1em;
   }
+
   .columns {
     height: 100%;
     margin-bottom: 0;
     margin-left: 0;
     margin-right: 0;
     margin-top: 0;
+
     .column {
       padding: 2em 3em 3em 3em;
-      &.pane1 {
-      }
 
       &.pane2 {
-        background-color: #fafafa;
+        background-color: $secondaryBg;
       }
     }
   }

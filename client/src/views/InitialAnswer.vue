@@ -1,11 +1,9 @@
 <template>
-  <div class="magic">
+  <div class="initial-answer">
     <div class="columns">
       <div class="column pane1">
         <h1>Question 1: What’s more amazing?</h1>
-        <img
-          src="https://s3.amazonaws.com/fp.strategy11.com/images/knowledgebase/graph_type-examples.png"
-        /><br /><br />
+        <img src="https://s3.amazonaws.com/fp.strategy11.com/images/knowledgebase/graph_type-examples.png" /><br /><br />
         <p>
           Now read the following passage on the Logistic Equation, found in your
           textbook in Chapter 9, page 214 (Bowman’s Ecology 2nd Edition)
@@ -40,21 +38,23 @@
 </template>
 
 <style lang="scss" scoped>
-.magic {
+@import "../../css/variables.scss";
+
+.initial-answer {
   height: 100%;
+
   .columns {
     height: 100%;
     margin-bottom: 0;
     margin-left: 0;
     margin-right: 0;
     margin-top: 0;
+
     .column {
       padding: 2em 3em 3em 3em;
-      &.pane1 {
-      }
 
       &.pane2 {
-        background-color: #fafafa;
+        background-color: $secondaryBg;
       }
     }
   }

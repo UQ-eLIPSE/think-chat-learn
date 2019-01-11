@@ -1,15 +1,13 @@
 <template>
   <div>
-    <div class="magic">
+    <div class="discussion">
       <div class="columns">
         <div class="column pane1">
           <h1>
             Discover the most appropriate response for
             <b>Question 1: What’s more amazing?</b>
           </h1>
-          <img
-            src="https://s3.amazonaws.com/fp.strategy11.com/images/knowledgebase/graph_type-examples.png"
-          /><br /><br />
+          <img src="https://s3.amazonaws.com/fp.strategy11.com/images/knowledgebase/graph_type-examples.png" /><br /><br />
           <p>
             Now read the following passage on the Logistic Equation, found in
             your textbook in Chapter 9, page 214 (Bowman’s Ecology 2nd Edition)
@@ -27,6 +25,9 @@
         </div>
         <div class="column pane2">
           <h2>Group Responses</h2>
+          <div class="response">Nelsons folly American Main Arr Sea Legs crow's nest hang the jib Spanish Main jib jury mast coffer. Snow spanker Barbary Coast scallywag cutlass lass clap of thunder draft six pounders crack Jennys tea cup. Pillage lugger bilge water square-rigged hulk bucko tack tackle gibbet Sink me.</div>
+          <div class="response">Lanyard booty Brethren of the Coast stern bilged on her anchor weigh anchor barque reef sails holystone prow. Belaying pin tender ye long boat hearties reef sails driver avast pinnace fire ship. Gangway Arr execution dock nipperkin nipper no prey, no pay crow's nest Cat o'nine tails bring a spring upon her cable Jack Tar.</div>
+          <div class="response">Me Buccaneer capstan lee lookout quarterdeck chase guns grog run a shot across the bow tack. Brigantine Jolly Roger bilge chandler gun black spot piracy Privateer topgallant black jack. Gun Admiral of the Black chandler Privateer league jib Sea Legs Brethren of the Coast sloop yawl.</div>
           <h3>Additional Information</h3>
           <p>
             Danish cheesecake jelly-o jelly-o. Toffee jelly beans sesame snaps
@@ -45,7 +46,9 @@
 </template>
 
 <style lang="scss" scoped>
-.magic {
+@import "../../css/variables.scss";
+
+.discussion {
   height: 100%;
   h3 {
     display: inline-block;
@@ -59,11 +62,16 @@
     margin-top: 0;
     .column {
       padding: 2em 3em 3em 3em;
-      &.pane1 {
-      }
 
       &.pane2 {
-        background-color: #fafafa;
+        background-color: $secondaryBg;
+
+        .response {
+          background-color: rgba(170, 170, 170, 0.15);
+          border-radius: 5px;
+          padding: 1em;
+          margin-bottom: 1em;
+        }
       }
     }
   }

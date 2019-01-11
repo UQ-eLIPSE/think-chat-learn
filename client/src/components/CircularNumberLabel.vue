@@ -3,9 +3,11 @@
 </template>
 
 <style lang="scss" scoped>
+@import "../../css/variables.scss";
+
 label {
   border-radius: 50%;
-  color: #fff;
+  color: $white;
   display: inline-block;
   font-size: 2.2em;
   font-weight: 700;
@@ -19,20 +21,20 @@ label {
   width: 60px;
 
   &.base1 {
-    background-color: #6dc7b7;
-    border: 3px solid #60afa1;
+    background-color: $baseLight1;
+    border: 3px solid $baseDark1;
   }
   &.base2 {
-    background-color: #99b204;
-    border: 3px solid #869b03;
+    background-color: $baseLight2;
+    border: 3px solid $baseDark2;
   }
   &.base3 {
-    background-color: #ffae00;
-    border: 3px solid #e8a004;
+    background-color: $baseLight3;
+    border: 3px solid $baseDark3;
   }
   &.base4 {
-    background-color: #ff7659;
-    border: 3px solid #e26a51;
+    background-color: $baseLight4;
+    border: 3px solid $baseDark4;
   }
 }
 </style>

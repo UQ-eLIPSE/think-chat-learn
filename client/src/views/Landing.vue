@@ -88,17 +88,19 @@
     </div>
     <div class="center margin-top">
       <router-link
-        class="primary"
+        class=" primary"
         tag="button"
         to="/initial-answer"
       >
-        Start Session
+        <span>Start Session</span>
       </router-link>
     </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
+@import "../../css/variables.scss";
+
 .landing {
   padding: 2em 3em 3em 3em;
 
