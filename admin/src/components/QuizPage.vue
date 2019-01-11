@@ -51,7 +51,7 @@
         v-model="page.questionId"
         v-if="page.type === PageType.QUESTION_ANSWER_PAGE"
       >
-        <option>Some Default option</option>
+        <option v-for="question in questions" :key="question._id" :value="question._id">{{question.title}}</option>
       </select>
       <select
         v-model="page.surveryId"

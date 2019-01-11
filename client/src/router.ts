@@ -1,7 +1,7 @@
 import Vue from "vue";
 import Router from "vue-router";
 import Landing from "./views/Landing.vue";
-import InitialAnswer from "./views/InitialAnswer.vue";
+import MoocChatPage from "./views/MoocChatPage.vue";
 import Discussion from "./views/Discussion.vue";
 import Reflection from "./views/Reflection.vue";
 import Survey from "./views/Survey.vue";
@@ -20,9 +20,9 @@ export default new Router({
       component: Landing
     },
     {
-      path: "/initial-answer",
-      name: "Initial Answer",
-      component: InitialAnswer
+      path: "/page",
+      name: "MoocChatPage",
+      component: MoocChatPage
     },
     {
       path: "/discussion",

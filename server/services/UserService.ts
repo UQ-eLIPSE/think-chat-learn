@@ -9,6 +9,7 @@ import { LoginResponse, IQuestionAnswerPage, IInfoPage, AdminLoginResponse } fro
 import { QuestionRepository } from "../repositories/QuestionRepository";
 import { convertNetworkQuizIntoQuiz, convertQuizIntoNetworkQuiz } from "../../common/js/NetworkDataUtils";
 import { IQuizOverNetwork } from "../../common/interfaces/NetworkData";
+import { QuestionType, PageType } from "../../common/enums/DBEnums";
 
 export class UserService extends BaseService{
 
@@ -39,11 +40,25 @@ export class UserService extends BaseService{
 
         // TODO check for previous attempts and retrieve the questions associated with the selected quiz
         //await UserLoginFunc.CheckQuizNotPreviouslyAttempted(db, user, quizSchedule);
+        // Creating the list of ids requires a set
+        const questionIds: string[] = [];
+
+        if (quizSchedule) {
+            quizSchedule.pages!.forEach((element) => {
+                if ((element.type === PageType.QUESTION_ANSWER_PAGE) 
+                    && questionIds.findIndex((id) => { return id === element.questionId; }) === -1) {
+                    questionIds.push(element.questionId);
+                }
+            });
+        }
+
+        const questions = await UserServiceHelper.RetrieveQuestions(this.questionRepo, questionIds);
 
         const output: LoginResponse = {
             user,
             quiz: quizSchedule ? convertQuizIntoNetworkQuiz(quizSchedule) : null,
-            courseId: identity.course
+            courseId: identity.course,
+            questions
         };
 
         return Promise.resolve(output);
@@ -156,12 +171,31 @@ class UserServiceHelper {
      * @param course The course id
      */
     public static async RetrieveQuizSchedule(quizRepo: QuizRepository, course: string): Promise<IQuiz | null> {
-
-        // Since the admin end points have not been made, return dummy values
-
         const quiz = await quizRepo.findAvailableQuizInCourse(course);
-
+        
         return Promise.resolve(quiz);
     }
 
+    /**
+     * Grabs the questions from an associated quiz. If a question is MCQ, strips the isCorrect field
+     * @param questionRepo The repo containing the questions
+
+     */
+    public static async RetrieveQuestions(questionRepo: QuestionRepository, questionIds: string[]) {
+        const questions = await questionRepo.findByIdArray(questionIds);
+
+        if (!questions) {
+            return [];
+        }
+
+        questions.forEach((element) => {
+            if (element.type === QuestionType.MCQ) {
+                element.options.forEach((option) => {
+                    delete option.isCorrect;
+                });
+            }
+        });
+
+        return questions;
+    }
 }

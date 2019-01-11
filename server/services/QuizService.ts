@@ -34,7 +34,7 @@ export class QuizService extends BaseService{
     // You can think of it as a replacement based on the _id
     // Returns true if the operation succeed
     // Note that deleting a question can be thought as updating a question
-    public async updateQuiz(data: IQuiz): Promise<boolean> {
+    public async updateQuiz(data: IQuizOverNetwork): Promise<boolean> {
         // Updating is a little bit complicated due to the fact that
         // someone could theoretically push pages in and they wouldn't have ids
 
@@ -46,7 +46,7 @@ export class QuizService extends BaseService{
             });
         }
 
-        return this.quizRepo.updateOne(data);
+        return this.quizRepo.updateOne(convertNetworkQuizIntoQuiz(data));
     }
 
     // Deletes a quiz based on the incoming id

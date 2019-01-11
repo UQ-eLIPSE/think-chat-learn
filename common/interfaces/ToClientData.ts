@@ -62,6 +62,7 @@ export interface QuizAttempt_User extends QuizAttempt {
 export interface LoginResponse {
     user: IUser;
     quiz: NetworkData.IQuizOverNetwork | null;
+    questions: TypeQuestion[];
     courseId: string;
 }
 
