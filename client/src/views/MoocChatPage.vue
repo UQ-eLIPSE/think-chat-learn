@@ -14,7 +14,7 @@
             minlength="10"
             maxlength="500"
             placeholder="Explain your response..."
-            v-model="responseString"
+            v-model="responseContent"
             v-if="question.type === QuestionType.QUALITATIVE"
           >
           </b-input>
@@ -24,8 +24,8 @@
             </p>
           </div>          
         </b-field>
-        <Confidence />
-        <button class="primary">Submit</button>
+        <Confidence @CONFIDENCE_CHANGE="handleConfidenceChange" />
+        <button class="primary" @click="sendResponse()">Submit</button>
       </div>
     </div>
   </div>
@@ -56,7 +56,7 @@
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
 import Confidence from "../components/Confidence.vue";
-import { IQuiz, Page } from "../../../common/interfaces/ToClientData";
+import { IQuiz, Page, Response, TypeQuestion, IQuizSession } from "../../../common/interfaces/ToClientData";
 import { PageType, QuestionType } from "../../../common/enums/DBEnums";
 
 @Component({
@@ -67,6 +67,7 @@ import { PageType, QuestionType } from "../../../common/enums/DBEnums";
 export default class MoocChatPage extends Vue {
   /** Only used when its a question page that is qualitative */
   private responseContent: string = "";
+  private confidence: number = 0;
 
   get PageType() {
     return PageType;
@@ -76,21 +77,33 @@ export default class MoocChatPage extends Vue {
     return QuestionType;
   }
 
+  get quizSession(): IQuizSession | null {
+    return this.$store.getters.quizSession;
+  }
+
   // The idea is based on the quiz and current page,
   // render it appropiately
   get currentIndex(): number {
-    return 1;
+    return 0;
+  }
+
+  get quiz(): IQuiz | null {
+    const quiz = this.$store.getters.quiz;
+
+    if (!quiz) {
+      return null;
+    }
+
+    return quiz;
   }
 
   // If we get an out of bound for the pages, set to null
   get page(): Page | null {
-    const quiz = this.$store.getters.quiz;
-
-    if (!quiz) {
-      return null
+    if (this.quiz && this.quiz.pages && (this.currentIndex < this.quiz.pages.length)) {
+      return this.quiz.pages[this.currentIndex];
+    } else {
+      return null;
     }
-
-    return this.currentIndex >= quiz.pages.length ? null : quiz.pages[this.currentIndex];
   }
 
   get question(): TypeQuestion | null {
@@ -99,6 +112,35 @@ export default class MoocChatPage extends Vue {
     }
 
     return this.$store.getters.getQuestionById(this.page.questionId);
+  }
+
+  private handleConfidenceChange(confidenceValue: number) {
+    this.confidence = confidenceValue;
+  }
+
+  private sendResponse() {
+
+    // If there is no question, don't run
+    if (!this.question || !this.question._id || !this.quiz || !this.quiz._id || !this.quizSession || !this.quizSession._id) {
+      return;
+    }
+
+    // Accomodate for the two types of responses
+    // TODO implement MCQ
+    let response: Response;
+    if (this.question.type === QuestionType.QUALITATIVE) {
+      response = {
+        type: QuestionType.QUALITATIVE,
+        content: this.responseContent,
+        confidence: this.confidence,
+        questionId: this.question._id,
+        quizId: this.quiz._id,
+        quizSessionId: this.quizSession._id
+      };
+
+      this.$store.dispatch("sendResponse", response);
+    }
+    
   }
 }
 </script>

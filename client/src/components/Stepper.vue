@@ -234,7 +234,7 @@ export default class Stepper extends Vue {
   private computeStatus(index: number, benchmark: number): Progress {
     let status: Progress;
 
-    if (benchmark===  index) {
+    if (benchmark === index) {
       status = Progress.IN_PROGRESS;
     } else if (benchmark < index) {
       status = Progress.COMPLETE

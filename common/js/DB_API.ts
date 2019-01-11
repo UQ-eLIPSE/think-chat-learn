@@ -19,7 +19,7 @@ export interface IApi {
     QUIZSESSION: string;
     RESPONSE: string;
 
-    request(method: string, url: string, data: {}, contentType?: string | undefined): any;
+    request(method: string, url: string, data: {}, contentType?: string | undefined): Promise<any>;
 }
 
 export const API: IApi = {

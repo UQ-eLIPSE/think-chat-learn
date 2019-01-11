@@ -36,13 +36,14 @@
       </OverviewContainer>
     </div>
     <div class="center margin-top">
-      <router-link v-if="quiz" class="primary" tag="button" to="/initial-answer">
+      <button v-if="quiz" class="primary" tag="button" @click="startQuizSession()">
         Start Session
-      </router-link>
+      </button>
       <!-- TODO Style unavailable button -->
-      <router-link v-else class="primary" tag="button" to="/">
+      <!-- Note button was used instead of router-link due to @click not being listened -->
+      <button v-else class="primary" tag="button">
         No Session Available
-      </router-link>
+      </button>
     </div>
   </div>
 </template>
@@ -60,7 +61,7 @@
 
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
-import { IUser, IQuiz } from "../../../common/interfaces/ToClientData";
+import { IUser, IQuiz, IQuizSession, IUserSession } from "../../../common/interfaces/ToClientData";
 import OverviewContainer from "../components/OverviewContainer.vue";
 
 @Component({
@@ -75,6 +76,24 @@ export default class Landing extends Vue {
 
   get quiz(): IQuiz | null {
     return this.$store.getters.quiz;
+  }
+
+  get userSession(): IUserSession | null {
+    return this.$store.getters.userSession;
+  }
+
+  private startQuizSession() {
+    const outgoingQuizSession: IQuizSession = {
+        quizId: this.quiz!._id,
+        userSessionId: this.userSession!._id,
+        responses: []
+    }
+
+    this.$store.dispatch("createQuizSession", outgoingQuizSession).then(() => {
+      this.$router.push("/page");
+    }).catch((e: Error) => {
+      console.error(e);
+    });
   }
 }
 </script>

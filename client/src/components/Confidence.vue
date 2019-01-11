@@ -4,23 +4,23 @@
       <h3>Confidence:</h3>
       <b-radio
         v-model="confidence"
-        native-value="one"
+        :native-value="1"
       > 1 </b-radio>
       <b-radio
         v-model="confidence"
-        native-value="two"
+        :native-value="2"
       > 2 </b-radio>
       <b-radio
         v-model="confidence"
-        native-value="three"
+        :native-value="3"
       > 3 </b-radio>
       <b-radio
         v-model="confidence"
-        native-value="four"
+        :native-value="4"
       > 4 </b-radio>
       <b-radio
         v-model="confidence"
-        native-value="five"
+        :native-value="5"
       > 5 </b-radio>
     </div>
   </div>
@@ -37,10 +37,16 @@
 </style>
 
 <script lang="ts">
-import { Vue, Component } from "vue-property-decorator";
+import { Vue, Component, Watch } from "vue-property-decorator";
+import { EmitterEvents } from "../emitters";
 
 @Component({})
 export default class Confidence extends Vue {
-  private confidence: string | undefined = "";
+  private confidence: number | undefined = 1;
+
+  @Watch("confidence")
+  onConfidenceChange(_value: number, _oldValue: number) {
+    this.$emit(EmitterEvents.CONFIDENCE_CHANGE, _value);
+  }
 }
 </script>
