@@ -61,7 +61,7 @@ export interface QuizAttempt_User extends QuizAttempt {
 // Essentially the user should only have one page
 export interface LoginResponse {
     user: IUser;
-    quiz: NetworkData.IQuizOverNetwork;
+    quiz: NetworkData.IQuizOverNetwork | null;
     courseId: string;
 }
 

@@ -14,7 +14,12 @@ export function convertNetworkQuizIntoQuiz(quiz: IQuizOverNetwork): IQuiz {
     return output;
 }
 
+/**
+ * Converts a quiz that is sent from the network to something usable by the client and server
+ * @param quiz the quiz to be converted
+ */
 export function convertQuizIntoNetworkQuiz(quiz: IQuiz): IQuizOverNetwork {
+
     const output: IQuizOverNetwork = {
         _id: quiz._id,
         availableEnd: quiz.availableEnd!.toISOString(),

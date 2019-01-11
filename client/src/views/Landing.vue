@@ -36,8 +36,12 @@
       </OverviewContainer>
     </div>
     <div class="center margin-top">
-      <router-link class="primary" tag="button" to="/initial-answer">
+      <router-link v-if="quiz" class="primary" tag="button" to="/initial-answer">
         Start Session
+      </router-link>
+      <!-- TODO Style unavailable button -->
+      <router-link v-else class="primary" tag="button" to="/">
+        No Session Available
       </router-link>
     </div>
   </div>
@@ -56,7 +60,7 @@
 
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
-import { IUser } from "../../../common/interfaces/DBSchema";
+import { IUser, IQuiz } from "../../../common/interfaces/ToClientData";
 import OverviewContainer from "../components/OverviewContainer.vue";
 
 @Component({
@@ -67,6 +71,10 @@ import OverviewContainer from "../components/OverviewContainer.vue";
 export default class Landing extends Vue {
   get user(): IUser | null {
     return this.$store.getters.user;
+  }
+
+  get quiz(): IQuiz | null {
+    return this.$store.getters.quiz;
   }
 }
 </script>

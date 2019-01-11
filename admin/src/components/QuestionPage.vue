@@ -93,7 +93,7 @@ export default class QuestionPage extends Vue {
     }
 
     get isEditing(): boolean {
-        return this.id !== '';
+        return this.id !== "";
     }
 
     // Course id based on token
@@ -153,7 +153,7 @@ export default class QuestionPage extends Vue {
 
         if (this.isEditing) {
             outgoingQuestion._id = this.id;
-            
+
             this.$store.dispatch("editQuestion", outgoingQuestion);
         } else {
             this.$store.dispatch("createQuestion", outgoingQuestion);

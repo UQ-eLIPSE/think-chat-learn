@@ -1,6 +1,6 @@
 import { Document, Page } from "./DBSchema";
 
-// The purpose of this interface is to accomodate for network requests which 
+// The purpose of this interface is to accomodate for network requests which
 // removes functionality of Dates
 export interface IQuizOverNetwork extends Document {
     title?: string;

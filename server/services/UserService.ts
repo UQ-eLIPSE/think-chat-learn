@@ -42,7 +42,7 @@ export class UserService extends BaseService{
 
         const output: LoginResponse = {
             user,
-            quiz: convertQuizIntoNetworkQuiz(quizSchedule),
+            quiz: quizSchedule ? convertQuizIntoNetworkQuiz(quizSchedule) : null,
             courseId: identity.course
         };
 
@@ -150,16 +150,16 @@ class UserServiceHelper {
         return Promise.resolve(user);
     }
 
-    public static async RetrieveQuizSchedule(quizRepo: QuizRepository, course: string): Promise<IQuiz> {
+    /**
+     * Retrieves a quiz that can be done within a course. Returns null if no such quiz is available
+     * @param quizRepo The repo which points to the DB
+     * @param course The course id
+     */
+    public static async RetrieveQuizSchedule(quizRepo: QuizRepository, course: string): Promise<IQuiz | null> {
 
         // Since the admin end points have not been made, return dummy values
 
         const quiz = await quizRepo.findAvailableQuizInCourse(course);
-
-
-        if (!quiz) {
-            throw new Error("[30] No scheduled quiz found.");
-        }
 
         return Promise.resolve(quiz);
     }

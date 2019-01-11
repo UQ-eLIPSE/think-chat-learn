@@ -12,22 +12,22 @@ export default class Login extends Vue {
   private async created() {
     const q = this.$route.query.q;
 
-      // Essentially redirects to the main page assuming login is correct
-      setIdToken(q as string);
-      const response = getAdminLoginResponse();
-      // If we have a response , set the appropiate data and so on
-      if (response) {
-          await this.$store.dispatch("setUser", response.user);
+    // Essentially redirects to the main page assuming login is correct
+    setIdToken(q as string);
+    const response = getAdminLoginResponse();
+    // If we have a response , set the appropiate data and so on
+    if (response) {
+      await this.$store.dispatch("setUser", response.user);
 
-          // Remember to convert network quizzes to one with dates
-          await this.$store.dispatch("setQuizzes", response.quizzes.reduce((arr: IQuiz[], element) => {
-            arr.push(convertNetworkQuizIntoQuiz(element)); 
-            return arr;
-          }, []));
-          
-          await this.$store.dispatch("setQuestions", response.questions);
-          this.$router.push("/");
-      }
+      // Remember to convert network quizzes to one with dates
+      await this.$store.dispatch("setQuizzes", response.quizzes.reduce((arr: IQuiz[], element) => {
+        arr.push(convertNetworkQuizIntoQuiz(element));
+        return arr;
+      }, []));
+
+      await this.$store.dispatch("setQuestions", response.questions);
+      this.$router.push("/");
     }
+  }
 }
 </script>

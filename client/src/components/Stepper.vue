@@ -4,17 +4,17 @@
     <font-awesome-icon icon="redoAlt" />
 
     <ul>
-      <li v-for="step in steps">
+      <li v-for="(step, index) in steps" :key="index">
         <span
           class="status"
           :class="step.status"
         >
           <font-awesome-icon
-            v-if="step.status === 'complete'"
+            v-if="step.status === Progress.COMPLETE"
             icon="check"
           />
           <font-awesome-icon
-            v-if="step.status === 'in-progress'"
+            v-if="step.status === Progress.IN_PROGRESS"
             icon="redo-alt"
           />
         </span>
@@ -148,34 +148,101 @@
 
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
+import { IQuiz } from "../../../common/interfaces/ToClientData";
+
+enum Progress {
+  COMPLETE = "complete",
+  IN_PROGRESS = "in-progress",
+  TO_DO = "to-do"
+};
+
+interface Steps {
+  title: string;
+  status: Progress
+};
 
 @Component({})
 export default class Stepper extends Vue {
-  steps = [
-    {
-      title: "Question",
-      status: "complete"
-    },
-    {
-      title: "Group",
-      status: "complete"
-    },
-    {
-      title: "Discussion",
-      status: "in-progress"
-    },
-    {
-      title: "Reflection",
-      status: "complete"
-    },
-    {
-      title: "Survey",
-      status: "to-do"
-    },
-    {
-      title: "Receipt",
-      status: "to-do"
+
+  /** The offset of the receipt page relative to the end of quiz pages */
+  RECEIPT_OFFSET = 1;
+
+  /** The offset of the reflection page relative to the end of quiz pages */
+  REFLECTION_OFFSET = 0;
+
+  get currentIndex(): number {
+    return 1;
+  }
+
+  get Progress() {
+    return Progress;
+  }
+
+  /**
+   * Computation of the steps is simply a matter of grabbing the quizzes
+   * for the titles and then checking the current index for progression.
+   * 
+   * Note that suppose the index was 3, then it is assumed that indices 
+   * 2 and 1 are completed.
+   */
+  get steps(): Steps[]{
+    if (!this.quiz|| !this.quiz.pages) {
+      return [];
+    } else {
+      // This is the initial quiz pages
+      const arr = this.quiz.pages.reduce((arr: Steps[], element, index) => {
+
+        let status: Progress;
+
+        status = this.computeStatus(this.currentIndex, index);
+
+        const output : Steps = {
+          title: element.title,
+          status
+        };
+
+        arr.push(output);
+        return arr;
+      }, []);
+
+      // Always form the computation of reflection and receipt
+      const reflection: Steps = {
+        title: "Reflection",
+        status: this.computeStatus(this.currentIndex, this.quiz.pages.length + this.REFLECTION_OFFSET)
+      }
+
+      const receipt: Steps = {
+        title: "Receipt",
+        status: this.computeStatus(this.currentIndex, this.quiz.pages.length + this.RECEIPT_OFFSET)
+      }
+
+      arr.push(reflection);
+      arr.push(receipt);
+
+      return arr;
     }
-  ];
+  }
+
+  get quiz(): IQuiz | null {
+    return this.$store.getters.quiz;
+  }
+
+  /**
+   * Based on the index of the element and the benchmark to meet,
+   * computes the status
+   */
+  private computeStatus(index: number, benchmark: number): Progress {
+    let status: Progress;
+
+    if (benchmark===  index) {
+      status = Progress.IN_PROGRESS;
+    } else if (benchmark < index) {
+      status = Progress.COMPLETE
+    } else {
+      status = Progress.TO_DO;
+    }
+
+    return status;
+  }
 }
 </script>

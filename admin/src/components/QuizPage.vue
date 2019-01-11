@@ -136,7 +136,7 @@ export default class QuizPage extends Vue {
 
   // Based on the prop id, determines whether or not we are in editing mode
   get isEditing(): boolean {
-    return this.id !== '';
+    return this.id !== "";
   }
 
   get quizzes(): IQuiz[] {
@@ -145,7 +145,7 @@ export default class QuizPage extends Vue {
 
   get questions(): TypeQuestion[] {
     return this.$store.getters.questions;
-  }    
+  }
 
   // Course id based on token
   get courseId() {

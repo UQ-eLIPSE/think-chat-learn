@@ -21,7 +21,7 @@ export default class Login extends Vue {
         // If we have a response , set the appropiate data and so on
         if (response) {
             await this.$store.dispatch("setUser", response.user);
-            await this.$store.dispatch("setQuiz", convertNetworkQuizIntoQuiz(response.quiz));
+            await this.$store.dispatch("setQuiz", response.quiz ? convertNetworkQuizIntoQuiz(response.quiz) : null);
             // Don't send the end time
             const session: IUserSession = {
                 userId: response.user._id,
