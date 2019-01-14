@@ -5,17 +5,34 @@ import * as bodyParser from "body-parser";
 import * as expressJwt from "express-jwt";
 import * as jwt from "jsonwebtoken";import { Db, MongoClient } from "mongodb";
 
+import { Moocchat } from "./js/Moocchat";
 import { Conf } from "./config/Conf";
+// Repos
 import { UserRepository } from "./repositories/UserRepository";
 import { QuestionRepository } from "./repositories/QuestionRepository";
 import { QuizRepository } from "./repositories/QuizRepository";
+import { UserSessionRepository } from "./repositories/UserSessionRepository";
+import { QuizSessionRepository } from "./repositories/QuizSessionRepository";
+import { ChatGroupRepository } from "./repositories/ChatGroupRepository";
+import { ResponseRepository } from "./repositories/ResponseRepository";
+
+// Services
 import { UserService } from "./services/UserService";
 import { QuestionService } from "./services/QuestionService";
 import { QuizService } from "./services/QuizService";
+import { UserSessionService } from "./services/UserSessionService";
+import { QuizSessionService } from "./services/QuizSessionService";
+import { ChatGroupService } from "./services/ChatGroupService";
+import { ResponseService } from "./services/ResponseService";
+
+// Controllers
 import { UserController } from "./controllers/UserController";
 import { QuestionController } from "./controllers/QuestionController";
 import { QuizController } from "./controllers/QuizController";
-import { Moocchat } from "./js/Moocchat";
+import { UserSessionController } from "./controllers/UserSessionController";
+import { QuizSessionController } from "./controllers/QuizSessionController";
+import { ResponseController } from "./controllers/ResponseController";
+
 export default class App {
 
     // Express things
@@ -28,16 +45,30 @@ export default class App {
     private userRepository: UserRepository;
     private quizRepository: QuizRepository;
     private questionRepository: QuestionRepository;
+    private userSessionRepository: UserSessionRepository;
+    private quizSessionRepository: QuizSessionRepository;
+    private chatGroupRepository: ChatGroupRepository;
+    private responseRepository: ResponseRepository;
 
     // Services
     private userService: UserService;
     private quizService: QuizService;
     private questionService: QuestionService;
+    private userSessionService: UserSessionService;
+    private quizSessionService: QuizSessionService;
+    private chatGroupService: ChatGroupService;
+    private responseService: ResponseService;
 
     // Controllers
     private userController: UserController;
     private quizController: QuizController;
     private questionController: QuestionController;
+    private userSessionController: UserSessionController;
+    private quizSessionController: QuizSessionController
+    private responseController: ResponseController;
+
+    // Socket io things
+    private socketIO: SocketIO.Server;
 
     constructor() {
         this.express = express();
@@ -49,8 +80,9 @@ export default class App {
 
     public async init(): Promise<void> {
         this.database = await this.connectDb();
-        this.setupSockets();
+
         this.bootstrap();
+        this.setupSockets();
         this.setupRoutes();
     }
 
@@ -66,18 +98,32 @@ export default class App {
         this.userRepository = new UserRepository(this.database, "uq_user");
         this.quizRepository = new QuizRepository(this.database, "uq_quizSchedule");
         this.questionRepository = new QuestionRepository(this.database, "uq_question");
+        this.userSessionRepository = new UserSessionRepository(this.database, "uq_userSession");
+        this.quizSessionRepository = new QuizSessionRepository(this.database, "uq_quizSession");
+        this.chatGroupRepository = new ChatGroupRepository(this.database, "uq_chatGroup");
+        this.responseRepository = new ResponseRepository(this.database, "uq_responses");
 
         this.userService = new UserService(this.userRepository, this.quizRepository, this.questionRepository);
         this.quizService = new QuizService(this.quizRepository);
         this.questionService = new QuestionService(this.questionRepository);
+        this.userSessionService = new UserSessionService(this.userSessionRepository);
+        this.quizSessionService = new QuizSessionService(this.quizSessionRepository);
+        this.chatGroupService = new ChatGroupService(this.chatGroupRepository);
+        this.responseService = new ResponseService(this.responseRepository);
 
         this.userController = new UserController(this.userService);
         this.quizController = new QuizController(this.quizService);
         this.questionController = new QuestionController(this.questionService);
+        this.userSessionController = new UserSessionController(this.userSessionService);
+        this.quizSessionController = new QuizSessionController(this.quizSessionService);
+        this.responseController = new ResponseController(this.responseService);
 
         this.userController.setupRoutes();
         this.quizController.setupRoutes();
         this.questionController.setupRoutes();
+        this.userSessionController.setupRoutes();
+        this.quizSessionController.setupRoutes();
+        this.responseController.setupRoutes();
     }
 
     private setupSockets(): void {
@@ -90,7 +136,9 @@ export default class App {
             pingInterval: Conf.socketIo.pingInterval,
             pingTimeout: Conf.socketIo.pingTimeout
         });
-        const moocchat = new Moocchat(io);
+
+        // Used to set up the moocchat sockets
+        this.socketIO = new Moocchat(io, this.chatGroupService, this.responseService, this.quizSessionService).getSocketIO();
     }
 
     // For now we also open up teh sockets and h
@@ -112,7 +160,6 @@ export default class App {
         // Token refresher. Only runs during login
         this.express.use(this.authFilter("/user/login", expressJwt({ secret: Conf.jwt.SECRET })));
         this.express.use(this.authFilter("/user/login", this.refreshJWT));
-        
         
         console.log("Setting up endpoints...");
         
@@ -177,6 +224,9 @@ export default class App {
         this.express.use("/user", this.userController.getRouter());
         this.express.use("/quiz", this.quizController.getRouter());
         this.express.use("/question", this.questionController.getRouter());
+        this.express.use("/usersession", this.userSessionController.getRouter());
+        this.express.use("/quizsession", this.quizSessionController.getRouter());
+        this.express.use("/response", this.responseController.getRouter());
     }
 
     // Only login gets affected

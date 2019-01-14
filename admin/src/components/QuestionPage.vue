@@ -48,8 +48,9 @@
 </style>
 <script lang="ts">
 import { Vue, Component, Prop } from "vue-property-decorator";
-import { TypeQuestion, QuestionType, 
-    IQuestionMCQ, IQuestionOption, IQuestion } from "../../../common/interfaces/DBSchema";
+import { TypeQuestion,
+    IQuestionMCQ, IQuestionOption, IQuestion } from "../../../common/interfaces/ToClientData";
+import { QuestionType } from "../../../common/enums/DBEnums";
 import { getAdminLoginResponse } from "../../../common/js/front_end_auth";
 
 
@@ -92,7 +93,7 @@ export default class QuestionPage extends Vue {
     }
 
     get isEditing(): boolean {
-        return this.id !== '';
+        return this.id !== "";
     }
 
     // Course id based on token
@@ -152,7 +153,7 @@ export default class QuestionPage extends Vue {
 
         if (this.isEditing) {
             outgoingQuestion._id = this.id;
-            
+
             this.$store.dispatch("editQuestion", outgoingQuestion);
         } else {
             this.$store.dispatch("createQuestion", outgoingQuestion);

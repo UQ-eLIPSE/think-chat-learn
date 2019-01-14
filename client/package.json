@@ -18,6 +18,7 @@
     "bulma-extensions": "^4.0.0",
     "postcss-import": "^12.0.1",
     "postcss-url": "^8.0.0",
+    "socket.io-client": "^2.2.0",
     "vue": "^2.5.21",
     "vue-class-component": "^6.3.2",
     "vue-property-decorator": "^7.2.0",
@@ -25,6 +26,7 @@
     "vuex": "^3.0.1"
   },
   "devDependencies": {
+    "@types/socket.io-client": "^1.4.32",
     "@vue/cli-plugin-typescript": "^3.0.5",
     "@vue/cli-plugin-unit-mocha": "^3.0.5",
     "@vue/cli-service": "^3.0.5",

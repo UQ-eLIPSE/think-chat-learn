@@ -1,6 +1,7 @@
 import { BaseService } from "./BaseService";
 import { QuestionRepository } from "../repositories/QuestionRepository";
-import { TypeQuestion, QuestionType } from "../../common/interfaces/DBSchema";
+import { TypeQuestion } from "../../common/interfaces/DBSchema";
+import { QuestionType } from "../../common/enums/DBEnums";
 import { ObjectId } from "bson";
 
 export class QuestionService extends BaseService{
@@ -46,13 +47,11 @@ export class QuestionService extends BaseService{
                 throw Error("Missing options in an MCQ question");
             }            
         }
-        console.log(data);
         return this.questionRepo.updateOne(data);
     }
 
     // Deletes a question based on the incoming id
     public async deleteQuiz(id: string) {
-        console.log(id);
         return this.questionRepo.deleteOne(id);
     }
 

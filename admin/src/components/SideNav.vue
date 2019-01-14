@@ -1,19 +1,14 @@
 <template>
-  <div class="sidebar">
-    <h1 class="moochat-name">MOOCchat</h1>
-    <div class="course-name">Some Course Name</div>
-    <!-- Add v-for later-->
-    <ul>
-      <router-link
-        tag="li"
-        to="/"
-      >Welcome</router-link>
-      <router-link
-        tag="li"
-        to="/createQuiz"
-      >Create Quiz</router-link>
-    </ul>
-  </div>
+    <div class="sidebar">
+        <h1 class="moochat-name">MOOCchat</h1>
+        <div class="course-name">Some Course Name</div>
+        <!-- Add v-for later-->
+        <ul>
+            <router-link tag="li" to="/">Welcome</router-link>
+            <router-link tag="li" to="/quizList">Quiz List</router-link>
+            <router-link tag="li" to="/questionList">Question List</router-link>
+        </ul>
+    </div>
 </template>
 
 <style scoped>

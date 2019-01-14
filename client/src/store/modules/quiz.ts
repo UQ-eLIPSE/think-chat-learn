@@ -20,13 +20,13 @@ const getters = {
     }
 };
 const actions = {
-    setQuiz({ commit }: {commit: Commit}, quiz: IQuiz) {
+    setQuiz({ commit }: {commit: Commit}, quiz: IQuiz | null) {
         return commit(mutationKeys.SET_QUIZ, quiz);
     }
 };
 
 const mutations = {
-    [mutationKeys.SET_QUIZ](funcState: IState, data: IQuiz) {
+    [mutationKeys.SET_QUIZ](funcState: IState, data: IQuiz | null) {
         Vue.set(funcState, "quiz", data);
     }
 };

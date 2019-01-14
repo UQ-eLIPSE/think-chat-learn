@@ -7,15 +7,18 @@ import { UserSession } from "../../user/UserSession";
 
 import { SocketSession } from "../SocketSession";
 
+// Handles the resyncing of sockets. E.g. a disconnect -> reconnect
 export class SocketResyncEndpoint extends WSEndpoint {
     private static HandleSessionSocketResync(socket: PacSeqSocket_Server, data: IWSToServerData.SessionSocketResync) {
-        const session = UserSession.Get(data.sessionId);
+
+        // TODO replace with userSessionService
+        const session = UserSession.Get(data.quizSessionId);
 
         if (!session) {
-            return console.error("Attempted session socket resync with invalid session ID = " + data.sessionId);
+            return console.error("Attempted session socket resync with invalid session ID = " + data.quizSessionId);
         }
 
-        const socketSession = SocketSession.GetAutoCreate(session);
+        const socketSession = SocketSession.GetAutoCreate(data.quizSessionId);
         
         socketSession.setSocket(socket);
     }

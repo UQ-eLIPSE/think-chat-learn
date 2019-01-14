@@ -2,86 +2,113 @@ import { Conf } from "../../config/Conf";
 import { Conf as CommonConf } from "../../../common/config/Conf";
 
 import { KVStore } from "../../../common/js/KVStore";
-import { MoocchatBackupClientQueue } from "./MoocchatBackupClientQueue";
+//import { MoocchatBackupClientQueue } from "./MoocchatBackupClientQueue";
 
 import { QuizAttempt } from "../quiz/QuizAttempt";
 
 import { Utils } from "../../../common/js/Utils";
-
+import { IQuizSession, Response, IResponseMCQ, IResponseQualitative } from "../../../common/interfaces/DBSchema";
+import { QuestionType } from "../../../common/enums/DBEnums";
+/**
+ * The idea is that for each quiz-question combination we set up a pool. Each pool
+ * has a queue linked to each question.
+ * 
+ * Notes one could argue that we should be storing a dictionary of dictionaries but
+ * simply having one dictionary is a lot easier to work with. We also note that if
+ * quizId and questionId are unique, then the appendment of the two would make a
+ * unique id as well
+ */
 export class MoocchatWaitPool {
     private static DesiredGroupSize: number = Conf.chat.groups.desiredSize;
     private static DesiredMaxWaitTime: number = CommonConf.timings.chatGroupFormationTimeoutMs;
+    // A singleton of a pool dictionary where each key is the quiz id
     private static readonly WaitPools = new KVStore<MoocchatWaitPool>();
 
-    private _quizSessionId: string;
+    // The id of the quiz in which we are interested in
+    private _quizId: string;
+    // The id of the question in which we are intereted in
+    // presumably the combination of the two have a legitimate relationship
+    private _questionId: string;
 
+    // The answers of the pool
     private readonly answerQueues = new KVStore<MoocchatWaitPoolAnswerQueueData[]>();
 
 
-    public static GetPoolAutoCreate(quizSessionId: string) {
-        const waitPool = MoocchatWaitPool.GetPool(quizSessionId);
+    // Creates or gets a pool. Instantiates based on the quiz id
+    public static GetPoolAutoCreate(quizId: string, questionId: string) {
+        const waitPool = MoocchatWaitPool.GetPool(quizId, questionId);
 
         if (!waitPool) {
             // Create new wait pool
-            return new MoocchatWaitPool(quizSessionId);
+            return new MoocchatWaitPool(quizId, questionId);
         }
 
         return waitPool;
     }
 
-    public static GetPool(quizSessionId: string) {
-        return MoocchatWaitPool.WaitPools.get(quizSessionId);
+    // Gets the pool of a particular quiz question combiation
+    public static GetPool(quizId: string, questionId: string) {
+        const combinedId = quizId + questionId;
+
+        return MoocchatWaitPool.WaitPools.get(combinedId);
     }
 
-    public static GetPoolWithQuizScheduleFrom(quizAttempt: QuizAttempt) {
-        const quizSchedule = quizAttempt.getQuizSchedule();
+    // Based on a user reponse to question, grab the details
+    public static GetPoolWithQuestionresponse(userResponse: Response) {
+        if (!userResponse._id || !userResponse.quizId || !userResponse.questionId) {
+            throw new Error("No id for quiz session for pool formation");
+        }
 
-        return MoocchatWaitPool.GetPoolAutoCreate(quizSchedule.getId());
+        return MoocchatWaitPool.GetPoolAutoCreate(userResponse.quizId, userResponse.questionId);
     }
 
+    // Destroying a pool is essentially making sure the queue for each question option
+    // is empty and then removin the reference from the store for garbage collection
     public static Destroy(pool: MoocchatWaitPool) {
         // pool._quizSessionId = undefined;
         pool.answerQueues.empty();
 
-        MoocchatWaitPool.WaitPools.delete(pool.getQuizSessionId());
+        MoocchatWaitPool.WaitPools.delete(pool.getQuizId() + pool.getQuestionId());
     }
 
-
-
-    constructor(quizSessionId: string) {
-        this._quizSessionId = quizSessionId;
+    // Construction of a pools is essentially the creation of an empty answer queue
+    // dictionary and obviously a reference to the id
+    constructor(quizId: string, questionId: string) {
+        this._quizId = quizId;
+        this._questionId = questionId
 
         this.answerQueues.empty();
 
         // Put into singleton map
-        MoocchatWaitPool.WaitPools.put(quizSessionId, this);
+        const combinedId = quizId + questionId;
+
+        MoocchatWaitPool.WaitPools.put(combinedId, this);
     }
 
-    public getQuizSessionId() {
-        return this._quizSessionId;
+    // Simple getter
+    public getQuizId() {
+        return this._quizId;
     }
 
-    public addQuizAttempt(quizAttempt: QuizAttempt) {
-        const responseInitial = quizAttempt.getResponseInitial();
+    public getQuestionId() {
+        return this._questionId;
+    }
 
-        if (!responseInitial) {
-            throw new Error(`Attempted to add quiz attempt to pool without response initial; quiz attempt ID = ${quizAttempt.getId()}`);
-        }
+    // The idea is that within a pool, we attempt
+    // to create queues based on question option. E.g. if a person answered option A, they will be placed
+    // in the queue for option A. Selecting B will point to B... We then attempt to diversify/group up
+    // people based on different options.
 
+    public addQuizAttempt(quizResponse: Response) {
         // We get the selected question option that was provided for the answer
         // then use the option ID to place this quiz attempt into the queue for
         // that option.
         // 
         // If there is no question option selected, then we place them into a
-        // default queue.
-        const answerQuestionOption = responseInitial.getQuestionOption();
-        let answerId: string;
-
-        if (answerQuestionOption === undefined) {
-            answerId = "";
-        } else {
-            answerId = answerQuestionOption.getId();
-        }
+        // default queue. This is mainly true for MCQ where we want to diversify options.
+        // For a qualititative answer, we simply group them up together by confidence values?
+        const answerId = quizResponse.type === QuestionType.MCQ ? 
+            (quizResponse as IResponseMCQ).optionId : (quizResponse as IResponseQualitative).confidence.toString();
 
         // If answer ID is not in queue, create queue for it
         if (!this.answerQueues.hasKey(answerId)) {
@@ -90,56 +117,62 @@ export class MoocchatWaitPool {
 
         const answerQueue = this.answerQueues.get(answerId)!;
 
-        // If the client is already in the queue, don't do anything.
+        // If the client/user response is already in the queue, don't do anything.
         for (let i = 0; i < answerQueue.length; ++i) {
             const answerQueueData = answerQueue[i];
 
-            if (answerQueueData.quizAttempt === quizAttempt) {
+            if (answerQueueData.quizResponse._id === quizResponse._id) {
                 return;
             }
         }
 
         // Add client to the queue once all okay 
         answerQueue.push({
-            quizAttempt,
+            quizResponse,
             timestamp: Date.now()
         });
     }
 
-    public removeQuizAttempt(quizAttempt: QuizAttempt) {
-        // Need to search through the entire pool to remove
-        const arr = this.answerQueues.getKeys();
+    // A user wants/needs to get out of the queue for waiting (either due to disconnect or finding a group)
+    // remove it from the store
+    public removeQuizAttempt(quizResponse: Response) {
+        // The idea is basically to iterate through all the queues e.g. quizA,questionB queue
+        // and then within the queue, find it. Note we are touching the answer queue
+        const answerId = quizResponse.type === QuestionType.MCQ ? 
+            (quizResponse as IResponseMCQ).optionId : (quizResponse as IResponseQualitative).confidence.toString();
 
-        for (let i = 0; i < arr.length; ++i) {
-            const queueKey = arr[i];
-            const thisAnswerQuizAttemptArray = this.answerQueues.get(queueKey)!;
+        const thisAnswerQuizAttemptArray = this.answerQueues.get(answerId)!;
 
-            for (let j = 0; j < thisAnswerQuizAttemptArray.length; ++j) {
-                if (thisAnswerQuizAttemptArray[j].quizAttempt === quizAttempt) {
-                    // Remove the client out and return it
-                    console.log(`Removing quiz attempt '${quizAttempt.getId()}' from wait pool '${this.getQuizSessionId()}'`);
-                    return thisAnswerQuizAttemptArray.splice(j, 1)[0].quizAttempt;
-                }
+        for (let j = 0; j < thisAnswerQuizAttemptArray.length; ++j) {
+            if (thisAnswerQuizAttemptArray[j].quizResponse._id === quizResponse._id) {
+                // Remove the client out and return it
+                console.log(`Removing quiz attempt '${quizResponse._id}' from wait pool '${this.getQuizId() + this.getQuestionId()}'`);
+                return thisAnswerQuizAttemptArray.splice(j, 1)[0].quizResponse;
             }
         }
 
         return undefined;
     }
 
-    public hasQuizAttempt(quizAttempt: QuizAttempt) {
-        const arr = this.answerQueues.getKeys();
+    // As the namesake suggests, given a quiz response, check to see if it is in any queue
+    // Note a response by the combination of quizId and questioNId
+    public hasQuizResponse(quizResponse: Response) {
 
-        for (let i = 0; i < arr.length; ++i) {
-            const queueKey = arr[i];
-            const thisAnswerQuizAttemptArray = this.answerQueues.get(queueKey)!;
+        const answerId = quizResponse.type === QuestionType.MCQ ? 
+            (quizResponse as IResponseMCQ).optionId : (quizResponse as IResponseQualitative).confidence.toString();        
 
-            for (let j = 0; j < thisAnswerQuizAttemptArray.length; ++j) {
-                if (thisAnswerQuizAttemptArray[j].quizAttempt === quizAttempt) {
-                    return true;
-                }
-            }
+        const thisAnswerQuizAttemptArray = this.answerQueues.get(answerId);
+        // Obviously if the queue doesn't exist then return false
+        if (!thisAnswerQuizAttemptArray) {
+            return false;
         }
 
+        for (let j = 0; j < thisAnswerQuizAttemptArray.length; ++j) {
+            // A simple === would assume both reference the same memory
+            if (thisAnswerQuizAttemptArray[j].quizResponse._id === quizResponse._id) {
+                return true;
+            }
+        }
         return false;
     }
 
@@ -169,7 +202,7 @@ export class MoocchatWaitPool {
 
             const waitTime = Date.now() - firstInQueueData.timestamp;
 
-            return waitTime > MoocchatWaitPool.DesiredMaxWaitTime;
+            return waitTime > MoocchatWaitPool.DesiredMaxWaitTime - 10000;
         });
     }
 
@@ -180,6 +213,7 @@ export class MoocchatWaitPool {
         }, 0);
     }
 
+    // Finds the queue element and then pops it
     private popQuizAttemptFromAnswerQueue(queueKey: string) {
         const poppedFirstElem = this.answerQueues.get(queueKey)!.shift();
 
@@ -187,7 +221,7 @@ export class MoocchatWaitPool {
             return;
         }
 
-        return poppedFirstElem.quizAttempt;
+        return poppedFirstElem.quizResponse;
     }
 
     public tryFormGroup() {
@@ -213,7 +247,9 @@ export class MoocchatWaitPool {
             }
 
             if (totalPoolSize < MoocchatWaitPool.DesiredGroupSize) {
-                const backupClientQueue = MoocchatBackupClientQueue.GetQueue(this.getQuizSessionId());
+                // TODO handle backup queue
+
+                /*const backupClientQueue = MoocchatBackupClientQueue.GetQueue(this.getQuizSessionId());
 
                 if (backupClientQueue &&
                     totalPoolSize === 1 &&
@@ -221,10 +257,11 @@ export class MoocchatWaitPool {
                     // Don't do anything if there is a backup client to be placed into the pool
                     // (happens when #callToPool() returns TRUE)
                     return [];
-                }
+                }*/
             }
 
             // Create chat group (up to desired group size)
+            console.log("DONE_SERVER");
             return this.popGroup();
         }
 
@@ -274,6 +311,6 @@ export class MoocchatWaitPool {
 }
 
 export interface MoocchatWaitPoolAnswerQueueData {
-    quizAttempt: QuizAttempt;
+    quizResponse: Response;
     timestamp: number;
 }

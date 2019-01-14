@@ -7,15 +7,36 @@ import { Conf } from "../config/Conf";
 /**
  * MOOCchat
  * Websocket management class module
- * 
+ *
  * Acts as thin layer over Socket.IO object; methods act approximately the same way.
  */
 export class WebsocketManager {
     protected socketProxy: PacSeqSocket_Client;
 
+    // Note that the constructor is essentially calling open although TS wants the socket to expliclty be instantiated.
+    constructor() {
+        this.socketProxy = new PacSeqSocket_Client(
+            socket.connect("//" + Conf.server.url, {
+                path: "/socket.io",
+
+                // Permit infinite reconnects
+                reconnection: true,
+                reconnectionAttempts: Infinity,
+                reconnectionDelay: 1500,
+                reconnectionDelayMax: 2000,
+
+                transports: ["websocket"]
+            })
+        );
+
+        this.on("terminated", () => {
+            alert("You or someone has requested a full termination of all sessions associated with this username.");
+        });
+    }
+
     public open() {
         this.socketProxy = new PacSeqSocket_Client(
-            socket.connect('//' + Conf.server.url, {
+            socket.connect("//" + Conf.server.url, {
                 path: "/socket.io",
 
                 // Permit infinite reconnects
@@ -58,33 +79,33 @@ export class WebsocketManager {
         return this.socketProxy.once(event, fn);
     }
 
-    // TODO: Fix type
-    protected getListeners(event: string) {
-        return (<SocketIOClient.Socket>this.socketProxy.getSocket()).listeners(event);
-    }
-
-    protected get connected() {
-        return this.socketProxy.getSocket().connected;
-    }
-
     public restart() {
-        const socket = this.socketProxy.getSocket();
+        const sock = this.socketProxy.getSocket();
 
-        socket.disconnect();
+        sock.disconnect();
 
         setTimeout(() => {
-            socket.connect();
+            sock.connect();
         }, 1000);
     }
 
     /**
      * Workaround for bug #178
-     * 
+     *
      * INTENDED ONLY FOR CLIENT-SIDE RESYNC EVENTS!
-     * 
+     *
      * Resets the ack counter so that we don't run into issues with out-of-sync counters
      */
     public resetIncomingDataAckCounter() {
         return this.socketProxy.resetIncomingDataAckCounter();
+    }
+
+    // TODO: Fix type
+    protected getListeners(event: string) {
+        return (this.socketProxy.getSocket() as SocketIOClient.Socket).listeners(event);
+    }
+
+    protected get connected() {
+        return this.socketProxy.getSocket().connected;
     }
 }

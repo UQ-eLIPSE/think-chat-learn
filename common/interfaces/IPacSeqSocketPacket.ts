@@ -1,7 +1,7 @@
 export const EventName = {
     DAT: "PacSeq::DAT",
     ACK: "PacSeq::ACK"
-}
+};
 
 export namespace Packet {
     export interface DAT {
@@ -14,5 +14,3 @@ export namespace Packet {
         ack: number;
     }
 }
-
-

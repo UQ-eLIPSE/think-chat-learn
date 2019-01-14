@@ -12,7 +12,7 @@ interface ChatGroupAnswer {
         _id?: string;
         justification: string;
         optionId: string;
-    }
+    };
 }
 
 
@@ -54,7 +54,7 @@ export interface ChatGroupQuitStatusChange {
     quitStatus: boolean;
 }
 export interface ChatGroupTypingNotification {
-    clientIndicies: number[]
+    clientIndicies: number[];
 }
 
 export interface BackupClientEnterQueueState extends SuccessState {
@@ -73,3 +73,4 @@ export interface BackupClientQueueUpdate {
 export interface LogoutSuccess {
     sessionId: string;
 }
+    

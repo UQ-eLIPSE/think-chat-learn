@@ -48,7 +48,10 @@ export const WebsocketEvents = {
         BACKUP_CLIENT_STANDARD_CLIENT_POOL_COUNT_UPDATE: "clientPoolCountUpdate",
 
         /** IWSToClientData.LogoutSuccess */
-        LOGOUT_SUCCESS: "logoutSuccess"
+        LOGOUT_SUCCESS: "logoutSuccess",
+
+        /** IWSToClientData.StoreSessionAck */
+        STORE_SESSION_ACK: "StoreSessionAcknowledged"
     },
 
     OUTBOUND: {
@@ -78,13 +81,13 @@ export const WebsocketEvents = {
 
         /** IWSToServerData.BackupClientAnswer */
         BACKUP_CLIENT_ANSWER_AND_JOIN_QUEUE: "backupClientEnterQueue",
-        
+
         /** IWSToServerData.BackupClientReturnToQueue */
         BACKUP_CLIENT_RETURN_TO_QUEUE: "backupClientReturnToQueue",
-        
+
         /** IWSToServerData.BackupStatusRequest */
         BACKUP_CLIENT_STATUS_REQUEST: "backupClientStatusRequest",
-        
+
         /** IWSToServerData.BackupClientTransferConfirm */
         BACKUP_CLIENT_TRANSFER_CONFIRM: "backupClientTransferConfirm",
 
@@ -95,6 +98,9 @@ export const WebsocketEvents = {
         LOGOUT: "logout",
 
         /** IWSToServerData.SessionSocketResync */
-        SESSION_SOCKET_RESYNC: "sessionSocketResync" 
+        SESSION_SOCKET_RESYNC: "sessionSocketResync",
+
+        /** IWSToServerData.StoreSocket */
+        STORE_QUIZ_SESSION_SOCKET: "storeQuizSessionSocket"
     }
-}
+};

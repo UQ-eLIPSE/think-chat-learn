@@ -4,9 +4,11 @@ import { QuizRepository } from "../repositories/QuizRepository";
 import { ILTIData } from "../../common/interfaces/ILTIData";
 import { LTIAuth } from "../js/auth/lti/LTIAuth";
 import { IMoocchatIdentityInfo } from "../js/auth/IMoocchatIdentityInfo";
-import { IUser, IQuiz, PageType } from "../../common/interfaces/DBSchema";
+import { IUser, IQuiz } from "../../common/interfaces/DBSchema";
 import { LoginResponse, IQuestionAnswerPage, IInfoPage, AdminLoginResponse } from "../../common/interfaces/ToClientData";
 import { QuestionRepository } from "../repositories/QuestionRepository";
+import { convertNetworkQuizIntoQuiz, convertQuizIntoNetworkQuiz } from "../../common/js/NetworkDataUtils";
+import { IQuizOverNetwork } from "../../common/interfaces/NetworkData";
 
 export class UserService extends BaseService{
 
@@ -40,7 +42,7 @@ export class UserService extends BaseService{
 
         const output: LoginResponse = {
             user,
-            quiz: quizSchedule,
+            quiz: quizSchedule ? convertQuizIntoNetworkQuiz(quizSchedule) : null,
             courseId: identity.course
         };
 
@@ -84,7 +86,8 @@ export class UserService extends BaseService{
 
         const output: AdminLoginResponse = {
             user,
-            quizzes,
+            quizzes: quizzes.reduce((arr: IQuizOverNetwork[], element) => 
+                { arr.push(convertQuizIntoNetworkQuiz(element)); return arr; }, []),
             courseId: identity.course,
             questions
         }
@@ -119,53 +122,44 @@ class UserServiceHelper {
     // Gets the user from the DB based on id
     public static async RetrieveUser(userRepo: UserRepository, identity: IMoocchatIdentityInfo): Promise<IUser> {
         
-        const user = await userRepo.findOne({
+        let user = await userRepo.findOne({
             username: identity.identityId
         });
 
+        // Create a new user
         if(!user) {
-            throw Error("No such user");
+            const maybeId = await userRepo.create({
+                username: identity.identityId,
+                firstName: identity.name.given,
+                lastName: identity.name.family,
+                researchConsent: false
+            });
+
+            if (maybeId) {
+                user = {
+                    username: identity.identityId,
+                    firstName: identity.name.given,
+                    lastName: identity.name.family,
+                    researchConsent: false
+                };
+            } else {
+                throw Error("Failed to create new user");
+            }
         }
 
         return Promise.resolve(user);
     }
 
-    public static async RetrieveQuizSchedule(quizRepo: QuizRepository, course: string): Promise<IQuiz> {
+    /**
+     * Retrieves a quiz that can be done within a course. Returns null if no such quiz is available
+     * @param quizRepo The repo which points to the DB
+     * @param course The course id
+     */
+    public static async RetrieveQuizSchedule(quizRepo: QuizRepository, course: string): Promise<IQuiz | null> {
 
         // Since the admin end points have not been made, return dummy values
 
-        /*const quiz = await quizRepo.findAll({
-            course
-        });*/
-
-        const sampleQuestion: IQuestionAnswerPage = {
-            _id: "SampleQuestionId",
-            type: PageType.QUESTION_ANSWER_PAGE,
-            title: "Some Question Page",
-            content: "Note there is no QuestionId linked yet",
-            questionId: "123123"
-        }
-
-        const sampleInfo: IInfoPage = {
-            _id: "SampleInfoPageId",
-            type: PageType.INFO_PAGE,
-            title: "Some Info Page",
-            content: "Some form of content"
-        }
-
-        const quiz: IQuiz = {
-            _id: "123123123",
-            pages: [sampleInfo, sampleQuestion],
-            course: "SomeSuperString",
-            availableStart: new Date(Date.now() - 10000000),
-            availableEnd: new Date(Date.now() + 1000000),
-        }
-
-        // TODO fix for active quizzes, currently retrieves just the quiz schedule for a particular course
-
-        if (!quiz) {
-            throw new Error("[30] No scheduled quiz found.");
-        }
+        const quiz = await quizRepo.findAvailableQuizInCourse(course);
 
         return Promise.resolve(quiz);
     }

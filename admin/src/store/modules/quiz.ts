@@ -2,6 +2,8 @@ import Vue from "vue";
 import { Commit } from "vuex";
 import { IQuiz } from "../../../../common/interfaces/ToClientData";
 import { API } from "../../../../common/js/DB_API";
+import { IQuizOverNetwork } from "../../../../common/interfaces/NetworkData";
+import { convertNetworkQuizIntoQuiz, convertNetworkQuizzesIntoQuizzes } from "../../../../common/js/NetworkDataUtils";
 
 export interface IState {
     quiz: IQuiz[];
@@ -24,25 +26,25 @@ const getters = {
     }
 };
 const actions = {
-    createQuiz({ commit }: {commit: Commit}, data: IQuiz) {
+    createQuiz({ commit }: {commit: Commit}, data: IQuizOverNetwork) {
         API.request(API.PUT, API.QUIZ + "create", data).then((outcome: string) => {
             if (outcome) {
-                commit(mutationKeys.SET_QUIZ, data);
+                commit(mutationKeys.SET_QUIZ, convertNetworkQuizIntoQuiz(data));
             }
         });
     },
 
-    updateQuiz({ commit }: {commit: Commit}, data: IQuiz) {
+    updateQuiz({ commit }: {commit: Commit}, data: IQuizOverNetwork) {
         API.request(API.POST, API.QUIZ + "update", data).then((outcome: boolean) => {
             if (outcome) {
-                commit(mutationKeys.EDIT_QUIZ, data);
+                commit(mutationKeys.EDIT_QUIZ, convertNetworkQuizIntoQuiz(data));
             }
         });
     },
 
     getQuizzes({ commit }: {commit: Commit}, courseId: string) {
-        API.request(API.GET, API.QUIZ + "course/" + courseId, {}).then((output: IQuiz[]) => {
-            commit(mutationKeys.SET_QUIZZES, output);
+        API.request(API.GET, API.QUIZ + "course/" + courseId, {}).then((output: IQuizOverNetwork[]) => {
+            commit(mutationKeys.SET_QUIZZES, convertNetworkQuizzesIntoQuizzes(output));
         });
     },
 

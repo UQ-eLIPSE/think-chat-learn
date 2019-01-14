@@ -1,3 +1,5 @@
+import { PageType, QuestionType, LTIRoles } from "../enums/DBEnums";
+
 // Determines what the type should be. Can be changed based on DB needs
 type OID = string;
 // A page of 4 types, note that IPage itself cannot be used as a viable page
@@ -9,17 +11,42 @@ export type Page =
 // A question associated with an IQuestioNAnswerPage. Can either be an MCQ or Qualitative one
 // TODO remove the old Question interface in favour of the new one
 export type TypeQuestion = IQuestionMCQ | IQuestionQualitative;
+
+// We either answer an MCQ or a qualitative
+export type Response = IResponseMCQ | IResponseQualitative;
+
 // The basic class of all elements in the DB
-export interface Document<OID> {
+export interface Document {
   _id?: OID;
 }
 
 // Contains details of user
-export interface IUser extends Document<OID> {
+export interface IUser extends Document {
   username?: string;
   firstName?: string;
   lastName?: string;
   researchConsent?: boolean | null;
+}
+
+// A user session is defined every time the enter the page/login successfully
+export interface IUserSession extends Document {
+  userId?: OID;
+  // Note these two times should be the tostring of a valid date
+  startTime?: string;
+  endTime?: string;
+  course?: string;
+  // Currently an enum
+  role?: LTIRoles;
+}
+
+// A quiz session is when a user decides to take on/attempt a quiz
+// Note we record the whole thing such as what questions they answered
+export interface IQuizSession extends Document {
+  userSessionId?: OID;
+  quizId?: OID;
+  // A response is defined by a referral to a page
+  // with the appropiate content
+  responses?: OID[];
 }
 
 // Contains a question in which people can answer.
@@ -29,16 +56,11 @@ export interface IUser extends Document<OID> {
 // the admins can see their own questions. E.g. MECH courses can't see BIOL course
 // data. Of course runs into the problem of different semesters of the same course
 // having different ids
-export interface IQuestion extends Document<OID> {
+export interface IQuestion extends Document {
   type: QuestionType;
   content?: string;
   title?: string;
   courseId?: string;
-}
-
-export enum QuestionType {
-  MCQ = "MCQ",
-  QUALITATIVE = "QUALITATIVE"
 }
 
 // A question that can be answered based on options
@@ -53,33 +75,51 @@ export interface IQuestionQualitative extends IQuestion {
 }
 
 // An option that could be used in MCQs
-export interface IQuestionOption extends Document<OID> {
+export interface IQuestionOption extends Document {
   content?: string;
   isCorrect?: boolean;
   index: number;
 }
 
-// Contains a quiz which contains questions that people can answer
-export interface IQuiz extends Document<OID> {
-  title?: string;
-  pages?: IPage[];
-  course?: string;
-  availableStart?: Date;
-  availableEnd?: Date;
+// A response could either be from an MCQ or qualitative
+// Therefore we accomodate for an option or simply a string
+// In both cases there is a confidence value and a link to the question
+// (Whether or not we want redundancy here is yet to be known)
+export interface IResponse extends Document {
+  type: QuestionType;
+  confidence: number;
+  questionId: OID;
+  quizId: OID;
+  quizSessionId: OID;
 }
 
-// Type of pages supported in DEEPConcepts
-export enum PageType {
-  DISCUSSION_PAGE = "DISCUSSION_PAGE",
-  INFO_PAGE = "INFO_PAGE",
-  QUESTION_ANSWER_PAGE = "QUESTION_ANSWER_PAGE",
-  SURVEY_PAGE = "SURVEY_PAGE"
+// MCQ answers points to an option
+export interface IResponseMCQ extends IResponse {
+  type: QuestionType.MCQ;
+  optionId: OID;
+}
+
+// Qualitative is simply a string
+export interface IResponseQualitative extends IResponse {
+  type: QuestionType.QUALITATIVE;
+  content: string;
+}
+
+// Contains a quiz which contains questions that people can answer
+export interface IQuiz extends Document {
+  title?: string;
+  pages?: Page[];
+  course?: string;
+  // Note while the functionality-wise the start and end are dates,
+  // they are stored as strings due the fact that sending a date over is not feasible
+  availableStart?: Date;
+  availableEnd?: Date;
 }
 
 // A page to be rendered. All pages contain at the very
 // least a type (to indicate how to be rendered),
 // a title and some content
-export interface IPage extends Document<OID> {
+export interface IPage extends Document {
   type: PageType;
   title: string;
   content: string;
@@ -109,11 +149,29 @@ export interface ISurveyPage extends IPage {
   surveyId: string;
 }
 
-export interface IQuizSchedule extends Document<OID> {
+export interface IQuizSchedule extends Document {
   questionId?: string;
   course?: string;
   availableStart?: Date;
   availableEnd?: Date;
+}
+
+// A message that was sent. Within a chat group. Contains
+// a user id which is presumably good (as in the user is part of the group)
+export interface IChatMessage extends Document {
+  userId?: OID;
+  content: string;
+}
+
+// A chat group contains multiple people talking.
+// A group is formed within a quiz id hence we generally search by it
+// Assumes that the quiz sessions ids inside are good/valid
+// Also a quiz group can only be in one session.
+export interface IChatGroup extends Document {
+  messages?: IChatMessage[];
+  quizSessionIds?: OID[];
+  quizId?: OID;
+  questionId?: OID;
 }
 
 export interface ChatMessage<OID, Date> {
