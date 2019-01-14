@@ -36,6 +36,19 @@
     display: flex;
     justify-content: space-between;
 
+    /* Fixes the case where the first list element is in progress. It's a lot easier to override
+    then to create an overly complex rule to bring this element as an exception */
+    li:first-child {
+      .title {
+        &.in-progress {
+          &:before {
+            width: 0px;
+            height: 0px;
+          }
+        }
+      }
+    }
+
     li {
       margin: 0 auto;
       width: 85px;
@@ -165,13 +178,16 @@ interface Steps {
 export default class Stepper extends Vue {
 
   /** The offset of the receipt page relative to the end of quiz pages */
-  RECEIPT_OFFSET = 1;
+  private RECEIPT_OFFSET = 1;
 
   /** The offset of the reflection page relative to the end of quiz pages */
-  REFLECTION_OFFSET = 0;
+  private REFLECTION_OFFSET = 0;
+
+  // Offsets the current index by 1 due to store value referring to position in array
+  private INDEX_OFFSET = 0;
 
   get currentIndex(): number {
-    return 1;
+    return this.$store.getters.currentIndex + this.INDEX_OFFSET;
   }
 
   get Progress() {

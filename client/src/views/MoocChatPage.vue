@@ -27,6 +27,10 @@
         <Confidence @CONFIDENCE_CHANGE="handleConfidenceChange" />
         <button class="primary" @click="sendResponse()">Submit</button>
       </div>
+      <!-- An info page only needs a next page -->
+      <div class="column pane2" v-if="page.type === PageType.INFO_PAGE">
+        <button class="primary" @click="goToNextPage()">Go To Next Page</button>
+      </div>
     </div>
   </div>
 </template>
@@ -65,9 +69,12 @@ import { PageType, QuestionType } from "../../../common/enums/DBEnums";
   }
 })
 export default class MoocChatPage extends Vue {
+  private DEFAULT_RESPONSE = "";
+  private DEFAULT_CONFIDENCE = 3;
+
   /** Only used when its a question page that is qualitative */
   private responseContent: string = "";
-  private confidence: number = 0;
+  private confidence: number = 3;
 
   get PageType() {
     return PageType;
@@ -84,7 +91,7 @@ export default class MoocChatPage extends Vue {
   // The idea is based on the quiz and current page,
   // render it appropiately
   get currentIndex(): number {
-    return 0;
+    return this.$store.getters.currentIndex;
   }
 
   get quiz(): IQuiz | null {
@@ -119,7 +126,6 @@ export default class MoocChatPage extends Vue {
   }
 
   private sendResponse() {
-
     // If there is no question, don't run
     if (!this.question || !this.question._id || !this.quiz || !this.quiz._id || !this.quizSession || !this.quizSession._id) {
       return;
@@ -138,9 +144,35 @@ export default class MoocChatPage extends Vue {
         quizSessionId: this.quizSession._id
       };
 
-      this.$store.dispatch("sendResponse", response);
+      // TODO, snackbar for errors?
+      this.$store.dispatch("sendResponse", response).then(() => {
+        this.goToNextPage();
+      }).catch((e: Error) => {
+        console.log(e);
+      });
     }
-    
+  }
+
+  // A clear page is defined as resetting the confidence and response content back to defualt values
+  private clearPage() {
+    this.responseContent = this.DEFAULT_RESPONSE;
+    this.confidence = this.DEFAULT_CONFIDENCE;
+  }
+
+  // Goes the to the next page by incrementing the count
+  // Additionally does a quiz page check to see if the reflection page should be touched
+  private goToNextPage() {
+    if (!this.quiz || !this.quiz.pages) {
+      return;
+    }
+
+    this.$store.dispatch("incrementIndex");
+
+    // Not safe to go to the next page, go to reflection
+    if (this.currentIndex + 1 > this.quiz.pages.length) {
+      this.$router.push("/reflection");
+    }
+
   }
 }
 </script>

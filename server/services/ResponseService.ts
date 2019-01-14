@@ -11,10 +11,18 @@ export class ResponseService extends BaseService{
         this.responseRepo = _responseRepo;
 }
 
-    // Creates a user session assuming the body is valid
+    // Creates a user session assuming the body is valid. Additionally if
+    // the response is already present, throw an error
     public async createResponse(data: Response): Promise<string> {
 
-        return this.responseRepo.create(data);
+        const inDB = await this.checkQuizSessionQuestionInDb(data.quizSessionId, data.questionId);
+        if (!inDB) {
+            return this.responseRepo.create(data);
+        } else {
+            // Throw an error due to violation
+            throw new Error(`Attempted to create a response with a quiz session ID of ${data.quizSessionId}
+                 and question ID of ${data.questionId}`);
+        }
     }
 
     // Simply an override. 
@@ -38,5 +46,10 @@ export class ResponseService extends BaseService{
     // Gets the response based on the id itself
     public async getResponse(responseId: string): Promise<Response | null> {
         return this.responseRepo.findOne(responseId);
+    }
+
+    // Checks whether or not the response already exists in the db
+    private async checkQuizSessionQuestionInDb(quizSessionId: string, questionId: string): Promise<boolean> {
+        return await this.responseRepo.findResponseByQuizSessionQuestion(quizSessionId, questionId) ? true : false;
     }
 }
