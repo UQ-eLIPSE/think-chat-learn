@@ -1,6 +1,7 @@
 import { BaseService } from "./BaseService";
 import { ChatGroupRepository } from "../repositories/ChatGroupRepository";
-import { IChatGroup } from "../../common/interfaces/DBSchema";
+import { IChatGroup, IChatMessage } from "../../common/interfaces/DBSchema";
+import { ObjectId } from "bson";
 
 export class ChatGroupService extends BaseService{
 
@@ -20,6 +21,21 @@ export class ChatGroupService extends BaseService{
     // Simply an override to the existing chat group
     public async updateChatGroup(data: IChatGroup): Promise<boolean> {
         return this.chatGroupRepo.updateOne(data);
+    }
+
+    // Appends the chat message to a given chatgroup and stores it in the db
+    // assumes that the message is filled
+    public async appendChatMessageToGroup(data: IChatGroup, content: string, userId: string): Promise<boolean> {
+        const message: IChatMessage = {
+            _id: (new ObjectId()).toHexString(),
+            content,
+            userId,
+            timeStamp: new Date()
+        };
+
+        data.messages!.push(message);
+
+        return this.updateChatGroup(data);
     }
 
     // Deletes a chat group based on the id

@@ -44,11 +44,16 @@ import { IQuizSession, IQuiz, Response } from "../../../../common/interfaces/ToC
 import { WebsocketManager } from "../../../js/WebsocketManager";
 import { WebsocketEvents } from "../../../js/WebsocketEvents";
 import { SocketState } from "../../interfaces";
+import { IUser } from "../../../../common/interfaces/DBSchema";
 
 
 @Component({})
 export default class CreateChatMessage extends Vue {
   private loadedMessage: string = "";
+
+  get user(): IUser | null {
+    return this.$store.getters.user;
+  }
 
   get quiz(): IQuiz | null {
     return this.$store.getters.quiz;
@@ -92,7 +97,8 @@ export default class CreateChatMessage extends Vue {
         questionId: this.quiz!.pages![0]._id!,
         quizSessionId: this.quizSession!._id!,
         responseId: this.response!._id!,
-        groupId: this.groupJoin!.groupId!
+        groupId: this.groupJoin!.groupId!,
+        userId: this.user!._id!
       };
 
       this.socket!.emitData<IWSToServerData.ChatGroupTypingNotification>(
@@ -114,7 +120,8 @@ export default class CreateChatMessage extends Vue {
         quizId: this.quiz!._id!,
         questionId: this.quiz!.pages![0]._id!,
         quizSessionId: this.quizSession!._id!,
-        responseId: this.response!._id!
+        responseId: this.response!._id!,
+        userId: this.user!._id!
     };
 
     this.socket!.emitData<IWSToServerData.ChatGroupSendMessage>(

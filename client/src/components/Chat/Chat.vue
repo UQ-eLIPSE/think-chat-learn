@@ -3,8 +3,13 @@
     <!-- <div v-bind="messages" v-for="message in messages"> -->
     <div class="message-container">
       <div v-for="(message, index) in chatMessages" :key="index">
-        <ChatMessage :userNumber="`Client ${message.clientIndex}`" :content="message.message" :numeral="message.clientIndex"/>
+        <ChatMessage v-if="message.type === MoocChatMessageTypes.CHAT_MESSAGE"
+          :userNumber="`Client ${message.content.clientIndex}`" :content="message.content.message" :numeral="message.content.clientIndex"/>
+        <ChatAlert v-else-if="(message.type === MoocChatMessageTypes.STATE_MESSAGE) &&
+          (message.state === MoocChatStateMessageTypes.ON_JOIN)"
+          :alertMessage="`Joined a group of ${chatGroup.groupSize} you are Student ${chatGroup.clientIndex}`" :alertType="`standard`"/>          
       </div>
+      <!-- TODO Append the typingNotification at the bottom -->
     </div>
 
     <div class="input-container">
@@ -46,7 +51,8 @@ import { Vue, Component } from "vue-property-decorator";
 import ChatAlert from "./ChatAlert.vue";
 import ChatMessage from "./ChatMessage.vue";
 import CreateChatMessage from "./CreateChatMessage.vue";
-import { SocketState } from "../../interfaces";
+import { SocketState, MoocChatMessage }  from "../../interfaces";
+import { MoocChatMessageTypes, MoocChatStateMessageTypes } from "../../enums";
 import * as IWSToClientData from ",,/../../../common/interfaces/IWSToClientData";
 
 @Component({
@@ -61,9 +67,17 @@ export default class Chat extends Vue {
     return this.$store.getters.socketState;
   }
 
-  // Empty should be default behaviour if no socket state is present
-  get chatMessages(): IWSToClientData.ChatGroupMessage[] {
-    return this.socketState ? this.socketState.chatMessages : [];
+  get MoocChatMessageTypes() {
+    return MoocChatMessageTypes;
+  }
+
+  get MoocChatStateMessageTypes() {
+    return MoocChatStateMessageTypes;
+  }
+
+  // Remember, different to socketState.chatMessages due to also being ocmpsesd of
+  get chatMessages(): MoocChatMessage[] {
+    return this.$store.getters.chatMessages;
   }
 
   get chatGroup(): IWSToClientData.ChatGroupFormed | null {

@@ -71,6 +71,7 @@ import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
 import * as IWSToServerData from "../../../common/interfaces/IWSToServerData";
 import { WebsocketEvents } from "../../js/WebsocketEvents";
 import { WebsocketManager } from "../../js/WebsocketManager";
+import { IUser } from "../../../common/interfaces/DBSchema";
 
 @Component({
   components: {
@@ -91,6 +92,10 @@ export default class MoocChatPage extends Vue {
 
   get QuestionType() {
     return QuestionType;
+  }
+
+  get user(): IUser | null {
+    return this.$store.getters.user;
   }
 
   get quizSession(): IQuizSession | null {
@@ -257,7 +262,8 @@ export default class MoocChatPage extends Vue {
           quizId: this.quiz._id!,
           questionId: this.quiz!.pages![0]._id!,
           quizSessionId: this.quizSession!._id!,
-          responseId: this.response!._id!
+          responseId: this.response!._id!,
+          userId: this.user!._id!
       });
   }
 }

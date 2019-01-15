@@ -9,13 +9,15 @@ import * as IWSToClientData from "../../../../common/interfaces/IWSToClientData"
 import * as IWSToServerData from "../../../../common/interfaces/IWSToServerData";
 import { WebsocketManager } from "../../../js/WebsocketManager";
 import { WebsocketEvents } from "../../../js/WebsocketEvents";
-import { SocketState } from "../../interfaces";
+import { SocketState, MoocChatMessage, ChatMessage, StateMessage } from "../../interfaces";
+import { MoocChatMessageTypes, MoocChatStateMessageTypes } from "../../enums";
 
 export interface IState {
     quizSession: IQuizSession | null;
     response: Response | null;
     currentIndex: number;
     socketState: SocketState;
+    chatMessages: MoocChatMessage[];
 }
 
 const state: IState = {
@@ -28,7 +30,8 @@ const state: IState = {
         chatGroupFormed: null,
         chatTypingNotifications: null,
         socket: null
-    }
+    },
+    chatMessages: []
 };
 
 const mutationKeys = {
@@ -39,7 +42,9 @@ const mutationKeys = {
     // Web socket mutations
     CREATE_SOCKET: "Creating the socket",
     CLOSE_SOCKET: "Closing the socket",
-    DELETE_SOCKET: "Deleting the socket"
+    DELETE_SOCKET: "Deleting the socket",
+    // Chat message mutations
+    APPEND_STATE_MESSAGE: "Appending a state message"
 };
 
 function handleGroupJoin(data?: IWSToClientData.ChatGroupFormed) {
@@ -49,6 +54,14 @@ function handleGroupJoin(data?: IWSToClientData.ChatGroupFormed) {
 
     // Note the use of global state usage
     Vue.set(state.socketState, "chatGroupFormed", data);
+
+    // Handle a join
+    const joinMessage: StateMessage = {
+        state: MoocChatStateMessageTypes.ON_JOIN,
+        type: MoocChatMessageTypes.STATE_MESSAGE
+    };
+
+    Vue.set(state.chatMessages, state.chatMessages.length, joinMessage);
 }
 
 function handleTypingNotification(data?: IWSToClientData.ChatGroupTypingNotification) {
@@ -65,6 +78,14 @@ function handleIncomingChatMessage(data?: IWSToClientData.ChatGroupMessage) {
     }
 
     Vue.set(state.socketState.chatMessages, state.socketState.chatMessages.length, data);
+
+    // Also handle the total chat message
+    const chatMessage: MoocChatMessage = {
+        type: MoocChatMessageTypes.CHAT_MESSAGE,
+        content: data
+    };
+
+    Vue.set(state.chatMessages, state.chatMessages.length, chatMessage);
 }
 
 // Handles the socket events.
@@ -102,6 +123,10 @@ const getters = {
 
     socketState: (): SocketState | null => {
         return state.socketState;
+    },
+
+    chatMessages: (): MoocChatMessage[] => {
+        return state.chatMessages;
     }
 };
 const actions = {
@@ -174,6 +199,15 @@ const mutations = {
         if (funcState.socketState.socket) {
             Vue.delete(funcState, "socket");
         }
+    },
+
+    [mutationKeys.APPEND_STATE_MESSAGE](funcState: IState, incomingState: MoocChatStateMessageTypes) {
+        const outgoingMessage: StateMessage = {
+            type: MoocChatMessageTypes.STATE_MESSAGE,
+            state: incomingState
+        };
+
+        Vue.set(funcState.chatMessages, funcState.chatMessages.length, outgoingMessage);
     }
 };
 

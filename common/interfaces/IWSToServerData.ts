@@ -6,12 +6,16 @@ interface SessionResponse {
     quizSessionId: string;
 }
 
-// An attempt is a combination of quiz and question addition to a response
+// For redundancy purposes we enforce the users to send all the ids.
+// A quiz attempt can only be created if there is the a known user (userid)
+// doing a particular quiz (quizid) at a given time (quizSessionId). They
+// would then be attempting to do a question (responseId, questionId)
 interface QuizAttemptResponse {
     responseId: string;
     quizId: string;
     questionId: string;
     quizSessionId: string;
+    userId: string;
 }
 
 export interface AnswerResponse extends QuizAttemptResponse {

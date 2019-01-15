@@ -157,6 +157,7 @@ export interface IQuizSchedule extends Document {
 export interface IChatMessage extends Document {
   userId?: OID;
   content: string;
+  timeStamp: Date;
 }
 
 // A chat group contains multiple people talking.

@@ -14,7 +14,7 @@ import { ChatMessage } from "../../chat/ChatMessage";
 import { ChatGroupFormationLoop } from "../../chat/ChatGroupFormationLoop";
 import { ResponseService } from "../../../services/ResponseService";
 import { ChatGroupService } from "../../../services/ChatGroupService";
-import { IChatGroup } from "../../../../common/interfaces/DBSchema";
+import { IChatGroup, IChatMessage } from "../../../../common/interfaces/DBSchema";
 import { SocketSession } from "../SocketSession";
 
 const CLIENT_INDEX_OFFSET = 1;
@@ -79,7 +79,7 @@ export class ChatEndpoint extends WSEndpoint {
                 };
 
                 chatGroupService.createChatGroup(chatGroup).then((groupId) => {
-                    // Instantiate the croup
+                    // Instantiate the group
                     SocketSession.CreateGroup(groupId)
 
                     // Grab the associated sockets and emit
@@ -162,8 +162,6 @@ export class ChatEndpoint extends WSEndpoint {
             const sock = socketSession.getSocket();
 
             if (sock) {
-                // TODO fix the indexes
-                const clientIndex = chatGroup.quizSessionIds!.findIndex((sessionId) => { return data.quizSessionId === sessionId});
 
                 const chatGroupTyping: IWSToClientData.ChatGroupTypingNotification = {
                     clientIndicies: SocketSession.GetTypingStatesForGroup(data.groupId)
@@ -224,6 +222,8 @@ export class ChatEndpoint extends WSEndpoint {
                 console.error("Could not retrieve sock");
             }
         });
+
+        chatGroupService.appendChatMessageToGroup(chatGroup, data.message, data.userId);
     }
 
 
