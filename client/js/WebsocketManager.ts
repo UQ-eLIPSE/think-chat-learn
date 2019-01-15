@@ -1,5 +1,4 @@
 import * as socket from "socket.io-client";
-
 import { PacSeqSocket_Client } from "../../common/js/PacSeqSocket_Client";
 
 import { Conf } from "../config/Conf";

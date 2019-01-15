@@ -50,7 +50,7 @@ export interface BackupClientStatusRequest extends QuizAttemptResponse { }
 export interface BackupClientTransferConfirm extends QuizAttemptResponse { }
 
 export interface SurveyResponse extends QuizAttemptResponse {
-    content: ToServerData.SurveyResponse_Content[]
+    content: ToServerData.SurveyResponse_Content[];
 }
 
 export interface TerminateSessions {

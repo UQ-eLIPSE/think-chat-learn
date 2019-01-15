@@ -167,12 +167,12 @@ enum Progress {
   COMPLETE = "complete",
   IN_PROGRESS = "in-progress",
   TO_DO = "to-do"
-};
+}
 
 interface Steps {
   title: string;
-  status: Progress
-};
+  status: Progress;
+}
 
 @Component({})
 export default class Stepper extends Vue {
@@ -197,40 +197,40 @@ export default class Stepper extends Vue {
   /**
    * Computation of the steps is simply a matter of grabbing the quizzes
    * for the titles and then checking the current index for progression.
-   * 
-   * Note that suppose the index was 3, then it is assumed that indices 
+   *
+   * Note that suppose the index was 3, then it is assumed that indices
    * 2 and 1 are completed.
    */
-  get steps(): Steps[]{
+  get steps(): Steps[] {
     if (!this.quiz|| !this.quiz.pages) {
       return [];
     } else {
       // This is the initial quiz pages
-      const arr = this.quiz.pages.reduce((arr: Steps[], element, index) => {
+      const arr = this.quiz.pages.reduce((steps: Steps[], element, index) => {
 
         let status: Progress;
 
         status = this.computeStatus(this.currentIndex, index);
 
-        const output : Steps = {
+        const output: Steps = {
           title: element.title,
           status
         };
 
-        arr.push(output);
-        return arr;
+        steps.push(output);
+        return steps;
       }, []);
 
       // Always form the computation of reflection and receipt
       const reflection: Steps = {
         title: "Reflection",
         status: this.computeStatus(this.currentIndex, this.quiz.pages.length + this.REFLECTION_OFFSET)
-      }
+      };
 
       const receipt: Steps = {
         title: "Receipt",
         status: this.computeStatus(this.currentIndex, this.quiz.pages.length + this.RECEIPT_OFFSET)
-      }
+      };
 
       arr.push(reflection);
       arr.push(receipt);
@@ -253,7 +253,7 @@ export default class Stepper extends Vue {
     if (benchmark === index) {
       status = Progress.IN_PROGRESS;
     } else if (benchmark < index) {
-      status = Progress.COMPLETE
+      status = Progress.COMPLETE;
     } else {
       status = Progress.TO_DO;
     }

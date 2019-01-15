@@ -28,9 +28,12 @@
         <button class="primary" @click="sendResponse()">Submit</button>
       </div>
       <!-- An info page only needs a next page -->
-      <div class="column pane2" v-if="page.type === PageType.INFO_PAGE">
+      <div class="column pane2" v-else-if="page.type === PageType.INFO_PAGE">
         <button class="primary" @click="goToNextPage()">Go To Next Page</button>
       </div>
+      <!-- Handle Chat Page data -->
+      <div class="column pane2" v-else-if="page.type === PageType.DISCUSSION_PAGE">
+      </div> 
     </div>
   </div>
 </template>
@@ -58,10 +61,16 @@
 </style>
 
 <script lang="ts">
-import { Vue, Component } from "vue-property-decorator";
+import { Vue, Component, Watch } from "vue-property-decorator";
 import Confidence from "../components/Confidence.vue";
-import { IQuiz, Page, Response, TypeQuestion, IQuizSession } from "../../../common/interfaces/ToClientData";
+import { IQuiz, Page, Response, TypeQuestion,
+  IQuizSession, IUserSession } from "../../../common/interfaces/ToClientData";
 import { PageType, QuestionType } from "../../../common/enums/DBEnums";
+import { SocketState } from "../interfaces";
+import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
+import * as IWSToServerData from "../../../common/interfaces/IWSToServerData";
+import { WebsocketEvents } from "../../js/WebsocketEvents";
+import { WebsocketManager } from "../../js/WebsocketManager";
 
 @Component({
   components: {
@@ -113,6 +122,16 @@ export default class MoocChatPage extends Vue {
     }
   }
 
+  // Gets the current page type, used for watching. Returns null if
+  // no page exists
+  get currentPageType(): PageType | null {
+    if (!this.page) {
+      return null;
+    }
+
+    return this.page.type;
+  }
+
   get question(): TypeQuestion | null {
     if (!this.page || this.page.type !== PageType.QUESTION_ANSWER_PAGE) {
       return null;
@@ -121,13 +140,44 @@ export default class MoocChatPage extends Vue {
     return this.$store.getters.getQuestionById(this.page.questionId);
   }
 
+  get socketState(): SocketState| null {
+    return this.$store.getters.socketState;
+  }
+
+  get socket(): WebsocketManager | null {
+    return this.socketState && this.socketState.socket ? this.socketState.socket : null;
+  }
+
+  // Empty should be default behaviour if no socket state is present
+  get chatMessages(): IWSToClientData.ChatGroupMessage[] {
+    return this.socketState ? this.socketState.chatMessages : [];
+  }
+
+  get chatGroup(): IWSToClientData.ChatGroupFormed | null {
+    return this.socketState && this.socketState.chatGroupFormed ? this.socketState.chatGroupFormed : null;
+  }
+
+  get typingNotifications(): IWSToClientData.ChatGroupTypingNotification | null {
+    return this.socketState && this.socketState.chatTypingNotifications ?
+      this.socketState.chatTypingNotifications : null;
+  }
+
+  get response(): Response | null {
+    return this.$store.getters.response;
+  }
+
+  get userSession(): IUserSession | null {
+    return this.$store.getters.userSession;
+  }
+
   private handleConfidenceChange(confidenceValue: number) {
     this.confidence = confidenceValue;
   }
 
   private sendResponse() {
     // If there is no question, don't run
-    if (!this.question || !this.question._id || !this.quiz || !this.quiz._id || !this.quizSession || !this.quizSession._id) {
+    if (!this.question || !this.question._id || !this.quiz ||
+      !this.quiz._id || !this.quizSession || !this.quizSession._id) {
       return;
     }
 
@@ -172,7 +222,43 @@ export default class MoocChatPage extends Vue {
     if (this.currentIndex + 1 > this.quiz.pages.length) {
       this.$router.push("/reflection");
     }
+  }
 
+  // If this page becomes a discussion page, handles the instantiation of the sockets and the sessions in the db
+  @Watch("currentPageType")
+  private handlePageTypeChange(newVal: PageType | null, oldVal: PageType | null) {
+    if (newVal && newVal === PageType.DISCUSSION_PAGE) {
+
+      if (!this.quiz || !this.userSession) {
+        console.log("Missing quiz or user session");
+        return;
+      }
+
+      const outgoingQuizSession: IQuizSession = {
+          quizId: this.quiz!._id,
+          userSessionId: this.userSession!._id,
+          responses: []
+      };
+
+      this.emitJoinRequest(() => {
+        return;
+      });
+    }
+  }
+
+  // Sends a join request to the server. Once completed, runs the callback to instantiate an actual textbox
+  private emitJoinRequest(callback: (data?: IWSToClientData.ChatGroupFormed) => void) {
+      if (!this.socketState || !this.quiz || !this.socketState.socket
+        || !this.quizSession || !this.response || !this.quiz.pages || !this.quizSession._id || !this.response._id) {
+          throw Error("Sent a join request without a socket or quiz");
+      }
+
+      this.socket!.emitData<IWSToServerData.ChatGroupJoin>(WebsocketEvents.OUTBOUND.CHAT_GROUP_JOIN_REQUEST, {
+          quizId: this.quiz._id!,
+          questionId: this.quiz!.pages![0]._id!,
+          quizSessionId: this.quizSession!._id!,
+          responseId: this.response!._id!
+      });
   }
 }
 </script>

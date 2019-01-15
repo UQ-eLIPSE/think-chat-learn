@@ -45,8 +45,8 @@ export default class Confidence extends Vue {
   private confidence: number | undefined = 1;
 
   @Watch("confidence")
-  onConfidenceChange(_value: number, _oldValue: number) {
-    this.$emit(EmitterEvents.CONFIDENCE_CHANGE, _value);
+  private onConfidenceChange(value: number, oldValue: number) {
+    this.$emit(EmitterEvents.CONFIDENCE_CHANGE, value);
   }
 }
 </script>

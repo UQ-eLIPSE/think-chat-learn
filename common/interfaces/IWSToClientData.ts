@@ -73,4 +73,3 @@ export interface BackupClientQueueUpdate {
 export interface LogoutSuccess {
     sessionId: string;
 }
-    

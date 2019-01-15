@@ -30,7 +30,7 @@ export default class Login extends Vue {
           course: response.courseId,
           startTime: (new Date()).toString(),
           role: LTIRoles.STUDENT
-      }
+      };
 
       await this.$store.dispatch("createSession", session);
       this.$router.push("/");

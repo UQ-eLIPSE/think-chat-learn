@@ -17,6 +17,8 @@ import { ChatGroupService } from "../../../services/ChatGroupService";
 import { IChatGroup } from "../../../../common/interfaces/DBSchema";
 import { SocketSession } from "../SocketSession";
 
+const CLIENT_INDEX_OFFSET = 1;
+
 export class ChatEndpoint extends WSEndpoint {
     private static async HandleJoinRequest(socket: PacSeqSocket_Server, data: IWSToServerData.ChatGroupJoin, responseService: ResponseService,
         chatGroupService: ChatGroupService) {
@@ -90,10 +92,11 @@ export class ChatEndpoint extends WSEndpoint {
                         if (maybeSession) {
                             const socket = maybeSession.getSocket();
                             if (socket) {
-                                // TODO fix the hard code answers and client index
                                 // Client index is based on position in the group chat
                                 // Also note chatgroup was the one formed just then
-                                const clientIndex = chatGroup.quizSessionIds!.findIndex((sessionId) => { return element.quizSessionId === sessionId});
+                                const clientIndex = chatGroup.quizSessionIds!.findIndex((sessionId) => { 
+                                    return element.quizSessionId === sessionId;
+                                }) + CLIENT_INDEX_OFFSET;
                                 
 
                                 socket.emit("chatGroupFormed", {
@@ -207,7 +210,9 @@ export class ChatEndpoint extends WSEndpoint {
 
             if (sock) {
                 // TODO fix the indexes
-                const clientIndex = chatGroup.quizSessionIds!.findIndex((sessionId) => { return data.quizSessionId === sessionId});
+                const clientIndex = chatGroup.quizSessionIds!.findIndex((sessionId) => { 
+                    return data.quizSessionId === sessionId
+                }) + CLIENT_INDEX_OFFSET;
 
                 const chatGroupMessage: IWSToClientData.ChatGroupMessage = {
                     message: data.message,

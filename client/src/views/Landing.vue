@@ -63,6 +63,11 @@
 import { Vue, Component } from "vue-property-decorator";
 import { IUser, IQuiz, IQuizSession, IUserSession } from "../../../common/interfaces/ToClientData";
 import OverviewContainer from "../components/OverviewContainer.vue";
+import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
+import * as IWSToServerData from "../../../common/interfaces/IWSToServerData";
+import { SocketState } from "../interfaces";
+import { WebsocketManager } from "../../js/WebsocketManager";
+import { WebsocketEvents } from "../../js/WebsocketEvents";
 
 @Component({
   components: {
@@ -78,22 +83,46 @@ export default class Landing extends Vue {
     return this.$store.getters.quiz;
   }
 
+  get quizSession(): IQuizSession | null {
+    return this.$store.getters.quizSession;
+  }
+
   get userSession(): IUserSession | null {
     return this.$store.getters.userSession;
   }
 
+  get socketState(): SocketState {
+    return this.$store.getters.socketState;
+  }
+
+  get socket(): WebsocketManager | null {
+    return this.socketState && this.socketState.socket ? this.socketState.socket : null;
+  }
+
+
   private startQuizSession() {
+    if (!this.quiz || !this.userSession) {
+      return;
+    }
+
     const outgoingQuizSession: IQuizSession = {
         quizId: this.quiz!._id,
         userSessionId: this.userSession!._id,
         responses: []
-    }
+    };
 
     this.$store.dispatch("createQuizSession", outgoingQuizSession).then(() => {
+      this.socket!.emitData<IWSToServerData.StoreSession>(WebsocketEvents.OUTBOUND.STORE_QUIZ_SESSION_SOCKET, {
+        quizSessionId: this.quizSession!._id!
+      });
       this.$router.push("/page");
     }).catch((e: Error) => {
-      console.error(e);
+      console.log(e);
     });
+  }
+
+  private mounted() {
+    this.$store.dispatch("createSocket");
   }
 }
 </script>

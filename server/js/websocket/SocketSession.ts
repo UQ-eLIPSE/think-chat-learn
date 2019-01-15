@@ -52,8 +52,9 @@ export class SocketSession {
         if (socket && socketArray) {
             if (socketArray.findIndex((element) => element === socket) === -1) {
                 socketArray.push(socket);
+            } else {
+                console.error(`Attempted to add duplicate socket in array GroupId: ${groupId}, SessionId: ${quizSession}`);
             }
-            console.error(`Attempted to add duplicate socket in array GroupId: ${groupId}, SessionId: ${quizSession}`);
         } else {
             console.error(`Invalid socket with session id ${quizSession}`);
         }
