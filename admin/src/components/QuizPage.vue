@@ -49,7 +49,7 @@
       <!-- TODO make this a proper select box once Questions and Answers are implemented -->
       <select
         v-model="page.questionId"
-        v-if="page.type === PageType.QUESTION_ANSWER_PAGE"
+        v-if="(page.type === PageType.QUESTION_ANSWER_PAGE) || (page.type === PageType.DISCUSSION_PAGE)"
       >
         <option v-for="question in questions" :key="question._id" :value="question._id">{{question.title}}</option>
       </select>
@@ -168,7 +168,8 @@ export default class QuizPage extends Vue {
           outgoingPages.push({
             title: element.title,
             content: element.content,
-            type: element.type
+            type: element.type,
+            questionId: element.questionId
           });
           break;
         case PageType.INFO_PAGE:

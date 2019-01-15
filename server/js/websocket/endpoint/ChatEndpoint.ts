@@ -78,6 +78,11 @@ export class ChatEndpoint extends WSEndpoint {
                     questionId: output[0].questionId
                 };
 
+                const clientIndexDict: {[key: string]: number} = chatGroup.quizSessionIds!.reduce((acc: {[key: string]: number}, currentId, index) => {
+                    acc[currentId] = index + CLIENT_INDEX_OFFSET;
+                    return acc;
+                }, {});
+
                 chatGroupService.createChatGroup(chatGroup).then((groupId) => {
                     // Instantiate the group
                     SocketSession.CreateGroup(groupId)
@@ -94,15 +99,26 @@ export class ChatEndpoint extends WSEndpoint {
                             if (socket) {
                                 // Client index is based on position in the group chat
                                 // Also note chatgroup was the one formed just then
-                                const clientIndex = chatGroup.quizSessionIds!.findIndex((sessionId) => { 
-                                    return element.quizSessionId === sessionId;
-                                }) + CLIENT_INDEX_OFFSET;
+                                const clientIndex = clientIndexDict[element.quizSessionId];
                                 
 
                                 socket.emit("chatGroupFormed", {
                                     groupId: groupId,
                                     groupSize: chatGroup.quizSessionIds!.length,
-                                    groupAnswers: [],
+                                    groupAnswers: output.reduce((acc: IWSToClientData.GroupAnswerDictionary, current) => {
+                                        const answer: IWSToClientData.ChatGroupAnswer = {
+                                            clientIndex: clientIndexDict[current.quizSessionId],
+                                            answer: current
+                                        }
+
+                                        // Instantiate the array, else append if the question does not exist already
+                                        if (!acc[current.questionId!]) {
+                                            acc[current.questionId!] = [answer];
+                                        } else {
+                                            acc[current.questionId].push(answer);
+                                        }
+                                        return acc;
+                                    }, {}),
                                     clientIndex })
                             } else {
                                 console.error("no socket");

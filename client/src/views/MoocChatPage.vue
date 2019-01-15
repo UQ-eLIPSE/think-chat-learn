@@ -32,7 +32,11 @@
         <button class="primary" @click="goToNextPage()">Go To Next Page</button>
       </div>
       <!-- Handle Chat Page data -->
-      <div class="column pane2" v-else-if="page.type === PageType.DISCUSSION_PAGE">
+      <div class="column pane2" v-else-if="page.type === PageType.DISCUSSION_PAGE && chatGroup">
+        <!-- Note a lot of things have to be done to get here -->
+        <div v-for="answer in chatGroup.groupAnswers[question._id]" class="content" :key="answer._id">
+          {{`Client ${answer.clientIndex} wrote this: ${answer.answer.content} with a confidence of ${answer.answer.confidence}`}}
+        </div>
       </div> 
     </div>
   </div>
@@ -138,7 +142,7 @@ export default class MoocChatPage extends Vue {
   }
 
   get question(): TypeQuestion | null {
-    if (!this.page || this.page.type !== PageType.QUESTION_ANSWER_PAGE) {
+    if (!this.page || !((this.page.type === PageType.QUESTION_ANSWER_PAGE) || (this.page.type === PageType.DISCUSSION_PAGE))) {
       return null;
     }
 
@@ -260,7 +264,7 @@ export default class MoocChatPage extends Vue {
 
       this.socket!.emitData<IWSToServerData.ChatGroupJoin>(WebsocketEvents.OUTBOUND.CHAT_GROUP_JOIN_REQUEST, {
           quizId: this.quiz._id!,
-          questionId: this.quiz!.pages![0]._id!,
+          questionId: this.question!._id!,
           quizSessionId: this.quizSession!._id!,
           responseId: this.response!._id!,
           userId: this.user!._id!

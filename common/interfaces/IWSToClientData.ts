@@ -6,15 +6,13 @@ interface SuccessState {
     success: boolean;
 }
 
-interface ChatGroupAnswer {
+// Index is needed to show that user X has done Y
+export interface ChatGroupAnswer {
     clientIndex: number;
-    answer: {
-        _id?: string;
-        justification: string;
-        optionId: string;
-    };
+    answer: ToClientData.Response;
 }
 
+export type GroupAnswerDictionary = {[questionId: string] :ChatGroupAnswer[]};
 
 // Inbound data interfaces
 export interface LoginSuccess {
@@ -33,7 +31,9 @@ export interface LoginExistingUser {
 export interface ChatGroupFormed {
     groupId: string;
     groupSize: number;
-    groupAnswers: ChatGroupAnswer[];
+    // Note that the key is the question for the answer array
+    // i.e. a group can have multiple answers for muliple questions.
+    groupAnswers: GroupAnswerDictionary;
     clientIndex: number;
 }
 export interface ChatGroupMessage {

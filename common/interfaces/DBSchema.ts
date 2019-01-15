@@ -121,11 +121,11 @@ export interface IPage extends Document {
     content: string;
 }
 
-// As of now, the existence of type indicates
-// a particular set of chat boxes, could also
-// link to a question if necessary but content should be enough
+// A discussion page needs a question id so
+// that the user's responses can be displayed on the client side
 export interface IDiscussionPage extends IPage {
   type: PageType.DISCUSSION_PAGE;
+  questionId: string;
 }
 
 // Contains a linkage to a question/prompt which could be used
