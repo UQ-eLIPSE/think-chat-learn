@@ -1,11 +1,6 @@
 <template>
   <header>
-    <img
-      class="nav-item moochat-logo"
-      alt="MOOCchat"
-      src="../../public/moocchat-logo.svg"
-      title="MOOCchat"
-    />
+    <div class="nav-item logo"><span class="logo-bold">MOOC</span>chat</div>
     <div class="nav-item course-name">
       {{ user ? user.username : "No User" }}
     </div>
@@ -28,6 +23,7 @@
 
 <style lang="scss" scoped>
 @import "../../css/variables.scss";
+@import url("https://fonts.googleapis.com/css?family=Lato");
 
 header {
   align-items: center;
@@ -37,6 +33,17 @@ header {
   left: 0;
   padding: 1.5em 3em;
   width: 100%;
+
+  .logo {
+    color: #225566;
+    font-family: "Lato", sans-serif;
+    font-size: 1.825em !important;
+    font-weight: 500 !important;
+
+    .logo-bold {
+      font-weight: 700 !important;
+    }
+  }
 
   .nav-item {
     font-size: 20px;
