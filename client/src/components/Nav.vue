@@ -15,10 +15,7 @@
         }}
       </span>
       <span>
-        <a
-          @click="toggleChat = !toggleChat"
-          style="color: black"
-        >
+        <a @click="toggleChat = !toggleChat">
           <font-awesome-icon icon="comment" />
         </a>
         <transition name="slide">
@@ -30,9 +27,11 @@
 </template>
 
 <style lang="scss" scoped>
+@import "../../css/variables.scss";
+
 header {
   align-items: center;
-  background-color: white;
+  background-color: $white;
   display: flex;
   height: 75px;
   left: 0;
@@ -42,8 +41,18 @@ header {
   .nav-item {
     font-size: 20px;
     font-weight: 600;
+
+    a > svg.fa-comment {
+      color: $tertiaryBg;
+      margin-left: 15px;
+
+      &:hover {
+        color: $text;
+      }
+    }
+
     &.user-name {
-      color: #005151;
+      color: $primary;
     }
     &:first-child {
       margin-right: auto;

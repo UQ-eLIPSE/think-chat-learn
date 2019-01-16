@@ -25,8 +25,10 @@
 </template>
 
 <style lang="scss" scoped>
+@import "../../css/variables.scss";
+
 footer {
-  background-color: #005151;
+  background-color: $primary;
   width: 100%;
   padding: 1.5em 0;
 
@@ -39,6 +41,7 @@ footer {
     width: 10.625em;
     &:last-child {
       float: right;
+      width: 8em;
     }
   }
 }

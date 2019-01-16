@@ -12,6 +12,8 @@
 </template>
 
 <style lang="scss" scoped>
+@import "../../css/variables.scss";
+
 .overviewContainer {
   margin-right: 2em;
   .overview {
@@ -31,7 +33,7 @@
     }
 
     h2 {
-      color: #005151;
+      color: $primary;
       font-size: 1.75em;
       font-weight: 600;
     }
@@ -40,12 +42,6 @@
       li {
         color: #515456;
         font-size: 19px;
-      }
-      li::before {
-        content: "•";
-        color: #869b03;
-        height: 20px;
-        width: 20px;
       }
     }
   }

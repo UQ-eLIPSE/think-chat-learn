@@ -1,10 +1,13 @@
 <template>
   <div class="chat-alert">
-    <label :class="alertType">{{ alertMessage }}</label>
+    <label :class="alertType">
+      <font-awesome-icon icon="exclamation-circle" /> {{ alertMessage }}</label>
   </div>
 </template>
 
 <style lang="scss" scoped>
+@import "../../../css/variables.scss";
+
 .chat-alert {
   margin-bottom: 10px;
   label {
@@ -15,13 +18,13 @@
     padding: 10px;
     &.standard {
       background-color: rgba(96, 175, 161, 0.15);
-      border: 1px solid #60afa1;
-      color: #60afa1;
+      border: 1px solid $baseDark1;
+      color: $baseDark1;
     }
     &.warning {
       background-color: rgba(253, 117, 88, 0.15);
-      border: 1px solid #e26a51;
-      color: #e26a51;
+      border: 1px solid $baseDark4;
+      color: $baseDark4;
     }
   }
 }

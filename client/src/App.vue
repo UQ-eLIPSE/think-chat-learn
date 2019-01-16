@@ -2,7 +2,7 @@
   <div id="app">
     <Nav />
     <section>
-      <Stepper />
+      <Stepper steps=5 />
       <div class="content-container">
         <router-view class="router-panel" />
       </div>
@@ -12,8 +12,11 @@
 </template>
 
 <style lang="scss">
+@import url("https://fonts.googleapis.com/css?family=Open+Sans");
+@import "../css/variables.scss";
+
 body {
-  background-color: #fff;
+  background-color: $white;
   font-family: "Open Sans", sans-serif !important;
   margin: 0;
   text-rendering: optimizeLegibility;
@@ -33,7 +36,7 @@ body {
   }
 
   h1 {
-    color: #005151;
+    color: $primary;
     font-size: 2.25em;
     font-weight: 600;
     line-height: 45px;
@@ -41,14 +44,14 @@ body {
   }
 
   h2 {
-    color: #005151;
+    color: $primary;
     font-size: 1.75em;
     font-weight: 600;
     margin-bottom: 0.5em;
   }
 
   h3 {
-    color: #005151;
+    color: $primary;
     font-size: 1.25em;
     font-weight: 600;
     margin-bottom: 0.5em;
@@ -57,7 +60,7 @@ body {
   button {
     border: none;
     border-radius: 5px;
-    color: #fff;
+    color: $white;
     cursor: pointer;
     font-family: "Open Sans", sans-serif;
     font-size: 1.4em;
@@ -66,23 +69,30 @@ body {
     min-width: 215px;
     margin-right: 1em;
     padding: 0 30px;
+
     &:hover {
     }
+
     &.primary {
-      background-color: #225566;
+      background-color: $primary;
+
+      &:hover {
+      }
     }
+
     &.secondary {
-      background-color: #fead00;
+      background-color: $baseLight3;
       height: 40px;
       width: 100%;
     }
   }
   section {
-    background-color: #f9fbfc;
+    background-color: $mainBg;
     height: 100%;
+    overflow: hidden;
 
     .content-container {
-      background-color: white;
+      background-color: $white;
       border-radius: 5px;
       bottom: 0;
       box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.15);
@@ -94,22 +104,22 @@ body {
 
   // Buefy overrides
   .b-radio.radio input[type="radio"]:checked + .check {
-    border-color: #fead00;
+    border-color: $baseLight3;
   }
   .b-radio.radio input[type="radio"] + .check:before {
-    background: #fead00;
+    background: $baseLight3;
   }
   .b-radio.radio input[type="radio"] + .check:hover {
-    border: 2px solid #fead00;
+    border: 2px solid $baseLight3;
   }
   .b-radio.radio:hover input[type="radio"] + .check {
-    border-color: #fead00;
+    border-color: $baseLight3;
   }
   .textarea:focus,
   .textarea.is-focused,
   .textarea:active,
   .textarea.is-active {
-    border-color: #fead00;
+    border-color: $baseLight3;
     box-shadow: 0 0 0 0.125em rgba(254, 173, 0, 0.25);
   }
   .switch:focus input[type="checkbox"]:checked + .check {
@@ -119,15 +129,15 @@ body {
     background: rgba(254, 173, 0, 0.9);
   }
   .switch input[type="checkbox"]:checked + .check {
-    background: #fead00;
+    background: $baseLight3;
   }
 
   // Countdown Timer styling
   .vuejs-countdown {
     background-color: rgba(96, 175, 161, 0.1);
-    border: 3px solid #60afa1;
+    border: 3px solid $baseDark1;
     border-radius: 5px;
-    color: #60afa1;
+    color: $baseDark1;
     font-size: 20px;
     height: 50px;
     margin: 0 auto;

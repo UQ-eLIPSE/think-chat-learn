@@ -7,15 +7,26 @@ import "buefy/dist/buefy.css";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import {
   faChalkboard,
+  faCircle,
   faCheck,
   faComment,
+  faExclamationCircle,
   faPrint,
   faRedoAlt,
   faStar
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
-library.add(faChalkboard, faCheck, faComment, faPrint, faRedoAlt, faStar);
+library.add(
+  faChalkboard,
+  faCircle,
+  faCheck,
+  faComment,
+  faExclamationCircle,
+  faPrint,
+  faRedoAlt,
+  faStar
+);
 
 Vue.use(Buefy);
 Vue.component("font-awesome-icon", FontAwesomeIcon);
@@ -24,5 +35,5 @@ Vue.config.productionTip = false;
 new Vue({
   router,
   store,
-  render: h => h(App)
+  render: (h) => h(App)
 }).$mount("#app");

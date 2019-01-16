@@ -23,13 +23,15 @@
 </template>
 
 <style lang="scss" scoped>
+@import "../../css/variables.scss";
+
 .container {
   padding: 4em 0;
   label.attempt {
     background-color: rgba(254, 173, 0, 0.1);
-    border: 3px solid #fead00;
+    border: 3px solid $baseLight3;
     border-radius: 10px;
-    color: #fead00;
+    color: $baseLight3;
     display: inline-block;
     font-size: 1.5em;
     margin-top: 1.5em;
@@ -38,7 +40,7 @@
   .content {
     margin: 3em 0;
     p {
-      color: #515456;
+      color: $text;
       font-size: 1.25em;
     }
   }

@@ -22,7 +22,7 @@
       />
       <ChatMessage
         numeral="4"
-        content="Woohoo"
+        content="is typing..."
       />
       <ChatMessage
         numeral="2"
@@ -58,8 +58,11 @@
 </template>
 
 <style lang="scss" scoped>
+@import "../../../css/variables.scss";
+
 .chat {
   background-color: #f7f8f8;
+  box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.15);
   height: 86%;
   position: absolute;
   right: 0;
@@ -74,7 +77,7 @@
   }
 
   .input-container {
-    background-color: #fff;
+    background-color: $white;
     height: 14%;
     position: absolute;
     bottom: 0;

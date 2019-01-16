@@ -7,6 +7,8 @@
 </template>
 
 <style lang="scss" scoped>
+@import "../../css/variables.scss";
+
 .spinner {
   float: right;
 }
@@ -14,7 +16,7 @@
 .spinner > div {
   width: 10px;
   height: 10px;
-  background-color: #a9aaab;
+  background-color: $tertiaryBg;
 
   border-radius: 100%;
   display: inline-block;
