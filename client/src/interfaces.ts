@@ -32,3 +32,11 @@ export interface StateMessage extends Message {
     state: MoocChatStateMessageTypes;
 }
 
+export interface TimerSettings {
+    referencedPageId: string;
+    timeoutInMins: number;
+}
+
+export interface Dictionary<T> {
+    [key: string]: T;
+}

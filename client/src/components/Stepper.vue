@@ -202,7 +202,7 @@ export default class Stepper extends Vue {
    * 2 and 1 are completed.
    */
   get steps(): Steps[] {
-    if (!this.quiz|| !this.quiz.pages) {
+    if (!this.quiz || !this.quiz.pages) {
       return [];
     } else {
       // This is the initial quiz pages

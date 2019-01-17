@@ -37,18 +37,19 @@
 </style>
 
 <script lang="ts">
-import { Vue, Component } from "vue-property-decorator";
+import { Vue, Component, Prop } from "vue-property-decorator";
 import * as IWSToServerData from "../../../../common/interfaces/IWSToServerData";
 import * as IWSToClientData from "../../../../common/interfaces/IWSToClientData";
-import { IQuizSession, IQuiz, Response } from "../../../../common/interfaces/ToClientData";
+import { IQuizSession, IQuiz, Response, IUser, IDiscussionPage, TypeQuestion } from "../../../../common/interfaces/ToClientData";
 import { WebsocketManager } from "../../../js/WebsocketManager";
 import { WebsocketEvents } from "../../../js/WebsocketEvents";
-import { SocketState } from "../../interfaces";
-import { IUser } from "../../../../common/interfaces/DBSchema";
+import { SocketState, Dictionary } from "../../interfaces";
+import { PageType } from "../../../../common/enums/DBEnums";
 
 
 @Component({})
 export default class CreateChatMessage extends Vue {
+
   private loadedMessage: string = "";
 
   get user(): IUser | null {
@@ -63,8 +64,23 @@ export default class CreateChatMessage extends Vue {
     return this.$store.getters.quizSession;
   }
 
-  get response(): Response | null {
-    return this.$store.getters.response;
+  get responses(): Dictionary<Response> {
+    return this.$store.getters.responses;
+  }
+
+  get referredQuestion(): TypeQuestion {
+    return this.$store.getters.currentDiscussionQuestion;
+  }
+
+  // The referred response can be different to what the moochat page renders due to being
+  // able to be backtracked. Hence the referred response is based on what the chat group is
+  // pointing to
+  get referredResponse(): Response | null {
+    if (!this.referredQuestion) {
+      return null;
+    }
+
+    return this.responses[this.referredQuestion._id!];
   }
 
   get socketState(): SocketState {
@@ -80,7 +96,8 @@ export default class CreateChatMessage extends Vue {
   }
 
   get canType(): boolean {
-    if (!this.quiz || !this.quizSession || !this.response || !this.socket || !this.quizSession || !this.groupJoin) {
+    if (!this.quiz || !this.quizSession || !this.referredResponse || !this.socket ||
+      !this.quizSession || !this.groupJoin || !this.referredQuestion) {
       return false;
     }
     return true;
@@ -93,12 +110,8 @@ export default class CreateChatMessage extends Vue {
     if (this.canType) {
       const output: IWSToServerData.ChatGroupTypingNotification = {
         isTyping: state,
-        quizId: this.quiz!._id!,
-        questionId: this.quiz!.pages![0]._id!,
         quizSessionId: this.quizSession!._id!,
-        responseId: this.response!._id!,
-        groupId: this.groupJoin!.groupId!,
-        userId: this.user!._id!
+        groupId: this.groupJoin!.groupId!
       };
 
       this.socket!.emitData<IWSToServerData.ChatGroupTypingNotification>(
@@ -117,10 +130,8 @@ export default class CreateChatMessage extends Vue {
     const message: IWSToServerData.ChatGroupSendMessage = {
         message: this.loadedMessage,
         groupId: this.groupJoin!.groupId!,
-        quizId: this.quiz!._id!,
-        questionId: this.quiz!.pages![0]._id!,
+        questionId: this.referredQuestion!._id!,
         quizSessionId: this.quizSession!._id!,
-        responseId: this.response!._id!,
         userId: this.user!._id!
     };
 

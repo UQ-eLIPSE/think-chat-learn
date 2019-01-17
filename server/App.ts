@@ -31,6 +31,7 @@ import { QuestionController } from "./controllers/QuestionController";
 import { QuizController } from "./controllers/QuizController";
 import { UserSessionController } from "./controllers/UserSessionController";
 import { QuizSessionController } from "./controllers/QuizSessionController";
+import { ChatGroupController } from "./controllers/ChatGroupController";
 import { ResponseController } from "./controllers/ResponseController";
 
 export default class App {
@@ -66,6 +67,7 @@ export default class App {
     private userSessionController: UserSessionController;
     private quizSessionController: QuizSessionController
     private responseController: ResponseController;
+    private chatGroupController: ChatGroupController;
 
     // Socket io things
     private socketIO: SocketIO.Server;
@@ -117,6 +119,7 @@ export default class App {
         this.userSessionController = new UserSessionController(this.userSessionService);
         this.quizSessionController = new QuizSessionController(this.quizSessionService);
         this.responseController = new ResponseController(this.responseService);
+        this.chatGroupController = new ChatGroupController(this.chatGroupService);
 
         this.userController.setupRoutes();
         this.quizController.setupRoutes();
@@ -124,6 +127,7 @@ export default class App {
         this.userSessionController.setupRoutes();
         this.quizSessionController.setupRoutes();
         this.responseController.setupRoutes();
+        this.chatGroupController.setupRoutes();
     }
 
     private setupSockets(): void {
@@ -227,6 +231,7 @@ export default class App {
         this.express.use("/usersession", this.userSessionController.getRouter());
         this.express.use("/quizsession", this.quizSessionController.getRouter());
         this.express.use("/response", this.responseController.getRouter());
+        this.express.use("/chatgroup", this.chatGroupController.getRouter());
     }
 
     // Only login gets affected

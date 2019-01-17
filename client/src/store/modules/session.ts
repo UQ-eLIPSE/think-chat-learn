@@ -1,6 +1,6 @@
 import Vue from "vue";
 import { Commit } from "vuex";
-import { IUserSession, IQuizSession, Response } from "../../../../common/interfaces/ToClientData";
+import { IUserSession, IQuizSession, Response, TypeQuestion } from "../../../../common/interfaces/ToClientData";
 import API from "../../../../common/js/DB_API";
 
 // Websocket interfaces
@@ -9,21 +9,26 @@ import * as IWSToClientData from "../../../../common/interfaces/IWSToClientData"
 import * as IWSToServerData from "../../../../common/interfaces/IWSToServerData";
 import { WebsocketManager } from "../../../js/WebsocketManager";
 import { WebsocketEvents } from "../../../js/WebsocketEvents";
-import { SocketState, MoocChatMessage, ChatMessage, StateMessage } from "../../interfaces";
+import { SocketState, MoocChatMessage, ChatMessage, StateMessage, Dictionary } from "../../interfaces";
 import { MoocChatMessageTypes, MoocChatStateMessageTypes } from "../../enums";
 
 export interface IState {
     quizSession: IQuizSession | null;
-    response: Response | null;
+    // Note the key of this dictionary would be the questionid as we simply respond to one question
+    responses: Dictionary<Response>;
+    // The difference between the two indices is that the currentIndex is what should be
+    // rendered and max is what pages can be rendered
     currentIndex: number;
+    maxIndex: number;
     socketState: SocketState;
     chatMessages: MoocChatMessage[];
 }
 
 const state: IState = {
     quizSession: null,
-    response: null,
+    responses: {},
     currentIndex: 0,
+    maxIndex: 0,
     // Default socket state
     socketState: {
         chatMessages: [],
@@ -36,9 +41,10 @@ const state: IState = {
 
 const mutationKeys = {
     SET_QUIZ_SESSION: "Setting a quiz session",
-    SET_RESPONSE: "Setting a response",
-    INCREMENTING_INDEX: "Incrementing the index",
-    DECREMENTING_INDEX: "Decrementing the index",
+    ADD_RESPONSE: "Adding a response",
+    INCREMENTING_CURRENT_INDEX: "Incrementing the current index",
+    DECREMENTING_CURRENT_INDEX: "Decrementing the  current index",
+    INCREMENTING_MAX_INDEX: "Incrementing the max index",
     // Web socket mutations
     CREATE_SOCKET: "Creating the socket",
     CLOSE_SOCKET: "Closing the socket",
@@ -113,12 +119,16 @@ const getters = {
         return state.quizSession;
     },
 
-    response: (): Response | null => {
-        return state.response;
+    responses: (): Dictionary<Response> => {
+        return state.responses;
     },
 
     currentIndex: (): number => {
         return state.currentIndex;
+    },
+
+    maxIndex: (): number => {
+        return state.maxIndex;
     },
 
     socketState: (): SocketState | null => {
@@ -141,20 +151,28 @@ const actions = {
     sendResponse({ commit }: {commit: Commit}, response: Response) {
         return API.request(API.PUT, API.RESPONSE + "create", response).then((id: { outgoingId: string}) => {
             response._id = id.outgoingId;
-            commit(mutationKeys.SET_RESPONSE, response);
+            commit(mutationKeys.ADD_RESPONSE, response);
             return id;
         }).catch((e: Error) => {
             throw Error("Failed to send response");
         });
     },
 
-    incrementIndex({ commit }: {commit: Commit}) {
-        return commit(mutationKeys.INCREMENTING_INDEX);
+    incrementCurrentIndex({ commit }: {commit: Commit}) {
+        return commit(mutationKeys.INCREMENTING_CURRENT_INDEX);
+    },
+
+    decrementCurrentIndex({ commit }: {commit: Commit}) {
+        return commit(mutationKeys.DECREMENTING_CURRENT_INDEX);
+    },
+
+    incrementMaxIndex({ commit }: {commit: Commit}) {
+        return commit(mutationKeys.INCREMENTING_MAX_INDEX);
     },
 
     // The issue with creating the socket is that generally speaking you want to have
     // your components to react to a certain socket event. E.g. when a user writes
-    // a message, append to the chatbox. Hence we create an interface known as 
+    // a message, append to the chatbox. Hence we create an interface known as
     // socket_state which neatly tells the components what socket should be at
     createSocket({ commit }: {commit: Commit}) {
         return commit(mutationKeys.CREATE_SOCKET);
@@ -174,12 +192,20 @@ const mutations = {
         Vue.set(funcState, "quizSession", data);
     },
 
-    [mutationKeys.SET_RESPONSE](funcState: IState, data: Response) {
-        Vue.set(funcState, "response", data);
+    [mutationKeys.ADD_RESPONSE](funcState: IState, data: Response) {
+        Vue.set(funcState.responses, data.questionId, data);
     },
 
-    [mutationKeys.INCREMENTING_INDEX](funcState: IState) {
+    [mutationKeys.INCREMENTING_CURRENT_INDEX](funcState: IState) {
         Vue.set(funcState, "currentIndex", funcState.currentIndex + 1);
+    },
+
+    [mutationKeys.DECREMENTING_CURRENT_INDEX](funcState: IState) {
+        Vue.set(funcState, "currentIndex", funcState.currentIndex - 1);
+    },
+
+    [mutationKeys.INCREMENTING_MAX_INDEX](funcState: IState) {
+        Vue.set(funcState, "maxIndex", funcState.maxIndex + 1);
     },
 
     [mutationKeys.CREATE_SOCKET](funcState: IState) {

@@ -1,20 +1,24 @@
 import Vue from "vue";
 import { Commit } from "vuex";
-import { IQuiz, TypeQuestion } from "../../../../common/interfaces/ToClientData";
+import { IQuiz, TypeQuestion, IDiscussionPage } from "../../../../common/interfaces/ToClientData";
+import { PageType } from '../../../../common/enums/DBEnums';
 
 export interface IState {
     quiz: IQuiz | null;
     questions: TypeQuestion[];
+    currentDiscussionQuestion: TypeQuestion | null;
 }
 
 const state: IState = {
     quiz: null,
-    questions: []
+    questions: [],
+    currentDiscussionQuestion: null
 };
 
 const mutationKeys = {
     SET_QUIZ: "Setting a quiz",
-    SET_QUESTIONS: "Setting a question"
+    SET_QUESTIONS: "Setting a question",
+    SET_CURRENT_DISCUSSION: "Setting current discussion"
 };
 
 function getQuestionById(id: string): TypeQuestion | null {
@@ -36,6 +40,10 @@ const getters = {
 
     getQuestionById: () => {
         return getQuestionById;
+    },
+
+    currentDiscussionQuestion: (): TypeQuestion | null => {
+        return state.currentDiscussionQuestion;
     }
 };
 const actions = {
@@ -45,6 +53,13 @@ const actions = {
 
     setQuestions({ commit }: {commit: Commit}, questions: TypeQuestion[]) {
         return commit(mutationKeys.SET_QUESTIONS, questions);
+    },
+
+    updateCurrentDiscussion({ commit }: {commit: Commit}, index: number) {
+        if (state.quiz && state.quiz.pages && state.quiz.pages[index] &&
+            state.quiz.pages[index].type === PageType.DISCUSSION_PAGE) {
+            return commit(mutationKeys.SET_CURRENT_DISCUSSION, (state.quiz.pages[index] as IDiscussionPage).questionId);
+        }
     }
 };
 
@@ -55,6 +70,10 @@ const mutations = {
 
     [mutationKeys.SET_QUESTIONS](funcState: IState, data: TypeQuestion[]) {
         Vue.set(funcState, "questions", data);
+    },
+
+    [mutationKeys.SET_CURRENT_DISCUSSION](funcState: IState, id: string) {
+        Vue.set(funcState, "currentDiscussionQuestion", getQuestionById(id));
     }
 };
 

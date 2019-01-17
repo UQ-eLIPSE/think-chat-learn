@@ -6,38 +6,50 @@
         <div class="content" v-html="page.content"/>
       </div>
       <!-- For now only question answer pages have this -->
-      <div class="column pane2" v-if="page.type === PageType.QUESTION_ANSWER_PAGE">
-        <h2>Your Response</h2>
-        <b-field v-if="question">
-          <b-input
-            type="textarea"
-            minlength="10"
-            maxlength="500"
-            placeholder="Explain your response..."
-            v-model="responseContent"
-            v-if="question.type === QuestionType.QUALITATIVE"
-          >
-          </b-input>
-          <div v-else-if="QuestionType.MCQ === question.type">
-            <p v-for="option in question.options" :key="option._id">
-              {{option.content}}
-            </p>
-          </div>          
-        </b-field>
-        <Confidence @CONFIDENCE_CHANGE="handleConfidenceChange" />
-        <button class="primary" @click="sendResponse()">Submit</button>
-      </div>
-      <!-- An info page only needs a next page -->
-      <div class="column pane2" v-else-if="page.type === PageType.INFO_PAGE">
-        <button class="primary" @click="goToNextPage()">Go To Next Page</button>
-      </div>
-      <!-- Handle Chat Page data -->
-      <div class="column pane2" v-else-if="page.type === PageType.DISCUSSION_PAGE && chatGroup">
-        <!-- Note a lot of things have to be done to get here -->
-        <div v-for="answer in chatGroup.groupAnswers[question._id]" class="content" :key="answer._id">
-          {{`Client ${answer.clientIndex} wrote this: ${answer.answer.content} with a confidence of ${answer.answer.confidence}`}}
+      <div class="column pane2">
+        <div v-if="page.type === PageType.QUESTION_ANSWER_PAGE">
+          <h2>Your Response</h2>
+          <b-field v-if="question">
+            <template v-if="question.type === QuestionType.QUALITATIVE">
+              <b-input
+                v-if="currentResponse"
+                :disabled="true"
+                type="textarea"
+                minlength="10"
+                maxlength="500"
+                placeholder="Explain your response..."
+                v-model="currentResponse.content"
+              >
+              </b-input>
+              <b-input
+                v-else
+                type="textarea"
+                minlength="10"
+                maxlength="500"
+                placeholder="Explain your response..."
+                v-model="responseContent"
+              >
+              </b-input>
+            </template>
+            <div v-else-if="QuestionType.MCQ === question.type">
+              <p v-for="option in question.options" :key="option._id">
+                {{option.content}}
+              </p>
+            </div>          
+          </b-field>
+          <Confidence :currentResponse="currentResponse" @CONFIDENCE_CHANGE="handleConfidenceChange" />          
         </div>
-      </div> 
+        <!-- Handle Chat Page data -->
+        <div v-else-if="page.type === PageType.DISCUSSION_PAGE && chatGroup">
+          <!-- Note a lot of things have to be done to get here -->
+          <div v-for="answer in chatGroup.groupAnswers[question._id]" class="content" :key="answer._id">
+            {{`Client ${answer.clientIndex} wrote this: ${answer.answer.content} with a confidence of ${answer.answer.confidence}`}}
+          </div>
+        </div>
+        <button :class="[ !(currentIndex > 0) ? 'disabled' : '', 'primary']" :disabled="!(currentIndex > 0)" @click="goToPreviousPage()">Go To Previous Page</button>
+        <button :class="[ !(maxIndex > currentIndex) ? 'disabled' : '', 'primary']" :disabled="!(maxIndex > currentIndex)" @click="goToNextPage()">Go To Next Page</button>
+      </div>
+      <Timer @PAGE_TIMEOUT="handleTimeOut()" :timerSettings="pageTimeSettings"/>
     </div>
   </div>
 </template>
@@ -62,15 +74,20 @@
     }
   }
 }
+
+.disabled {
+  background-color: grey;
+}
 </style>
 
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator";
 import Confidence from "../components/Confidence.vue";
+import Timer from "../components/Timer/Timer.vue";
 import { IQuiz, Page, Response, TypeQuestion,
   IQuizSession, IUserSession } from "../../../common/interfaces/ToClientData";
 import { PageType, QuestionType } from "../../../common/enums/DBEnums";
-import { SocketState } from "../interfaces";
+import { SocketState, TimerSettings, Dictionary } from "../interfaces";
 import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
 import * as IWSToServerData from "../../../common/interfaces/IWSToServerData";
 import { WebsocketEvents } from "../../js/WebsocketEvents";
@@ -79,7 +96,8 @@ import { IUser } from "../../../common/interfaces/DBSchema";
 
 @Component({
   components: {
-    Confidence
+    Confidence,
+    Timer
   }
 })
 export default class MoocChatPage extends Vue {
@@ -112,6 +130,10 @@ export default class MoocChatPage extends Vue {
     return this.$store.getters.currentIndex;
   }
 
+  get maxIndex(): number {
+    return this.$store.getters.maxIndex;
+  }
+
   get quiz(): IQuiz | null {
     const quiz = this.$store.getters.quiz;
 
@@ -142,7 +164,8 @@ export default class MoocChatPage extends Vue {
   }
 
   get question(): TypeQuestion | null {
-    if (!this.page || !((this.page.type === PageType.QUESTION_ANSWER_PAGE) || (this.page.type === PageType.DISCUSSION_PAGE))) {
+    if (!this.page || !((this.page.type === PageType.QUESTION_ANSWER_PAGE) ||
+      (this.page.type === PageType.DISCUSSION_PAGE))) {
       return null;
     }
 
@@ -171,12 +194,33 @@ export default class MoocChatPage extends Vue {
       this.socketState.chatTypingNotifications : null;
   }
 
-  get response(): Response | null {
-    return this.$store.getters.response;
+  get responses(): Dictionary<Response> {
+    return this.$store.getters.responses;
+  }
+
+  get currentResponse(): Response | null {
+    if (!this.question) {
+      return null;
+    }
+
+    return this.responses[this.question._id!];
   }
 
   get userSession(): IUserSession | null {
     return this.$store.getters.userSession;
+  }
+
+  get pageTimeSettings(): TimerSettings | null {
+    if (!this.quiz || !this.quiz.pages || !this.quiz.pages[this.maxIndex]) {
+      return null;
+    }
+
+    const output: TimerSettings = {
+      referencedPageId: this.quiz.pages[this.maxIndex]._id!,
+      timeoutInMins: this.quiz.pages[this.maxIndex].timeoutInMins
+    };
+
+    return output;
   }
 
   private handleConfidenceChange(confidenceValue: number) {
@@ -187,7 +231,7 @@ export default class MoocChatPage extends Vue {
     // If there is no question, don't run
     if (!this.question || !this.question._id || !this.quiz ||
       !this.quiz._id || !this.quizSession || !this.quizSession._id) {
-      return;
+      return Promise.resolve();
     }
 
     // Accomodate for the two types of responses
@@ -204,11 +248,11 @@ export default class MoocChatPage extends Vue {
       };
 
       // TODO, snackbar for errors?
-      this.$store.dispatch("sendResponse", response).then(() => {
-        this.goToNextPage();
-      }).catch((e: Error) => {
+      return this.$store.dispatch("sendResponse", response).catch((e: Error) => {
         console.log(e);
       });
+    } else {
+      return Promise.resolve();
     }
   }
 
@@ -225,12 +269,50 @@ export default class MoocChatPage extends Vue {
       return;
     }
 
-    this.$store.dispatch("incrementIndex");
-
+    // Only update if current === max
+    if (this.currentIndex === this.maxIndex) {
+    }
     // Not safe to go to the next page, go to reflection
     if (this.currentIndex + 1 > this.quiz.pages.length) {
       this.$router.push("/reflection");
+    } else {
+      if(this.currentIndex === this.maxIndex) {
+        this.$store.dispatch("updateCurrentDiscussion", this.currentIndex + 1);
+      }
+      // Remember to increment afterwards
+      this.$store.dispatch("incrementCurrentIndex");
     }
+  }
+
+  private goToPreviousPage() {
+    if (!this.quiz || !this.quiz.pages) {
+      return;
+    }
+
+    this.$store.dispatch("decrementCurrentIndex");
+  }
+
+  // Increments the max index to allow users to go to next page
+  // after going to previous pages
+  private incrementMaxIndex() {
+    this.$store.dispatch("incrementMaxIndex");
+  }
+
+  // Handles when the timer is done, the user would have then be pushed to the
+  // next page while checking if the response needs to be sent
+  // We also increment the max index
+  private async handleTimeOut() {
+    if (!this.page) {
+      return;
+    }
+
+    if (this.page.type === PageType.QUESTION_ANSWER_PAGE) {
+      await this.sendResponse();
+    }
+
+    this.incrementMaxIndex();
+
+    this.goToNextPage();
   }
 
   // If this page becomes a discussion page, handles the instantiation of the sockets and the sessions in the db
@@ -257,16 +339,16 @@ export default class MoocChatPage extends Vue {
 
   // Sends a join request to the server. Once completed, runs the callback to instantiate an actual textbox
   private emitJoinRequest(callback: (data?: IWSToClientData.ChatGroupFormed) => void) {
-      if (!this.socketState || !this.quiz || !this.socketState.socket
-        || !this.quizSession || !this.response || !this.quiz.pages || !this.quizSession._id || !this.response._id) {
-          throw Error("Sent a join request without a socket or quiz");
+      if (!this.socket || !this.quiz || !this.quizSession || !this.currentResponse ||
+        !this.quizSession._id || !this.currentResponse._id) {
+        throw Error("Sent a join request without a socket or quiz");
       }
 
       this.socket!.emitData<IWSToServerData.ChatGroupJoin>(WebsocketEvents.OUTBOUND.CHAT_GROUP_JOIN_REQUEST, {
           quizId: this.quiz._id!,
           questionId: this.question!._id!,
           quizSessionId: this.quizSession!._id!,
-          responseId: this.response!._id!,
+          responseId: this.currentResponse!._id!,
           userId: this.user!._id!
       });
   }

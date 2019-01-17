@@ -11,11 +11,7 @@ interface SessionResponse {
 // doing a particular quiz (quizid) at a given time (quizSessionId). They
 // would then be attempting to do a question (responseId, questionId)
 interface QuizAttemptResponse {
-    responseId: string;
-    quizId: string;
-    questionId: string;
     quizSessionId: string;
-    userId: string;
 }
 
 export interface AnswerResponse extends QuizAttemptResponse {
@@ -37,9 +33,17 @@ export interface Logout extends SessionResponse {}
 export interface InitialAnswer extends AnswerResponse { }
 export interface RevisedAnswer extends AnswerResponse { }
 
-export interface ChatGroupJoin extends QuizAttemptResponse { }
+export interface ChatGroupJoin {
+    responseId: string;
+    quizId: string;
+    questionId: string;
+    quizSessionId: string;
+    userId: string;
+}
 export interface ChatGroupSendMessage extends ChatGroupResponse {
     message: string;
+    userId: string;
+    questionId: string;
 }
 export interface ChatGroupQuitStatusChange extends ChatGroupResponse {
     quitStatus: boolean;

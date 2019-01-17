@@ -13,7 +13,7 @@
     </div>
 
     <div class="input-container">
-      <CreateChatMessage />
+      <CreateChatMessage/>
     </div>
     <!-- </div> -->
   </div>
@@ -47,13 +47,15 @@
 </style>
 
 <script lang="ts">
-import { Vue, Component } from "vue-property-decorator";
+import { Vue, Component, Watch } from "vue-property-decorator";
 import ChatAlert from "./ChatAlert.vue";
 import ChatMessage from "./ChatMessage.vue";
 import CreateChatMessage from "./CreateChatMessage.vue";
 import { SocketState, MoocChatMessage }  from "../../interfaces";
 import { MoocChatMessageTypes, MoocChatStateMessageTypes } from "../../enums";
 import * as IWSToClientData from ",,/../../../common/interfaces/IWSToClientData";
+import { IQuiz, IDiscussionPage, TypeQuestion } from "../../../../common/interfaces/ToClientData";
+import { PageType } from "../../../../common/enums/DBEnums";
 
 @Component({
   components: {

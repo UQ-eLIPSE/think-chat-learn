@@ -119,6 +119,7 @@ export interface IPage extends Document {
     type: PageType;
     title: string;
     content: string;
+    timeoutInMins: number;
 }
 
 // A discussion page needs a question id so
@@ -154,10 +155,12 @@ export interface IQuizSchedule extends Document {
 
 // A message that was sent. Within a chat group. Contains
 // a user id which is presumably good (as in the user is part of the group)
+// Since each chat group can point to multiple questions, we have to store the questionId as well
 export interface IChatMessage extends Document {
-  userId?: OID;
+  userId: OID;
   content: string;
   timeStamp: Date;
+  questionId: OID;
 }
 
 // A chat group contains multiple people talking.
@@ -168,7 +171,7 @@ export interface IChatGroup extends Document {
   messages?: IChatMessage[];
   quizSessionIds?: OID[];
   quizId?: OID;
-  questionId?: OID;
+  questionIds?: OID[];
 }
 
 export interface ChatMessage<OID, Date> {

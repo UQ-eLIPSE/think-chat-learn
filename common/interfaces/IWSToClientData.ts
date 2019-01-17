@@ -12,7 +12,7 @@ export interface ChatGroupAnswer {
     answer: ToClientData.Response;
 }
 
-export type GroupAnswerDictionary = {[questionId: string] :ChatGroupAnswer[]};
+export type GroupAnswerDictionary = {[questionId: string]: ChatGroupAnswer[]};
 
 // Inbound data interfaces
 export interface LoginSuccess {
