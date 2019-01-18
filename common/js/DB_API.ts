@@ -18,6 +18,7 @@ export interface IApi {
     USERSESSION: string;
     QUIZSESSION: string;
     RESPONSE: string;
+    CHATGROUP: string;
 
     request(method: string, url: string, data: {}, contentType?: string | undefined): Promise<any>;
 }
@@ -50,7 +51,8 @@ export const API: IApi = {
     QUESTION: "question/",
     USERSESSION: "usersession/",
     QUIZSESSION: "quizsession/",
-    RESPONSE: "response/"
+    RESPONSE: "response/",
+    CHATGROUP: "chatgroup/"
 };
 
 export default API;

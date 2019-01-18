@@ -1,7 +1,8 @@
 import Vue from "vue";
 import { Commit } from "vuex";
 import { IQuiz, TypeQuestion, IDiscussionPage } from "../../../../common/interfaces/ToClientData";
-import { PageType } from '../../../../common/enums/DBEnums';
+import { PageType } from "../../../../common/enums/DBEnums";
+import API from "../../../../common/js/DB_API";
 
 export interface IState {
     quiz: IQuiz | null;
@@ -60,6 +61,14 @@ const actions = {
             state.quiz.pages[index].type === PageType.DISCUSSION_PAGE) {
             return commit(mutationKeys.SET_CURRENT_DISCUSSION, (state.quiz.pages[index] as IDiscussionPage).questionId);
         }
+    },
+
+    // TODO check if we need to authenticate based on userId?
+    appendQuestionToChatGroup({ commit }: {commit: Commit}, data: { questionId: string, groupId: string }) {
+        return API.request(API.POST, API.CHATGROUP + "append/", {
+            questionId: data.questionId,
+            groupId: data.groupId
+        });
     }
 };
 

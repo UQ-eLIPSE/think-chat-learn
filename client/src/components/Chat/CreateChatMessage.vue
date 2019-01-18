@@ -137,6 +137,8 @@ export default class CreateChatMessage extends Vue {
 
     this.socket!.emitData<IWSToServerData.ChatGroupSendMessage>(
       WebsocketEvents.OUTBOUND.CHAT_GROUP_SEND_MESSAGE, message);
+
+    this.loadedMessage = "";
   }
 }
 </script>

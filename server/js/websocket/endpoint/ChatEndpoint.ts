@@ -32,7 +32,7 @@ export class ChatEndpoint extends WSEndpoint {
 
         // If an existing chat group exist, then fail it
         const existingChatGroup = await chatGroupService.findChatGroupsBySessionQuizQuestion(data.quizSessionId, data.quizId, data.questionId);
-
+        console.log(existingChatGroup);
         // Can't join into pool if already in chat group
         if (existingChatGroup.length) {
             return console.error(`Attempted chat group join request while already in chat group;

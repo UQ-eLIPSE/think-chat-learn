@@ -12,11 +12,12 @@ export class ChatGroupController extends BaseController {
     }
 
     private appendQuestion(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        this.chatGroupService.updateChatGroup(req.body).then((outcome) => {
+        this.chatGroupService.appendQuestionProgress(req.body.questionId, req.body.groupId).then((outcome) => {
             res.json({
                 outcome
             });
         }).catch((e: Error) => {
+            console.log(e);
             res.sendStatus(500);
         });
     }

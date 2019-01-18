@@ -7,7 +7,7 @@
       <li v-for="(step, index) in steps" :key="index">
         <span
           class="status"
-          :class="step.status"
+          :class="[step.status, index === currentIndex ? 'gold-border' : '']"
         >
           <font-awesome-icon
             v-if="step.status === Progress.COMPLETE"
@@ -32,6 +32,9 @@
   margin: 0 auto;
   padding: 1.875em;
   width: 861px;
+  .gold-border {
+    border: 1px solid yellow;
+  }
   ul {
     display: flex;
     justify-content: space-between;
@@ -190,6 +193,10 @@ export default class Stepper extends Vue {
     return this.$store.getters.currentIndex + this.INDEX_OFFSET;
   }
 
+  get maxIndex(): number {
+    return this.$store.getters.maxIndex + this.INDEX_OFFSET;
+  }
+
   get Progress() {
     return Progress;
   }
@@ -210,7 +217,7 @@ export default class Stepper extends Vue {
 
         let status: Progress;
 
-        status = this.computeStatus(this.currentIndex, index);
+        status = this.computeStatus(this.maxIndex, index);
 
         const output: Steps = {
           title: element.title,
@@ -224,12 +231,12 @@ export default class Stepper extends Vue {
       // Always form the computation of reflection and receipt
       const reflection: Steps = {
         title: "Reflection",
-        status: this.computeStatus(this.currentIndex, this.quiz.pages.length + this.REFLECTION_OFFSET)
+        status: this.computeStatus(this.maxIndex, this.quiz.pages.length + this.REFLECTION_OFFSET)
       };
 
       const receipt: Steps = {
         title: "Receipt",
-        status: this.computeStatus(this.currentIndex, this.quiz.pages.length + this.RECEIPT_OFFSET)
+        status: this.computeStatus(this.maxIndex, this.quiz.pages.length + this.RECEIPT_OFFSET)
       };
 
       arr.push(reflection);

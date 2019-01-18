@@ -43,7 +43,8 @@ const mutationKeys = {
     SET_QUIZ_SESSION: "Setting a quiz session",
     ADD_RESPONSE: "Adding a response",
     INCREMENTING_CURRENT_INDEX: "Incrementing the current index",
-    DECREMENTING_CURRENT_INDEX: "Decrementing the  current index",
+    DECREMENTING_CURRENT_INDEX: "Decrementing the current index",
+    SET_CURRENT_INDEX: "Sets the current index",
     INCREMENTING_MAX_INDEX: "Incrementing the max index",
     // Web socket mutations
     CREATE_SOCKET: "Creating the socket",
@@ -162,6 +163,10 @@ const actions = {
         return commit(mutationKeys.INCREMENTING_CURRENT_INDEX);
     },
 
+    setCurrentIndex({ commit }: {commit: Commit}, pageNumber: number) {
+        return commit(mutationKeys.SET_CURRENT_INDEX, pageNumber);
+    },
+
     decrementCurrentIndex({ commit }: {commit: Commit}) {
         return commit(mutationKeys.DECREMENTING_CURRENT_INDEX);
     },
@@ -202,6 +207,10 @@ const mutations = {
 
     [mutationKeys.DECREMENTING_CURRENT_INDEX](funcState: IState) {
         Vue.set(funcState, "currentIndex", funcState.currentIndex - 1);
+    },
+
+    [mutationKeys.SET_CURRENT_INDEX](funcState: IState, data: number) {
+        Vue.set(funcState, "currentIndex", data);
     },
 
     [mutationKeys.INCREMENTING_MAX_INDEX](funcState: IState) {

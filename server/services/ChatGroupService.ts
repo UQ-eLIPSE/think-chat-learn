@@ -61,11 +61,11 @@ export class ChatGroupService extends BaseService{
         return this.chatGroupRepo.findChatGroupsByIds(quizSessionId, quizId, questionId);
     }
 
-    public async appendQuestionProgress(questionId: string, sessionId: string) {
-        const chatGroup = await this.getChatGroup(sessionId);
+    public async appendQuestionProgress(questionId: string, groupId: string) {
+        const chatGroup = await this.getChatGroup(groupId);
 
         if (!chatGroup) {
-            throw Error(`Invalid chat group id ${sessionId}`);
+            throw Error(`Invalid chat group id ${groupId}`);
         }
 
         // If we do find it return nothing

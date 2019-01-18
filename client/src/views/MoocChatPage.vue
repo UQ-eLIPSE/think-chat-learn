@@ -85,7 +85,7 @@ import { Vue, Component, Watch } from "vue-property-decorator";
 import Confidence from "../components/Confidence.vue";
 import Timer from "../components/Timer/Timer.vue";
 import { IQuiz, Page, Response, TypeQuestion,
-  IQuizSession, IUserSession } from "../../../common/interfaces/ToClientData";
+  IQuizSession, IUserSession, IQuestionAnswerPage } from "../../../common/interfaces/ToClientData";
 import { PageType, QuestionType } from "../../../common/enums/DBEnums";
 import { SocketState, TimerSettings, Dictionary } from "../interfaces";
 import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
@@ -223,6 +223,10 @@ export default class MoocChatPage extends Vue {
     return output;
   }
 
+  get currentDiscussionQuestion(): TypeQuestion | null {
+    return this.$store.getters.currentDiscussionQuestion;
+  }
+
   private handleConfidenceChange(confidenceValue: number) {
     this.confidence = confidenceValue;
   }
@@ -230,7 +234,7 @@ export default class MoocChatPage extends Vue {
   private sendResponse() {
     // If there is no question, don't run
     if (!this.question || !this.question._id || !this.quiz ||
-      !this.quiz._id || !this.quizSession || !this.quizSession._id) {
+      !this.quiz._id || !this.quizSession || !this.quizSession._id || !this.quiz.pages) {
       return Promise.resolve();
     }
 
@@ -242,13 +246,15 @@ export default class MoocChatPage extends Vue {
         type: QuestionType.QUALITATIVE,
         content: this.responseContent,
         confidence: this.confidence,
-        questionId: this.question._id,
+        questionId: (this.quiz.pages[this.maxIndex] as IQuestionAnswerPage).questionId!,
         quizId: this.quiz._id,
         quizSessionId: this.quizSession._id
       };
 
       // TODO, snackbar for errors?
-      return this.$store.dispatch("sendResponse", response).catch((e: Error) => {
+      return this.$store.dispatch("sendResponse", response).then(() => {
+        this.responseContent = "";
+      }).catch((e: Error) => {
         console.log(e);
       });
     } else {
@@ -269,18 +275,26 @@ export default class MoocChatPage extends Vue {
       return;
     }
 
-    // Only update if current === max
-    if (this.currentIndex === this.maxIndex) {
-    }
     // Not safe to go to the next page, go to reflection
     if (this.currentIndex + 1 > this.quiz.pages.length) {
       this.$router.push("/reflection");
     } else {
-      if(this.currentIndex === this.maxIndex) {
-        this.$store.dispatch("updateCurrentDiscussion", this.currentIndex + 1);
-      }
       // Remember to increment afterwards
       this.$store.dispatch("incrementCurrentIndex");
+    }
+  }
+
+  // Goes to a page based on the number provided. Defaults to max
+  private goToPage(pageNumber: number = this.maxIndex) {
+    if (!this.quiz || !this.quiz.pages) {
+      return;
+    }
+
+    // Redirect to reflection if the index is larger than the page length
+    if (pageNumber >= this.quiz.pages.length) {
+      this.$router.push("/reflection");
+    } else {
+      this.$store.dispatch("setCurrentIndex", pageNumber);
     }
   }
 
@@ -293,8 +307,9 @@ export default class MoocChatPage extends Vue {
   }
 
   // Increments the max index to allow users to go to next page
-  // after going to previous pages
+  // after going to previous pages. Note we also handle the discussion question
   private incrementMaxIndex() {
+    this.$store.dispatch("updateCurrentDiscussion", this.maxIndex + 1);
     this.$store.dispatch("incrementMaxIndex");
   }
 
@@ -312,7 +327,7 @@ export default class MoocChatPage extends Vue {
 
     this.incrementMaxIndex();
 
-    this.goToNextPage();
+    this.goToPage();
   }
 
   // If this page becomes a discussion page, handles the instantiation of the sockets and the sessions in the db
@@ -325,23 +340,33 @@ export default class MoocChatPage extends Vue {
         return;
       }
 
-      const outgoingQuizSession: IQuizSession = {
-          quizId: this.quiz!._id,
-          userSessionId: this.userSession!._id,
-          responses: []
-      };
+      // Upon changing to a discussion page, if we are in a group we need to check if the group state
+      // is good. If it is then we proceed as normal. If we don't have a group, send a join request
+      if (this.socketState && this.socketState.chatGroupFormed && (this.currentIndex === this.maxIndex)) {
+        // TODO handle a a bad group/check group state
+        const data = {
+          questionId: this.currentDiscussionQuestion!._id!,
+          groupId: this.chatGroup!.groupId!
+        }
 
-      this.emitJoinRequest(() => {
-        return;
-      });
+        this.$store.dispatch("appendQuestionToChatGroup", data);
+      } else {
+        this.emitJoinRequest(() => {
+          return;
+        });
+      }
     }
   }
 
   // Sends a join request to the server. Once completed, runs the callback to instantiate an actual textbox
   private emitJoinRequest(callback: (data?: IWSToClientData.ChatGroupFormed) => void) {
       if (!this.socket || !this.quiz || !this.quizSession || !this.currentResponse ||
-        !this.quizSession._id || !this.currentResponse._id) {
-        throw Error("Sent a join request without a socket or quiz");
+        !this.quizSession._id || !this.currentResponse._id || !this.socketState) {
+        console.error("Sent a join request without a socket or quiz");
+        return;
+      } else if (this.socketState.chatGroupFormed) {
+        console.error("Attempted to send a join request while already in a group");
+        return;
       }
 
       this.socket!.emitData<IWSToServerData.ChatGroupJoin>(WebsocketEvents.OUTBOUND.CHAT_GROUP_JOIN_REQUEST, {
