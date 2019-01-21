@@ -228,6 +228,11 @@ export default class Stepper extends Vue {
         return steps;
       }, []);
 
+      const reflection: Steps = {
+        title: "Reflection",
+        status: this.computeStatus(this.currentIndex, this.quiz.pages.length + this.REFLECTION_OFFSET)
+      };
+
       const receipt: Steps = {
         title: "Receipt",
         status: this.computeStatus(this.maxIndex, this.quiz.pages.length + this.RECEIPT_OFFSET)
