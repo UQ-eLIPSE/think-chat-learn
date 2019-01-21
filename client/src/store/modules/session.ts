@@ -65,7 +65,8 @@ function handleGroupJoin(data?: IWSToClientData.ChatGroupFormed) {
     // Handle a join
     const joinMessage: StateMessage = {
         state: MoocChatStateMessageTypes.ON_JOIN,
-        type: MoocChatMessageTypes.STATE_MESSAGE
+        type: MoocChatMessageTypes.STATE_MESSAGE,
+        message: `Joined a group of ${data.groupSize} you are Student ${data.clientIndex}`
     };
 
     Vue.set(state.chatMessages, state.chatMessages.length, joinMessage);
@@ -95,6 +96,27 @@ function handleIncomingChatMessage(data?: IWSToClientData.ChatGroupMessage) {
     Vue.set(state.chatMessages, state.chatMessages.length, chatMessage);
 }
 
+function handleChatGroupUpdate(data?: IWSToClientData.UserResponseUpdate) {
+    if (!data) {
+        throw Error("No data for group update");
+    }
+
+    const dictionary = state.socketState!.chatGroupFormed!.groupAnswers!;
+
+    const entry: IWSToClientData.ChatGroupAnswer ={
+        clientIndex: data.responderIndex,
+        answer: data.response
+    };
+
+    if (dictionary[data.response.questionId]) {
+
+        Vue.set(dictionary[data.response.questionId], dictionary[data.response.questionId].length, entry);
+    } else {
+        // Assume that the page has not been instantiated
+        Vue.set(dictionary, data.response.questionId, [entry]);
+    }
+}
+
 // Handles the socket events.
 function registerSocketEvents() {
     // Wait for an acknowledge?
@@ -113,6 +135,11 @@ function registerSocketEvents() {
     // Handle typing states
     state.socketState.socket!.on<IWSToClientData.ChatGroupTypingNotification>(
         WebsocketEvents.INBOUND.CHAT_GROUP_TYPING_NOTIFICATION, handleTypingNotification);
+
+    // Handle group update
+    state.socketState.socket!.on<IWSToClientData.UserResponseUpdate>(
+        WebsocketEvents.INBOUND.CHAT_GROUP_UPDATE, handleChatGroupUpdate
+    );
 }
 
 const getters = {
@@ -153,7 +180,7 @@ const actions = {
         return API.request(API.PUT, API.RESPONSE + "create", response).then((id: { outgoingId: string}) => {
             response._id = id.outgoingId;
             commit(mutationKeys.ADD_RESPONSE, response);
-            return id;
+            return id.outgoingId;
         }).catch((e: Error) => {
             throw Error("Failed to send response");
         });
@@ -236,10 +263,13 @@ const mutations = {
         }
     },
 
-    [mutationKeys.APPEND_STATE_MESSAGE](funcState: IState, incomingState: MoocChatStateMessageTypes) {
+    [mutationKeys.APPEND_STATE_MESSAGE](funcState: IState, data: { incomingState: MoocChatStateMessageTypes,
+        message: string }) {
+
         const outgoingMessage: StateMessage = {
             type: MoocChatMessageTypes.STATE_MESSAGE,
-            state: incomingState
+            state: data.incomingState,
+            message: data.message
         };
 
         Vue.set(funcState.chatMessages, funcState.chatMessages.length, outgoingMessage);

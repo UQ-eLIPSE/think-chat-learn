@@ -32,6 +32,9 @@ export const WebsocketEvents = {
         /** IWSToClientData.ChatGroupTypingNotification */
         CHAT_GROUP_TYPING_NOTIFICATION: "chatGroupTypingNotification",
 
+        /** IWSToClientData.ChatGroupUpdate */
+        CHAT_GROUP_UPDATE: "chatGroupUpdate",
+
         /** IWSToClientData.BackupClientEnterQueueState */
         BACKUP_CLIENT_ENTER_QUEUE_STATE: "backupClientEnterQueueState",
 
@@ -75,6 +78,9 @@ export const WebsocketEvents = {
 
         /** IWSToServerData.ChatGroupTypingNotification */
         CHAT_GROUP_TYPING_NOTIFICATION: "chatGroupTypingNotification",
+
+        /** IWSToServerData.ChatGroupUpdate */
+        CHAT_GROUP_UPDATE: "chatGroupUpdate",
 
         /** IWSToServerData.RevisedAnswer */
         REVISED_ANSWER_SUBMISSION: "answerSubmissionFinal",

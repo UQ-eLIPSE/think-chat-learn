@@ -40,7 +40,8 @@
 import { Vue, Component, Prop } from "vue-property-decorator";
 import * as IWSToServerData from "../../../../common/interfaces/IWSToServerData";
 import * as IWSToClientData from "../../../../common/interfaces/IWSToClientData";
-import { IQuizSession, IQuiz, Response, IUser, IDiscussionPage, TypeQuestion } from "../../../../common/interfaces/ToClientData";
+import { IQuizSession, IQuiz, Response, IUser, IDiscussionPage, TypeQuestion,
+  Page } from "../../../../common/interfaces/ToClientData";
 import { WebsocketManager } from "../../../js/WebsocketManager";
 import { WebsocketEvents } from "../../../js/WebsocketEvents";
 import { SocketState, Dictionary } from "../../interfaces";
@@ -95,9 +96,22 @@ export default class CreateChatMessage extends Vue {
     return this.socketState && this.socketState.chatGroupFormed ? this.socketState.chatGroupFormed : null;
   }
 
+  get maxIndex(): number {
+    return this.$store.getters.maxIndex;
+  }
+
+  get currentPage(): Page | null {
+    if (!this.quiz || !this.quiz.pages) {
+      return null;
+    }
+
+    return this.quiz.pages[this.maxIndex];
+  }
+
   get canType(): boolean {
     if (!this.quiz || !this.quizSession || !this.referredResponse || !this.socket ||
-      !this.quizSession || !this.groupJoin || !this.referredQuestion) {
+      !this.quizSession || !this.groupJoin || !this.referredQuestion || !this.currentPage
+      || this.currentPage.type !== PageType.DISCUSSION_PAGE) {
       return false;
     }
     return true;

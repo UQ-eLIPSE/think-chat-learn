@@ -245,7 +245,45 @@ export class ChatEndpoint extends WSEndpoint {
     }
 
 
+    private static async HandleGroupUpdate(socket: PacSeqSocket_Server, data: IWSToServerData.ChatGroupUpdateResponse,
+        responseService: ResponseService, chatGroupService: ChatGroupService) {
+        const group = SocketSession.GetAutoCreateGroup(data.groupId);
 
+        const chatGroup = await chatGroupService.getChatGroup(data.groupId);
+
+        if (!chatGroup) {
+            throw Error(`Invalid chat group of id ${data.groupId}`);
+        }
+
+        // Grab the response 
+        const response = await responseService.getResponse(data.responseId);
+
+        if (!response) {
+            throw Error(`Invalid response of id ${data.responseId}`);
+        }
+
+        const responderIndex = chatGroup.quizSessionIds!.findIndex((sessionId) => { 
+            return data.quizSessionId === sessionId
+        }) + CLIENT_INDEX_OFFSET;
+
+        group.forEach((socketSession) => {
+            const sock = socketSession.getSocket();
+
+            if (sock) {
+                const clientIndex = chatGroup.quizSessionIds!.findIndex((sessionId) => { 
+                    return data.quizSessionId === sessionId
+                }) + CLIENT_INDEX_OFFSET;
+
+                const chatGroupUpdate: IWSToClientData.UserResponseUpdate = {
+                    response: response,
+                    responderIndex
+                };
+                sock.emit("chatGroupUpdate", chatGroupUpdate);
+            } else {
+                console.error("Could not retrieve sock");
+            }
+        });
+    }
 
     private responseService: ResponseService;
     private chatGroupService: ChatGroupService;
@@ -267,10 +305,13 @@ export class ChatEndpoint extends WSEndpoint {
                 // Something bad happened
                 return false;
             });
-            
-
-
         };
+    }
+
+    public get onHandleGroupUpdate() {
+        return (data: IWSToServerData.ChatGroupUpdateResponse) => {
+            ChatEndpoint.HandleGroupUpdate(this.getSocket(), data, this.responseService, this.chatGroupService);
+        }
     }
 
     public get onTypingNotification() {
@@ -298,6 +339,7 @@ export class ChatEndpoint extends WSEndpoint {
             case "chatGroupTypingNotification": return this.onTypingNotification;
             case "chatGroupQuitStatusChange": return this.onQuitStatusChange;
             case "chatGroupMessage": return this.onMessage;
+            case "chatGroupUpdate": return this.onHandleGroupUpdate;
         }
 
         throw new Error(`No endpoint event handler for "${name}"`);
@@ -309,6 +351,7 @@ export class ChatEndpoint extends WSEndpoint {
             "chatGroupTypingNotification",
             "chatGroupQuitStatusChange",
             "chatGroupMessage",
+            "chatGroupUpdate"
         ]);
     }
 }

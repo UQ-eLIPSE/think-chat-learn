@@ -5,9 +5,8 @@
       <div v-for="(message, index) in chatMessages" :key="index">
         <ChatMessage v-if="message.type === MoocChatMessageTypes.CHAT_MESSAGE"
           :userNumber="`Client ${message.content.clientIndex}`" :content="message.content.message" :numeral="message.content.clientIndex"/>
-        <ChatAlert v-else-if="(message.type === MoocChatMessageTypes.STATE_MESSAGE) &&
-          (message.state === MoocChatStateMessageTypes.ON_JOIN)"
-          :alertMessage="`Joined a group of ${chatGroup.groupSize} you are Student ${chatGroup.clientIndex}`" :alertType="`standard`"/>          
+        <ChatAlert v-else-if="(message.type === MoocChatMessageTypes.STATE_MESSAGE)"
+          :alertMessage="message.message" :alertType="`standard`"/>
       </div>
       <!-- TODO Append the typingNotification at the bottom -->
     </div>

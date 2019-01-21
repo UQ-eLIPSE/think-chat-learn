@@ -3,6 +3,7 @@ import { Commit } from "vuex";
 import { IQuiz, TypeQuestion, IDiscussionPage } from "../../../../common/interfaces/ToClientData";
 import { PageType } from "../../../../common/enums/DBEnums";
 import API from "../../../../common/js/DB_API";
+import { MoocChatStateMessageTypes } from '@/enums';
 
 export interface IState {
     quiz: IQuiz | null;
@@ -59,7 +60,12 @@ const actions = {
     updateCurrentDiscussion({ commit }: {commit: Commit}, index: number) {
         if (state.quiz && state.quiz.pages && state.quiz.pages[index] &&
             state.quiz.pages[index].type === PageType.DISCUSSION_PAGE) {
-            return commit(mutationKeys.SET_CURRENT_DISCUSSION, (state.quiz.pages[index] as IDiscussionPage).questionId);
+
+            commit(mutationKeys.SET_CURRENT_DISCUSSION, (state.quiz.pages[index] as IDiscussionPage).questionId);
+
+            return commit("Appending a state message",
+                { incomingState: MoocChatStateMessageTypes.NEW_DISCUSSION_QUESTION, message:
+                `New question to discuss. Please discuss about ${state.currentDiscussionQuestion!.title}`});
         }
     },
 

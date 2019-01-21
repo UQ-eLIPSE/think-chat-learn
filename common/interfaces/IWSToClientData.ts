@@ -73,3 +73,8 @@ export interface BackupClientQueueUpdate {
 export interface LogoutSuccess {
     sessionId: string;
 }
+
+export interface UserResponseUpdate {
+    response: ToClientData.Response;
+    responderIndex: number;
+}

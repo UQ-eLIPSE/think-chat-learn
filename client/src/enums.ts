@@ -12,5 +12,7 @@ export enum MoocChatStateMessageTypes {
     // For joining a group
     ON_JOIN = "ON_JOIN",
     // Reforming a new group
-    REFORM_GROUP = "REFORM_GROUP"
+    REFORM_GROUP = "REFORM_GROUP",
+    // A new question has been added
+    NEW_DISCUSSION_QUESTION = "NEW_DISCUSSION_QUESTION"
 }

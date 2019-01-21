@@ -252,7 +252,7 @@ export default class MoocChatPage extends Vue {
       };
 
       // TODO, snackbar for errors?
-      return this.$store.dispatch("sendResponse", response).then(() => {
+      return this.$store.dispatch("sendResponse", response).then((responseId) => {
         this.responseContent = "";
       }).catch((e: Error) => {
         console.log(e);
@@ -293,9 +293,11 @@ export default class MoocChatPage extends Vue {
     // Redirect to reflection if the index is larger than the page length
     if (pageNumber >= this.quiz.pages.length) {
       this.$router.push("/reflection");
-    } else {
-      this.$store.dispatch("setCurrentIndex", pageNumber);
     }
+
+    // Even if we go to the reflection page, we set the current index regardless
+    // such that the tracker is in place
+    this.$store.dispatch("setCurrentIndex", pageNumber);
   }
 
   private goToPreviousPage() {
@@ -349,13 +351,37 @@ export default class MoocChatPage extends Vue {
           groupId: this.chatGroup!.groupId!
         }
 
-        this.$store.dispatch("appendQuestionToChatGroup", data);
+        this.$store.dispatch("appendQuestionToChatGroup", data).then(() => {
+          this.emitGroupUpdate(() => {});
+        });
       } else {
         this.emitJoinRequest(() => {
           return;
         });
       }
     }
+  }
+
+  // TODO update group state
+  private emitGroupUpdate(callback: (data?: IWSToClientData.UserResponseUpdate) => void) {
+    if (!this.socket || !this.currentResponse || !this.currentResponse._id ||
+      !this.chatGroup || !this.chatGroup.groupId || !this.quizSession || !this.quizSession._id) {
+      console.error("Missing parameters/field for group update");
+      return;
+    }
+
+    if (this.chatGroup.groupAnswers[this.currentResponse.questionId] &&
+      this.chatGroup.groupAnswers[this.currentResponse.questionId].find((element) => {
+      return element.answer._id === this.currentResponse!._id;
+    })) {
+      return;
+    }
+
+    this.socket!.emitData<IWSToServerData.ChatGroupUpdateResponse>(WebsocketEvents.OUTBOUND.CHAT_GROUP_UPDATE, {
+      responseId: this.currentResponse!._id!,
+      groupId: this.chatGroup!.groupId!,
+      quizSessionId: this.quizSession!._id!
+    });
   }
 
   // Sends a join request to the server. Once completed, runs the callback to instantiate an actual textbox
@@ -376,6 +402,17 @@ export default class MoocChatPage extends Vue {
           responseId: this.currentResponse!._id!,
           userId: this.user!._id!
       });
+  }
+
+  private mounted() {
+    if (!this.quiz || !this.quiz.pages) {
+      return;
+    }
+
+    // Just check if the maxIndex exceeds the page, if so we push them back to either reflection or receipt
+    if (this.maxIndex >= this.quiz.pages.length) {
+      this.$router.push("/reflection");
+    }
   }
 }
 </script>

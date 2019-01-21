@@ -45,6 +45,11 @@ export interface ChatGroupSendMessage extends ChatGroupResponse {
     userId: string;
     questionId: string;
 }
+
+// The intent is to tell the chat room to update their response id/groupanswer bank
+export interface ChatGroupUpdateResponse extends ChatGroupResponse {
+    responseId: string;
+}
 export interface ChatGroupQuitStatusChange extends ChatGroupResponse {
     quitStatus: boolean;
 }

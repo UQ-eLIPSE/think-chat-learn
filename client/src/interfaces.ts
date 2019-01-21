@@ -30,6 +30,7 @@ export interface SystemMessage extends Message {
 export interface StateMessage extends Message {
     type: MoocChatMessageTypes.STATE_MESSAGE;
     state: MoocChatStateMessageTypes;
+    message: string;
 }
 
 export interface TimerSettings {
