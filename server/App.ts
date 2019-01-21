@@ -111,7 +111,7 @@ export default class App {
         this.userSessionService = new UserSessionService(this.userSessionRepository);
         this.quizSessionService = new QuizSessionService(this.quizSessionRepository);
         this.chatGroupService = new ChatGroupService(this.chatGroupRepository);
-        this.responseService = new ResponseService(this.responseRepository);
+        this.responseService = new ResponseService(this.responseRepository, this.quizSessionRepository, this.quizRepository);
 
         this.userController = new UserController(this.userService);
         this.quizController = new QuizController(this.quizService);

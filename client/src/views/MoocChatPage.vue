@@ -277,7 +277,7 @@ export default class MoocChatPage extends Vue {
 
     // Not safe to go to the next page, go to reflection
     if (this.currentIndex + 1 > this.quiz.pages.length) {
-      this.$router.push("/reflection");
+      this.$router.push("/receipt");
     } else {
       // Remember to increment afterwards
       this.$store.dispatch("incrementCurrentIndex");
@@ -292,7 +292,7 @@ export default class MoocChatPage extends Vue {
 
     // Redirect to reflection if the index is larger than the page length
     if (pageNumber >= this.quiz.pages.length) {
-      this.$router.push("/reflection");
+      this.$router.push("/receipt");
     }
 
     // Even if we go to the reflection page, we set the current index regardless

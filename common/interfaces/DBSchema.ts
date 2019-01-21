@@ -43,6 +43,8 @@ export interface IQuizSession extends Document {
   // A response is defined by a referral to a page
   // with the appropiate content
   responses?: OID[];
+  // Mark the session as complete if applicable
+  complete?: boolean;
 }
 
 // Contains a question in which people can answer.

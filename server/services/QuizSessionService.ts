@@ -13,7 +13,9 @@ export class QuizSessionService extends BaseService{
 
     // Creates a user session assuming the body is valid
     public async createQuizSession(data: IQuizSession): Promise<string> {
-
+        // When creating the quiz session, set the complete to false
+        // as we only allow the value to be true from updates
+        data.complete = false;
         return this.quizSessionRepo.create(data);
     }
 

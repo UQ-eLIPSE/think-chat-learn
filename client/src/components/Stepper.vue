@@ -181,10 +181,7 @@ interface Steps {
 export default class Stepper extends Vue {
 
   /** The offset of the receipt page relative to the end of quiz pages */
-  private RECEIPT_OFFSET = 1;
-
-  /** The offset of the reflection page relative to the end of quiz pages */
-  private REFLECTION_OFFSET = 0;
+  private RECEIPT_OFFSET = 0;
 
   // Offsets the current index by 1 due to store value referring to position in array
   private INDEX_OFFSET = 0;
@@ -228,17 +225,11 @@ export default class Stepper extends Vue {
         return steps;
       }, []);
 
-      const reflection: Steps = {
-        title: "Reflection",
-        status: this.computeStatus(this.currentIndex, this.quiz.pages.length + this.REFLECTION_OFFSET)
-      };
-
       const receipt: Steps = {
         title: "Receipt",
         status: this.computeStatus(this.maxIndex, this.quiz.pages.length + this.RECEIPT_OFFSET)
       };
 
-      arr.push(reflection);
       arr.push(receipt);
 
       return arr;

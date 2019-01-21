@@ -8,6 +8,7 @@ import Survey from "./views/Survey.vue";
 import Finish from "./views/Finish.vue";
 import Login from "./views/Login.vue";
 import GroupAllocation from "./views/GroupAllocation.vue";
+import Receipt from "./views/Receipt.vue";
 
 Vue.use(Router);
 
@@ -53,6 +54,10 @@ export default new Router({
       path: "/allocation",
       name: "Group Allocation",
       component: GroupAllocation
+    }, {
+      path: "/receipt",
+      name: "Receipt",
+      component: Receipt
     }
   ]
 });

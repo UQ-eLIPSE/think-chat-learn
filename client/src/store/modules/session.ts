@@ -176,6 +176,20 @@ const actions = {
         });
     },
 
+    updateQuizSession({ commit }: {commit: Commit}, quizSession: IQuizSession) {
+        return API.request(API.POST, API.QUIZSESSION + "update", quizSession).then(() => {
+            commit(mutationKeys.SET_QUIZ_SESSION, quizSession);
+        });
+    },
+
+    retrieveQuizSession({ commit }: { commit: Commit }, id: string) {
+        return API.request(API.GET, API.QUIZSESSION + "quizsession/" + id, {}).then((data:
+            { session: IQuizSession }) => {
+            commit(mutationKeys.SET_QUIZ_SESSION, data.session);
+            return data;
+        });
+    },
+
     sendResponse({ commit }: {commit: Commit}, response: Response) {
         return API.request(API.PUT, API.RESPONSE + "create", response).then((id: { outgoingId: string}) => {
             response._id = id.outgoingId;
