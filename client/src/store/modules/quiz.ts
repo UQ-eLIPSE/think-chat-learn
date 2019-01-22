@@ -3,7 +3,7 @@ import { Commit } from "vuex";
 import { IQuiz, TypeQuestion, IDiscussionPage } from "../../../../common/interfaces/ToClientData";
 import { PageType } from "../../../../common/enums/DBEnums";
 import API from "../../../../common/js/DB_API";
-import { MoocChatStateMessageTypes } from '@/enums';
+import { MoocChatStateMessageTypes } from "@/enums";
 
 export interface IState {
     quiz: IQuiz | null;

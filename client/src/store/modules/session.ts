@@ -103,7 +103,7 @@ function handleChatGroupUpdate(data?: IWSToClientData.UserResponseUpdate) {
 
     const dictionary = state.socketState!.chatGroupFormed!.groupAnswers!;
 
-    const entry: IWSToClientData.ChatGroupAnswer ={
+    const entry: IWSToClientData.ChatGroupAnswer = {
         clientIndex: data.responderIndex,
         answer: data.response
     };

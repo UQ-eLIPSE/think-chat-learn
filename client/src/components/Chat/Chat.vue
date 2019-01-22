@@ -50,7 +50,7 @@ import { Vue, Component, Watch } from "vue-property-decorator";
 import ChatAlert from "./ChatAlert.vue";
 import ChatMessage from "./ChatMessage.vue";
 import CreateChatMessage from "./CreateChatMessage.vue";
-import { SocketState, MoocChatMessage }  from "../../interfaces";
+import { SocketState, MoocChatMessage } from "../../interfaces";
 import { MoocChatMessageTypes, MoocChatStateMessageTypes } from "../../enums";
 import * as IWSToClientData from ",,/../../../common/interfaces/IWSToClientData";
 import { IQuiz, IDiscussionPage, TypeQuestion } from "../../../../common/interfaces/ToClientData";

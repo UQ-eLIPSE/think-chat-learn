@@ -43,7 +43,7 @@ import { IQuiz, IQuizSession } from "../../../common/interfaces/ToClientData";
 @Component({})
 export default class Receipt extends Vue {
     // Note that the receipt is essentially the quizSessionId with a flag of true
-    // To make sure the receipt is legitmate, we 
+    // To make sure the receipt is legitmate, we retrieve the get request again
     private receipt: string = "";
 
     get maxIndex(): number {
@@ -61,7 +61,8 @@ export default class Receipt extends Vue {
     private mounted() {
         // Even though we store the quiz session id, we need to make sure that the maxIndex >= the number of pages
         // and also check if its in the db.
-        if (this.quizSession && this.quizSession._id && this.quiz && this.quiz.pages && (this.maxIndex >= this.quiz.pages.length)) {
+        if (this.quizSession && this.quizSession._id && this.quiz && this.quiz.pages
+          && (this.maxIndex >= this.quiz.pages.length)) {
             this.$store.dispatch("retrieveQuizSession", this.quizSession._id).then(() => {
                 // Due to async functions we have to do this check again
                 if (this.quizSession && this.quizSession._id && this.quizSession.complete) {
