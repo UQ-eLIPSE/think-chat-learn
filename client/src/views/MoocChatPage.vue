@@ -4,6 +4,10 @@
       <div class="column pane1">
         <h1>{{page ? page.title : ""}}</h1>
         <div class="content" v-html="page.content"/>
+        <template v-if="question">
+          <h1>{{question ? question.title : ""}}</h1>
+          <div class="content" v-if="question" v-html="question.content"></div>
+        </template>
       </div>
       <!-- For now only question answer pages have this -->
       <div class="column pane2">
@@ -85,14 +89,13 @@ import { Vue, Component, Watch } from "vue-property-decorator";
 import Confidence from "../components/Confidence.vue";
 import Timer from "../components/Timer/Timer.vue";
 import { IQuiz, Page, Response, TypeQuestion,
-  IQuizSession, IUserSession, IQuestionAnswerPage } from "../../../common/interfaces/ToClientData";
+  IQuizSession, IUserSession, IQuestionAnswerPage, IDiscussionPage, IUser } from "../../../common/interfaces/ToClientData";
 import { PageType, QuestionType } from "../../../common/enums/DBEnums";
 import { SocketState, TimerSettings, Dictionary } from "../interfaces";
 import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
 import * as IWSToServerData from "../../../common/interfaces/IWSToServerData";
 import { WebsocketEvents } from "../../js/WebsocketEvents";
 import { WebsocketManager } from "../../js/WebsocketManager";
-import { IUser } from "../../../common/interfaces/DBSchema";
 
 @Component({
   components: {
@@ -227,21 +230,35 @@ export default class MoocChatPage extends Vue {
     return this.$store.getters.currentDiscussionQuestion;
   }
 
+  get currentMaxQuestion(): TypeQuestion | null {
+    if (!this.quiz || !this.quiz.pages || !this.quiz.pages[this.maxIndex]) {
+      return null;
+    }
+
+    switch(this.quiz.pages[this.maxIndex].type) {
+      case PageType.DISCUSSION_PAGE:
+      case PageType.QUESTION_ANSWER_PAGE:         
+        return this.$store.getters.getQuestionById((this.quiz.pages[this.maxIndex] as IDiscussionPage | IQuestionAnswerPage).questionId);
+      default:
+        return null;
+    }
+  }
+
   private handleConfidenceChange(confidenceValue: number) {
     this.confidence = confidenceValue;
   }
 
   private sendResponse() {
-    // If there is no question, don't run
-    if (!this.question || !this.question._id || !this.quiz ||
-      !this.quiz._id || !this.quizSession || !this.quizSession._id || !this.quiz.pages) {
+    // If there is no question on the max index we don't care
+    if (!this.quiz || !this.currentMaxQuestion
+      || !this.quiz._id || !this.quizSession || !this.quizSession._id || !this.quiz.pages) {
       return Promise.resolve();
     }
 
     // Accomodate for the two types of responses
     // TODO implement MCQ
     let response: Response;
-    if (this.question.type === QuestionType.QUALITATIVE) {
+    if (this.currentMaxQuestion.type === QuestionType.QUALITATIVE) {
       response = {
         type: QuestionType.QUALITATIVE,
         content: this.responseContent,
@@ -319,11 +336,11 @@ export default class MoocChatPage extends Vue {
   // next page while checking if the response needs to be sent
   // We also increment the max index
   private async handleTimeOut() {
-    if (!this.page) {
+    if (!this.quiz || !this.quiz.pages || !this.quiz.pages[this.maxIndex]) {
       return;
     }
 
-    if (this.page.type === PageType.QUESTION_ANSWER_PAGE) {
+    if (this.quiz.pages[this.maxIndex].type === PageType.QUESTION_ANSWER_PAGE) {
       await this.sendResponse();
     }
 

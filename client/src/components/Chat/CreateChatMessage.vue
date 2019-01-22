@@ -73,17 +73,6 @@ export default class CreateChatMessage extends Vue {
     return this.$store.getters.currentDiscussionQuestion;
   }
 
-  // The referred response can be different to what the moochat page renders due to being
-  // able to be backtracked. Hence the referred response is based on what the chat group is
-  // pointing to
-  get referredResponse(): Response | null {
-    if (!this.referredQuestion) {
-      return null;
-    }
-
-    return this.responses[this.referredQuestion._id!];
-  }
-
   get socketState(): SocketState {
     return this.$store.getters.socketState;
   }
@@ -109,7 +98,7 @@ export default class CreateChatMessage extends Vue {
   }
 
   get canType(): boolean {
-    if (!this.quiz || !this.quizSession || !this.referredResponse || !this.socket ||
+    if (!this.quiz || !this.quizSession || !this.socket ||
       !this.quizSession || !this.groupJoin || !this.referredQuestion || !this.currentPage
       || this.currentPage.type !== PageType.DISCUSSION_PAGE) {
       return false;

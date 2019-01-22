@@ -45,7 +45,7 @@ export class UserService extends BaseService{
 
         if (quizSchedule) {
             quizSchedule.pages!.forEach((element) => {
-                if ((element.type === PageType.QUESTION_ANSWER_PAGE) 
+                if (((element.type === PageType.QUESTION_ANSWER_PAGE) || (element.type === PageType.DISCUSSION_PAGE)) 
                     && questionIds.findIndex((id) => { return id === element.questionId; }) === -1) {
                     questionIds.push(element.questionId);
                 }

@@ -7,7 +7,7 @@
       <li v-for="(step, index) in steps" :key="index">
         <span
           class="status"
-          :class="[step.status, index === currentIndex ? 'gold-border' : '']"
+          :class="[step.status, step.relativeIndex === currentIndex ? 'gold-border' : '']"
         >
           <font-awesome-icon
             v-if="step.status === Progress.COMPLETE"
@@ -175,6 +175,7 @@ enum Progress {
 interface Steps {
   title: string;
   status: Progress;
+  relativeIndex: number;
 }
 
 @Component({})
@@ -185,6 +186,9 @@ export default class Stepper extends Vue {
 
   // Offsets the current index by 1 due to store value referring to position in array
   private INDEX_OFFSET = 0;
+
+  // The amount of steps to show on one side
+  private STEP_AMOUNT = 3;
 
   get currentIndex(): number {
     return this.$store.getters.currentIndex + this.INDEX_OFFSET;
@@ -218,7 +222,8 @@ export default class Stepper extends Vue {
 
         const output: Steps = {
           title: element.title,
-          status
+          status,
+          relativeIndex: index
         };
 
         steps.push(output);
@@ -227,12 +232,21 @@ export default class Stepper extends Vue {
 
       const receipt: Steps = {
         title: "Receipt",
-        status: this.computeStatus(this.maxIndex, this.quiz.pages.length + this.RECEIPT_OFFSET)
+        status: this.computeStatus(this.maxIndex, this.quiz.pages.length + this.RECEIPT_OFFSET),
+        relativeIndex: this.quiz.pages.length + this.RECEIPT_OFFSET
       };
 
       arr.push(receipt);
 
-      return arr;
+      // Slice the arr based on how much you want to show
+      // There are 3 outcomes. Overflow left, overflow right and middle segment
+      if (this.currentIndex - this.STEP_AMOUNT <= 0) {
+        return arr.slice(0, 2 * this.STEP_AMOUNT);
+      } else if (this.currentIndex + this.STEP_AMOUNT >= arr.length) {
+        return arr.slice(arr.length - (2 * this.STEP_AMOUNT), arr.length);
+      } else {
+        return arr.slice(this.currentIndex - this.STEP_AMOUNT, this.currentIndex + this.STEP_AMOUNT);
+      }
     }
   }
 
