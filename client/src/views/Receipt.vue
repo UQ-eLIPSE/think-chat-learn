@@ -6,6 +6,9 @@
         <p v-if="receipt">Your Receipt is {{receipt}}. Keep this as a reference</p>
       </div>
       <div class="column pane2">
+        <template v-if="user">
+          <button class="primary" @click="logout()" type="button">Logout</button>
+        </template>
       </div>
     </div>
   </div>
@@ -38,7 +41,13 @@
 </style>
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
-import { IQuiz, IQuizSession } from "../../../common/interfaces/ToClientData";
+import { IQuiz, IQuizSession, ChatGroup, IUser } from "../../../common/interfaces/ToClientData";
+import { logout } from "../../../common/js/front_end_auth";
+import { SocketState } from "../interfaces";
+import { WebsocketManager } from "../../js/WebsocketManager";
+import { WebsocketEvents } from "../../js/WebsocketEvents";
+import * as IWSToServerData from "../../../common/interfaces/IWSToServerData";
+import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
 
 @Component({})
 export default class Receipt extends Vue {
@@ -56,6 +65,22 @@ export default class Receipt extends Vue {
 
     get quizSession(): IQuizSession | null {
         return this.$store.getters.quizSession;
+    }
+
+    get socketState(): SocketState | null {
+      return this.$store.getters.socketState;
+    }
+
+    get socket(): WebsocketManager | null {
+      return this.socketState && this.socketState.socket ? this.socketState.socket : null;
+    }
+
+    get chatGroup(): IWSToClientData.ChatGroupFormed | null {
+      return this.socketState && this.socketState.chatGroupFormed ? this.socketState.chatGroupFormed : null; 
+    }
+
+    get user(): IUser | null {
+      return this.$store.getters.user;
     }
 
     private mounted() {
@@ -76,6 +101,16 @@ export default class Receipt extends Vue {
                 }
             });
         }
+    }
+
+    private logout() {
+      // Logging out is simply a matter of calling the socket event and removing the store values.
+      if (this.socket && this.quizSession && this.chatGroup && this.quizSession._id) {
+        this.socket.emitData<IWSToServerData.Logout>(WebsocketEvents.OUTBOUND.LOGOUT, {
+            quizSessionId: this.quizSession._id,
+            groupId: this.chatGroup.groupId
+        });
+      }
     }
 }
 </script>

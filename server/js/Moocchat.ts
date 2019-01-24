@@ -34,6 +34,40 @@ export class Moocchat {
         this.setup();
     }
 
+    private instantiateSocket(socketIoSocket: SocketIO.Socket) {
+        console.log(`socket.io/${socketIoSocket.id} CONNECTION`);
+
+
+        // Wrap socket with PacSeqSocket
+        const socket = new PacSeqSocket_Server(socketIoSocket);
+        socket.enableInboundLogging();
+        socket.enableOutboundLogging();
+
+        // This registration of a dummy function is kept to allow PacSeqSocket
+        // to log disconnects (by triggering an event handler registration)
+        //
+        // Logouts are now explicit and are handled through user session related endpoints
+        socket.on("disconnect", () => {
+            PacSeqSocket_Server.Destroy(socket);
+        });
+
+
+        // Set up websocket endpoints
+        const chatEndpoint = new ChatEndpoint(socket, this.responseService, this.chatGroupService, null);
+        const userLoginEndpoint = new UserLoginEndpoint(socket, this.quizSessionService);
+        //const answerSubmissionEndpoint = new AnswerSubmissionEndpoint(socket, this.db);
+        //const surveyEndpoint = new SurveyEndpoint(socket, this.db);
+        //const backupClientEndpoint = new BackupClientEndpoint(socket, this.db);
+        const socketResyncEndpoint = new SocketResyncEndpoint(socket);
+
+        chatEndpoint.registerAllEndpointSocketEvents();
+        userLoginEndpoint.registerAllEndpointSocketEvents();
+        //answerSubmissionEndpoint.registerAllEndpointSocketEvents();
+        //surveyEndpoint.registerAllEndpointSocketEvents();
+        //backupClientEndpoint.registerAllEndpointSocketEvents();
+        socketResyncEndpoint.registerAllEndpointSocketEvents();
+    }
+
     private async setup() {
         const db = await Database.Connect(Conf.database);
 
@@ -42,37 +76,7 @@ export class Moocchat {
         this.db = db;
 
         // On each socket connection, join up to websocket endpoints
-        this.socketIO.sockets.on("connection", (socketIoSocket) => {
-            console.log(`socket.io/${socketIoSocket.id} CONNECTION`);
-
-
-            // Wrap socket with PacSeqSocket
-            const socket = new PacSeqSocket_Server(socketIoSocket);
-            socket.enableInboundLogging();
-            socket.enableOutboundLogging();
-
-            // This registration of a dummy function is kept to allow PacSeqSocket
-            // to log disconnects (by triggering an event handler registration)
-            //
-            // Logouts are now explicit and are handled through user session related endpoints
-            socket.on("disconnect", () => { });
-
-
-            // Set up websocket endpoints
-            const chatEndpoint = new ChatEndpoint(socket, this.responseService, this.chatGroupService, null);
-            const userLoginEndpoint = new UserLoginEndpoint(socket, this.quizSessionService);
-            //const answerSubmissionEndpoint = new AnswerSubmissionEndpoint(socket, this.db);
-            //const surveyEndpoint = new SurveyEndpoint(socket, this.db);
-            //const backupClientEndpoint = new BackupClientEndpoint(socket, this.db);
-            const socketResyncEndpoint = new SocketResyncEndpoint(socket);
-
-            chatEndpoint.registerAllEndpointSocketEvents();
-            userLoginEndpoint.registerAllEndpointSocketEvents();
-            //answerSubmissionEndpoint.registerAllEndpointSocketEvents();
-            //surveyEndpoint.registerAllEndpointSocketEvents();
-            //backupClientEndpoint.registerAllEndpointSocketEvents();
-            socketResyncEndpoint.registerAllEndpointSocketEvents();
-        });
+        this.socketIO.sockets.on("connection", this.instantiateSocket.bind(this));
 
         console.log("MOOCchat set up complete");
         //});

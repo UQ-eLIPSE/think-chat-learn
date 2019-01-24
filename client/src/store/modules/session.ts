@@ -11,6 +11,7 @@ import { WebsocketManager } from "../../../js/WebsocketManager";
 import { WebsocketEvents } from "../../../js/WebsocketEvents";
 import { SocketState, MoocChatMessage, ChatMessage, StateMessage, Dictionary } from "../../interfaces";
 import { MoocChatMessageTypes, MoocChatStateMessageTypes } from "../../enums";
+import { logout } from '../../../../common/js/front_end_auth';
 
 export interface IState {
     quizSession: IQuizSession | null;
@@ -117,6 +118,14 @@ function handleChatGroupUpdate(data?: IWSToClientData.UserResponseUpdate) {
     }
 }
 
+function handleLogout(data?: IWSToClientData.LogoutSuccess) {
+    if (!data) {
+        throw Error("No data for logging out");
+    }
+
+    logout();
+}
+
 // Handles the socket events.
 function registerSocketEvents() {
     // Wait for an acknowledge?
@@ -139,6 +148,11 @@ function registerSocketEvents() {
     // Handle group update
     state.socketState.socket!.on<IWSToClientData.UserResponseUpdate>(
         WebsocketEvents.INBOUND.CHAT_GROUP_UPDATE, handleChatGroupUpdate
+    );
+
+    // Handle logout success
+    state.socketState.socket!.once<IWSToClientData.LogoutSuccess>(
+        WebsocketEvents.INBOUND.LOGOUT_SUCCESS, handleLogout
     );
 }
 

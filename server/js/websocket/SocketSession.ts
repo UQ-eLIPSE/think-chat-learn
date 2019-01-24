@@ -35,6 +35,14 @@ export class SocketSession {
         return SocketSession.CreateGroup(groupId);
     }
 
+    public static GetGroup(groupId: string) {
+        return SocketSession.GroupStore.get(groupId);
+    }
+
+    public static DeleteGroup(groupId: string) {
+        return SocketSession.GroupStore.delete(groupId);
+    }
+
     public static GetAutoCreate(quizSession: string) {
         const socketSession = SocketSession.Get(quizSession);
 

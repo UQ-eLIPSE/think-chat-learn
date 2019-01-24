@@ -28,7 +28,9 @@ export interface LoginLti extends ILTIData { }
 export interface LoginResearchConsent extends SessionResponse {
     researchConsent: boolean;
 }
-export interface Logout extends SessionResponse {}
+export interface Logout extends SessionResponse {
+    groupId: string;
+}
 
 export interface InitialAnswer extends AnswerResponse { }
 export interface RevisedAnswer extends AnswerResponse { }

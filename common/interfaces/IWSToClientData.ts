@@ -71,7 +71,7 @@ export interface BackupClientQueueUpdate {
 }
 
 export interface LogoutSuccess {
-    sessionId: string;
+    quizSessionId: string;
 }
 
 export interface UserResponseUpdate {

@@ -5,6 +5,7 @@
   "main": "build/server/main.js",
   "scripts": {
     "start": "node build/server/main.js",
+    "start_dev": "node --inspect build/server/main.js",
     "seed": "node server/util/db_seed.js",
     "m2p": "node server/util/m2p.js",
     "test_compile": "tsc --project ./test",
