@@ -8,7 +8,7 @@
       <li v-for="(step, index) in steps" :key="index">
         <span
           class="status"
-          :class="step.status"
+          :class="[step.status, step.relativeIndex === currentIndex ? 'gold-border' : '']"
         >
           <font-awesome-icon
             v-if="step.status === Progress.COMPLETE"
@@ -34,7 +34,9 @@
 .stepper {
   margin: 0 auto;
   padding: 1.875em;
-
+  .gold-border {
+    border: 1px solid yellow;
+  }
   ul {
     display: flex;
     justify-content: space-between;
@@ -48,6 +50,16 @@
       width: 110px;
       right: 55px;
       top: -25px;
+    }
+    /* Fixes the case where the first list element is in progress. It's a lot easier to override
+    then to create an overly complex rule to bring this element as an exception */
+    li:nth-of-type(1) {
+      .title {
+        &:before {
+          width: 0px;
+          height: 0px;
+        }   
+      }
     }
 
     li {
@@ -104,14 +116,14 @@
         text-align: center;
 
         // Background bar - if number of steps ever becomes a set number this would be nice to re-implement
-        // &:before {
-        //   content: "";
-        //   height: 5px;
-        //   position: absolute;
-        //   width: 6.7rem;
-        //   right: 55px;
-        //   top: -25px;
-        // }
+        &:before {
+          content: "";
+          height: 5px;
+          position: absolute;
+          width: 4.2rem;
+          right: 55px;
+          top: -25px;
+        }
 
         &.complete {
           color: $text;
@@ -148,24 +160,32 @@ enum Progress {
   COMPLETE = "complete",
   IN_PROGRESS = "in-progress",
   TO_DO = "to-do"
-};
+}
 
 interface Steps {
   title: string;
-  status: Progress
-};
+  status: Progress;
+  relativeIndex: number;
+}
 
 @Component({})
 export default class Stepper extends Vue {
 
   /** The offset of the receipt page relative to the end of quiz pages */
-  RECEIPT_OFFSET = 1;
+  private RECEIPT_OFFSET = 0;
 
-  /** The offset of the reflection page relative to the end of quiz pages */
-  REFLECTION_OFFSET = 0;
+  // Offsets the current index by 1 due to store value referring to position in array
+  private INDEX_OFFSET = 0;
+
+  // The amount of steps to show on one side
+  private STEP_AMOUNT = 3;
 
   get currentIndex(): number {
-    return 1;
+    return this.$store.getters.currentIndex + this.INDEX_OFFSET;
+  }
+
+  get maxIndex(): number {
+    return this.$store.getters.maxIndex + this.INDEX_OFFSET;
   }
 
   get Progress() {
@@ -175,45 +195,48 @@ export default class Stepper extends Vue {
   /**
    * Computation of the steps is simply a matter of grabbing the quizzes
    * for the titles and then checking the current index for progression.
-   * 
-   * Note that suppose the index was 3, then it is assumed that indices 
+   *
+   * Note that suppose the index was 3, then it is assumed that indices
    * 2 and 1 are completed.
    */
-  get steps(): Steps[]{
-    if (!this.quiz|| !this.quiz.pages) {
+  get steps(): Steps[] {
+    if (!this.quiz || !this.quiz.pages) {
       return [];
     } else {
       // This is the initial quiz pages
-      const arr = this.quiz.pages.reduce((arr: Steps[], element, index) => {
+      const arr = this.quiz.pages.reduce((steps: Steps[], element, index) => {
 
         let status: Progress;
 
-        status = this.computeStatus(this.currentIndex, index);
+        status = this.computeStatus(this.maxIndex, index);
 
-        const output : Steps = {
+        const output: Steps = {
           title: element.title,
-          status
+          status,
+          relativeIndex: index
         };
 
-        arr.push(output);
-        return arr;
+        steps.push(output);
+        return steps;
       }, []);
-
-      // Always form the computation of reflection and receipt
-      const reflection: Steps = {
-        title: "Reflection",
-        status: this.computeStatus(this.currentIndex, this.quiz.pages.length + this.REFLECTION_OFFSET)
-      }
 
       const receipt: Steps = {
         title: "Receipt",
-        status: this.computeStatus(this.currentIndex, this.quiz.pages.length + this.RECEIPT_OFFSET)
-      }
+        status: this.computeStatus(this.maxIndex, this.quiz.pages.length + this.RECEIPT_OFFSET),
+        relativeIndex: this.quiz.pages.length + this.RECEIPT_OFFSET
+      };
 
-      arr.push(reflection);
       arr.push(receipt);
 
-      return arr;
+      // Slice the arr based on how much you want to show
+      // There are 3 outcomes. Overflow left, overflow right and middle segment
+      if (this.currentIndex - this.STEP_AMOUNT <= 0) {
+        return arr.slice(0, 2 * this.STEP_AMOUNT);
+      } else if (this.currentIndex + this.STEP_AMOUNT >= arr.length) {
+        return arr.slice(arr.length - (2 * this.STEP_AMOUNT), arr.length);
+      } else {
+        return arr.slice(this.currentIndex - this.STEP_AMOUNT, this.currentIndex + this.STEP_AMOUNT);
+      }
     }
   }
 
@@ -228,10 +251,10 @@ export default class Stepper extends Vue {
   private computeStatus(index: number, benchmark: number): Progress {
     let status: Progress;
 
-    if (benchmark===  index) {
+    if (benchmark === index) {
       status = Progress.IN_PROGRESS;
     } else if (benchmark < index) {
-      status = Progress.COMPLETE
+      status = Progress.COMPLETE;
     } else {
       status = Progress.TO_DO;
     }

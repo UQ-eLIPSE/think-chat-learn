@@ -36,6 +36,6 @@ import { Vue, Component, Prop } from "vue-property-decorator";
 @Component({})
 export default class ChatMessage extends Vue {
   @Prop({}) private alertType!: string;
-  @Prop({}) private alertMessage!: number;
+  @Prop({}) private alertMessage!: string;
 }
 </script>

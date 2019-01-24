@@ -3,8 +3,11 @@
     <textarea
       type="text"
       placeholder="Share your ideas"
+      @focus="sendTypingState(true)" @blur="sendTypingState(false)"
+      v-model="loadedMessage"
+      :disabled="!canType"
     />
-    <button class="secondary">Send</button>
+    <button class="secondary" @click="sendMessage()">Send</button>
   </div>
 </template>
 
@@ -34,8 +37,111 @@
 </style>
 
 <script lang="ts">
-import { Vue, Component } from "vue-property-decorator";
+import { Vue, Component, Prop } from "vue-property-decorator";
+import * as IWSToServerData from "../../../../common/interfaces/IWSToServerData";
+import * as IWSToClientData from "../../../../common/interfaces/IWSToClientData";
+import { IQuizSession, IQuiz, Response, IUser, IDiscussionPage, TypeQuestion,
+  Page } from "../../../../common/interfaces/ToClientData";
+import { WebsocketManager } from "../../../js/WebsocketManager";
+import { WebsocketEvents } from "../../../js/WebsocketEvents";
+import { SocketState, Dictionary } from "../../interfaces";
+import { PageType } from "../../../../common/enums/DBEnums";
+
 
 @Component({})
-export default class CreateChatMessage extends Vue {}
+export default class CreateChatMessage extends Vue {
+
+  private loadedMessage: string = "";
+
+  get user(): IUser | null {
+    return this.$store.getters.user;
+  }
+
+  get quiz(): IQuiz | null {
+    return this.$store.getters.quiz;
+  }
+
+  get quizSession(): IQuizSession | null {
+    return this.$store.getters.quizSession;
+  }
+
+  get responses(): Dictionary<Response> {
+    return this.$store.getters.responses;
+  }
+
+  get referredQuestion(): TypeQuestion {
+    return this.$store.getters.currentDiscussionQuestion;
+  }
+
+  get socketState(): SocketState {
+    return this.$store.getters.socketState;
+  }
+
+  get socket(): WebsocketManager | null {
+    return this.socketState && this.socketState.socket ? this.socketState.socket : null;
+  }
+
+  get groupJoin(): IWSToClientData.ChatGroupFormed | null {
+    return this.socketState && this.socketState.chatGroupFormed ? this.socketState.chatGroupFormed : null;
+  }
+
+  get maxIndex(): number {
+    return this.$store.getters.maxIndex;
+  }
+
+  get currentPage(): Page | null {
+    if (!this.quiz || !this.quiz.pages) {
+      return null;
+    }
+
+    return this.quiz.pages[this.maxIndex];
+  }
+
+  get canType(): boolean {
+    if (!this.quiz || !this.quizSession || !this.socket ||
+      !this.quizSession || !this.groupJoin || !this.referredQuestion || !this.currentPage
+      || this.currentPage.type !== PageType.DISCUSSION_PAGE) {
+      return false;
+    }
+    return true;
+  }
+
+  // Sends the typing state to the listening sockets to the group, including self!
+  private sendTypingState(state: boolean) {
+
+    // TODO form questionId connection and discussion page in the db and admin page
+    if (this.canType) {
+      const output: IWSToServerData.ChatGroupTypingNotification = {
+        isTyping: state,
+        quizSessionId: this.quizSession!._id!,
+        groupId: this.groupJoin!.groupId!
+      };
+
+      this.socket!.emitData<IWSToServerData.ChatGroupTypingNotification>(
+        WebsocketEvents.OUTBOUND.CHAT_GROUP_TYPING_NOTIFICATION, output);
+    }
+  }
+
+  private sendMessage() {
+    // Sends a message to the server. Note that we do
+    // not preload messages (as in push local messages to itself immediately)
+    if (!this.canType) {
+      console.log("Attempted to send message in a bad typing state");
+      return;
+    }
+
+    const message: IWSToServerData.ChatGroupSendMessage = {
+        message: this.loadedMessage,
+        groupId: this.groupJoin!.groupId!,
+        questionId: this.referredQuestion!._id!,
+        quizSessionId: this.quizSession!._id!,
+        userId: this.user!._id!
+    };
+
+    this.socket!.emitData<IWSToServerData.ChatGroupSendMessage>(
+      WebsocketEvents.OUTBOUND.CHAT_GROUP_SEND_MESSAGE, message);
+
+    this.loadedMessage = "";
+  }
+}
 </script>

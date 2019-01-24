@@ -1,6 +1,7 @@
 import { BaseService } from "./BaseService";
 import { ChatGroupRepository } from "../repositories/ChatGroupRepository";
-import { IChatGroup } from "../../common/interfaces/DBSchema";
+import { IChatGroup, IChatMessage } from "../../common/interfaces/DBSchema";
+import { ObjectId } from "bson";
 
 export class ChatGroupService extends BaseService{
 
@@ -20,6 +21,22 @@ export class ChatGroupService extends BaseService{
     // Simply an override to the existing chat group
     public async updateChatGroup(data: IChatGroup): Promise<boolean> {
         return this.chatGroupRepo.updateOne(data);
+    }
+
+    // Appends the chat message to a given chatgroup and stores it in the db
+    // assumes that the message is filled
+    public async appendChatMessageToGroup(data: IChatGroup, content: string, userId: string, questionId: string): Promise<boolean> {
+        const message: IChatMessage = {
+            _id: (new ObjectId()).toHexString(),
+            content,
+            userId,
+            questionId,
+            timeStamp: new Date()
+        };
+
+        data.messages!.push(message);
+
+        return this.updateChatGroup(data);
     }
 
     // Deletes a chat group based on the id
@@ -42,5 +59,21 @@ export class ChatGroupService extends BaseService{
     // Remember if using mongo this finds elements in the array
     public async findChatGroupsBySessionQuizQuestion(quizSessionId: string, quizId: string, questionId: string): Promise<IChatGroup[]> {
         return this.chatGroupRepo.findChatGroupsByIds(quizSessionId, quizId, questionId);
+    }
+
+    public async appendQuestionProgress(questionId: string, groupId: string) {
+        const chatGroup = await this.getChatGroup(groupId);
+
+        if (!chatGroup) {
+            throw Error(`Invalid chat group id ${groupId}`);
+        }
+
+        // If we do find it return nothing
+        if (chatGroup.questionIds!.findIndex((element) => { return element === questionId }) === -1) {
+            chatGroup.questionIds!.push(questionId);
+            return await this.updateChatGroup(chatGroup);
+        }
+
+        return true;
     }
 }

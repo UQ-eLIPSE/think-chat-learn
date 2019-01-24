@@ -36,7 +36,8 @@ const actions = {
     },
 
     createSession({ commit }: { commit: Commit }, session: IUserSession) {
-        return API.request(API.PUT, API.USERSESSION + "create", session).then((outcome: boolean) => {
+        return API.request(API.PUT, API.USERSESSION + "create", session).then((id: { outgoingId: string }) => {
+            session._id = id.outgoingId;
             commit(mutationKeys.SET_SESSION, session);
         });
     },

@@ -47,6 +47,8 @@ export interface IQuizSession extends Document {
   // A response is defined by a referral to a page
   // with the appropiate content
   responses?: OID[];
+  // Mark the session as complete if applicable
+  complete?: boolean;
 }
 
 // Contains a question in which people can answer.
@@ -123,13 +125,14 @@ export interface IPage extends Document {
   type: PageType;
   title: string;
   content: string;
+  timeoutInMins: number;
 }
 
-// As of now, the existence of type indicates
-// a particular set of chat boxes, could also
-// link to a question if necessary but content should be enough
+// A discussion page needs a question id so
+// that the user's responses can be displayed on the client side
 export interface IDiscussionPage extends IPage {
   type: PageType.DISCUSSION_PAGE;
+  questionId: string;
 }
 
 // Contains a linkage to a question/prompt which could be used
@@ -158,9 +161,12 @@ export interface IQuizSchedule extends Document {
 
 // A message that was sent. Within a chat group. Contains
 // a user id which is presumably good (as in the user is part of the group)
+// Since each chat group can point to multiple questions, we have to store the questionId as well
 export interface IChatMessage extends Document {
-  userId?: OID;
+  userId: OID;
   content: string;
+  timeStamp: Date;
+  questionId: OID;
 }
 
 // A chat group contains multiple people talking.
@@ -171,7 +177,7 @@ export interface IChatGroup extends Document {
   messages?: IChatMessage[];
   quizSessionIds?: OID[];
   quizId?: OID;
-  questionId?: OID;
+  questionIds?: OID[];
 }
 
 export interface ChatMessage<OID, Date> {

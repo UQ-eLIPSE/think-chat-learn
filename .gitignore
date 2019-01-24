@@ -66,3 +66,6 @@ admin/vue.config.js
 # Front end dist files
 client/dist
 admin/dist
+
+# Images in public dist for dev purposes
+client/public/img/

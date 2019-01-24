@@ -1,0 +1,4 @@
+export enum EmitterEvents {
+    CONFIDENCE_CHANGE = "CONFIDENCE_CHANGE",
+    PAGE_TIMEOUT = "PAGE_TIMEOUT"
+}

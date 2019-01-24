@@ -20,7 +20,7 @@
             <!-- Render the options appropiately. It is a bit naughty to set the key as the index due to
                  the possibility of deletion of options. -->
             <div v-for="option in pageQuestion.options" :key="option.mountedId">
-                <span>Option Content</span><input type="textarea" placeholder="Place option content here"/>
+                <span>Option Content</span><input v-model="option.content" type="textarea" placeholder="Place option content here"/>
 
                 <br>
 

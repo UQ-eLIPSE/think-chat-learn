@@ -27,7 +27,23 @@ export class QuizSessionController extends BaseController {
         });
     }
 
+    private getQuizSessionById(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
+        this.quizSessionService.getQuizSession(req.params.quizSessionId).then((quizSession) => {
+            if (quizSession) {
+                res.json({
+                    session: quizSession
+                });
+            } else {
+                res.sendStatus(400);
+            }
+        }).catch((e: Error) => {
+            console.log(e);
+            res.sendStatus(500);
+        });
+    }
+
     public setupRoutes() {
         this.router.put("/create", this.createQuizSession.bind(this));
+        this.router.get("/quizsession/:quizSessionId", this.getQuizSessionById.bind(this));
     }
 }

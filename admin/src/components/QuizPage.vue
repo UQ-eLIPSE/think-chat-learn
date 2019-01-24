@@ -49,9 +49,9 @@
       <!-- TODO make this a proper select box once Questions and Answers are implemented -->
       <select
         v-model="page.questionId"
-        v-if="page.type === PageType.QUESTION_ANSWER_PAGE"
+        v-if="(page.type === PageType.QUESTION_ANSWER_PAGE) || (page.type === PageType.DISCUSSION_PAGE)"
       >
-        <option>Some Default option</option>
+        <option v-for="question in questions" :key="question._id" :value="question._id">{{question.title}}</option>
       </select>
       <select
         v-model="page.surveryId"
@@ -60,11 +60,12 @@
         <option> Some Default survey</option>
       </select>
 
-      <span>Page content</span><input
+      <span>Page content</span><textarea
         v-model="page.content"
-        type="textarea"
         placeholder="Set the content of the page"
       />
+      <span>Timeout time</span>
+      <input type="number"  v-model.number="page.timeoutInMins"/>
     </div>
     <br>
     <button
@@ -168,14 +169,17 @@ export default class QuizPage extends Vue {
           outgoingPages.push({
             title: element.title,
             content: element.content,
-            type: element.type
+            type: element.type,
+            questionId: element.questionId,
+            timeoutInMins: element.timeoutInMins
           });
           break;
         case PageType.INFO_PAGE:
           outgoingPages.push({
             title: element.title,
             content: element.content,
-            type: element.type
+            type: element.type,
+            timeoutInMins: element.timeoutInMins
           });
           break;
         case PageType.QUESTION_ANSWER_PAGE:
@@ -183,7 +187,8 @@ export default class QuizPage extends Vue {
             title: element.title,
             content: element.content,
             type: element.type,
-            questionId: element.questionId
+            questionId: element.questionId,
+            timeoutInMins: element.timeoutInMins
           });
           break;
         case PageType.SURVEY_PAGE:
@@ -191,7 +196,8 @@ export default class QuizPage extends Vue {
             title: element.title,
             content: element.content,
             type: element.type,
-            surveyId: element.surveyId
+            surveyId: element.surveyId,
+            timeoutInMins: element.timeoutInMins
           });
           break;
       }
@@ -234,7 +240,8 @@ export default class QuizPage extends Vue {
         type: PageType.QUESTION_ANSWER_PAGE,
         title: "Some Title",
         content: "",
-        questionId: ""
+        questionId: "",
+        timeoutInMins: 2
     };
 
     // Remember vue set is need for rendering to occur

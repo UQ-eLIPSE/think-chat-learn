@@ -14,8 +14,10 @@ import { ChatMessage } from "../../chat/ChatMessage";
 import { ChatGroupFormationLoop } from "../../chat/ChatGroupFormationLoop";
 import { ResponseService } from "../../../services/ResponseService";
 import { ChatGroupService } from "../../../services/ChatGroupService";
-import { IChatGroup } from "../../../../common/interfaces/DBSchema";
+import { IChatGroup, IChatMessage } from "../../../../common/interfaces/DBSchema";
 import { SocketSession } from "../SocketSession";
+
+const CLIENT_INDEX_OFFSET = 1;
 
 export class ChatEndpoint extends WSEndpoint {
     private static async HandleJoinRequest(socket: PacSeqSocket_Server, data: IWSToServerData.ChatGroupJoin, responseService: ResponseService,
@@ -30,7 +32,7 @@ export class ChatEndpoint extends WSEndpoint {
 
         // If an existing chat group exist, then fail it
         const existingChatGroup = await chatGroupService.findChatGroupsBySessionQuizQuestion(data.quizSessionId, data.quizId, data.questionId);
-
+        console.log(existingChatGroup);
         // Can't join into pool if already in chat group
         if (existingChatGroup.length) {
             return console.error(`Attempted chat group join request while already in chat group;
@@ -69,15 +71,21 @@ export class ChatEndpoint extends WSEndpoint {
                     throw Error("Somehow a 0 length group was formed");
                 }
 
+                // Upon instantiation there should only be one question in the questionIds
                 const chatGroup: IChatGroup = {
                     messages: [],
                     quizSessionIds: output.reduce((arr, value) => { arr.push(value.quizSessionId!); return arr; }, [] as string[]),
                     quizId: output[0].quizId,
-                    questionId: output[0].questionId
+                    questionIds: [output[0].questionId]
                 };
 
+                const clientIndexDict: {[key: string]: number} = chatGroup.quizSessionIds!.reduce((acc: {[key: string]: number}, currentId, index) => {
+                    acc[currentId] = index + CLIENT_INDEX_OFFSET;
+                    return acc;
+                }, {});
+
                 chatGroupService.createChatGroup(chatGroup).then((groupId) => {
-                    // Instantiate the croup
+                    // Instantiate the group
                     SocketSession.CreateGroup(groupId)
 
                     // Grab the associated sockets and emit
@@ -90,17 +98,32 @@ export class ChatEndpoint extends WSEndpoint {
                         if (maybeSession) {
                             const socket = maybeSession.getSocket();
                             if (socket) {
-                                // TODO fix the hard code answers and client index
                                 // Client index is based on position in the group chat
                                 // Also note chatgroup was the one formed just then
-                                const clientIndex = chatGroup.quizSessionIds!.findIndex((sessionId) => { return element.quizSessionId === sessionId});
+                                const clientIndex = clientIndexDict[element.quizSessionId];
                                 
-
-                                socket.emit("chatGroupFormed", {
+                                // TODO create an update group function
+                                const groupFormed: IWSToClientData.ChatGroupFormed = {
                                     groupId: groupId,
                                     groupSize: chatGroup.quizSessionIds!.length,
-                                    groupAnswers: [],
-                                    clientIndex })
+                                    groupAnswers: output.reduce((acc: IWSToClientData.GroupAnswerDictionary, current) => {
+                                        const answer: IWSToClientData.ChatGroupAnswer = {
+                                            clientIndex: clientIndexDict[current.quizSessionId],
+                                            answer: current
+                                        }
+
+                                        // Instantiate the array, else append if the question does not exist already
+                                        if (!acc[current.questionId!]) {
+                                            acc[current.questionId!] = [answer];
+                                        } else {
+                                            acc[current.questionId].push(answer);
+                                        }
+                                        return acc;
+                                    }, {}),
+                                    clientIndex
+                                }
+
+                                socket.emit("chatGroupFormed", groupFormed);
                             } else {
                                 console.error("no socket");
                             }
@@ -141,7 +164,6 @@ export class ChatEndpoint extends WSEndpoint {
 
         chatGroup.setTypingState(quizAttempt, data.isTyping);*/
 
-        // TODO create a broadcast function based on id
         // Get group, get socket. Broadcast message
 
         const group = SocketSession.GetAutoCreateGroup(data.groupId);
@@ -159,8 +181,6 @@ export class ChatEndpoint extends WSEndpoint {
             const sock = socketSession.getSocket();
 
             if (sock) {
-                // TODO fix the indexes
-                const clientIndex = chatGroup.quizSessionIds!.findIndex((sessionId) => { return data.quizSessionId === sessionId});
 
                 const chatGroupTyping: IWSToClientData.ChatGroupTypingNotification = {
                     clientIndicies: SocketSession.GetTypingStatesForGroup(data.groupId)
@@ -206,8 +226,9 @@ export class ChatEndpoint extends WSEndpoint {
             const sock = socketSession.getSocket();
 
             if (sock) {
-                // TODO fix the indexes
-                const clientIndex = chatGroup.quizSessionIds!.findIndex((sessionId) => { return data.quizSessionId === sessionId});
+                const clientIndex = chatGroup.quizSessionIds!.findIndex((sessionId) => { 
+                    return data.quizSessionId === sessionId
+                }) + CLIENT_INDEX_OFFSET;
 
                 const chatGroupMessage: IWSToClientData.ChatGroupMessage = {
                     message: data.message,
@@ -219,10 +240,50 @@ export class ChatEndpoint extends WSEndpoint {
                 console.error("Could not retrieve sock");
             }
         });
+
+        chatGroupService.appendChatMessageToGroup(chatGroup, data.message, data.userId, data.questionId);
     }
 
 
+    private static async HandleGroupUpdate(socket: PacSeqSocket_Server, data: IWSToServerData.ChatGroupUpdateResponse,
+        responseService: ResponseService, chatGroupService: ChatGroupService) {
+        const group = SocketSession.GetAutoCreateGroup(data.groupId);
 
+        const chatGroup = await chatGroupService.getChatGroup(data.groupId);
+
+        if (!chatGroup) {
+            throw Error(`Invalid chat group of id ${data.groupId}`);
+        }
+
+        // Grab the response 
+        const response = await responseService.getResponse(data.responseId);
+
+        if (!response) {
+            throw Error(`Invalid response of id ${data.responseId}`);
+        }
+
+        const responderIndex = chatGroup.quizSessionIds!.findIndex((sessionId) => { 
+            return data.quizSessionId === sessionId
+        }) + CLIENT_INDEX_OFFSET;
+
+        group.forEach((socketSession) => {
+            const sock = socketSession.getSocket();
+
+            if (sock) {
+                const clientIndex = chatGroup.quizSessionIds!.findIndex((sessionId) => { 
+                    return data.quizSessionId === sessionId
+                }) + CLIENT_INDEX_OFFSET;
+
+                const chatGroupUpdate: IWSToClientData.UserResponseUpdate = {
+                    response: response,
+                    responderIndex
+                };
+                sock.emit("chatGroupUpdate", chatGroupUpdate);
+            } else {
+                console.error("Could not retrieve sock");
+            }
+        });
+    }
 
     private responseService: ResponseService;
     private chatGroupService: ChatGroupService;
@@ -244,10 +305,13 @@ export class ChatEndpoint extends WSEndpoint {
                 // Something bad happened
                 return false;
             });
-            
-
-
         };
+    }
+
+    public get onHandleGroupUpdate() {
+        return (data: IWSToServerData.ChatGroupUpdateResponse) => {
+            ChatEndpoint.HandleGroupUpdate(this.getSocket(), data, this.responseService, this.chatGroupService);
+        }
     }
 
     public get onTypingNotification() {
@@ -275,6 +339,7 @@ export class ChatEndpoint extends WSEndpoint {
             case "chatGroupTypingNotification": return this.onTypingNotification;
             case "chatGroupQuitStatusChange": return this.onQuitStatusChange;
             case "chatGroupMessage": return this.onMessage;
+            case "chatGroupUpdate": return this.onHandleGroupUpdate;
         }
 
         throw new Error(`No endpoint event handler for "${name}"`);
@@ -286,6 +351,7 @@ export class ChatEndpoint extends WSEndpoint {
             "chatGroupTypingNotification",
             "chatGroupQuitStatusChange",
             "chatGroupMessage",
+            "chatGroupUpdate"
         ]);
     }
 }

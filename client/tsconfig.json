@@ -27,14 +27,12 @@
         "scripthost"
       ]
     },
-    "include": [
-      "src/**/*.ts",
-      "src/**/*.tsx",
-      "src/**/*.vue",
-      "tests/**/*.ts",
-      "tests/**/*.tsx"
-    ],
     "exclude": [
       "node_modules"
+    ],
+    "files": [
+      // 15/1/19 For some strange reason VSCode decided to not respect glob syntax
+      // At this point we just use the main.ts as the entry point
+      "src/main.ts"
     ]
 }  

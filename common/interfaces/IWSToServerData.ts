@@ -6,11 +6,11 @@ interface SessionResponse {
     quizSessionId: string;
 }
 
-// An attempt is a combination of quiz and question addition to a response
+// For redundancy purposes we enforce the users to send all the ids.
+// A quiz attempt can only be created if there is the a known user (userid)
+// doing a particular quiz (quizid) at a given time (quizSessionId). They
+// would then be attempting to do a question (responseId, questionId)
 interface QuizAttemptResponse {
-    responseId: string;
-    quizId: string;
-    questionId: string;
     quizSessionId: string;
 }
 
@@ -33,9 +33,22 @@ export interface Logout extends SessionResponse {}
 export interface InitialAnswer extends AnswerResponse { }
 export interface RevisedAnswer extends AnswerResponse { }
 
-export interface ChatGroupJoin extends QuizAttemptResponse { }
+export interface ChatGroupJoin {
+    responseId: string;
+    quizId: string;
+    questionId: string;
+    quizSessionId: string;
+    userId: string;
+}
 export interface ChatGroupSendMessage extends ChatGroupResponse {
     message: string;
+    userId: string;
+    questionId: string;
+}
+
+// The intent is to tell the chat room to update their response id/groupanswer bank
+export interface ChatGroupUpdateResponse extends ChatGroupResponse {
+    responseId: string;
 }
 export interface ChatGroupQuitStatusChange extends ChatGroupResponse {
     quitStatus: boolean;
@@ -50,7 +63,7 @@ export interface BackupClientStatusRequest extends QuizAttemptResponse { }
 export interface BackupClientTransferConfirm extends QuizAttemptResponse { }
 
 export interface SurveyResponse extends QuizAttemptResponse {
-    content: ToServerData.SurveyResponse_Content[]
+    content: ToServerData.SurveyResponse_Content[];
 }
 
 export interface TerminateSessions {
