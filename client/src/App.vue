@@ -7,6 +7,7 @@
         <router-view class="router-panel" />
       </div>
     </section>
+    <Timer />
     <Footer />
   </div>
 </template>
@@ -163,11 +164,13 @@ import { getIdToken, getLoginResponse } from "../../common/js/front_end_auth";
 import Nav from "./components/Nav.vue";
 import Stepper from "./components/Stepper.vue";
 import Footer from "./components/Footer.vue";
+import Timer from "./components/Timer/Timer.vue";
 
 @Component({
   components: {
     Nav,
     Stepper,
+    Timer,
     Footer
   }
 })

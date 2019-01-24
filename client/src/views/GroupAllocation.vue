@@ -31,8 +31,12 @@
 }
 </style>
 <script lang="ts">
-import { Vue, Component } from "vue-property-decorator";
+import { Vue, Component, Watch } from "vue-property-decorator";
 import ProgressLoader from "../components/ProgressLoader.vue";
+import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
+import { SocketState, TimerSettings } from "../interfaces";
+import { EventBus } from "../EventBus";
+import { EmitterEvents } from "../emitters";
 
 @Component({
   components: {
@@ -41,5 +45,32 @@ import ProgressLoader from "../components/ProgressLoader.vue";
 })
 export default class GroupAllocation extends Vue {
   private notifyTone: boolean | null = null;
+
+  get socketState(): SocketState | null {
+    return this.$store.getters.socketState;
+  }
+
+  get chatGroup(): IWSToClientData.ChatGroupFormed | null {
+    return this.socketState && this.socketState.chatGroupFormed ? this.socketState.chatGroupFormed : null;
+  }
+
+  private goToMoocChatPage() {
+    this.$router.push("/page");
+  }
+
+  private mounted() {
+    if (this.chatGroup) {
+      this.goToMoocChatPage();
+    }
+  }
+
+  @Watch("chatGroup")
+  private handleChatGroupChange(newVal: IWSToClientData.ChatGroupFormed | null,
+    oldVal: IWSToClientData.ChatGroupFormed | null) {
+      if (newVal) {
+        this.goToMoocChatPage();
+        EventBus.$emit(EmitterEvents.START_TIMER, this.$store.getters.currentTimerSettings);
+      }
+  }
 }
 </script>

@@ -143,6 +143,8 @@ import * as IWSToServerData from "../../../common/interfaces/IWSToServerData";
 import { SocketState } from "../interfaces";
 import { WebsocketManager } from "../../js/WebsocketManager";
 import { WebsocketEvents } from "../../js/WebsocketEvents";
+import { EventBus } from "../EventBus";
+import { EmitterEvents } from "../emitters";
 
 @Component({
   components: {
@@ -153,8 +155,8 @@ export default class Landing extends Vue {
   get user(): IUser | null {
     return this.$store.getters.user;
   }
-
-  get quiz(): IQuiz | null {
+  
+  get quiz() : IQuiz | null {
     return this.$store.getters.quiz;
   }
 
@@ -190,6 +192,7 @@ export default class Landing extends Vue {
       this.socket!.emitData<IWSToServerData.StoreSession>(WebsocketEvents.OUTBOUND.STORE_QUIZ_SESSION_SOCKET, {
         quizSessionId: this.quizSession!._id!
       });
+      EventBus.$emit(EmitterEvents.START_TIMER, this.$store.getters.currentTimerSettings);
       this.$router.push("/page");
     }).catch((e: Error) => {
       console.log(e);

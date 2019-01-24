@@ -16,10 +16,6 @@ export interface IState {
     quizSession: IQuizSession | null;
     // Note the key of this dictionary would be the questionid as we simply respond to one question
     responses: Dictionary<Response>;
-    // The difference between the two indices is that the currentIndex is what should be
-    // rendered and max is what pages can be rendered
-    currentIndex: number;
-    maxIndex: number;
     socketState: SocketState;
     chatMessages: MoocChatMessage[];
 }
@@ -27,8 +23,6 @@ export interface IState {
 const state: IState = {
     quizSession: null,
     responses: {},
-    currentIndex: 0,
-    maxIndex: 0,
     // Default socket state
     socketState: {
         chatMessages: [],
@@ -42,10 +36,6 @@ const state: IState = {
 const mutationKeys = {
     SET_QUIZ_SESSION: "Setting a quiz session",
     ADD_RESPONSE: "Adding a response",
-    INCREMENTING_CURRENT_INDEX: "Incrementing the current index",
-    DECREMENTING_CURRENT_INDEX: "Decrementing the current index",
-    SET_CURRENT_INDEX: "Sets the current index",
-    INCREMENTING_MAX_INDEX: "Incrementing the max index",
     // Web socket mutations
     CREATE_SOCKET: "Creating the socket",
     CLOSE_SOCKET: "Closing the socket",
@@ -103,7 +93,7 @@ function handleChatGroupUpdate(data?: IWSToClientData.UserResponseUpdate) {
 
     const dictionary = state.socketState!.chatGroupFormed!.groupAnswers!;
 
-    const entry: IWSToClientData.ChatGroupAnswer ={
+    const entry: IWSToClientData.ChatGroupAnswer = {
         clientIndex: data.responderIndex,
         answer: data.response
     };
@@ -151,14 +141,6 @@ const getters = {
         return state.responses;
     },
 
-    currentIndex: (): number => {
-        return state.currentIndex;
-    },
-
-    maxIndex: (): number => {
-        return state.maxIndex;
-    },
-
     socketState: (): SocketState | null => {
         return state.socketState;
     },
@@ -200,22 +182,6 @@ const actions = {
         });
     },
 
-    incrementCurrentIndex({ commit }: {commit: Commit}) {
-        return commit(mutationKeys.INCREMENTING_CURRENT_INDEX);
-    },
-
-    setCurrentIndex({ commit }: {commit: Commit}, pageNumber: number) {
-        return commit(mutationKeys.SET_CURRENT_INDEX, pageNumber);
-    },
-
-    decrementCurrentIndex({ commit }: {commit: Commit}) {
-        return commit(mutationKeys.DECREMENTING_CURRENT_INDEX);
-    },
-
-    incrementMaxIndex({ commit }: {commit: Commit}) {
-        return commit(mutationKeys.INCREMENTING_MAX_INDEX);
-    },
-
     // The issue with creating the socket is that generally speaking you want to have
     // your components to react to a certain socket event. E.g. when a user writes
     // a message, append to the chatbox. Hence we create an interface known as
@@ -240,22 +206,6 @@ const mutations = {
 
     [mutationKeys.ADD_RESPONSE](funcState: IState, data: Response) {
         Vue.set(funcState.responses, data.questionId, data);
-    },
-
-    [mutationKeys.INCREMENTING_CURRENT_INDEX](funcState: IState) {
-        Vue.set(funcState, "currentIndex", funcState.currentIndex + 1);
-    },
-
-    [mutationKeys.DECREMENTING_CURRENT_INDEX](funcState: IState) {
-        Vue.set(funcState, "currentIndex", funcState.currentIndex - 1);
-    },
-
-    [mutationKeys.SET_CURRENT_INDEX](funcState: IState, data: number) {
-        Vue.set(funcState, "currentIndex", data);
-    },
-
-    [mutationKeys.INCREMENTING_MAX_INDEX](funcState: IState) {
-        Vue.set(funcState, "maxIndex", funcState.maxIndex + 1);
     },
 
     [mutationKeys.CREATE_SOCKET](funcState: IState) {

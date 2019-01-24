@@ -53,7 +53,6 @@
         <button :class="[ !(currentIndex > 0) ? 'disabled' : '', 'primary']" :disabled="!(currentIndex > 0)" @click="goToPreviousPage()">Go To Previous Page</button>
         <button :class="[ !(maxIndex > currentIndex) ? 'disabled' : '', 'primary']" :disabled="!(maxIndex > currentIndex)" @click="goToNextPage()">Go To Next Page</button>
       </div>
-      <Timer @PAGE_TIMEOUT="handleTimeOut()" :timerSettings="pageTimeSettings"/>
     </div>
   </div>
 </template>
@@ -96,6 +95,8 @@ import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
 import * as IWSToServerData from "../../../common/interfaces/IWSToServerData";
 import { WebsocketEvents } from "../../js/WebsocketEvents";
 import { WebsocketManager } from "../../js/WebsocketManager";
+import { EventBus } from "../EventBus";
+import { EmitterEvents } from "../emitters";
 
 @Component({
   components: {
@@ -213,19 +214,6 @@ export default class MoocChatPage extends Vue {
     return this.$store.getters.userSession;
   }
 
-  get pageTimeSettings(): TimerSettings | null {
-    if (!this.quiz || !this.quiz.pages || !this.quiz.pages[this.maxIndex]) {
-      return null;
-    }
-
-    const output: TimerSettings = {
-      referencedPageId: this.quiz.pages[this.maxIndex]._id!,
-      timeoutInMins: this.quiz.pages[this.maxIndex].timeoutInMins
-    };
-
-    return output;
-  }
-
   get currentDiscussionQuestion(): TypeQuestion | null {
     return this.$store.getters.currentDiscussionQuestion;
   }
@@ -252,6 +240,7 @@ export default class MoocChatPage extends Vue {
     // If there is no question on the max index we don't care
     if (!this.quiz || !this.currentMaxQuestion
       || !this.quiz._id || !this.quizSession || !this.quizSession._id || !this.quiz.pages) {
+        console.log("IMM TERM");
       return Promise.resolve();
     }
 
@@ -285,20 +274,14 @@ export default class MoocChatPage extends Vue {
     this.confidence = this.DEFAULT_CONFIDENCE;
   }
 
-  // Goes the to the next page by incrementing the count
-  // Additionally does a quiz page check to see if the reflection page should be touched
+  // Goes the to the next page by incrementing the current count
   private goToNextPage() {
     if (!this.quiz || !this.quiz.pages) {
       return;
     }
 
-    // Not safe to go to the next page, go to reflection
-    if (this.currentIndex + 1 > this.quiz.pages.length) {
-      this.$router.push("/receipt");
-    } else {
-      // Remember to increment afterwards
-      this.$store.dispatch("incrementCurrentIndex");
-    }
+    // Remember to increment afterwards
+    this.$store.dispatch("incrementCurrentIndex");
   }
 
   // Goes to a page based on the number provided. Defaults to max
@@ -350,18 +333,19 @@ export default class MoocChatPage extends Vue {
   }
 
   // If this page becomes a discussion page, handles the instantiation of the sockets and the sessions in the db
-  @Watch("currentPageType")
-  private handlePageTypeChange(newVal: PageType | null, oldVal: PageType | null) {
-    if (newVal && newVal === PageType.DISCUSSION_PAGE) {
+  @Watch("maxIndex")
+  private handlePageChange(newVal: number | null, oldVal: number | null) {
+    if (!this.quiz || !this.userSession || !this.quiz.pages) {
+      console.log("Missing quiz or user session");
+      return;
+    }
 
-      if (!this.quiz || !this.userSession) {
-        console.log("Missing quiz or user session");
-        return;
-      }
+    if (newVal && newVal < this.quiz.pages.length && this.quiz.pages[newVal].type === PageType.DISCUSSION_PAGE) {
 
       // Upon changing to a discussion page, if we are in a group we need to check if the group state
-      // is good. If it is then we proceed as normal. If we don't have a group, send a join request
-      if (this.socketState && this.socketState.chatGroupFormed && (this.currentIndex === this.maxIndex)) {
+      // is good. If it is then we proceed as normal. If we don't have a group go to the allocation page
+      if (this.socketState && this.socketState.chatGroupFormed &&
+        (this.currentIndex === this.maxIndex)) {
         // TODO handle a a bad group/check group state
         const data = {
           questionId: this.currentDiscussionQuestion!._id!,
@@ -371,11 +355,16 @@ export default class MoocChatPage extends Vue {
         this.$store.dispatch("appendQuestionToChatGroup", data).then(() => {
           this.emitGroupUpdate(() => {});
         });
+
+        EventBus.$emit(EmitterEvents.START_TIMER, this.$store.getters.currentTimerSettings);
       } else {
+        this.$router.push("/allocation");
         this.emitJoinRequest(() => {
           return;
         });
       }
+    } else {
+      EventBus.$emit(EmitterEvents.START_TIMER, this.$store.getters.currentTimerSettings);
     }
   }
 
@@ -430,6 +419,13 @@ export default class MoocChatPage extends Vue {
     if (this.maxIndex >= this.quiz.pages.length) {
       this.$router.push("/reflection");
     }
+
+    // Handle the timeout
+    EventBus.$on(EmitterEvents.PAGE_TIMEOUT, this.handleTimeOut);
+  }
+
+  private destroyed() {
+    EventBus.$off(EmitterEvents.PAGE_TIMEOUT, this.handleTimeOut);
   }
 }
 </script>

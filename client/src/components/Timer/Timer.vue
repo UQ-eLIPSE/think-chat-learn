@@ -15,13 +15,10 @@
 import { Vue, Component, Watch, Prop } from "vue-property-decorator";
 import { EmitterEvents } from "../../emitters";
 import { TimerSettings } from "../../interfaces";
+import { EventBus } from "../../EventBus";
 
 @Component({})
 export default class Timer extends Vue {
-  @Prop({ default: {
-      startTimeInMins: 5,
-      referencedPageId: ""
-  } }) private timerSettings!: TimerSettings;
 
   private isRunning: boolean = false;
   private timeoutHandler: number = -1;
@@ -40,7 +37,7 @@ export default class Timer extends Vue {
   private checkRunningStatus(newVal: boolean, oldVal: boolean) {
     // We only tell the page we have timed if we were previously running
     if (!newVal && oldVal) {
-        this.$emit(EmitterEvents.PAGE_TIMEOUT);
+        EventBus.$emit(EmitterEvents.PAGE_TIMEOUT);
     }
   }
 
@@ -85,8 +82,14 @@ export default class Timer extends Vue {
 
   // When the timer is instantiated for the first time
   private mounted() {
-      if (this.timerSettings && this.timerSettings.referencedPageId !== "") {
-          this.createNewTimer(this.timerSettings);
+      EventBus.$on(EmitterEvents.START_TIMER, this.handleCreateTimer);
+  }
+
+  // Handles a new time setting
+  private handleCreateTimer(data: TimerSettings) {
+      console.log(data);
+      if (data && data.referencedPageId !== "") {
+        this.createNewTimer(data);
       }
   }
 }
