@@ -7,7 +7,9 @@
     >
       <span>{{ content }}</span>
       <!-- <p>is typing</p> -->
-      <Spinner />
+      <template v-if="isTyping">
+        <Spinner />
+      </template>
     </div>
   </div>
 </template>
@@ -74,5 +76,6 @@ export default class ChatMessage extends Vue {
   @Prop({}) private userNumber!: string;
   @Prop({}) private content!: string;
   @Prop({}) private numeral!: number;
+  @Prop({ default: false }) private isTyping!: boolean;
 }
 </script>

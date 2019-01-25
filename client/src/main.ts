@@ -13,7 +13,8 @@ import {
   faExclamationCircle,
   faPrint,
   faRedoAlt,
-  faStar
+  faStar,
+  faCommentDots
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
@@ -25,7 +26,8 @@ library.add(
   faExclamationCircle,
   faPrint,
   faRedoAlt,
-  faStar
+  faStar,
+  faCommentDots
 );
 
 Vue.use(Buefy);

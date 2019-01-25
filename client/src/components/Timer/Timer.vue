@@ -87,7 +87,6 @@ export default class Timer extends Vue {
 
   // Handles a new time setting
   private handleCreateTimer(data: TimerSettings) {
-      console.log(data);
       if (data && data.referencedPageId !== "") {
         this.createNewTimer(data);
       }

@@ -8,7 +8,13 @@
         <ChatAlert v-else-if="(message.type === MoocChatMessageTypes.STATE_MESSAGE)"
           :alertMessage="message.message" :alertType="`standard`"/>
       </div>
-      <!-- TODO Append the typingNotification at the bottom -->
+      <!-- Note since is typing notification is always last. We can render it to the bottom like this
+           Also note that the div above is simply a wrapper. Template cannot be used -->
+      <template v-if="chatGroup">
+        <ChatMessage v-for="typingNotif in clientNotifications" :key="typingNotif"
+          :userNumber="`Client ${typingNotif + 1}`" :content="`Client ${typingNotif + 1} is typing`" :numeral="typingNotif + 1"
+          :isTyping="true"/>
+      </template>
     </div>
 
     <div class="input-container">
@@ -49,7 +55,7 @@
 </style>
 
 <script lang="ts">
-import { Vue, Component, Watch } from "vue-property-decorator";
+import { Vue, Component, Watch, Prop } from "vue-property-decorator";
 import ChatAlert from "./ChatAlert.vue";
 import ChatMessage from "./ChatMessage.vue";
 import CreateChatMessage from "./CreateChatMessage.vue";
@@ -67,6 +73,8 @@ import { PageType } from "../../../../common/enums/DBEnums";
   }
 })
 export default class Chat extends Vue {
+  @Prop({ default: () => [] }) private chatMessages!: MoocChatMessage[];
+
   get socketState(): SocketState| null {
     return this.$store.getters.socketState;
   }
@@ -79,9 +87,9 @@ export default class Chat extends Vue {
     return MoocChatStateMessageTypes;
   }
 
-  // Remember, different to socketState.chatMessages due to also being ocmpsesd of
-  get chatMessages(): MoocChatMessage[] {
-    return this.$store.getters.chatMessages;
+  get clientNotifications(): number[] {
+    return this.socketState && this.socketState.chatTypingNotifications ?
+      this.socketState.chatTypingNotifications.clientIndicies : [];
   }
 
   get chatGroup(): IWSToClientData.ChatGroupFormed | null {

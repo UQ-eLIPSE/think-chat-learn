@@ -261,7 +261,6 @@ export class MoocchatWaitPool {
             }
 
             // Create chat group (up to desired group size)
-            console.log("DONE_SERVER");
             return this.popGroup();
         }
 

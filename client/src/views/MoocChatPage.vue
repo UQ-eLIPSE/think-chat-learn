@@ -240,7 +240,6 @@ export default class MoocChatPage extends Vue {
     // If there is no question on the max index we don't care
     if (!this.quiz || !this.currentMaxQuestion
       || !this.quiz._id || !this.quizSession || !this.quizSession._id || !this.quiz.pages) {
-        console.log("IMM TERM");
       return Promise.resolve();
     }
 

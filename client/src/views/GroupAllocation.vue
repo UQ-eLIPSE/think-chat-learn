@@ -10,7 +10,7 @@
       contact your course coordinator.
     </p>
     <span class="notifyTone">
-      <b-switch></b-switch>
+      <b-switch v-model="notifyTone"></b-switch>
       <span>Play <b>notification tone</b> when my group is ready (keep window/tab
         open)</span>
     </span>
@@ -45,6 +45,7 @@ import { EmitterEvents } from "../emitters";
 })
 export default class GroupAllocation extends Vue {
   private notifyTone: boolean | null = null;
+  
 
   get socketState(): SocketState | null {
     return this.$store.getters.socketState;
@@ -58,6 +59,7 @@ export default class GroupAllocation extends Vue {
     this.$router.push("/page");
   }
 
+  // Automatically redirect page back if somehow made it to this point
   private mounted() {
     if (this.chatGroup) {
       this.goToMoocChatPage();
@@ -68,8 +70,15 @@ export default class GroupAllocation extends Vue {
   private handleChatGroupChange(newVal: IWSToClientData.ChatGroupFormed | null,
     oldVal: IWSToClientData.ChatGroupFormed | null) {
       if (newVal) {
+        // Play the tone if applicable
+        if (this.notifyTone) {
+          const notificationTone = new Audio("./mp3/here-i-am.mp3");
+          notificationTone.play();
+        }
+        
         this.goToMoocChatPage();
         EventBus.$emit(EmitterEvents.START_TIMER, this.$store.getters.currentTimerSettings);
+        EventBus.$emit(EmitterEvents.GROUP_FORMED);
       }
   }
 }

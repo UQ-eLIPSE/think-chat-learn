@@ -10,11 +10,11 @@
         }}
       </span>
       <span>
-        <a @click="toggleChat = !toggleChat">
-          <font-awesome-icon icon="comment" />
+        <a @click="changeChatState()">
+          <font-awesome-icon :style="{ color: !newMessage || !groupFormed ? 'grey' : 'red' }" icon="comment-dots" />
         </a>
         <transition name="slide">
-          <Chat v-if="toggleChat" />
+          <Chat :chatMessages="chatMessages" v-if="toggleChat" />
         </transition>
       </span>
     </div>
@@ -80,13 +80,20 @@ header {
   .slide-leave-to {
     transform: translate(100%, 0);
   }
+
+  .notification {
+    border: 1px solid red;
+  }
 }
 </style>
 
 <script lang="ts">
-import { Vue, Component } from "vue-property-decorator";
+import { Vue, Component, Watch } from "vue-property-decorator";
 import { IUser } from "../../../common/interfaces/DBSchema";
 import Chat from "../components/Chat/Chat.vue";
+import { MoocChatMessage } from "../interfaces";
+import { EventBus } from "../EventBus";
+import { EmitterEvents } from "../emitters";
 
 @Component({
   components: {
@@ -98,6 +105,33 @@ export default class Nav extends Vue {
     return this.$store.getters.user;
   }
 
-  private toggleChat: true | null = null;
+  get chatMessages(): MoocChatMessage[] {
+    return this.$store.getters.chatMessages;
+  }
+
+  private toggleChat: boolean = false;
+  private newMessage: boolean | null = false;
+  private groupFormed: boolean = false;
+
+  // In short, if we have a message and the chat is off, notify new message
+  @Watch("chatMessages")
+  private handleMessageNotification(newVal: MoocChatMessage[], oldVal: MoocChatMessage[]) {
+    if (!this.toggleChat) {
+      this.newMessage = true;
+    }
+  }
+
+  private changeChatState() {
+    this.toggleChat = !this.toggleChat;
+    this.newMessage = false;
+  }
+
+  private mounted() {
+    EventBus.$on(EmitterEvents.GROUP_FORMED, () => {
+      this.toggleChat = true;
+      this.newMessage = false;
+      this.groupFormed = true;
+    });
+  }
 }
 </script>

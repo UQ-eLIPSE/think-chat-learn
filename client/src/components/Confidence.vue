@@ -50,15 +50,19 @@ import { Response } from "../../../common/interfaces/ToClientData";
 export default class Confidence extends Vue {
   @Prop({ default: null }) private currentResponse!: Response | null;
 
-  private confidence: number | undefined = 1;
+  private confidence: number = 1;
 
   get disabled(): boolean {
     return this.currentResponse ? true : false;
   }
 
   @Watch("confidence")
-  private onConfidenceChange(value: number, oldValue: number) {
+  private onConfidenceChange(value: number, oldValue?: number) {
     this.$emit(EmitterEvents.CONFIDENCE_CHANGE, value);
+  }
+
+  private mounted() {
+    this.onConfidenceChange(this.confidence);
   }
 }
 </script>
