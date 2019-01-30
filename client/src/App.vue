@@ -176,8 +176,9 @@ import Timer from "./components/Timer/Timer.vue";
 })
 export default class App extends Vue {
   private mounted() {
-    // Didn't login, attempt to refresh
-    if (!this.$store.getters.user) {
+    // Didn't login, attempt to refresh if the user does not exist and we have an acual token
+    // If we don't have a token this most likely means that the page was accessed directly
+    if (!this.$store.getters.user && getIdToken() !== null) {
       this.$store.dispatch("refreshToken").then(() => {
         // Set up the user again
         const login = getLoginResponse();

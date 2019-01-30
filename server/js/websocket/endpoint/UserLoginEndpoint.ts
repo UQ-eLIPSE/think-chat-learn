@@ -80,24 +80,42 @@ export class UserLoginEndpoint extends WSEndpoint {
         }*/
     }
 
-    private static async HandleLogout(socket: PacSeqSocket_Server, data: IWSToServerData.Logout, db: mongodb.Db) {
+    private static async HandleLogout(socket: PacSeqSocket_Server, data: IWSToServerData.Logout, quizSessionService: QuizSessionService) {
 
-        // TODO replace with quizSession
-        /*const session = UserSession.Get(data.quizSessionId);
-
+        const session = await quizSessionService.getQuizSession(data.quizSessionId);
+        
         if (!session) {
-            return console.error("Attempted logout with invalid session ID = " + data.sessionId);
+            return console.error("Attempted to logout with invalid session ID = " + data.quizSessionId);
         }
 
-        const sessionId = session.getId();
+        const sock = SocketSession.Get(data.quizSessionId);
 
-        // Log out by ending the session, then destroying the in-memory object
-        await session.end();
-        session.destroyInstance();
+        // Make sure we do not have users mocking/replicating this socket event by checking the socket id itself
+        if (sock && sock.getSocket() && sock.getSocket()!.id === socket.id) {
+            socket.emitData<IWSToClientData.LogoutSuccess>("logoutSuccess", {
+                quizSessionId: data.quizSessionId,
+            });
 
-        socket.emitData<IWSToClientData.LogoutSuccess>("logoutSuccess", {
-            sessionId,
-        });*/
+            // Remove the reference from the group then the socket itself
+            // The resulting splice results in an empty array, remove it from the store as well
+            const group = SocketSession.GetGroup(data.groupId);
+            if (group) {
+                const index = group.findIndex((element) => {
+                    return element === sock;
+                });
+
+                if (index !== -1) {
+                    group.splice(index, 1);
+                    if (group.length === 0) {
+                        SocketSession.DeleteGroup(data.groupId);
+                    }
+                }
+            }
+
+            sock.destroyInstance();
+        } else {
+            return console.error(`Attempted to logout a user with session ID = ${data.quizSessionId} without a socket`);
+        }
     }
 
     private static async HandleTerminateSessions(socket: PacSeqSocket_Server, data: IWSToServerData.TerminateSessions, db: mongodb.Db) {
@@ -180,8 +198,8 @@ export class UserLoginEndpoint extends WSEndpoint {
 
     public get onLogout() {
         return (data: IWSToServerData.Logout) => {
-            //UserLoginEndpoint.HandleLogout(this.getSocket(), data, this.db)
-            //    .catch(e => console.error(e));
+            UserLoginEndpoint.HandleLogout(this.getSocket(), data, this.quizSessionService)
+                .catch(e => console.error(e));
         };
     }
 

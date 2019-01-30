@@ -26,7 +26,7 @@ export class UserService extends BaseService{
 
     public async handleLogin(request: ILTIData): Promise<LoginResponse> {
         // Get user+quiz info, check validity
-        const identity = await UserServiceHelper.ProcessLtiObject(request);
+        const identity = UserServiceHelper.ProcessLtiObject(request);
         UserServiceHelper.CheckUserId(identity);
 
         const user = await UserServiceHelper.RetrieveUser(this.userRepo, identity);
@@ -61,7 +61,7 @@ export class UserService extends BaseService{
             questions
         };
 
-        return Promise.resolve(output);
+        return output;
     }
 
     // Returns just the user details for now
@@ -115,7 +115,7 @@ export class UserService extends BaseService{
 // Helper functions for the service
 class UserServiceHelper {
     // Processes the LTI object to be user friendly
-    public static async ProcessLtiObject(loginData: ILTIData) {
+    public static ProcessLtiObject(loginData: ILTIData) {
         const ltiAuth = new LTIAuth(loginData);
 
         const authResult = ltiAuth.authenticate();

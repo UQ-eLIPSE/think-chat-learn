@@ -17,7 +17,7 @@ export class ChatGroupFormationLoop {
         if (!cgfl) {
             return new ChatGroupFormationLoop(waitPool);
         }
-
+        cgfl.numberOfGoes = 0;
         return cgfl;
     }
 
@@ -35,6 +35,9 @@ export class ChatGroupFormationLoop {
     private onGroupCoalesced: (quizResponse: Response[]) => void;
 
     private started: boolean = false;
+    /** TODO: Make number of formations a configurable variable. */
+    private numberOfFormations: number = 200;
+    private numberOfGoes: number = 0;
 
     /**
      * ***Do not*** use this constructor to build a new ChatGroupFormationLoop instance.
@@ -80,19 +83,29 @@ export class ChatGroupFormationLoop {
         clearTimeout(this.timerHandle);
 
         const quizAttemptsInGroup = this.waitPool.tryFormGroup();
+        this.numberOfGoes++;
         if (quizAttemptsInGroup && quizAttemptsInGroup.length > 0) {
             if (this.onGroupCoalesced) {
                 this.onGroupCoalesced(quizAttemptsInGroup);
             }
+
+            this.numberOfGoes = 0;
 
             // Process next group at next available timeslot
             setImmediate(() => {
                 this.run();
             });
         } else {
-            this.timerHandle = setTimeout(() => {
-                this.run();
-            }, ChatGroupFormationLoop.TimeBetweenChecks);
+            if (this.numberOfGoes >= this.numberOfFormations) {
+                ChatGroupFormationLoop.CGFLInstances.delete(this.waitPool.getQuizId() + this.waitPool.getQuestionId());
+                MoocchatWaitPool.Destroy(this.waitPool);
+            } else {
+                this.timerHandle = setTimeout(() => {
+                    return this.run();
+                }, ChatGroupFormationLoop.TimeBetweenChecks);
+            }
+
+            return;
         }
     }
 }
