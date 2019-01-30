@@ -19,3 +19,8 @@
 3. Run `npm run start`
 4. If watchers are needed for client. `cd ./client` and then `npm run build_dev_watch`
 5. If watchers are needed for admin. `cd ./admin` and then `npm run build_dev_watch`npm i
+
+
+## Deploying
+1. Go to server `cd server`
+2. Run deploy script `./deploy.sh $some_user $some_server`
