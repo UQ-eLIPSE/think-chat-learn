@@ -96,23 +96,7 @@ export class UserLoginEndpoint extends WSEndpoint {
                 quizSessionId: data.quizSessionId,
             });
 
-            // Remove the reference from the group then the socket itself
-            // The resulting splice results in an empty array, remove it from the store as well
-            const group = SocketSession.GetGroup(data.groupId);
-            if (group) {
-                const index = group.findIndex((element) => {
-                    return element === sock;
-                });
-
-                if (index !== -1) {
-                    group.splice(index, 1);
-                    if (group.length === 0) {
-                        SocketSession.DeleteGroup(data.groupId);
-                    }
-                }
-            }
-
-            sock.destroyInstance();
+            sock.destroyInstance(data.groupId);
         } else {
             return console.error(`Attempted to logout a user with session ID = ${data.quizSessionId} without a socket`);
         }
@@ -173,11 +157,12 @@ export class UserLoginEndpoint extends WSEndpoint {
         }
 
         // At this point it is valid, we can then use the store the socket in memory
-
-
         const session = SocketSession.GetAutoCreate(quizSession._id);
         session.setSocket(socket);
         socket.emit("StoreSessionAcknowledged");
+
+        // We also store the mapping as well so we can handle disconnnects fast
+        SocketSession.PutSocketIdWithQuizSession(socket.id, quizSession._id);
 
     }
 

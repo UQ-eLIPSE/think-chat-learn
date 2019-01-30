@@ -57,6 +57,10 @@ export interface ChatGroupTypingNotification {
     clientIndicies: number[];
 }
 
+export interface ChatGroupDisconnect {
+    clientIndex: number;
+}
+
 export interface BackupClientEnterQueueState extends SuccessState {
     quizAttemptId: string;
 }

@@ -29,6 +29,9 @@ export const WebsocketEvents = {
         /** IWSToClientData.ChatGroupQuitStatusChange */
         CHAT_GROUP_QUIT_STATUS_CHANGE: "chatGroupQuitChange",
 
+        /** IWSToClientData.ChatGroupDisconnect */
+        CHAT_GROUP_DISCONNECT: "chatGroupDisconnect",
+
         /** IWSToClientData.ChatGroupTypingNotification */
         CHAT_GROUP_TYPING_NOTIFICATION: "chatGroupTypingNotification",
 

@@ -15,6 +15,8 @@ import { UserSession } from "../user/UserSession";
 export class SocketSession {
     private static readonly Store = new KVStore<SocketSession>();
     private static readonly GroupStore = new KVStore<SocketSession[]>();
+    // Maps socketid to the quiz session for quick access.
+    private static readonly SocketIdQuizSessionStore = new KVStore<string>();
 
     private /*readonly*/ quizSessionId: string;
     private /*readonly*/ sockets: PacSeqSocket_Server[] = [];
@@ -43,6 +45,14 @@ export class SocketSession {
         return SocketSession.GroupStore.delete(groupId);
     }
 
+    public static DeleteQuizSessionIdBySocketId(socketId: string) {
+        return SocketSession.SocketIdQuizSessionStore.delete(socketId);
+    }
+
+    public static DeleteSocketSessionByQuizSession(quizSession: string) {
+        return SocketSession.Store.delete(quizSession);
+    }
+
     public static GetAutoCreate(quizSession: string) {
         const socketSession = SocketSession.Get(quizSession);
 
@@ -51,6 +61,16 @@ export class SocketSession {
         }
 
         return SocketSession.Create(quizSession);
+    }
+
+    public static GetSocketSessionBySocketId(socketId: string) {
+        const quizSession = SocketSession.SocketIdQuizSessionStore.get(socketId);
+
+        if (!quizSession) {
+            return undefined;
+        }
+
+        return SocketSession.Store.get(quizSession);
     }
 
     // Places a socket into a group assuming the socket is in the store already
@@ -76,6 +96,30 @@ export class SocketSession {
     public static CreateGroup(groupId: string): SocketSession[] {
         SocketSession.GroupStore.put(groupId, []);
         return [];
+    }
+
+    public static PutSocketIdWithQuizSession(socketId: string, quizSession: string) {
+        SocketSession.SocketIdQuizSessionStore.put(socketId, quizSession);
+    }
+
+    public static RemoveSessionFromGroup(groupId: string, quizSession: string) {
+        // Remove the reference from the group then the socket itself
+        // The resulting splice results in an empty array, remove it from the store as well
+        const group = SocketSession.GetGroup(groupId);
+        if (group) {
+            const index = group.findIndex((element) => {
+                return element.getQuizSessionId() === quizSession;
+            });
+
+            if (index !== -1) {
+                group.splice(index, 1);
+                if (group.length === 0) {
+                    SocketSession.GroupStore.delete(groupId);
+                } else {
+                    SocketSession.GroupStore.put(groupId, group);
+                }
+            }
+        }
     }
 
     public static SetSessionTypingState(quizSession: string, state: boolean) {
@@ -141,9 +185,18 @@ export class SocketSession {
         SocketSession.Store.delete(this.quizSessionId);
     }
 
-    public destroyInstance() {
-        this.removeFromStore();
+    public getQuizSessionId() {
+        return this.quizSessionId;
+    }
 
+    public destroyInstance(groupId?: string) {
+        this.removeFromStore();
+        SocketSession.RemoveSessionFromGroup(groupId!, this.quizSessionId);
+
+        // Remove the remaining instances in the socket session store
+        SocketSession.DeleteQuizSessionIdBySocketId(this.getSocket()!.id);
+        SocketSession.DeleteSocketSessionByQuizSession(this.quizSessionId);
+        
         delete this.quizSessionId;
         delete this.sockets;
         delete this.isTyping;

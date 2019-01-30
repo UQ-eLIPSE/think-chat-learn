@@ -57,8 +57,9 @@ export class ChatGroupService extends BaseService{
     }
 
     // Remember if using mongo this finds elements in the array
-    public async findChatGroupsBySessionQuizQuestion(quizSessionId: string, quizId: string, questionId: string): Promise<IChatGroup[]> {
-        return this.chatGroupRepo.findChatGroupsByIds(quizSessionId, quizId, questionId);
+    public async findChatGroupBySessionId(quizSessionId: string): Promise<IChatGroup | null> {
+        const group = await this.chatGroupRepo.findChatGroupsByIds(quizSessionId);
+        return group && group.length ? group[0] : null;
     }
 
     public async appendQuestionProgress(questionId: string, groupId: string) {

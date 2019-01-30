@@ -116,6 +116,20 @@ function handleLogout(data?: IWSToClientData.LogoutSuccess) {
     logout();
 }
 
+function handleChatDisconnect(data?: IWSToClientData.ChatGroupDisconnect) {
+    if (!data) {
+        throw Error("No data for chat groups");
+    }
+
+    const stateMessage: StateMessage = {
+        state: MoocChatStateMessageTypes.CHAT_GROUP_LEAVE,
+        type: MoocChatMessageTypes.STATE_MESSAGE,
+        message: `Student ${data.clientIndex} has disconnected`
+    };
+
+    Vue.set(state.chatMessages, state.chatMessages.length, stateMessage);
+}
+
 // Handles the socket events.
 function registerSocketEvents() {
     // Wait for an acknowledge?
@@ -144,6 +158,10 @@ function registerSocketEvents() {
     state.socketState.socket!.once<IWSToClientData.LogoutSuccess>(
         WebsocketEvents.INBOUND.LOGOUT_SUCCESS, handleLogout
     );
+
+    // Handles disconnects from other people
+    state.socketState.socket!.on<IWSToClientData.ChatGroupDisconnect>(WebsocketEvents.INBOUND.CHAT_GROUP_DISCONNECT,
+        handleChatDisconnect);
 }
 
 const getters = {

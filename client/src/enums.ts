@@ -14,5 +14,7 @@ export enum MoocChatStateMessageTypes {
     // Reforming a new group
     REFORM_GROUP = "REFORM_GROUP",
     // A new question has been added
-    NEW_DISCUSSION_QUESTION = "NEW_DISCUSSION_QUESTION"
+    NEW_DISCUSSION_QUESTION = "NEW_DISCUSSION_QUESTION",
+    // Someone has disconnected
+    CHAT_GROUP_LEAVE = "CHAT_GROUP_LEAVE"
 }
