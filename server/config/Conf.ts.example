@@ -50,6 +50,10 @@ export const Conf: IConf = {
     session: {
         timeoutMs: Utils.DateTime.hrsToMs(1),
     },
+    folders: {
+        clientFolder: "/../../client/dist/",
+        adminFolder:  "/../../client/dist/"
+    }
 }
 
 
@@ -104,5 +108,9 @@ interface IConf {
     },
     session: {
         timeoutMs: number,
+    },
+    folders: {
+        clientFolder: string,
+        adminFolder: string
     }
 }

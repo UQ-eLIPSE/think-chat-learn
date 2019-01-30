@@ -45,7 +45,7 @@ import { EmitterEvents } from "../emitters";
 })
 export default class GroupAllocation extends Vue {
   private notifyTone: boolean | null = null;
-  
+  private notifyAudio: HTMLAudioElement | null = null;
 
   get socketState(): SocketState | null {
     return this.$store.getters.socketState;
@@ -66,14 +66,21 @@ export default class GroupAllocation extends Vue {
     }
   }
 
+  // Preload the tone to slightly faster access
+  @Watch("notifyTone")
+  private handleNotifyChange(newVal: boolean, oldVal?: boolean) {
+    if (!this.notifyAudio && newVal) {
+      this.notifyAudio = new Audio("./mp3/here-i-am.mp3");
+    }
+  }
+
   @Watch("chatGroup")
   private handleChatGroupChange(newVal: IWSToClientData.ChatGroupFormed | null,
     oldVal: IWSToClientData.ChatGroupFormed | null) {
       if (newVal) {
         // Play the tone if applicable
-        if (this.notifyTone) {
-          const notificationTone = new Audio("./mp3/here-i-am.mp3");
-          notificationTone.play();
+        if (this.notifyTone && this.notifyAudio) {
+          this.notifyAudio.play();
         }
         
         this.goToMoocChatPage();
