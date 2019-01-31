@@ -61,6 +61,10 @@ export interface ChatGroupDisconnect {
     clientIndex: number;
 }
 
+export interface ChatGroupReconnect {
+    clientIndex: number;
+}
+
 export interface BackupClientEnterQueueState extends SuccessState {
     quizAttemptId: string;
 }

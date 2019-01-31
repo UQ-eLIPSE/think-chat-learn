@@ -191,11 +191,11 @@ export class SocketSession {
 
     public destroyInstance(groupId?: string) {
         this.removeFromStore();
-        SocketSession.RemoveSessionFromGroup(groupId!, this.quizSessionId);
+        //SocketSession.RemoveSessionFromGroup(groupId!, this.quizSessionId);
 
         // Remove the remaining instances in the socket session store
-        SocketSession.DeleteQuizSessionIdBySocketId(this.getSocket()!.id);
-        SocketSession.DeleteSocketSessionByQuizSession(this.quizSessionId);
+        //SocketSession.DeleteQuizSessionIdBySocketId(this.getSocket()!.id);
+        //SocketSession.DeleteSocketSessionByQuizSession(this.quizSessionId);
         
         delete this.quizSessionId;
         delete this.sockets;

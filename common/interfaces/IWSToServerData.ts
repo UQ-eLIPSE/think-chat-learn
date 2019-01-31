@@ -48,6 +48,8 @@ export interface ChatGroupSendMessage extends ChatGroupResponse {
     questionId: string;
 }
 
+export interface ChatGroupReconnect extends ChatGroupResponse {}
+
 // The intent is to tell the chat room to update their response id/groupanswer bank
 export interface ChatGroupUpdateResponse extends ChatGroupResponse {
     responseId: string;

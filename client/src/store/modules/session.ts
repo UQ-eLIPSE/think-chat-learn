@@ -130,6 +130,20 @@ function handleChatDisconnect(data?: IWSToClientData.ChatGroupDisconnect) {
     Vue.set(state.chatMessages, state.chatMessages.length, stateMessage);
 }
 
+function handleChatGroupReconnect(data?: IWSToClientData.ChatGroupReconnect) {
+    if (!data) {
+        throw Error("No data for chat groups");
+    }
+
+    const stateMessage: StateMessage = {
+        state: MoocChatStateMessageTypes.CHAT_GROUP_RECONNECT,
+        type: MoocChatMessageTypes.STATE_MESSAGE,
+        message: `Student ${data.clientIndex} has reconnected`
+    };
+
+    Vue.set(state.chatMessages, state.chatMessages.length, stateMessage);
+}
+
 // Handles the socket events.
 function registerSocketEvents() {
     // Wait for an acknowledge?
@@ -162,6 +176,26 @@ function registerSocketEvents() {
     // Handles disconnects from other people
     state.socketState.socket!.on<IWSToClientData.ChatGroupDisconnect>(WebsocketEvents.INBOUND.CHAT_GROUP_DISCONNECT,
         handleChatDisconnect);
+    state.socketState.socket!.on<IWSToClientData.ChatGroupReconnect>(WebsocketEvents.INBOUND.CHAT_GROUP_RECONNECT,
+        handleChatGroupReconnect);
+}
+
+function handleReconnect(data: any) {
+    // Even if we succesfully reconnect, we need to make sure we are still there
+    API.request(API.POST, API.CHATGROUP + "findSession", {
+        quizSessionId: state.quizSession!._id!
+    }).then((output: {id: string}) => {
+        if (output.id) {
+            console.log("We good " + output.id);
+            // TODO handle an actual joining back
+            state.socketState!.socket!.emit(WebsocketEvents.OUTBOUND.CHAT_GROUP_RECONNECT, {
+                quizSessionId: state.quizSession!._id,
+                groupId: state.socketState!.chatGroupFormed!.groupId }
+            );
+        } else {
+            console.error("There is an error message");
+        }
+    });
 }
 
 const getters = {
@@ -242,7 +276,7 @@ const mutations = {
 
     [mutationKeys.CREATE_SOCKET](funcState: IState) {
         if (!funcState.socketState.socket) {
-            Vue.set(funcState.socketState, "socket", new WebsocketManager());
+            Vue.set(funcState.socketState, "socket", new WebsocketManager(handleReconnect));
             registerSocketEvents();
         }
     },

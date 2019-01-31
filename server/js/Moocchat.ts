@@ -47,9 +47,7 @@ export class Moocchat {
         // to log disconnects (by triggering an event handler registration)
         //
         // Logouts are now explicit and are handled through user session related endpoints
-        socket.on("disconnect", () => {
-            PacSeqSocket_Server.Destroy(socket);
-        });
+        //socket.on("disconnect", () => {});
 
 
         // Set up websocket endpoints

@@ -16,5 +16,6 @@ export enum MoocChatStateMessageTypes {
     // A new question has been added
     NEW_DISCUSSION_QUESTION = "NEW_DISCUSSION_QUESTION",
     // Someone has disconnected
-    CHAT_GROUP_LEAVE = "CHAT_GROUP_LEAVE"
+    CHAT_GROUP_LEAVE = "CHAT_GROUP_LEAVE",
+    CHAT_GROUP_RECONNECT = "CHAT_GROUP_RECONNECT"
 }

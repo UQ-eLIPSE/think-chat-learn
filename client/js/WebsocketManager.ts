@@ -11,16 +11,17 @@ import { Conf } from "../config/Conf";
  */
 export class WebsocketManager {
     protected socketProxy: PacSeqSocket_Client;
+    protected setReconnectFunctions: (() => void) | null = null;
 
     // Note that the constructor is essentially calling open although TS wants the socket to expliclty be instantiated.
-    constructor() {
+    constructor(reconnectFunction?: (data?: {}) => void) {
         this.socketProxy = new PacSeqSocket_Client(
             socket.connect("//" + Conf.server.url, {
                 path: "/socket.io",
 
                 // Permit infinite reconnects
                 reconnection: true,
-                reconnectionAttempts: Infinity,
+                reconnectionAttempts: Conf.websockets.reconnectionAmount,
                 reconnectionDelay: 1500,
                 reconnectionDelayMax: 2000,
 
@@ -30,6 +31,24 @@ export class WebsocketManager {
 
         this.on("terminated", () => {
             alert("You or someone has requested a full termination of all sessions associated with this username.");
+        });
+
+        this.on("reconnect_failed", () => {
+            console.error("something bad");
+        });
+
+        // As per #178, we need to reset the ack counter so that the new sockets are in sync
+        this.on("connect", () => {
+            this.socketProxy.resetIncomingDataAckCounter();
+        });
+
+        this.on("reconnect", reconnectFunction ? reconnectFunction : () => {
+            return;
+        });
+
+        this.on("err", (data: { reason: string}) => {
+            // For now make it an alert message
+            alert(data.reason);
         });
     }
 

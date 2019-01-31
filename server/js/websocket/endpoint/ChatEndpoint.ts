@@ -8,13 +8,10 @@ import { PacSeqSocket_Server } from "../../../../common/js/PacSeqSocket_Server";
 import { MoocchatWaitPool } from "../../queue/MoocchatWaitPool";
 //import { MoocchatBackupClientQueue } from "../../queue/MoocchatBackupClientQueue";
 
-import { ChatGroup } from "../../chat/ChatGroup";
-import { ChatMessage } from "../../chat/ChatMessage";
-
 import { ChatGroupFormationLoop } from "../../chat/ChatGroupFormationLoop";
 import { ResponseService } from "../../../services/ResponseService";
 import { ChatGroupService } from "../../../services/ChatGroupService";
-import { IChatGroup, IChatMessage } from "../../../../common/interfaces/DBSchema";
+import { IChatGroup } from "../../../../common/interfaces/DBSchema";
 import { SocketSession } from "../SocketSession";
 
 const CLIENT_INDEX_OFFSET = 1;
@@ -23,18 +20,23 @@ export class ChatEndpoint extends WSEndpoint {
     private static async HandleJoinRequest(socket: PacSeqSocket_Server, data: IWSToServerData.ChatGroupJoin, responseService: ResponseService,
         chatGroupService: ChatGroupService) {
 
+        // The first check is to see if this socket exist
+        if (!SocketSession.GetSocketSessionBySocketId(socket.id)) {
+            throw new Error(`Attempted to join a group wih an unknown socket ${socket.id}`);
+        }
+
         // Grabs the response 
         const userResponse = await responseService.getResponse(data.responseId);
 
         if (!userResponse || !userResponse._id) {
-            return console.error("Attempted chat group join request with invalid quiz attempt ID = " + data.responseId);
+            throw new Error("Attempted chat group join request with invalid quiz attempt ID = " + data.responseId);
         }
 
         // If an existing chat group exist, then fail it
         const existingChatGroup = await chatGroupService.findChatGroupBySessionId(data.quizSessionId);
         // Can't join into pool if already in chat group
         if (existingChatGroup) {
-            return console.error(`Attempted chat group join request while already in chat group;
+            throw new Error(`Attempted chat group join request while already in chat group;
                 quiz session ID = ${data.quizSessionId};
                 quiz ID = ${data.quizId};
                 questionId = ${data.questionId}`);
@@ -45,7 +47,7 @@ export class ChatEndpoint extends WSEndpoint {
 
         // Can't join into pool if already in pool
         if (waitPool.hasQuizResponse(userResponse)) {
-            return console.error(`Attempted chat group join request with quiz attempt already in pool;
+            throw new Error(`Attempted chat group join request with quiz attempt already in pool;
                 quiz session ID = ${data.quizSessionId};
                 quiz ID = ${data.quizId};
                 questionId = ${data.questionId}`);
@@ -243,6 +245,34 @@ export class ChatEndpoint extends WSEndpoint {
         chatGroupService.appendChatMessageToGroup(chatGroup, data.message, data.userId, data.questionId);
     }
 
+    private static async HandleChatReconnect(socket: PacSeqSocket_Server, data: IWSToServerData.ChatGroupReconnect,
+        chatGroupService: ChatGroupService) {
+    const group = SocketSession.GetAutoCreateGroup(data.groupId);
+
+    const chatGroup = await chatGroupService.getChatGroup(data.groupId);
+
+    if (!chatGroup) {
+        throw Error(`Invalid chat group of id ${data.groupId}`);
+    }
+
+    group.forEach((socketSession) => {
+        const sock = socketSession.getSocket();
+
+        if (sock) {
+            const clientIndex = chatGroup.quizSessionIds!.findIndex((sessionId) => { 
+                return data.quizSessionId === sessionId
+            }) + CLIENT_INDEX_OFFSET;
+
+            const chatGroupMessage: IWSToClientData.ChatGroupReconnect = {
+                clientIndex
+            };
+            sock.emit("chatGroupReconnect", chatGroupMessage);
+        } else {
+            console.error("Could not retrieve sock");
+        }
+    });
+}    
+
     private static async HandleDisconnect(socket: PacSeqSocket_Server, chatGroupService: ChatGroupService) {
         // Because we have no way of figuring out how the socket is stored
         // our options are simply iterate through the entire map of the socket
@@ -273,7 +303,7 @@ export class ChatEndpoint extends WSEndpoint {
                         }
                     });
                     
-                    socketSession.destroyInstance(group._id!);
+                    //socketSession.destroyInstance(group._id!);
                 } else {
                     console.error(`Could not find socket sesssion group when disconnecting with id ${socket.id}
                         quizSession ${socketSession.getQuizSessionId()} group id:${group._id}`);
@@ -343,7 +373,10 @@ export class ChatEndpoint extends WSEndpoint {
                 // Returns whether or not the request was successful
                 return true;
             }).catch((e: Error) => {
-                // Something bad happened
+                // Something bad happened, notify the user
+                this.getSocket().emit("err", {
+                    reason: "Chat formation failed"
+                })
                 return false;
             });
         };
@@ -380,6 +413,12 @@ export class ChatEndpoint extends WSEndpoint {
         }
     }
 
+    public get onChatReconnect() {
+        return (data: IWSToServerData.ChatGroupReconnect) => {
+            ChatEndpoint.HandleChatReconnect(this.getSocket(), data, this.chatGroupService);
+        }
+    }
+
     public returnEndpointEventHandler(name: string): (data: any) => void {
         switch (name) {
             case "chatGroupJoinRequest": return this.onJoinRequest;
@@ -387,6 +426,7 @@ export class ChatEndpoint extends WSEndpoint {
             case "chatGroupQuitStatusChange": return this.onQuitStatusChange;
             case "chatGroupMessage": return this.onMessage;
             case "chatGroupUpdate": return this.onHandleGroupUpdate;
+            case "chatGroupReconnect": return this.onChatReconnect;
             case "disconnect": return this.onChatDisconnect;
         }
 
@@ -402,6 +442,7 @@ export class ChatEndpoint extends WSEndpoint {
             "chatGroupUpdate",
             // Note that the reason for also registering this event listener
             // is to allow disconnect messages to be sent to other users
+            "chatGroupReconnect",
             "disconnect"
         ]);
     }

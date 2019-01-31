@@ -57,7 +57,12 @@ export const WebsocketEvents = {
         LOGOUT_SUCCESS: "logoutSuccess",
 
         /** IWSToClientData.StoreSessionAck */
-        STORE_SESSION_ACK: "StoreSessionAcknowledged"
+        STORE_SESSION_ACK: "StoreSessionAcknowledged",
+
+        /** IWSToClientData.Error */
+        ERROR: "error",
+
+        CHAT_GROUP_RECONNECT: "chatGroupReconnect"
     },
 
     OUTBOUND: {
@@ -110,6 +115,9 @@ export const WebsocketEvents = {
         SESSION_SOCKET_RESYNC: "sessionSocketResync",
 
         /** IWSToServerData.StoreSocket */
-        STORE_QUIZ_SESSION_SOCKET: "storeQuizSessionSocket"
+        STORE_QUIZ_SESSION_SOCKET: "storeQuizSessionSocket",
+
+        /** IWSToServerData */
+        CHAT_GROUP_RECONNECT: "chatGroupReconnect"
     }
 };
