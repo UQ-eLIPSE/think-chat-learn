@@ -40,10 +40,10 @@ export class WebsocketManager {
         // As per #178, we need to reset the ack counter so that the new sockets are in sync
         this.on("connect", () => {
             this.socketProxy.resetIncomingDataAckCounter();
-        });
 
-        this.on("reconnect", reconnectFunction ? reconnectFunction : () => {
-            return;
+            if (reconnectFunction) {
+                reconnectFunction();
+            }
         });
 
         this.on("err", (data: { reason: string}) => {

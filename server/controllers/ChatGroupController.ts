@@ -25,7 +25,6 @@ export class ChatGroupController extends BaseController {
 
     private findSession(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
         const maybeSession = SocketSession.Get(req.body.quizSessionId);
-        console.log(maybeSession);
         res.json({ 
             id:  maybeSession ? maybeSession.getQuizSessionId() : null
         });

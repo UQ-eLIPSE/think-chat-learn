@@ -11,7 +11,7 @@
       <!-- Note since is typing notification is always last. We can render it to the bottom like this
            Also note that the div above is simply a wrapper. Template cannot be used -->
       <template v-if="chatGroup">
-        <ChatMessage v-for="typingNotif in clientNotifications" :key="typingNotif"
+        <ChatMessage v-for="typingNotif in clientNotifications" :key="'typingNotif' + typingNotif"
           :userNumber="`Client ${typingNotif + 1}`" :content="`Client ${typingNotif + 1} is typing`" :numeral="typingNotif + 1"
           :isTyping="true"/>
       </template>

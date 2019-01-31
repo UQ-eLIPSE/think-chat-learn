@@ -182,18 +182,24 @@ function registerSocketEvents() {
 
 function handleReconnect(data: any) {
     // Even if we succesfully reconnect, we need to make sure we are still there
+    if (!state.quizSession) {
+        return;
+    }
+
     API.request(API.POST, API.CHATGROUP + "findSession", {
         quizSessionId: state.quizSession!._id!
     }).then((output: {id: string}) => {
-        if (output.id) {
-            console.log("We good " + output.id);
-            // TODO handle an actual joining back
-            state.socketState!.socket!.emit(WebsocketEvents.OUTBOUND.CHAT_GROUP_RECONNECT, {
+        state.socketState!.socket!.emit(WebsocketEvents.OUTBOUND.SESSION_SOCKET_RESYNC, {
+            quizSessionId: state.quizSession!._id
+        });
+
+        if (output.id && state.socketState!.chatGroupFormed) {
+            setTimeout(() => state.socketState!.socket!.emit(WebsocketEvents.OUTBOUND.CHAT_GROUP_RECONNECT, {
                 quizSessionId: state.quizSession!._id,
                 groupId: state.socketState!.chatGroupFormed!.groupId }
-            );
+            ), 1000);
         } else {
-            console.error("There is an error message");
+            // TODO implement actual error handling if the session is essentially dead
         }
     });
 }

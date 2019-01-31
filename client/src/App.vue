@@ -2,6 +2,9 @@
   <div id="app">
     <Nav />
     <section>
+      <template v-if="renderRestart">
+        <div @click="restartSocket()">Restart</div>
+      </template>
       <Stepper steps=5 />
       <div class="content-container">
         <router-view class="router-panel" />
@@ -175,6 +178,8 @@ import Timer from "./components/Timer/Timer.vue";
   }
 })
 export default class App extends Vue {
+  private renderRestart = false;
+
   private mounted() {
     // Didn't login, attempt to refresh if the user does not exist and we have an acual token
     // If we don't have a token this most likely means that the page was accessed directly
@@ -190,6 +195,10 @@ export default class App extends Vue {
         }
       });
     }
+  }
+
+  private restartSocket() {
+    this.$store.getters.socketState.socket.restart();
   }
 }
 </script>

@@ -6,13 +6,15 @@ import { PacSeqSocket_Server } from "../../../../common/js/PacSeqSocket_Server";
 import { UserSession } from "../../user/UserSession";
 
 import { SocketSession } from "../SocketSession";
+import { QuizSessionService } from "../../../services/QuizSessionService";
 
 // Handles the resyncing of sockets. E.g. a disconnect -> reconnect
 export class SocketResyncEndpoint extends WSEndpoint {
-    private static HandleSessionSocketResync(socket: PacSeqSocket_Server, data: IWSToServerData.SessionSocketResync) {
+    private static async HandleSessionSocketResync(socket: PacSeqSocket_Server, data: IWSToServerData.SessionSocketResync, quizSessionService:
+            QuizSessionService) {
 
         // TODO replace with userSessionService
-        const session = UserSession.Get(data.quizSessionId);
+        const session = await quizSessionService.getQuizSession(data.quizSessionId);
 
         if (!session) {
             return console.error("Attempted session socket resync with invalid session ID = " + data.quizSessionId);
@@ -21,17 +23,21 @@ export class SocketResyncEndpoint extends WSEndpoint {
         const socketSession = SocketSession.GetAutoCreate(data.quizSessionId);
         
         socketSession.setSocket(socket);
+        SocketSession.PutSocketIdWithQuizSession(socket.id, data.quizSessionId);
     }
 
 
 
-    constructor(socket: PacSeqSocket_Server) {
+    constructor(socket: PacSeqSocket_Server, quizSessionService: QuizSessionService) {
         super(socket);
+        this.quizSessionService = quizSessionService;
     }
+
+    private quizSessionService: QuizSessionService;
 
     public get onSessionSocketResync() {
         return (data: IWSToServerData.SessionSocketResync) => {
-            SocketResyncEndpoint.HandleSessionSocketResync(this.getSocket(), data);
+            SocketResyncEndpoint.HandleSessionSocketResync(this.getSocket(), data, this.quizSessionService);
         };
     }
 

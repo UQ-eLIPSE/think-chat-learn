@@ -316,6 +316,7 @@ export class ChatEndpoint extends WSEndpoint {
             console.error(`Could not find socket sesssion when disconnecting with id ${socket.id}`);
         }
 
+        // The socket is safe to remove but the session itself is not as we do not know if they are coming back
         PacSeqSocket_Server.Destroy(socket);
     }
 
@@ -374,6 +375,7 @@ export class ChatEndpoint extends WSEndpoint {
                 return true;
             }).catch((e: Error) => {
                 // Something bad happened, notify the user
+                console.log(e);
                 this.getSocket().emit("err", {
                     reason: "Chat formation failed"
                 })
