@@ -19,7 +19,14 @@ export class UserSessionService extends BaseService{
 
     // Simply an override. 
     public async updateUserSession(data: IUserSession): Promise<boolean> {
-        return this.userSessionRepo.updateOne(data);
+        // Don't update if the user id has changed
+        const maybeUserSession = await this.userSessionRepo.findOne(data._id!);
+        if (maybeUserSession && maybeUserSession.userId === data.userId) {
+            return this.userSessionRepo.updateOne(data);
+        }
+
+        return false;
+
     }
 
     // Deletes a quiz based on the incoming id

@@ -25,7 +25,7 @@ export class ResponseService extends BaseService{
         const existingQuizSession = await this.quizSessionRepo.findOne(data.quizSessionId);
         const existingQuiz = await this.quizRepo.findOne(data.quizId);
 
-        if (!existingQuizSession ||!existingQuiz) {
+        if (!existingQuizSession || !existingQuiz) {
             throw new Error(`Attempted to create a response with a non-existent quiz session of ${data.quizSessionId}
                 or quiz id of ${data.quizId}`);
         }

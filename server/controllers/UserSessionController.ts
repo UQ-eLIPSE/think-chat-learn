@@ -1,11 +1,13 @@
 import * as express from "express";
 import { BaseController } from "./BaseController";
 import { UserSessionService } from "../services/UserSessionService";
-import { IUserSession} from "../../common/interfaces/DBSchema";
-
+import { IUserSession } from "../../common/interfaces/DBSchema";
+import { UserService } from "../services/UserService";
+import { StudentAuthenticatorMiddleware } from "../js/auth/StudentPageAuth";
 export class UserSessionController extends BaseController {
 
     protected userSessionService: UserSessionService;
+    protected userService: UserService;
 
     constructor(_userSessionService: UserSessionService) {
         super();
@@ -39,7 +41,7 @@ export class UserSessionController extends BaseController {
     }
 
     public setupRoutes() {
-        this.router.put("/create", this.createSession.bind(this));
-        this.router.post("/update", this.updateSession.bind(this));
+        this.router.put("/create", StudentAuthenticatorMiddleware.checkUserId(), this.createSession.bind(this));
+        this.router.post("/update", StudentAuthenticatorMiddleware.checkUserId(), this.updateSession.bind(this));
     }
 }

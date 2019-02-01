@@ -34,6 +34,8 @@ import { QuizSessionController } from "./controllers/QuizSessionController";
 import { ChatGroupController } from "./controllers/ChatGroupController";
 import { ResponseController } from "./controllers/ResponseController";
 
+// Authenticator for students
+import { StudentAuthenticatorMiddleware } from "./js/auth/StudentPageAuth";
 export default class App {
 
     // Express things
@@ -109,7 +111,8 @@ export default class App {
         this.quizService = new QuizService(this.quizRepository);
         this.questionService = new QuestionService(this.questionRepository);
         this.userSessionService = new UserSessionService(this.userSessionRepository);
-        this.quizSessionService = new QuizSessionService(this.quizSessionRepository);
+        this.quizSessionService = new QuizSessionService(this.quizSessionRepository, this.userSessionRepository,
+            this.quizRepository, this.responseRepository);
         this.chatGroupService = new ChatGroupService(this.chatGroupRepository);
         this.responseService = new ResponseService(this.responseRepository, this.quizSessionRepository, this.quizRepository);
 
@@ -121,6 +124,8 @@ export default class App {
         this.responseController = new ResponseController(this.responseService);
         this.chatGroupController = new ChatGroupController(this.chatGroupService);
 
+        StudentAuthenticatorMiddleware.instantiate(this.userService);
+
         this.userController.setupRoutes();
         this.quizController.setupRoutes();
         this.questionController.setupRoutes();
@@ -128,6 +133,7 @@ export default class App {
         this.quizSessionController.setupRoutes();
         this.responseController.setupRoutes();
         this.chatGroupController.setupRoutes();
+
     }
 
     private setupSockets(): void {

@@ -2,6 +2,7 @@ import * as mongodb from "mongodb";
 
 import { Conf } from "../config/Conf";
 import { Database } from "./data/Database";
+import * as IPacSeqSocketPacket from "../../common/interfaces/IPacSeqSocketPacket";
 
 import { ChatEndpoint } from "./websocket/endpoint/ChatEndpoint";
 import { UserLoginEndpoint } from "./websocket/endpoint/UserLoginEndpoint";
@@ -14,6 +15,7 @@ import { PacSeqSocket_Server } from "../../common/js/PacSeqSocket_Server";
 import { ChatGroupService } from "../services/ChatGroupService";
 import { ResponseService } from "../services/ResponseService";
 import { QuizSessionService } from "../services/QuizSessionService";
+import { SocketSession } from "./websocket/SocketSession";
 
 export class Moocchat {
     private socketIO: SocketIO.Server;
@@ -42,6 +44,31 @@ export class Moocchat {
         const socket = new PacSeqSocket_Server(socketIoSocket);
         socket.enableInboundLogging();
         socket.enableOutboundLogging();
+
+        socket.use((packet: SocketIO.Packet, next) => {
+            // Middleware for the sockets. Essentially ack
+            // packets are fine but dats need to be checked to see
+            // if they exist
+
+            const packetName = packet[0];
+
+            switch (packetName) {
+                case IPacSeqSocketPacket.EventName.ACK:
+                    next();
+                    break;
+                case IPacSeqSocketPacket.EventName.DAT:
+                    const eventName = (packet[1] as IPacSeqSocketPacket.Packet.DAT).event;
+                    if (!((eventName === "storeQuizSessionSocket") || (eventName === "sessionSocketResync"))) {
+                        if (!SocketSession.GetSocketSessionBySocketId(socket.id)) {
+                            throw Error("Could not find the socket for socket events");
+                        }
+                    }
+                    next();
+                    break;
+                default:
+                    throw Error("Unknown packet name");
+            }
+        });
 
         // This registration of a dummy function is kept to allow PacSeqSocket
         // to log disconnects (by triggering an event handler registration)

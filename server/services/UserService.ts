@@ -5,9 +5,9 @@ import { ILTIData } from "../../common/interfaces/ILTIData";
 import { LTIAuth } from "../js/auth/lti/LTIAuth";
 import { IMoocchatIdentityInfo } from "../js/auth/IMoocchatIdentityInfo";
 import { IUser, IQuiz } from "../../common/interfaces/DBSchema";
-import { LoginResponse, IQuestionAnswerPage, IInfoPage, AdminLoginResponse } from "../../common/interfaces/ToClientData";
+import { LoginResponse, AdminLoginResponse } from "../../common/interfaces/ToClientData";
 import { QuestionRepository } from "../repositories/QuestionRepository";
-import { convertNetworkQuizIntoQuiz, convertQuizIntoNetworkQuiz } from "../../common/js/NetworkDataUtils";
+import { convertQuizIntoNetworkQuiz } from "../../common/js/NetworkDataUtils";
 import { IQuizOverNetwork } from "../../common/interfaces/NetworkData";
 import { QuestionType, PageType } from "../../common/enums/DBEnums";
 
@@ -99,17 +99,25 @@ export class UserService extends BaseService{
         const quizzes = await this.quizRepo.findAll({ course: identity.course });
         const questions = await this.questionRepo.findAll({ courseId: identity.course });
 
+        // The main distinguisher is that the token cannot be changed easily so by checking the isAdmin is
+        // true should be good enough
         const output: AdminLoginResponse = {
             user,
             quizzes: quizzes.reduce((arr: IQuizOverNetwork[], element) => 
                 { arr.push(convertQuizIntoNetworkQuiz(element)); return arr; }, []),
             courseId: identity.course,
-            questions
+            questions,
+            isAdmin: true
         }
 
 
         return Promise.resolve(output);
-    }    
+    }
+
+    // Simply returns a user if exist, null otherwise
+    public async findUser(userId: string): Promise<IUser | null> {
+        return UserServiceHelper.FindUser(this.userRepo, userId);
+    }
 }
 
 // Helper functions for the service
@@ -163,6 +171,10 @@ class UserServiceHelper {
         }
 
         return Promise.resolve(user);
+    }
+
+    public static async FindUser(userRepo: UserRepository, id: string ): Promise<IUser | null> {
+        return userRepo.findOne(id);
     }
 
     /**

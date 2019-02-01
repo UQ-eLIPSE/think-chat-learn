@@ -265,6 +265,10 @@ export class PacSeqSocket<SocketType> {
         this.onDisconnect();
     }
 
+    public use(fn: (packet: any, next: (err?: any) => void) => void) {
+        this.nativeSocket.use(fn);
+    }
+
     private setupNativeEventsToManager() {
         // Both server and client Socket.IO events
         const nativeEvents = [

@@ -2,7 +2,7 @@ import * as express from "express";
 import { BaseController } from "./BaseController";
 import { QuizService } from "../services/QuizService";
 import { IQuizOverNetwork } from "../../common/interfaces/NetworkData";
-
+import { isAdmin } from "../js/auth/AdminPageAuth";
 export class QuizController extends BaseController {
 
     protected quizService: QuizService;
@@ -59,9 +59,9 @@ export class QuizController extends BaseController {
     }
 
     public setupRoutes() {
-        this.router.put("/create", this.createQuiz.bind(this));
-        this.router.post("/update", this.updateQuiz.bind(this));
-        this.router.delete("/delete/:questionId", this.deleteQuiz.bind(this));
-        this.router.get("/course/:courseId", this.getQuizByCourse.bind(this));
+        this.router.put("/create", isAdmin(), this.createQuiz.bind(this));
+        this.router.post("/update", isAdmin(), this.updateQuiz.bind(this));
+        this.router.delete("/delete/:questionId", isAdmin(), this.deleteQuiz.bind(this));
+        this.router.get("/course/:courseId", isAdmin(), this.getQuizByCourse.bind(this));
     }
 }

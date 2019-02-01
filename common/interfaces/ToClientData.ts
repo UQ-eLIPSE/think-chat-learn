@@ -72,4 +72,5 @@ export interface AdminLoginResponse {
   quizzes: NetworkData.IQuizOverNetwork[];
   questions: IQuestion[];
   courseId: string;
+  isAdmin: boolean;
 }

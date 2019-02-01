@@ -2,7 +2,7 @@ import * as express from "express";
 import { BaseController } from "./BaseController";
 import { QuestionService } from "../services/QuestionService";
 import { TypeQuestion } from "../../common/interfaces/DBSchema";
-
+import { isAdmin } from "../js/auth/AdminPageAuth";
 export class QuestionController extends BaseController {
 
     protected questionService: QuestionService;
@@ -59,9 +59,9 @@ export class QuestionController extends BaseController {
     }
 
     public setupRoutes() {
-        this.router.put("/create", this.createQuestion.bind(this));
-        this.router.post("/update", this.updateQuestion.bind(this));
-        this.router.delete("/delete/:questionId", this.deleteQuestion.bind(this));
-        this.router.get("/all", this.getAllQuestions.bind(this));
+        this.router.put("/create", isAdmin(), this.createQuestion.bind(this));
+        this.router.post("/update", isAdmin(), this.updateQuestion.bind(this));
+        this.router.delete("/delete/:questionId", isAdmin(), this.deleteQuestion.bind(this));
+        this.router.get("/all", isAdmin(), this.getAllQuestions.bind(this));
     }
 }
