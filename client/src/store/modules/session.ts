@@ -1,17 +1,20 @@
 import Vue from "vue";
 import { Commit } from "vuex";
-import { IUserSession, IQuizSession, Response, TypeQuestion } from "../../../../common/interfaces/ToClientData";
+import { IUserSession, IQuizSession, Response, IQuiz,
+    IDiscussionPage } from "../../../../common/interfaces/ToClientData";
 import API from "../../../../common/js/DB_API";
 
 // Websocket interfaces
-import io from "socket.io-client";
 import * as IWSToClientData from "../../../../common/interfaces/IWSToClientData";
-import * as IWSToServerData from "../../../../common/interfaces/IWSToServerData";
 import { WebsocketManager } from "../../../js/WebsocketManager";
 import { WebsocketEvents } from "../../../js/WebsocketEvents";
-import { SocketState, MoocChatMessage, ChatMessage, StateMessage, Dictionary } from "../../interfaces";
+import { SocketState, MoocChatMessage, StateMessage, Dictionary } from "../../interfaces";
 import { MoocChatMessageTypes, MoocChatStateMessageTypes } from "../../enums";
-import { logout } from '../../../../common/js/front_end_auth';
+import { logout } from "../../../../common/js/front_end_auth";
+import store from "..";
+import { Utils } from "../../../../common/js/Utils";
+import { PageType } from "../../../../common/enums/DBEnums";
+import { ChatGroupResync } from "../../../../common/interfaces/HTTPToClientData";
 
 export interface IState {
     quizSession: IQuizSession | null;
@@ -19,6 +22,7 @@ export interface IState {
     responses: Dictionary<Response>;
     socketState: SocketState;
     chatMessages: MoocChatMessage[];
+    resyncAmount: number;
 }
 
 const state: IState = {
@@ -31,7 +35,8 @@ const state: IState = {
         chatTypingNotifications: null,
         socket: null
     },
-    chatMessages: []
+    chatMessages: [],
+    resyncAmount: 0
 };
 
 const mutationKeys = {
@@ -42,7 +47,9 @@ const mutationKeys = {
     CLOSE_SOCKET: "Closing the socket",
     DELETE_SOCKET: "Deleting the socket",
     // Chat message mutations
-    APPEND_STATE_MESSAGE: "Appending a state message"
+    APPEND_STATE_MESSAGE: "Appending a state message",
+    SET_GROUP: "Setting the chat group",
+    SET_SOCKET_MESSAGES: "Setting the socket messages"
 };
 
 function handleGroupJoin(data?: IWSToClientData.ChatGroupFormed) {
@@ -180,28 +187,70 @@ function registerSocketEvents() {
         handleChatGroupReconnect);
 }
 
-function handleReconnect(data: any) {
+async function handleReconnect(data: any) {
     // Even if we succesfully reconnect, we need to make sure we are still there
+    let quizSession: IQuizSession | null = null;
     if (!state.quizSession) {
-        return;
+        // If we do not have a quiz session then that means we just have a user session.
+        // Find the quiz session
+        const quiz: IQuiz = store.getters.quiz;
+        const userSession: IUserSession = store.getters.userSession;
+
+        if (userSession && quiz) {
+            // Retreive the quiz and user id
+            quizSession = (await API.request(API.POST, API.QUIZSESSION + "fetchByUserQuiz", {
+                userId: userSession.userId,
+                quizId: quiz._id
+            })).data;
+
+            // If we have a quiz session assign it else, do nothing
+            if (!quizSession) {
+                return;
+            }
+
+            store.dispatch("updateQuizSession", quizSession);
+        } else {
+            return;
+        }
     }
 
-    API.request(API.POST, API.CHATGROUP + "findSession", {
+    // We have a quiz session (whether it is an on client disconnect or not)
+    // The next step is to check for our socket session
+    const socketPresent: { outcome: boolean } = await API.request(API.POST, API.QUIZSESSION + "findSession", {
         quizSessionId: state.quizSession!._id!
-    }).then((output: {id: string}) => {
+    });
+
+    if (socketPresent.outcome) {
+        // Notify the server of a resync
         state.socketState!.socket!.emit(WebsocketEvents.OUTBOUND.SESSION_SOCKET_RESYNC, {
             quizSessionId: state.quizSession!._id
         });
 
-        if (output.id && state.socketState!.chatGroupFormed) {
+        // Fetch the group based on quiz id. If we don't have one.
+        if (!state.socketState!.chatGroupFormed) {
+            const groupSession: ChatGroupResync =
+                await API.request(API.POST, API.CHATGROUP +
+                    "recoverSession", { quizSessionId: state.quizSession!._id });
+
+            await store.dispatch("updateGroup", groupSession.chatGroupFormed);
+            await store.dispatch("updateSocketMessages", groupSession.messages);
+            await store.dispatch("updatePageBasedOnTime", groupSession.startTime);
+        }
+
+        // We then check if the quiz session has a group id
+        if (state.socketState!.chatGroupFormed) {
             setTimeout(() => state.socketState!.socket!.emit(WebsocketEvents.OUTBOUND.CHAT_GROUP_RECONNECT, {
                 quizSessionId: state.quizSession!._id,
                 groupId: state.socketState!.chatGroupFormed!.groupId }
             ), 1000);
         } else {
-            // TODO implement actual error handling if the session is essentially dead
+            // If we reach this point, then we need to resync to the appropiate page instead
         }
-    });
+    } else {
+        // No present socket session present. Don't bother with reconnection. This could possibly mean that the
+        // server has gone down or the socket session has been garbage collected
+        return;
+    }
 }
 
 const getters = {
@@ -219,6 +268,10 @@ const getters = {
 
     chatMessages: (): MoocChatMessage[] => {
         return state.chatMessages;
+    },
+
+    resyncAmount: (): number => {
+        return state.resyncAmount;
     }
 };
 const actions = {
@@ -231,9 +284,7 @@ const actions = {
     },
 
     updateQuizSession({ commit }: {commit: Commit}, quizSession: IQuizSession) {
-        return API.request(API.POST, API.QUIZSESSION + "update", quizSession).then(() => {
-            commit(mutationKeys.SET_QUIZ_SESSION, quizSession);
-        });
+        commit(mutationKeys.SET_QUIZ_SESSION, quizSession);
     },
 
     retrieveQuizSession({ commit }: { commit: Commit }, id: string) {
@@ -268,6 +319,53 @@ const actions = {
 
     closeSocket({ commit }: {commit: Commit}) {
         return commit(mutationKeys.CLOSE_SOCKET);
+    },
+
+    updateGroup({ commit }: {commit: Commit}, data: IWSToClientData.ChatGroupFormed) {
+        return commit(mutationKeys.SET_GROUP, data);
+    },
+
+    updateSocketMessages({ commit }: {commit: Commit}, data: ChatGroupResync) {
+        return commit(mutationKeys.SET_SOCKET_MESSAGES, data);
+    },
+
+    updatePageBasedOnTime({ commit }: {commit: Commit}, startTime: number) {
+        // Given a quiz, compute the amount of time for each page.
+        const currentTime = Date.now();
+        let trackedTime = startTime;
+        const quiz: IQuiz | null = store.getters.quiz;
+        if (!quiz || !quiz.pages) {
+            return;
+        }
+
+        // Since the group formation occurs at the first discussion, we iterate from there
+        const firstDiscussionIndex = quiz.pages.findIndex((element) => {
+            return element.type === PageType.DISCUSSION_PAGE;
+        });
+
+        for (let i = firstDiscussionIndex ; i < quiz.pages.length; i++) {
+            const lowerBound = trackedTime;
+            const upperBound = trackedTime + Utils.DateTime.minToMs(quiz.pages[i].timeoutInMins);
+            if (currentTime >= lowerBound && upperBound >= currentTime) {
+                // Set the indices
+                store.commit("Sets the current index", i);
+                store.commit("Setting the max index", i);
+
+                // Figure out the most recent discussion page
+                for (let j = i; j >= 0; j--) {
+                    if (quiz.pages[j].type === PageType.DISCUSSION_PAGE) {
+                        store.commit("Setting current discussion", (quiz.pages[j] as IDiscussionPage).questionId);
+                        break;
+                    }
+                }
+
+                // Set the amount of time remaining for the timer
+                const timeRemaining = upperBound - currentTime;
+                Vue.set(state, "resyncAmount", Utils.DateTime.msToMinutes(timeRemaining));
+            }
+
+            trackedTime = upperBound;
+        }
     }
 };
 
@@ -309,6 +407,22 @@ const mutations = {
         };
 
         Vue.set(funcState.chatMessages, funcState.chatMessages.length, outgoingMessage);
+    },
+
+    [mutationKeys.SET_GROUP](funcState: IState, data: IWSToClientData.ChatGroupFormed) {
+        Vue.set(funcState.socketState!, "chatGroupFormed", data);
+    },
+
+    [mutationKeys.SET_SOCKET_MESSAGES](funcState: IState, data: IWSToClientData.ChatGroupMessage[]) {
+        Vue.set(funcState.socketState!, "chatMessages", data);
+        Vue.set(funcState, "chatMessages", data.map((element) => {
+            const output: MoocChatMessage = {
+                type: MoocChatMessageTypes.CHAT_MESSAGE,
+                content: element
+            };
+
+            return output;
+        }, [] as MoocChatMessage[]));
     }
 };
 

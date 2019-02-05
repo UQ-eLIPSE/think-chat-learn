@@ -8,5 +8,15 @@ export class ResponseRepository extends BaseRepository<Response>{
             quizSessionId,
             questionId
         });
-    }    
+    }
+
+    // Does the same as single question quiz except with arrays
+    public async findResponsesByQuizSessionArray(quizSessionIds: string[]) {
+        console.log(quizSessionIds);
+        return this.collection.find({
+            quizSessionId: {
+                $in: quizSessionIds
+            }
+        }).toArray();
+    }
 }

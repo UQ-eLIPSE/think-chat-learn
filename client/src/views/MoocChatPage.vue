@@ -351,9 +351,7 @@ export default class MoocChatPage extends Vue {
           groupId: this.chatGroup!.groupId!
         };
 
-        this.$store.dispatch("appendQuestionToChatGroup", data).then(() => {
-          this.emitGroupUpdate(() => {});
-        });
+        this.emitGroupUpdate(() => {});
 
         EventBus.$emit(EmitterEvents.START_TIMER, this.$store.getters.currentTimerSettings);
       } else {

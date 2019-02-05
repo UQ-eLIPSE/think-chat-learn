@@ -77,7 +77,7 @@ export class ChatEndpoint extends WSEndpoint {
                     messages: [],
                     quizSessionIds: output.reduce((arr, value) => { arr.push(value.quizSessionId!); return arr; }, [] as string[]),
                     quizId: output[0].quizId,
-                    questionIds: [output[0].questionId]
+                    startTime: Date.now()
                 };
 
                 const clientIndexDict: {[key: string]: number} = chatGroup.quizSessionIds!.reduce((acc: {[key: string]: number}, currentId, index) => {
@@ -242,36 +242,36 @@ export class ChatEndpoint extends WSEndpoint {
             }
         });
 
-        chatGroupService.appendChatMessageToGroup(chatGroup, data.message, data.userId, data.questionId);
+        chatGroupService.appendChatMessageToGroup(chatGroup, data.message, data.quizSessionId, data.questionId);
     }
 
     private static async HandleChatReconnect(socket: PacSeqSocket_Server, data: IWSToServerData.ChatGroupReconnect,
         chatGroupService: ChatGroupService) {
-    const group = SocketSession.GetAutoCreateGroup(data.groupId);
+        const group = SocketSession.GetAutoCreateGroup(data.groupId);
 
-    const chatGroup = await chatGroupService.getChatGroup(data.groupId);
+        const chatGroup = await chatGroupService.getChatGroup(data.groupId);
 
-    if (!chatGroup) {
-        throw Error(`Invalid chat group of id ${data.groupId}`);
-    }
-
-    group.forEach((socketSession) => {
-        const sock = socketSession.getSocket();
-
-        if (sock) {
-            const clientIndex = chatGroup.quizSessionIds!.findIndex((sessionId) => { 
-                return data.quizSessionId === sessionId
-            }) + CLIENT_INDEX_OFFSET;
-
-            const chatGroupMessage: IWSToClientData.ChatGroupReconnect = {
-                clientIndex
-            };
-            sock.emit("chatGroupReconnect", chatGroupMessage);
-        } else {
-            console.error("Could not retrieve sock");
+        if (!chatGroup) {
+            throw Error(`Invalid chat group of id ${data.groupId}`);
         }
-    });
-}    
+
+        group.forEach((socketSession) => {
+            const sock = socketSession.getSocket();
+
+            if (sock) {
+                const clientIndex = chatGroup.quizSessionIds!.findIndex((sessionId) => { 
+                    return data.quizSessionId === sessionId
+                }) + CLIENT_INDEX_OFFSET;
+
+                const chatGroupMessage: IWSToClientData.ChatGroupReconnect = {
+                    clientIndex
+                };
+                sock.emit("chatGroupReconnect", chatGroupMessage);
+            } else {
+                console.error("Could not retrieve sock");
+            }
+        });
+    }    
 
     private static async HandleDisconnect(socket: PacSeqSocket_Server, chatGroupService: ChatGroupService) {
         // Because we have no way of figuring out how the socket is stored

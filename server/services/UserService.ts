@@ -152,6 +152,7 @@ class UserServiceHelper {
 
             if (maybeId) {
                 user = {
+                    _id: maybeId,
                     username: identity.identityId,
                     firstName: identity.name.given,
                     lastName: identity.name.family,

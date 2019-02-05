@@ -33,10 +33,6 @@ export class WebsocketManager {
             alert("You or someone has requested a full termination of all sessions associated with this username.");
         });
 
-        this.on("reconnect_failed", () => {
-            console.error("something bad");
-        });
-
         // As per #178, we need to reset the ack counter so that the new sockets are in sync
         this.on("connect", () => {
             this.socketProxy.resetIncomingDataAckCounter();

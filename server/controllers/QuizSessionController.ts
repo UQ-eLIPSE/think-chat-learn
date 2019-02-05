@@ -2,6 +2,7 @@ import * as express from "express";
 import { BaseController } from "./BaseController";
 import { QuizSessionService } from "../services/QuizSessionService";
 import { IQuizSession } from "../../common/interfaces/ToClientData";
+import { SocketSession } from "../js/websocket/SocketSession";
 
 export class QuizSessionController extends BaseController {
 
@@ -42,8 +43,30 @@ export class QuizSessionController extends BaseController {
         });
     }
 
+    // This checks whether or not a socket session still exists for a given quiz session
+    private findSession(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
+        const maybeSession = SocketSession.Get(req.body.quizSessionId);
+        res.json({ 
+            outcome:  maybeSession ? true : false
+        });
+    }    
+
+    private getQuizSessionByUserIdAndQuiz(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
+        const request: { userId: string, quizId: string } = req.body;
+        this.quizSessionService.getQuizSessionbyUserQuiz(request.userId, request.quizId).then((data) => {
+            res.json({
+                data
+            });
+        }).catch((e) => {
+            console.log(e);
+            res.sendStatus(400);
+        });
+    }
+
     public setupRoutes() {
         this.router.put("/create", this.createQuizSession.bind(this));
         this.router.get("/quizsession/:quizSessionId", this.getQuizSessionById.bind(this));
+        this.router.post("/findSession", this.findSession.bind(this));
+        this.router.post("/fetchByUserQuiz", this.getQuizSessionByUserIdAndQuiz.bind(this));
     }
 }

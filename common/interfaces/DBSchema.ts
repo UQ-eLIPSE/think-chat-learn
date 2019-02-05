@@ -49,6 +49,8 @@ export interface IQuizSession extends Document {
   responses?: OID[];
   // Mark the session as complete if applicable
   complete?: boolean;
+  // Mark the page just in case for progress
+  pageNumber?: number;
 }
 
 // Contains a question in which people can answer.
@@ -160,10 +162,10 @@ export interface IQuizSchedule extends Document {
 }
 
 // A message that was sent. Within a chat group. Contains
-// a user id which is presumably good (as in the user is part of the group)
+// a quizSession id which is presumably good (as in the user is part of the group which is linked via a quiz session id)
 // Since each chat group can point to multiple questions, we have to store the questionId as well
 export interface IChatMessage extends Document {
-  userId: OID;
+  quizSessionId: OID;
   content: string;
   timeStamp: Date;
   questionId: OID;
@@ -177,7 +179,7 @@ export interface IChatGroup extends Document {
   messages?: IChatMessage[];
   quizSessionIds?: OID[];
   quizId?: OID;
-  questionIds?: OID[];
+  startTime?: number;
 }
 
 export interface ChatMessage<OID, Date> {
