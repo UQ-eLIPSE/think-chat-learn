@@ -45,7 +45,6 @@ import { EmitterEvents } from "../emitters";
 })
 export default class GroupAllocation extends Vue {
   private notifyTone: boolean | null = null;
-  
 
   get socketState(): SocketState | null {
     return this.$store.getters.socketState;
@@ -67,7 +66,8 @@ export default class GroupAllocation extends Vue {
   }
 
   @Watch("chatGroup")
-  private handleChatGroupChange(newVal: IWSToClientData.ChatGroupFormed | null,
+  private handleChatGroupChange(
+    newVal: IWSToClientData.ChatGroupFormed | null,
     oldVal: IWSToClientData.ChatGroupFormed | null) {
       if (newVal) {
         // Play the tone if applicable
@@ -75,7 +75,7 @@ export default class GroupAllocation extends Vue {
           const notificationTone = new Audio("./mp3/here-i-am.mp3");
           notificationTone.play();
         }
-        
+
         this.goToMoocChatPage();
         EventBus.$emit(EmitterEvents.START_TIMER, this.$store.getters.currentTimerSettings);
         EventBus.$emit(EmitterEvents.GROUP_FORMED);

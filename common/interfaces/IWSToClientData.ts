@@ -12,21 +12,7 @@ export interface ChatGroupAnswer {
     answer: ToClientData.Response;
 }
 
-export type GroupAnswerDictionary = {[questionId: string]: ChatGroupAnswer[]};
-
-// Inbound data interfaces
-export interface LoginSuccess {
-    sessionId: string;
-    quizAttemptId: string;
-    username: string;
-    quiz: ToClientData.Quiz;
-    survey: ToClientData.Survey | null;
-    researchConsentRequired: boolean;
-}
-export type LoginFailure = string;
-export interface LoginExistingUser {
-    username: string;
-}
+export interface GroupAnswerDictionary { [questionId: string]: ChatGroupAnswer[]; }
 
 export interface ChatGroupFormed {
     groupId: string;

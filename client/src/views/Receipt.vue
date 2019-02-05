@@ -41,7 +41,7 @@
 </style>
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
-import { IQuiz, IQuizSession, ChatGroup, IUser } from "../../../common/interfaces/ToClientData";
+import { IQuiz, IQuizSession, IUser } from "../../../common/interfaces/ToClientData";
 import { logout } from "../../../common/js/front_end_auth";
 import { SocketState } from "../interfaces";
 import { WebsocketManager } from "../../js/WebsocketManager";
@@ -76,7 +76,7 @@ export default class Receipt extends Vue {
     }
 
     get chatGroup(): IWSToClientData.ChatGroupFormed | null {
-      return this.socketState && this.socketState.chatGroupFormed ? this.socketState.chatGroupFormed : null; 
+      return this.socketState && this.socketState.chatGroupFormed ? this.socketState.chatGroupFormed : null;
     }
 
     get user(): IUser | null {

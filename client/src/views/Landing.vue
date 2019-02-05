@@ -155,8 +155,8 @@ export default class Landing extends Vue {
   get user(): IUser | null {
     return this.$store.getters.user;
   }
-  
-  get quiz() : IQuiz | null {
+
+  get quiz(): IQuiz | null {
     return this.$store.getters.quiz;
   }
 
@@ -208,7 +208,7 @@ export default class Landing extends Vue {
   }
 
   @Watch("maxIndex")
-  private waitForMaxIndexLoad(newVal: number, oldVal?: number){
+  private waitForMaxIndexLoad(newVal: number, oldVal?: number) {
     // Idea ito push to the page if it has changed also recompute the timer settings
     this.$router.push("/page");
 

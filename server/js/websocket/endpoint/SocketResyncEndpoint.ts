@@ -3,8 +3,6 @@ import { WSEndpoint } from "../WSEndpoint";
 import * as IWSToServerData from "../../../../common/interfaces/IWSToServerData";
 import { PacSeqSocket_Server } from "../../../../common/js/PacSeqSocket_Server";
 
-import { UserSession } from "../../user/UserSession";
-
 import { SocketSession } from "../SocketSession";
 import { QuizSessionService } from "../../../services/QuizSessionService";
 
