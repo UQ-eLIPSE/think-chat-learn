@@ -19,7 +19,12 @@ export class SocketResyncEndpoint extends WSEndpoint {
         }
 
         const socketSession = SocketSession.GetAutoCreate(data.quizSessionId);
-        
+
+        // Before we set the socket, we need to check the previous socket and terminate it nicely
+        if (socketSession.getSocket() && socketSession.getSocket()!.getSocket().conn.readyState === "open") {
+            socketSession.getSocket()!.emit("terminateBrowser");
+        }
+
         socketSession.setSocket(socket);
         SocketSession.PutSocketIdWithQuizSession(socket.id, data.quizSessionId);
     }

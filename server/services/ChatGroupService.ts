@@ -114,13 +114,13 @@ export class ChatGroupService extends BaseService{
             groupId: group._id!,
             groupSize: group.quizSessionIds!.length,
             groupAnswers,
-            clientIndex: clientIndexMap[quizSessionId]
+            clientIndex: clientIndexMap[quizSessionId] + 1
         }
 
         return {
             messages,
             chatGroupFormed,
-            startTime: group.startTime!
+            startTime: group.startTime!,
         };
 
     }

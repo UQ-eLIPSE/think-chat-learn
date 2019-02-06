@@ -27,7 +27,19 @@ export class ResponseController extends BaseController {
         });
     }
 
+    private getResponsesByQuizSession(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
+        this.responseService.getResponsesByQuizSession(req.params.quizSessionId).then((responses) => {
+            res.json({
+                data: responses
+            });
+        }).catch((e: Error) => {
+            console.log(e);
+            res.sendStatus(500);
+        });
+    }
+
     public setupRoutes() {
         this.router.put("/create", this.createResponse.bind(this));
+        this.router.get("/quizSession/:quizSessionId", this.getResponsesByQuizSession.bind(this));
     }
 }

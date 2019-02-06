@@ -177,8 +177,8 @@ export default class Landing extends Vue {
   }
 
 
-  get maxIndex(): number {
-    return this.$store.getters.maxIndex;
+  get resync(): boolean {
+    return this.$store.getters.resync;
   }
 
   private startQuizSession() {
@@ -207,8 +207,8 @@ export default class Landing extends Vue {
     this.$store.dispatch("createSocket");
   }
 
-  @Watch("maxIndex")
-  private waitForMaxIndexLoad(newVal: number, oldVal?: number) {
+  @Watch("resync")
+  private waitForResync(newVal: number, oldVal?: number) {
     // Idea ito push to the page if it has changed also recompute the timer settings
     this.$router.push("/page");
 

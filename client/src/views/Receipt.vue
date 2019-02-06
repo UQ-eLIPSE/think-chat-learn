@@ -90,7 +90,7 @@ export default class Receipt extends Vue {
           && (this.maxIndex >= this.quiz.pages.length)) {
             this.$store.dispatch("retrieveQuizSession", this.quizSession._id).then(() => {
                 // Due to async functions we have to do this check again
-                if (this.quizSession && this.quizSession._id && this.quizSession.complete) {
+                if (this.quizSession && this.quizSession._id) {
                     const reg = (this.quizSession._id).match(/.{1,4}/g);
 
                     if (!reg) {

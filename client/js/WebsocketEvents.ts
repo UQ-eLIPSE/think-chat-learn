@@ -62,7 +62,10 @@ export const WebsocketEvents = {
         /** IWSToClientData.Error */
         ERROR: "error",
 
-        CHAT_GROUP_RECONNECT: "chatGroupReconnect"
+        CHAT_GROUP_RECONNECT: "chatGroupReconnect",
+
+        /** IWStoClientData.TerminateBrowser */
+        TERMIANTE_BROWSER: "terminateBrowser"
     },
 
     OUTBOUND: {

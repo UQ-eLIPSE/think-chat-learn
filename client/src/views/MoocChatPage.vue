@@ -416,7 +416,7 @@ export default class MoocChatPage extends Vue {
 
     // Just check if the maxIndex exceeds the page, if so we push them back to either reflection or receipt
     if (this.maxIndex >= this.quiz.pages.length) {
-      this.$router.push("/reflection");
+      this.$router.push("/receipt");
     }
 
     // Handle the timeout
