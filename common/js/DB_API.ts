@@ -2,7 +2,7 @@ import axios, { AxiosPromise } from "axios";
 import { getIdToken, setIdToken } from "./front_end_auth";
 
 // TODO replace with an actual link
-const API_URL = "http://localhost:8080/";
+const API_URL = process.env.VUE_APP_API_URL;
 
 export interface IApi {
     // HTTP verbs
