@@ -18,7 +18,7 @@
     <button class="primary">
       <font-awesome-icon icon="chalkboard" /> Blackboard</button>
     <button class="primary">
-      <font-awesome-icon icon="print" /> Print Receipt</button>
+      <font-awesome-icon icon="print" />Print Receipt</button>
   </div>
 </template>
 

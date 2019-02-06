@@ -36,29 +36,41 @@ export class UserService extends BaseService{
         if (!identity.course) {
             throw new Error(`No course associated with identity`);
         }
-        const quizSchedule = await UserServiceHelper.RetrieveQuizSchedule(this.quizRepo, identity.course);
+
+        if (!request.custom_quizId) {
+            throw new Error(`No quiz provided`);
+        }
+
+        // Fetching the quiz is done regardless. Whether or not they can create a quiz session is a different story
+        const quizSchedule = await this.quizRepo.findOne(request.custom_quizId);
+
+        if (!quizSchedule) {
+            throw new Error(`No scheduled quiz available`)
+        }
+
 
         // TODO check for previous attempts and retrieve the questions associated with the selected quiz
         //await UserLoginFunc.CheckQuizNotPreviouslyAttempted(db, user, quizSchedule);
         // Creating the list of ids requires a set
         const questionIds: string[] = [];
 
-        if (quizSchedule) {
-            quizSchedule.pages!.forEach((element) => {
-                if (((element.type === PageType.QUESTION_ANSWER_PAGE) || (element.type === PageType.DISCUSSION_PAGE)) 
-                    && questionIds.findIndex((id) => { return id === element.questionId; }) === -1) {
-                    questionIds.push(element.questionId);
-                }
-            });
-        }
-
+        quizSchedule.pages!.forEach((element) => {
+            if (((element.type === PageType.QUESTION_ANSWER_PAGE) || (element.type === PageType.DISCUSSION_PAGE)) 
+                && questionIds.findIndex((id) => { return id === element.questionId; }) === -1) {
+                questionIds.push(element.questionId);
+            }
+        });
+            
+        const available = Date.now() >= quizSchedule!.availableStart!.getTime() &&
+            quizSchedule.availableEnd!.getTime() >= Date.now() ? true : false;
         const questions = await UserServiceHelper.RetrieveQuestions(this.questionRepo, questionIds);
 
         const output: LoginResponse = {
             user,
             quiz: quizSchedule ? convertQuizIntoNetworkQuiz(quizSchedule) : null,
             courseId: identity.course,
-            questions
+            questions,
+            available
         };
 
         return output;
@@ -173,14 +185,12 @@ class UserServiceHelper {
      */
     public static async RetrieveQuizSchedule(quizRepo: QuizRepository, course: string): Promise<IQuiz | null> {
         const quiz = await quizRepo.findAvailableQuizInCourse(course);
-        
         return Promise.resolve(quiz);
     }
 
     /**
      * Grabs the questions from an associated quiz. If a question is MCQ, strips the isCorrect field
      * @param questionRepo The repo containing the questions
-
      */
     public static async RetrieveQuestions(questionRepo: QuestionRepository, questionIds: string[]) {
         const questions = await questionRepo.findByIdArray(questionIds);

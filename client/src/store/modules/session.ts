@@ -29,6 +29,8 @@ export interface IState {
     stopBrowser: boolean;
     // Tells a resync
     resync: boolean;
+    // Tells if the quiz session is available
+    quizAvailable: boolean;
 }
 
 const state: IState = {
@@ -44,7 +46,8 @@ const state: IState = {
     chatMessages: [],
     resyncAmount: 0,
     stopBrowser: false,
-    resync: false
+    resync: false,
+    quizAvailable: false
 };
 
 const mutationKeys = {
@@ -59,7 +62,8 @@ const mutationKeys = {
     // Chat message mutations
     APPEND_STATE_MESSAGE: "Appending a state message",
     SET_GROUP: "Setting the chat group",
-    SET_SOCKET_MESSAGES: "Setting the socket messages"
+    SET_SOCKET_MESSAGES: "Setting the socket messages",
+    SET_QUIZ_AVAILABILITY: "Setting quiz availability"
 };
 
 async function handleGroupJoin(data?: IWSToClientData.ChatGroupFormed) {
@@ -317,6 +321,10 @@ const getters = {
 
     resync: (): boolean => {
         return state.resync;
+    },
+
+    quizAvailable: (): boolean => {
+        return state.quizAvailable;
     }
 };
 const actions = {
@@ -420,6 +428,13 @@ const actions = {
             // at the page lengths
             store.commit("Sets the current index", i);
             store.commit("Setting the max index", i);
+        }
+    },
+
+    setAvailability({ commit }: {commit: Commit}, isAvailable: boolean) {
+        console.log(isAvailable);
+        if (isAvailable) {
+            commit(mutationKeys.SET_QUIZ_AVAILABILITY);
         }
     }
 };
@@ -532,6 +547,10 @@ const mutations = {
             });
         }
 
+    },
+
+    [mutationKeys.SET_QUIZ_AVAILABILITY](funcState: IState) {
+        Vue.set(funcState, "quizAvailable", true);
     }
 };
 

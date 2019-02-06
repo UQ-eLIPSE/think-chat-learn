@@ -28,6 +28,7 @@ export interface LoginResponse {
   quiz: NetworkData.IQuizOverNetwork | null;
   questions: TypeQuestion[];
   courseId: string;
+  available: boolean;
 }
 
 // Also handles the initial retrieval

@@ -87,13 +87,16 @@
       </OverviewContainer>
     </div>
     <div class="center margin-top">
-      <button v-if="quiz && !quizSession" class="primary" tag="button" @click="startQuizSession()">
+      <button v-if="quiz && quizAvailable && !quizSession" class="primary" tag="button" @click="startQuizSession()">
         Start Session
       </button>
       <!-- TODO Style unavailable button -->
       <!-- Note button was used instead of router-link due to @click not being listened -->
-      <button v-else class="primary" tag="button">
-        No Session Available.
+      <button v-else-if="!quizSession" class="primary">
+        The quiz is not available for Quiz {{quiz.title}}
+      </button>
+      <button v-else class="primary">
+        Attempt has been marked as completed
       </button>
     </div>
   </div>
@@ -176,6 +179,9 @@ export default class Landing extends Vue {
     return this.socketState && this.socketState.socket ? this.socketState.socket : null;
   }
 
+  get quizAvailable(): boolean {
+    return this.$store.getters.quizAvailable;
+  }
 
   get resync(): boolean {
     return this.$store.getters.resync;
