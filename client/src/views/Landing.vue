@@ -218,10 +218,12 @@ export default class Landing extends Vue {
     // Idea ito push to the page if it has changed also recompute the timer settings
     this.$router.push("/page");
 
-    // New timer settings
-    const tempSettings: TimerSettings = this.$store.getters.currentTimerSettings;
-    tempSettings.timeoutInMins = this.$store.getters.resyncAmount;
-    EventBus.$emit(EmitterEvents.START_TIMER, this.$store.getters.currentTimerSettings);
+    // New timer settings assuming it has been generated
+    const tempSettings: TimerSettings | null = this.$store.getters.currentTimerSettings;
+    if (tempSettings) {
+      tempSettings.timeoutInMins = this.$store.getters.resyncAmount;
+      EventBus.$emit(EmitterEvents.START_TIMER, this.$store.getters.currentTimerSettings);
+    }
   }
 }
 </script>

@@ -244,9 +244,8 @@ async function handleReconnect(data: any) {
 
     // We have a quiz session (whether it is an on client disconnect or not)
     // The next step is to check for our socket session
-    const socketPresent: { outcome: boolean } = await API.request(API.POST, API.QUIZSESSION + "findSession", {
-        quizSessionId: state.quizSession!._id!
-    });
+    const socketPresent: { outcome: boolean } = await API.request(API.POST, API.QUIZSESSION + "findSession",
+        state.quizSession!);
 
     if (socketPresent.outcome) {
         // Notify the server of a resync
@@ -258,7 +257,7 @@ async function handleReconnect(data: any) {
         if (!state.socketState!.chatGroupFormed) {
             const groupSession: ChatGroupResync | null =
                 await API.request(API.POST, API.CHATGROUP +
-                    "recoverSession", { quizSessionId: state.quizSession!._id });
+                    "recoverSession", state.quizSession!);
 
             const userResponses: Response[] =
                 (await API.request(API.GET, API.RESPONSE + "quizSession/" + state.quizSession!._id, {})).data;
@@ -432,7 +431,6 @@ const actions = {
     },
 
     setAvailability({ commit }: {commit: Commit}, isAvailable: boolean) {
-        console.log(isAvailable);
         if (isAvailable) {
             commit(mutationKeys.SET_QUIZ_AVAILABILITY);
         }

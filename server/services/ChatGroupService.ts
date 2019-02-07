@@ -30,6 +30,11 @@ export class ChatGroupService extends BaseService{
     // Appends the chat message to a given chatgroup and stores it in the db
     // assumes that the message is filled
     public async appendChatMessageToGroup(data: IChatGroup, content: string, quizSessionId: string, questionId: string): Promise<boolean> {
+        if (!data.quizSessionIds ||
+            !(data.quizSessionIds.findIndex((element) => element === quizSessionId) !== -1)) {
+            return false;
+        }
+
         const message: IChatMessage = {
             _id: (new ObjectId()).toHexString(),
             content,

@@ -231,12 +231,16 @@ export class ChatEndpoint extends WSEndpoint {
                     return data.quizSessionId === sessionId
                 }) + CLIENT_INDEX_OFFSET;
 
-                const chatGroupMessage: IWSToClientData.ChatGroupMessage = {
-                    message: data.message,
-                    clientIndex,
-                    timestamp: Date.now()
-                };
-                sock.emit("chatGroupMessage", chatGroupMessage);
+                // Bad index, most likely due to quiz session not existing
+                if (clientIndex !== 0) {
+                    const chatGroupMessage: IWSToClientData.ChatGroupMessage = {
+                        message: data.message,
+                        clientIndex,
+                        timestamp: Date.now()
+                    };
+                    sock.emit("chatGroupMessage", chatGroupMessage);
+                }
+
             } else {
                 console.error("Could not retrieve sock");
             }
