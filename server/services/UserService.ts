@@ -95,7 +95,6 @@ export class UserService extends BaseService{
         }
 
         // TODO check for previous attempts and retrieve the questions associated with the selected quiz
-        //await UserLoginFunc.CheckQuizNotPreviouslyAttempted(db, user, quizSchedule);
         const quizzes = await this.quizRepo.findAll({ course: identity.course });
         const questions = await this.questionRepo.findAll({ courseId: identity.course });
 
@@ -160,6 +159,7 @@ class UserServiceHelper {
 
             if (maybeId) {
                 user = {
+                    _id: maybeId,
                     username: identity.identityId,
                     firstName: identity.name.given,
                     lastName: identity.name.family,

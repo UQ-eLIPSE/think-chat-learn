@@ -41,7 +41,7 @@
 </style>
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
-import { IQuiz, IQuizSession, ChatGroup, IUser } from "../../../common/interfaces/ToClientData";
+import { IQuiz, IQuizSession, ChatGroup, IUser, IUserSession } from "../../../common/interfaces/ToClientData";
 import { logout } from "../../../common/js/front_end_auth";
 import { SocketState } from "../interfaces";
 import { WebsocketManager } from "../../js/WebsocketManager";
@@ -110,6 +110,8 @@ export default class Receipt extends Vue {
             quizSessionId: this.quizSession._id,
             groupId: this.chatGroup.groupId
         });
+
+        this.$store.dispatch("finishSession");
       }
     }
 }

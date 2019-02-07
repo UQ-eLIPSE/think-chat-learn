@@ -2,6 +2,7 @@ import * as express from "express";
 import { BaseController } from "./BaseController";
 import { ResponseService } from "../services/ResponseService";
 import { Response } from "../../common/interfaces/ToClientData";
+import { StudentAuthenticatorMiddleware } from "../js/auth/StudentPageAuth";
 
 export class ResponseController extends BaseController {
 
@@ -28,6 +29,7 @@ export class ResponseController extends BaseController {
     }
 
     public setupRoutes() {
-        this.router.put("/create", this.createResponse.bind(this));
+        this.router.put("/create", StudentAuthenticatorMiddleware.checkUserId(), StudentAuthenticatorMiddleware.checkResponseBody(),
+            this.createResponse.bind(this));
     }
 }

@@ -2,6 +2,7 @@ import * as express from "express";
 import { BaseController } from "./BaseController";
 import { QuizSessionService } from "../services/QuizSessionService";
 import { IQuizSession } from "../../common/interfaces/ToClientData";
+import { StudentAuthenticatorMiddleware } from "../js/auth/StudentPageAuth";
 
 export class QuizSessionController extends BaseController {
 
@@ -43,7 +44,7 @@ export class QuizSessionController extends BaseController {
     }
 
     public setupRoutes() {
-        this.router.put("/create", this.createQuizSession.bind(this));
-        this.router.get("/quizsession/:quizSessionId", this.getQuizSessionById.bind(this));
+        this.router.put("/create", StudentAuthenticatorMiddleware.checkUserId(), StudentAuthenticatorMiddleware.checkQuizSessionId(), this.createQuizSession.bind(this));
+        this.router.get("/quizsession/:quizSessionId", StudentAuthenticatorMiddleware.checkUserId(), this.getQuizSessionById.bind(this));
     }
 }

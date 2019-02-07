@@ -4,6 +4,7 @@ import { UserSessionService } from "../services/UserSessionService";
 import { IUserSession } from "../../common/interfaces/DBSchema";
 import { UserService } from "../services/UserService";
 import { StudentAuthenticatorMiddleware } from "../js/auth/StudentPageAuth";
+import { LoginResponse } from "../../common/interfaces/ToClientData";
 export class UserSessionController extends BaseController {
 
     protected userSessionService: UserSessionService;
@@ -41,7 +42,10 @@ export class UserSessionController extends BaseController {
     }
 
     public setupRoutes() {
-        this.router.put("/create", StudentAuthenticatorMiddleware.checkUserId(), this.createSession.bind(this));
-        this.router.post("/update", StudentAuthenticatorMiddleware.checkUserId(), this.updateSession.bind(this));
+        // Don't need to check usersession id due to not existing just yet
+        this.router.put("/create", StudentAuthenticatorMiddleware.checkUserId(),
+            this.createSession.bind(this));
+        this.router.post("/update", StudentAuthenticatorMiddleware.checkUserId(), StudentAuthenticatorMiddleware.checkUserSessionId(),
+            this.updateSession.bind(this));
     }
 }

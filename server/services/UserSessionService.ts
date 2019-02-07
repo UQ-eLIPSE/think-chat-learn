@@ -1,6 +1,7 @@
 import { BaseService } from "./BaseService";
 import { UserSessionRepository } from "../repositories/UserSessionRepository";
 import { IUserSession } from "../../common/interfaces/DBSchema";
+import { LoginResponse } from "../../common/interfaces/ToClientData";
 
 export class UserSessionService extends BaseService{
 
@@ -13,7 +14,6 @@ export class UserSessionService extends BaseService{
 
     // Creates a user session assuming the body is valid
     public async createUserSession(data: IUserSession): Promise<string> {
-
         return this.userSessionRepo.create(data);
     }
 
@@ -42,5 +42,10 @@ export class UserSessionService extends BaseService{
         return this.userSessionRepo.findAll({
             course: courseId
         });
+    }
+
+    // Gets the user session simply based on id
+    public async getUserSession(id: string): Promise<IUserSession | null> {
+        return this.userSessionRepo.findOne(id);
     }
 }

@@ -124,7 +124,8 @@ export default class App {
         this.responseController = new ResponseController(this.responseService);
         this.chatGroupController = new ChatGroupController(this.chatGroupService);
 
-        StudentAuthenticatorMiddleware.instantiate(this.userService);
+        StudentAuthenticatorMiddleware.instantiate(this.userService, this.userSessionService, this.quizSessionService,
+                this.responseService);
 
         this.userController.setupRoutes();
         this.quizController.setupRoutes();

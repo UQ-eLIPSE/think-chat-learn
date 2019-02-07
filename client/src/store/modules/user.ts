@@ -42,7 +42,10 @@ const actions = {
         });
     },
 
-    finishSession({ commit }: { commit: Commit }, session: IUserSession) {
+    finishSession({ commit }: { commit: Commit }) {
+        const session = state.session!;
+        session.endTime = new Date().toISOString();
+
         return API.request(API.POST, API.USERSESSION + "update", session).then((outcome: boolean) => {
             commit(mutationKeys.SET_SESSION, session);
         });
