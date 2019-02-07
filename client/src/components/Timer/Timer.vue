@@ -41,7 +41,6 @@ export default class Timer extends Vue {
     }
   }
 
-  @Watch("timerSettings")
   private createNewTimer(newVal: TimerSettings, oldVal?: TimerSettings) {
     const newTime = newVal.timeoutInMins * this.MS_TO_MINUTES_FACTOR;
 
@@ -90,6 +89,17 @@ export default class Timer extends Vue {
       if (data && data.referencedPageId !== "") {
         this.createNewTimer(data);
       }
+  }
+
+  get stopBrowser() {
+    return this.$store.getters.stopBrowser;
+  }
+
+  @Watch("stopBrowser")
+  private handleCrash(newVal: boolean, oldVal?: boolean) {
+    if (newVal) {
+      window.clearTimeout(this.timeoutHandler);
+    }
   }
 }
 </script>

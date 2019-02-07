@@ -69,3 +69,13 @@ admin/dist
 
 # Images in public dist for dev purposes
 client/public/img/
+
+# Env values for client and admin
+client/envs
+client/.env.*
+admin/.env.*
+
+# Config values for production
+server/config/production
+common/config/production
+client/config/production

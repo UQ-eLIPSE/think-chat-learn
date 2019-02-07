@@ -83,6 +83,11 @@ export class ResponseService extends BaseService{
         return this.responseRepo.findOne(responseId);
     }
 
+    // Gets the response based on quiz and quizsession id
+    public async getResponsesByQuizSession(quizSessionId: string): Promise<Response[]> {
+        return this.responseRepo.findResponsesByQuizSessionArray([quizSessionId]);
+    }
+
     // Checks whether or not the response already exists in the db
     private async checkQuizSessionQuestionInDb(quizSessionId: string, questionId: string): Promise<boolean> {
         return await this.responseRepo.findResponseByQuizSessionQuestion(quizSessionId, questionId) ? true : false;

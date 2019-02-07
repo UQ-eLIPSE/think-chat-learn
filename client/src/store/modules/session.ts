@@ -1,17 +1,22 @@
 import Vue from "vue";
 import { Commit } from "vuex";
-import { IUserSession, IQuizSession, Response, TypeQuestion } from "../../../../common/interfaces/ToClientData";
+import { IUserSession, IQuizSession, Response, IQuiz,
+    IDiscussionPage,
+    TypeQuestion } from "../../../../common/interfaces/ToClientData";
 import API from "../../../../common/js/DB_API";
 
 // Websocket interfaces
-import io from "socket.io-client";
 import * as IWSToClientData from "../../../../common/interfaces/IWSToClientData";
-import * as IWSToServerData from "../../../../common/interfaces/IWSToServerData";
 import { WebsocketManager } from "../../../js/WebsocketManager";
 import { WebsocketEvents } from "../../../js/WebsocketEvents";
-import { SocketState, MoocChatMessage, ChatMessage, StateMessage, Dictionary } from "../../interfaces";
+import { SocketState, MoocChatMessage, StateMessage, Dictionary } from "../../interfaces";
 import { MoocChatMessageTypes, MoocChatStateMessageTypes } from "../../enums";
-import { logout } from '../../../../common/js/front_end_auth';
+import { logout } from "../../../../common/js/front_end_auth";
+import store from "..";
+import { Utils } from "../../../../common/js/Utils";
+import { PageType, QuestionType } from "../../../../common/enums/DBEnums";
+import { ChatGroupResync } from "../../../../common/interfaces/HTTPToClientData";
+import { IResponseMCQ, IResponseQualitative } from '../../../../common/interfaces/DBSchema';
 
 export interface IState {
     quizSession: IQuizSession | null;
@@ -19,6 +24,13 @@ export interface IState {
     responses: Dictionary<Response>;
     socketState: SocketState;
     chatMessages: MoocChatMessage[];
+    resyncAmount: number;
+    // Stops the browser
+    stopBrowser: boolean;
+    // Tells a resync
+    resync: boolean;
+    // Tells if the quiz session is available
+    quizAvailable: boolean;
 }
 
 const state: IState = {
@@ -31,21 +43,30 @@ const state: IState = {
         chatTypingNotifications: null,
         socket: null
     },
-    chatMessages: []
+    chatMessages: [],
+    resyncAmount: 0,
+    stopBrowser: false,
+    resync: false,
+    quizAvailable: false
 };
 
 const mutationKeys = {
     SET_QUIZ_SESSION: "Setting a quiz session",
     ADD_RESPONSE: "Adding a response",
+    ADD_RESPONSES: "Adding multiple responses",
+    POPULATE_MISSING_RESPONSES: "Populate missing responses",
     // Web socket mutations
     CREATE_SOCKET: "Creating the socket",
     CLOSE_SOCKET: "Closing the socket",
     DELETE_SOCKET: "Deleting the socket",
     // Chat message mutations
-    APPEND_STATE_MESSAGE: "Appending a state message"
+    APPEND_STATE_MESSAGE: "Appending a state message",
+    SET_GROUP: "Setting the chat group",
+    SET_SOCKET_MESSAGES: "Setting the socket messages",
+    SET_QUIZ_AVAILABILITY: "Setting quiz availability"
 };
 
-function handleGroupJoin(data?: IWSToClientData.ChatGroupFormed) {
+async function handleGroupJoin(data?: IWSToClientData.ChatGroupFormed) {
     if (!data) {
         throw Error("No data for group join");
     }
@@ -61,6 +82,7 @@ function handleGroupJoin(data?: IWSToClientData.ChatGroupFormed) {
     };
 
     Vue.set(state.chatMessages, state.chatMessages.length, joinMessage);
+    await store.dispatch("updateGroup", data);
 }
 
 function handleTypingNotification(data?: IWSToClientData.ChatGroupTypingNotification) {
@@ -144,6 +166,16 @@ function handleChatGroupReconnect(data?: IWSToClientData.ChatGroupReconnect) {
     Vue.set(state.chatMessages, state.chatMessages.length, stateMessage);
 }
 
+function handleTermination() {
+    alert("The connection to the server has been severed.\n" +
+    "This is most likely due to another tab/browser overriding a session");
+
+    // Cleaning up is basically stopping the timer and closing the socket
+    state.socketState.socket!.close();
+    Vue.set(state.socketState, "socket", null);
+    Vue.set(state, "stopBrowser", true);
+}
+
 // Handles the socket events.
 function registerSocketEvents() {
     // Wait for an acknowledge?
@@ -178,30 +210,88 @@ function registerSocketEvents() {
         handleChatDisconnect);
     state.socketState.socket!.on<IWSToClientData.ChatGroupReconnect>(WebsocketEvents.INBOUND.CHAT_GROUP_RECONNECT,
         handleChatGroupReconnect);
+
+    // Handles the terminate of the socket
+    state.socketState.socket!.on(WebsocketEvents.INBOUND.TERMIANTE_BROWSER, handleTermination);
 }
 
-function handleReconnect(data: any) {
+async function handleReconnect(data: any) {
     // Even if we succesfully reconnect, we need to make sure we are still there
+    let quizSession: IQuizSession | null = null;
     if (!state.quizSession) {
-        return;
+        // If we do not have a quiz session then that means we just have a user session.
+        // Find the quiz session
+        const quiz: IQuiz = store.getters.quiz;
+        const userSession: IUserSession = store.getters.userSession;
+
+        if (userSession && quiz) {
+            // Retreive the quiz and user id
+            quizSession = (await API.request(API.POST, API.QUIZSESSION + "fetchByUserQuiz", {
+                userId: userSession.userId,
+                quizId: quiz._id
+            })).data;
+
+            // If we have a quiz session assign it else, do nothing
+            if (!quizSession) {
+                return;
+            }
+
+            store.dispatch("updateQuizSession", quizSession);
+        } else {
+            return;
+        }
     }
 
-    API.request(API.POST, API.CHATGROUP + "findSession", {
+    // We have a quiz session (whether it is an on client disconnect or not)
+    // The next step is to check for our socket session
+    const socketPresent: { outcome: boolean } = await API.request(API.POST, API.QUIZSESSION + "findSession", {
         quizSessionId: state.quizSession!._id!
-    }).then((output: {id: string}) => {
+    });
+
+    if (socketPresent.outcome) {
+        // Notify the server of a resync
         state.socketState!.socket!.emit(WebsocketEvents.OUTBOUND.SESSION_SOCKET_RESYNC, {
             quizSessionId: state.quizSession!._id
         });
 
-        if (output.id && state.socketState!.chatGroupFormed) {
+        // Fetch the group based on quiz id. If we don't have one.
+        if (!state.socketState!.chatGroupFormed) {
+            const groupSession: ChatGroupResync | null =
+                await API.request(API.POST, API.CHATGROUP +
+                    "recoverSession", { quizSessionId: state.quizSession!._id });
+
+            const userResponses: Response[] =
+                (await API.request(API.GET, API.RESPONSE + "quizSession/" + state.quizSession!._id, {})).data;
+
+            if (groupSession) {
+                await handleGroupJoin(groupSession.chatGroupFormed);
+                await store.dispatch("updatePageBasedOnTime", groupSession.startTime);
+                await store.dispatch("updateSocketMessages", groupSession.messages);
+            }
+
+            if (userResponses) {
+                await store.commit(mutationKeys.ADD_RESPONSES, userResponses);
+                // Populate the missing responses based on the maxIndex
+                await store.commit(mutationKeys.POPULATE_MISSING_RESPONSES);
+            }
+        }
+
+        Vue.set(state, "resync", true);
+
+        // We then check if the quiz session has a group id
+        if (state.socketState!.chatGroupFormed) {
             setTimeout(() => state.socketState!.socket!.emit(WebsocketEvents.OUTBOUND.CHAT_GROUP_RECONNECT, {
                 quizSessionId: state.quizSession!._id,
                 groupId: state.socketState!.chatGroupFormed!.groupId }
             ), 1000);
         } else {
-            // TODO implement actual error handling if the session is essentially dead
+            // If we reach this point, we by default go to page 0
         }
-    });
+    } else {
+        // No present socket session present. Don't bother with reconnection. This could possibly mean that the
+        // server has gone down or the socket session has been garbage collected
+        return;
+    }
 }
 
 const getters = {
@@ -219,6 +309,22 @@ const getters = {
 
     chatMessages: (): MoocChatMessage[] => {
         return state.chatMessages;
+    },
+
+    resyncAmount: (): number => {
+        return state.resyncAmount;
+    },
+
+    stopBrowser: (): boolean => {
+        return state.stopBrowser;
+    },
+
+    resync: (): boolean => {
+        return state.resync;
+    },
+
+    quizAvailable: (): boolean => {
+        return state.quizAvailable;
     }
 };
 const actions = {
@@ -231,9 +337,7 @@ const actions = {
     },
 
     updateQuizSession({ commit }: {commit: Commit}, quizSession: IQuizSession) {
-        return API.request(API.POST, API.QUIZSESSION + "update", quizSession).then(() => {
-            commit(mutationKeys.SET_QUIZ_SESSION, quizSession);
-        });
+        commit(mutationKeys.SET_QUIZ_SESSION, quizSession);
     },
 
     retrieveQuizSession({ commit }: { commit: Commit }, id: string) {
@@ -268,6 +372,70 @@ const actions = {
 
     closeSocket({ commit }: {commit: Commit}) {
         return commit(mutationKeys.CLOSE_SOCKET);
+    },
+
+    updateGroup({ commit }: {commit: Commit}, data: IWSToClientData.ChatGroupFormed) {
+        return commit(mutationKeys.SET_GROUP, data);
+    },
+
+    updateSocketMessages({ commit }: {commit: Commit}, data: ChatGroupResync) {
+        return commit(mutationKeys.SET_SOCKET_MESSAGES, data);
+    },
+
+    updatePageBasedOnTime({ commit }: {commit: Commit}, startTime: number) {
+        // Given a quiz, compute the amount of time for each page.
+        const currentTime = Date.now();
+        let trackedTime = startTime;
+        const quiz: IQuiz | null = store.getters.quiz;
+        if (!quiz || !quiz.pages) {
+            return;
+        }
+
+        // Since the group formation occurs at the first discussion, we iterate from there
+        const firstDiscussionIndex = quiz.pages.findIndex((element) => {
+            return element.type === PageType.DISCUSSION_PAGE;
+        });
+
+        let i = 0;
+
+        for (i = firstDiscussionIndex ; i < quiz.pages.length; i++) {
+            const lowerBound = trackedTime;
+            const upperBound = trackedTime + Utils.DateTime.minToMs(quiz.pages[i].timeoutInMins);
+            if (currentTime >= lowerBound && upperBound >= currentTime) {
+                // Set the indices
+                store.commit("Sets the current index", i);
+                store.commit("Setting the max index", i);
+
+                // Figure out the most recent discussion page
+                for (let j = i; j >= 0; j--) {
+                    if (quiz.pages[j].type === PageType.DISCUSSION_PAGE) {
+                        store.commit("Setting current discussion", (quiz.pages[j] as IDiscussionPage).questionId);
+                        break;
+                    }
+                }
+
+                // Set the amount of time remaining for the timer
+                const timeRemaining = upperBound - currentTime;
+                Vue.set(state, "resyncAmount", Utils.DateTime.msToMinutes(timeRemaining));
+                break;
+            }
+
+            trackedTime = upperBound;
+        }
+
+        if (i === quiz.pages.length) {
+            // If we somehow reach there then the max index would be
+            // at the page lengths
+            store.commit("Sets the current index", i);
+            store.commit("Setting the max index", i);
+        }
+    },
+
+    setAvailability({ commit }: {commit: Commit}, isAvailable: boolean) {
+        console.log(isAvailable);
+        if (isAvailable) {
+            commit(mutationKeys.SET_QUIZ_AVAILABILITY);
+        }
     }
 };
 
@@ -278,6 +446,12 @@ const mutations = {
 
     [mutationKeys.ADD_RESPONSE](funcState: IState, data: Response) {
         Vue.set(funcState.responses, data.questionId, data);
+    },
+
+    [mutationKeys.ADD_RESPONSES](funcState: IState, data: Response[]) {
+        data.forEach((element) => {
+            Vue.set(funcState.responses,  element.questionId!, element);
+        });
     },
 
     [mutationKeys.CREATE_SOCKET](funcState: IState) {
@@ -309,6 +483,74 @@ const mutations = {
         };
 
         Vue.set(funcState.chatMessages, funcState.chatMessages.length, outgoingMessage);
+    },
+
+    [mutationKeys.SET_GROUP](funcState: IState, data: IWSToClientData.ChatGroupFormed) {
+        Vue.set(funcState.socketState!, "chatGroupFormed", data);
+    },
+
+    [mutationKeys.SET_SOCKET_MESSAGES](funcState: IState, data: IWSToClientData.ChatGroupMessage[]) {
+        Vue.set(funcState.socketState!, "chatMessages", data);
+        Vue.set(funcState, "chatMessages", data.map((element) => {
+            const output: MoocChatMessage = {
+                type: MoocChatMessageTypes.CHAT_MESSAGE,
+                content: element
+            };
+
+            return output;
+        }, [] as MoocChatMessage[]));
+    },
+
+    [mutationKeys.POPULATE_MISSING_RESPONSES](funcState: IState) {
+        // The idea is given the max index and quiz. Generate missing responses
+        const maxIndex: number = store.getters.maxIndex;
+        const quiz: IQuiz | null = store.getters.quiz;
+        const questions: TypeQuestion[] = store.getters.questions;
+
+        if (quiz && quiz.pages) {
+            const relevantQuestions = quiz.pages.reduce((arr: string[], element, index) => {
+                if ((element.type === PageType.QUESTION_ANSWER_PAGE) && index < maxIndex) {
+                    arr.push(element.questionId);
+                }
+                return arr;
+            }, []);
+
+            relevantQuestions.forEach((questionId) => {
+                const questionType = (questions.find((element) => {
+                    return element._id === questionId;
+                })!).type;
+
+                if (!funcState.responses[questionId]) {
+                    let sampleResponse;
+                    if (questionType === QuestionType.QUALITATIVE) {
+                        sampleResponse = {
+                            confidence: 1,
+                            questionId,
+                            quizId: quiz._id!,
+                            quizSessionId: funcState.quizSession!._id!,
+                            type: QuestionType.QUALITATIVE,
+                            content: "No response given"
+                        } as IResponseQualitative ;
+                    } else {
+                        sampleResponse = {
+                            confidence: 1,
+                            questionId,
+                            quizId: quiz._id!,
+                            quizSessionId: funcState.quizSession!._id!,
+                            type: QuestionType.MCQ,
+                            optionId: "A"
+                        } as IResponseMCQ;
+                    }
+
+                    Vue.set(funcState.responses, sampleResponse.questionId, sampleResponse);
+                }
+            });
+        }
+
+    },
+
+    [mutationKeys.SET_QUIZ_AVAILABILITY](funcState: IState) {
+        Vue.set(funcState, "quizAvailable", true);
     }
 };
 

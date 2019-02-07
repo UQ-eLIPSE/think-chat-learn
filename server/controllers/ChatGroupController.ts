@@ -12,26 +12,28 @@ export class ChatGroupController extends BaseController {
         this.chatGroupService = _chatGroupService;
     }
 
-    private appendQuestion(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        this.chatGroupService.appendQuestionProgress(req.body.questionId, req.body.groupId).then((outcome) => {
+    private findGroupByQuizSessionId(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
+        this.chatGroupService.findChatGroupBySessionId(req.body.quizSessionId).then((data) => {
             res.json({
-                outcome
-            });
-        }).catch((e: Error) => {
+                data
+            })
+        }).catch((e) => {
             console.log(e);
-            res.sendStatus(500);
+            res.sendStatus(400);
         });
     }
 
-    private findSession(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        const maybeSession = SocketSession.Get(req.body.quizSessionId);
-        res.json({ 
-            id:  maybeSession ? maybeSession.getQuizSessionId() : null
+    private recoverChatGroupStateByQuizSessionId(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
+        this.chatGroupService.reconstructChatGroup(req.body.quizSessionId).then((data) => {
+            res.json(data);
+        }).catch((e) => {
+            console.log(e);
+            res.sendStatus(400);
         });
     }
 
     public setupRoutes() {
-        this.router.post("/append", this.appendQuestion.bind(this));
-        this.router.post("/findSession", this.findSession.bind(this));
+        this.router.post("/recoverSession", this.recoverChatGroupStateByQuizSessionId.bind(this));
+        this.router.post("/findSession", this.findGroupByQuizSessionId.bind(this));
     }
 }

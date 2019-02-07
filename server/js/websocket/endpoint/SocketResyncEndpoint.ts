@@ -3,8 +3,6 @@ import { WSEndpoint } from "../WSEndpoint";
 import * as IWSToServerData from "../../../../common/interfaces/IWSToServerData";
 import { PacSeqSocket_Server } from "../../../../common/js/PacSeqSocket_Server";
 
-import { UserSession } from "../../user/UserSession";
-
 import { SocketSession } from "../SocketSession";
 import { QuizSessionService } from "../../../services/QuizSessionService";
 
@@ -21,7 +19,12 @@ export class SocketResyncEndpoint extends WSEndpoint {
         }
 
         const socketSession = SocketSession.GetAutoCreate(data.quizSessionId);
-        
+
+        // Before we set the socket, we need to check the previous socket and terminate it nicely
+        if (socketSession.getSocket() && socketSession.getSocket()!.getSocket().conn.readyState === "open") {
+            socketSession.getSocket()!.emit("terminateBrowser");
+        }
+
         socketSession.setSocket(socket);
         SocketSession.PutSocketIdWithQuizSession(socket.id, data.quizSessionId);
     }

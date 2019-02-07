@@ -18,6 +18,8 @@ export class UserController extends BaseController {
         this.userService.handleLogin(req.body as ILTIData).then((output) => {
             const token = jwt.sign(output as Object, Conf.jwt.SECRET, { expiresIn: Conf.jwt.TOKEN_LIFESPAN });
             res.redirect(Conf.clientPage + "?q=" + token);
+        }).catch((e: Error) => {
+            res.status(500).send(e.message);
         });
 
     }

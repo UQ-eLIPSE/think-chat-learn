@@ -88,7 +88,8 @@ import { Vue, Component, Watch } from "vue-property-decorator";
 import Confidence from "../components/Confidence.vue";
 import Timer from "../components/Timer/Timer.vue";
 import { IQuiz, Page, Response, TypeQuestion,
-  IQuizSession, IUserSession, IQuestionAnswerPage, IDiscussionPage, IUser } from "../../../common/interfaces/ToClientData";
+  IQuizSession, IUserSession, IQuestionAnswerPage, IDiscussionPage,
+  IUser } from "../../../common/interfaces/ToClientData";
 import { PageType, QuestionType } from "../../../common/enums/DBEnums";
 import { SocketState, TimerSettings, Dictionary } from "../interfaces";
 import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
@@ -223,10 +224,11 @@ export default class MoocChatPage extends Vue {
       return null;
     }
 
-    switch(this.quiz.pages[this.maxIndex].type) {
+    switch (this.quiz.pages[this.maxIndex].type) {
       case PageType.DISCUSSION_PAGE:
-      case PageType.QUESTION_ANSWER_PAGE:         
-        return this.$store.getters.getQuestionById((this.quiz.pages[this.maxIndex] as IDiscussionPage | IQuestionAnswerPage).questionId);
+      case PageType.QUESTION_ANSWER_PAGE:
+        return this.$store.getters.getQuestionById((this.quiz.pages[this.maxIndex] as IDiscussionPage |
+          IQuestionAnswerPage).questionId);
       default:
         return null;
     }
@@ -351,9 +353,7 @@ export default class MoocChatPage extends Vue {
           groupId: this.chatGroup!.groupId!
         };
 
-        this.$store.dispatch("appendQuestionToChatGroup", data).then(() => {
-          this.emitGroupUpdate(() => {});
-        });
+        this.emitGroupUpdate(() => {});
 
         EventBus.$emit(EmitterEvents.START_TIMER, this.$store.getters.currentTimerSettings);
       } else {
@@ -416,7 +416,7 @@ export default class MoocChatPage extends Vue {
 
     // Just check if the maxIndex exceeds the page, if so we push them back to either reflection or receipt
     if (this.maxIndex >= this.quiz.pages.length) {
-      this.$router.push("/reflection");
+      this.$router.push("/receipt");
     }
 
     // Handle the timeout

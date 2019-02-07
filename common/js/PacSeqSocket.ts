@@ -71,7 +71,18 @@ export class PacSeqSocket<SocketType> {
         return psSocket;
     }
 
+    protected enableInternalEventDispatch: boolean = false;
+
     protected nativeSocket: _SocketType;
+
+    /* ===== FOR TESTING PURPOSES ONLY ===== */
+
+    /** Number of times a packet is sent over wire */
+    protected __numberOfTimesToSendOverWirePerEmit: number = 1;
+
+    /** Number of times a socket message will be emitted (as separate messages) */
+    protected __numberOfTimesToRepeatEmit: number = 1;
+
     private mode: PacSeqSocketMode = PacSeqSocketMode.QUEUE_ONLY;
 
     private sequencer: PacSeq = new PacSeq();
@@ -86,17 +97,6 @@ export class PacSeqSocket<SocketType> {
 
     /** Holds pointer to new socket from which this socket was copied */
     private transferredTo: PacSeqSocket<SocketType> | undefined = undefined;
-
-    protected enableInternalEventDispatch: boolean = false;
-
-
-    /* ===== FOR TESTING PURPOSES ONLY ===== */
-
-    /** Number of times a packet is sent over wire */
-    protected __numberOfTimesToSendOverWirePerEmit: number = 1;
-
-    /** Number of times a socket message will be emitted (as separate messages) */
-    protected __numberOfTimesToRepeatEmit: number = 1;
 
     constructor(socket: SocketType) {
         this.nativeSocket = socket;

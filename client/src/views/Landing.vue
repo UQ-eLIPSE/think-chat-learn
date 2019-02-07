@@ -87,13 +87,16 @@
       </OverviewContainer>
     </div>
     <div class="center margin-top">
-      <button v-if="quiz" class="primary" tag="button" @click="startQuizSession()">
+      <button v-if="quiz && quizAvailable && !quizSession" class="primary" tag="button" @click="startQuizSession()">
         Start Session
       </button>
       <!-- TODO Style unavailable button -->
       <!-- Note button was used instead of router-link due to @click not being listened -->
-      <button v-else class="primary" tag="button">
-        No Session Available
+      <button v-else-if="!quizSession" class="primary">
+        The quiz is not available for Quiz {{quiz.title}}
+      </button>
+      <button v-else class="primary">
+        Attempt has been marked as completed
       </button>
     </div>
   </div>
@@ -135,12 +138,12 @@
 </style>
 
 <script lang="ts">
-import { Vue, Component } from "vue-property-decorator";
+import { Vue, Component, Watch } from "vue-property-decorator";
 import { IUser, IQuiz, IQuizSession, IUserSession } from "../../../common/interfaces/ToClientData";
 import OverviewContainer from "../components/OverviewContainer.vue";
 import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
 import * as IWSToServerData from "../../../common/interfaces/IWSToServerData";
-import { SocketState } from "../interfaces";
+import { SocketState, TimerSettings } from "../interfaces";
 import { WebsocketManager } from "../../js/WebsocketManager";
 import { WebsocketEvents } from "../../js/WebsocketEvents";
 import { EventBus } from "../EventBus";
@@ -155,8 +158,8 @@ export default class Landing extends Vue {
   get user(): IUser | null {
     return this.$store.getters.user;
   }
-  
-  get quiz() : IQuiz | null {
+
+  get quiz(): IQuiz | null {
     return this.$store.getters.quiz;
   }
 
@@ -176,6 +179,13 @@ export default class Landing extends Vue {
     return this.socketState && this.socketState.socket ? this.socketState.socket : null;
   }
 
+  get quizAvailable(): boolean {
+    return this.$store.getters.quizAvailable;
+  }
+
+  get resync(): boolean {
+    return this.$store.getters.resync;
+  }
 
   private startQuizSession() {
     if (!this.quiz || !this.userSession) {
@@ -201,6 +211,17 @@ export default class Landing extends Vue {
 
   private mounted() {
     this.$store.dispatch("createSocket");
+  }
+
+  @Watch("resync")
+  private waitForResync(newVal: number, oldVal?: number) {
+    // Idea ito push to the page if it has changed also recompute the timer settings
+    this.$router.push("/page");
+
+    // New timer settings
+    const tempSettings: TimerSettings = this.$store.getters.currentTimerSettings;
+    tempSettings.timeoutInMins = this.$store.getters.resyncAmount;
+    EventBus.$emit(EmitterEvents.START_TIMER, this.$store.getters.currentTimerSettings);
   }
 }
 </script>

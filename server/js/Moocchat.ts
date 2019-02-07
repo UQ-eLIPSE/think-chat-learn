@@ -1,7 +1,5 @@
 import * as mongodb from "mongodb";
 
-import { Conf } from "../config/Conf";
-import { Database } from "./data/Database";
 import * as IPacSeqSocketPacket from "../../common/interfaces/IPacSeqSocketPacket";
 
 import { ChatEndpoint } from "./websocket/endpoint/ChatEndpoint";
@@ -94,21 +92,11 @@ export class Moocchat {
     }
 
     private async setup() {
-        const db = await Database.Connect(Conf.database);
-
-
-        // Set DB connection now that we have it
-        this.db = db;
-
         // On each socket connection, join up to websocket endpoints
         this.socketIO.sockets.on("connection", this.instantiateSocket.bind(this));
 
         console.log("MOOCchat set up complete");
         //});
-    }
-
-    public getDb() {
-        return this.db;
     }
 
     public getSocketIO() {

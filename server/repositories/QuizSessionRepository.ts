@@ -14,4 +14,13 @@ export class QuizSessionRepository extends BaseRepository<IQuizSession>{
         return result;
     }
 
+    async findQuizSessionByUserQuiz(userSessionIds: string[], quizId: string): Promise<IQuizSession | null> {
+        let result = await this.collection.findOne({
+            userSessionId: { 
+                $in: userSessionIds
+            },
+            quizId
+        });
+        return result;
+    }
 }

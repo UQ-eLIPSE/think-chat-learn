@@ -41,7 +41,7 @@
 </style>
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
-import { IQuiz, IQuizSession, ChatGroup, IUser, IUserSession } from "../../../common/interfaces/ToClientData";
+import { IQuiz, IQuizSession, IChatGroup, IUser, IUserSession } from "../../../common/interfaces/ToClientData";
 import { logout } from "../../../common/js/front_end_auth";
 import { SocketState } from "../interfaces";
 import { WebsocketManager } from "../../js/WebsocketManager";
@@ -76,7 +76,7 @@ export default class Receipt extends Vue {
     }
 
     get chatGroup(): IWSToClientData.ChatGroupFormed | null {
-      return this.socketState && this.socketState.chatGroupFormed ? this.socketState.chatGroupFormed : null; 
+      return this.socketState && this.socketState.chatGroupFormed ? this.socketState.chatGroupFormed : null;
     }
 
     get user(): IUser | null {
@@ -90,7 +90,7 @@ export default class Receipt extends Vue {
           && (this.maxIndex >= this.quiz.pages.length)) {
             this.$store.dispatch("retrieveQuizSession", this.quizSession._id).then(() => {
                 // Due to async functions we have to do this check again
-                if (this.quizSession && this.quizSession._id && this.quizSession.complete) {
+                if (this.quizSession && this.quizSession._id) {
                     const reg = (this.quizSession._id).match(/.{1,4}/g);
 
                     if (!reg) {

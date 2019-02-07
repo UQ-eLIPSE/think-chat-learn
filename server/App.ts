@@ -113,7 +113,7 @@ export default class App {
         this.userSessionService = new UserSessionService(this.userSessionRepository);
         this.quizSessionService = new QuizSessionService(this.quizSessionRepository, this.userSessionRepository,
             this.quizRepository, this.responseRepository);
-        this.chatGroupService = new ChatGroupService(this.chatGroupRepository);
+        this.chatGroupService = new ChatGroupService(this.chatGroupRepository, this.responseRepository);
         this.responseService = new ResponseService(this.responseRepository, this.quizSessionRepository, this.quizRepository);
 
         this.userController = new UserController(this.userService);
@@ -181,8 +181,8 @@ export default class App {
         
             // Note that express will attempt to find the file.
             // For logging in we use the api endpoints (and redirect there)
-            this.express.use("/client", express.static(__dirname + "/../../client/dist/"));
-            this.express.use("/admin", express.static(__dirname + "/../../admin/dist/"));
+            this.express.use("/client", express.static(__dirname + Conf.folders.clientFolder));
+            this.express.use("/admin", express.static(__dirname + Conf.folders.adminFolder));
         }
         
         // LTI launcher page only available in test mode

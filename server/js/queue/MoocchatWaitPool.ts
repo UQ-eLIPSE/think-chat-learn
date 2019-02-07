@@ -2,12 +2,9 @@ import { Conf } from "../../config/Conf";
 import { Conf as CommonConf } from "../../../common/config/Conf";
 
 import { KVStore } from "../../../common/js/KVStore";
-//import { MoocchatBackupClientQueue } from "./MoocchatBackupClientQueue";
-
-import { QuizAttempt } from "../quiz/QuizAttempt";
 
 import { Utils } from "../../../common/js/Utils";
-import { IQuizSession, Response, IResponseMCQ, IResponseQualitative } from "../../../common/interfaces/DBSchema";
+import { Response, IResponseMCQ, IResponseQualitative } from "../../../common/interfaces/DBSchema";
 import { QuestionType } from "../../../common/enums/DBEnums";
 /**
  * The idea is that for each quiz-question combination we set up a pool. Each pool

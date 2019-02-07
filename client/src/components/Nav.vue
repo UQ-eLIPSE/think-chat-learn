@@ -2,7 +2,7 @@
   <header>
     <div class="nav-item logo"><span class="logo-bold">MOOC</span>chat</div>
     <div class="nav-item course-name">
-      {{ user ? user.username : "No User" }}
+      {{ `${user ? user.username : "No User"} - Session Id: ${quizSession ? quizSession._id : "N/A"}` }}
     </div>
     <div class="nav-item">
       <span>{{
@@ -89,7 +89,7 @@ header {
 
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator";
-import { IUser } from "../../../common/interfaces/DBSchema";
+import { IUser, IQuizSession } from "../../../common/interfaces/DBSchema";
 import Chat from "../components/Chat/Chat.vue";
 import { MoocChatMessage } from "../interfaces";
 import { EventBus } from "../EventBus";
@@ -107,6 +107,10 @@ export default class Nav extends Vue {
 
   get chatMessages(): MoocChatMessage[] {
     return this.$store.getters.chatMessages;
+  }
+
+  get quizSession(): IQuizSession | null {
+    return this.$store.getters.quizSession;
   }
 
   private toggleChat: boolean = false;

@@ -2,9 +2,6 @@ import { KVStore } from "../../../common/js/KVStore";
 
 import { PacSeqSocket_Server } from "../../../common/js/PacSeqSocket_Server";
 
-// Refers to...
-import { UserSession } from "../user/UserSession";
-
 // A socket session is created when a user decides to send a join request
 // which is located in the chatEndPoint. The reason for this is because
 // the socket is only created/used for chatting rather than for submitting

@@ -34,6 +34,7 @@ const mutationKeys = {
     DECREMENTING_CURRENT_INDEX: "Decrementing the current index",
     SET_CURRENT_INDEX: "Sets the current index",
     INCREMENTING_MAX_INDEX: "Incrementing the max index",
+    SET_MAX_INDEX: "Setting the max index"
 };
 
 function getQuestionById(id: string): TypeQuestion | null {
@@ -104,14 +105,6 @@ const actions = {
         }
     },
 
-    // TODO check if we need to authenticate based on userId?
-    appendQuestionToChatGroup({ commit }: {commit: Commit}, data: { questionId: string, groupId: string }) {
-        return API.request(API.POST, API.CHATGROUP + "append/", {
-            questionId: data.questionId,
-            groupId: data.groupId
-        });
-    },
-
     incrementCurrentIndex({ commit }: {commit: Commit}) {
         return commit(mutationKeys.INCREMENTING_CURRENT_INDEX);
     },
@@ -156,6 +149,10 @@ const mutations = {
 
     [mutationKeys.INCREMENTING_MAX_INDEX](funcState: IState) {
         Vue.set(funcState, "maxIndex", funcState.maxIndex + 1);
+    },
+
+    [mutationKeys.SET_MAX_INDEX](funcState: IState, index: number) {
+        Vue.set(funcState, "maxIndex", index);
     }
 };
 

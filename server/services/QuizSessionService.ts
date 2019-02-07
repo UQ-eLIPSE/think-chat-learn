@@ -88,7 +88,16 @@ export class QuizSessionService extends BaseService{
             (checkResponses.findIndex((element) => element === null) !== -1)) {
             return false;
         }
-
+        
         return true;
+    }
+    
+    // Gets the quiz session by the combination of userId and quizId
+    public async getQuizSessionbyUserQuiz(userId: string, quizId: string): Promise<IQuizSession | null> {
+        // Fetch all user the user sessions
+        const usersessions = await this.userSessionRepo.findUserSessionsByUserId(userId);
+        const quizSession = await this.quizSessionRepo.findQuizSessionByUserQuiz(
+            usersessions.map((element) => { return element._id! }, []), quizId);
+        return quizSession;
     }
 }
