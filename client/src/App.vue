@@ -181,20 +181,6 @@ export default class App extends Vue {
   private renderRestart = false;
 
   private mounted() {
-    // Didn't login, attempt to refresh if the user does not exist and we have an acual token
-    // If we don't have a token this most likely means that the page was accessed directly
-    if (!this.$store.getters.user && getIdToken() !== null) {
-      this.$store.dispatch("refreshToken").then(() => {
-        // Set up the user again
-        const login = getLoginResponse();
-
-        // If there is no login response, then the action is to do nothing
-        if (login) {
-          this.$store.dispatch("setUser", login.user);
-          this.$store.dispatch("setQuiz", login.quiz);
-        }
-      });
-    }
   }
 
   private restartSocket() {

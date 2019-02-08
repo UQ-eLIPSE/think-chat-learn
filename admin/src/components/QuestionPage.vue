@@ -53,7 +53,6 @@ import { TypeQuestion,
 import { QuestionType } from "../../../common/enums/DBEnums";
 import { getAdminLoginResponse } from "../../../common/js/front_end_auth";
 
-
 interface FrontEndQuestionOption extends IQuestionOption {
     mountedId: number;
 }

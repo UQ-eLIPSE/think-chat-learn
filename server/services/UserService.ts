@@ -5,7 +5,7 @@ import { ILTIData } from "../../common/interfaces/ILTIData";
 import { LTIAuth } from "../js/auth/lti/LTIAuth";
 import { IMoocchatIdentityInfo } from "../js/auth/IMoocchatIdentityInfo";
 import { IUser, IQuiz } from "../../common/interfaces/DBSchema";
-import { LoginResponse, AdminLoginResponse } from "../../common/interfaces/ToClientData";
+import { LoginResponse, AdminLoginResponse, QuizScheduleData, QuizScheduleDataAdmin } from "../../common/interfaces/ToClientData";
 import { QuestionRepository } from "../repositories/QuestionRepository";
 import { convertQuizIntoNetworkQuiz } from "../../common/js/NetworkDataUtils";
 import { IQuizOverNetwork } from "../../common/interfaces/NetworkData";
@@ -67,9 +67,10 @@ export class UserService extends BaseService{
 
         const output: LoginResponse = {
             user,
-            quiz: quizSchedule ? convertQuizIntoNetworkQuiz(quizSchedule) : null,
+            // quiz: quizSchedule ? convertQuizIntoNetworkQuiz(quizSchedule) : null,
             courseId: identity.course,
-            questions,
+            // questions,
+            quizId: quizSchedule && quizSchedule._id ? quizSchedule._id : null,
             available
         };
 
@@ -114,10 +115,10 @@ export class UserService extends BaseService{
         // true should be good enough
         const output: AdminLoginResponse = {
             user,
-            quizzes: quizzes.reduce((arr: IQuizOverNetwork[], element) => 
-                { arr.push(convertQuizIntoNetworkQuiz(element)); return arr; }, []),
+            //quizzes: quizzes.reduce((arr: IQuizOverNetwork[], element) => 
+            //    { arr.push(convertQuizIntoNetworkQuiz(element)); return arr; }, []),
             courseId: identity.course,
-            questions,
+            //questions,
             isAdmin: true
         }
 
@@ -128,6 +129,46 @@ export class UserService extends BaseService{
     // Simply returns a user if exist, null otherwise
     public async findUser(userId: string): Promise<IUser | null> {
         return UserServiceHelper.FindUser(this.userRepo, userId);
+    }
+
+    public async handleFetch(token: LoginResponse | AdminLoginResponse): Promise<QuizScheduleData | QuizScheduleDataAdmin | null> {
+        if ((token as AdminLoginResponse).isAdmin) {
+            const quizzes = await this.quizRepo.findAll({ course: token.courseId });
+            const questions = await this.questionRepo.findAll({ courseId: token.courseId });
+
+            const output: QuizScheduleDataAdmin = {
+                questions,
+                quizzes: quizzes.reduce((arr: IQuizOverNetwork[], element) => 
+                { arr.push(convertQuizIntoNetworkQuiz(element)); return arr; }, []),                
+            }
+
+            return output;
+        } else {
+
+            const quizSchedule = await this.quizRepo.findOne((token as LoginResponse).quizId!);
+            const questionIds: string[] = [];
+
+            if (!quizSchedule) {
+                throw Error("Invalid quiz");
+            }
+
+            quizSchedule.pages!.forEach((element) => {
+                if (((element.type === PageType.QUESTION_ANSWER_PAGE) || (element.type === PageType.DISCUSSION_PAGE)) 
+                    && questionIds.findIndex((id) => { return id === element.questionId; }) === -1) {
+                    questionIds.push(element.questionId);
+                }
+            });
+                            
+            
+            const questions = await UserServiceHelper.RetrieveQuestions(this.questionRepo, questionIds);
+
+            const output: QuizScheduleData = {
+                questions,
+                quiz: quizSchedule ? convertQuizIntoNetworkQuiz(quizSchedule) : null,
+            }
+
+            return output;
+        }
     }
 }
 

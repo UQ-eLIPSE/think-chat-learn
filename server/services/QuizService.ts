@@ -63,6 +63,10 @@ export class QuizService extends BaseService{
             course: courseId
         });
     }
+
+    public async getQuizQuestionById(quizId: string): Promise<IQuiz | null> {
+        return this.quizRepo.findOne(quizId);
+    }
 }
 
 // Helper functions for the service

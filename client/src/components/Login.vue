@@ -5,7 +5,7 @@
 
 import {Vue, Component} from "vue-property-decorator";
 import { setIdToken, getLoginResponse } from "../../../common/js/front_end_auth";
-import { IUserSession } from "../../../common/interfaces/ToClientData";
+import { IUserSession, QuizScheduleData } from "../../../common/interfaces/ToClientData";
 import { LTIRoles } from "../../../common/enums/DBEnums";
 import { convertNetworkQuizIntoQuiz } from "../../../common/js/NetworkDataUtils";
 
@@ -18,10 +18,9 @@ export default class Login extends Vue {
         setIdToken(q as string);
         const response = getLoginResponse();
 
-        // If we have a response , set the appropiate data and so on
         if (response) {
             await this.$store.dispatch("setUser", response.user);
-            await this.$store.dispatch("setQuiz", response.quiz ? convertNetworkQuizIntoQuiz(response.quiz) : null);
+            await this.$store.dispatch("setQuiz", quizScheduleData.quiz ? convertNetworkQuizIntoQuiz(quizScheduleData.quiz) : null);
             // Don't send the end time
             const session: IUserSession = {
                 userId: response.user._id,

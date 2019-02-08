@@ -35,9 +35,18 @@ export class UserController extends BaseController {
         res.sendStatus(200);
     }
 
+    private getQuizByToken(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
+        this.userService.handleFetch(req.user).then((output) => {
+            res.json(jwt.sign(output as Object, Conf.jwt.SECRET, { expiresIn: Conf.jwt.TOKEN_LIFESPAN }));
+        }).catch((e) => {
+            console.log(e);
+        });
+    }    
+
     public setupRoutes() {
         this.router.post("/admin", this.handleAdminLogin.bind(this));
         this.router.post("/login", this.handleLTILogin.bind(this));
         this.router.post("/me", this.refreshToken.bind(this));
+        this.router.post("/handleToken", this.getQuizByToken.bind(this));
     }
 }

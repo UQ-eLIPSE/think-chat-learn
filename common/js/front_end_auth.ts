@@ -64,3 +64,7 @@ function isTokenExpired(token: string): boolean {
     }
     return expirationDate < new Date();
 }
+
+export function decodeToken(token: string): any {
+    return decode(token);
+}

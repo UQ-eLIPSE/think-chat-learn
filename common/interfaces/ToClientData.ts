@@ -25,17 +25,24 @@ export type Response = DBSchema.Response;
 // Essentially the user should only have one page
 export interface LoginResponse {
   user: IUser;
+  courseId: string;
+  quizId: string | null;
+  available: boolean;
+}
+
+export interface QuizScheduleData {
   quiz: NetworkData.IQuizOverNetwork | null;
   questions: TypeQuestion[];
-  courseId: string;
-  available: boolean;
+}
+
+export interface QuizScheduleDataAdmin {
+  quizzes: NetworkData.IQuizOverNetwork[];
+  questions: TypeQuestion[];  
 }
 
 // Also handles the initial retrieval
 export interface AdminLoginResponse {
   user: IUser;
-  quizzes: NetworkData.IQuizOverNetwork[];
-  questions: IQuestion[];
   courseId: string;
   isAdmin: boolean;
 }

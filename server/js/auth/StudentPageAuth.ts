@@ -45,6 +45,7 @@ export class StudentAuthenticatorMiddleware {
             if (token && token.user._id && body.userId && body._id) {
                 const maybeUser = await StudentAuthenticatorMiddleware.instance!.userService.findUser(token.user._id);
                 const maybeUsersession = await StudentAuthenticatorMiddleware.instance!.userSessionService.getUserSession(body._id);
+
                 if (maybeUser && maybeUsersession && maybeUsersession.userId === maybeUser._id) {
                     next();
                 } else {
@@ -70,12 +71,19 @@ export class StudentAuthenticatorMiddleware {
                 const maybeUsersession = await StudentAuthenticatorMiddleware.instance!.userSessionService.getUserSession(body.userSessionId);
 
                 let maybeQuizSession;
+                let otherUserSession;
                 if (body._id) {
                     maybeQuizSession = await StudentAuthenticatorMiddleware.instance!.quizSessionService.getQuizSession(body._id);
+
+                    if (maybeQuizSession && maybeQuizSession.userSessionId) {
+                        otherUserSession = await StudentAuthenticatorMiddleware.instance!.userSessionService.getUserSession(maybeQuizSession!.userSessionId!);
+                    }
+
                 }
 
                 if (maybeUser && maybeUsersession && maybeUsersession.userId === maybeUser._id &&
-                    ((!maybeQuizSession && !body._id) || (maybeQuizSession && maybeQuizSession.userSessionId == maybeUsersession._id))) {
+                    ((!maybeQuizSession && !body._id) || (maybeQuizSession && otherUserSession &&
+                    otherUserSession.userId === maybeUsersession.userId))) {
                     next();
                 } else {
                     res.status(403).send("Invalid user session. Try logging in through Blackboard again");
@@ -112,7 +120,6 @@ export class StudentAuthenticatorMiddleware {
                 }
 
                 if (maybeUser && maybeUsersession && maybeQuizSession && maybeUsersession.userId === maybeUser._id &&
-                    maybeQuizSession.userSessionId === maybeUsersession._id &&
                     ((!maybeResponse && !body._id) || (maybeResponse && maybeResponse.quizSessionId === maybeQuizSession._id))) {
                     next();
                 } else {

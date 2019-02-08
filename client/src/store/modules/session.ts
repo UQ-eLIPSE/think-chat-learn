@@ -16,7 +16,7 @@ import store from "..";
 import { Utils } from "../../../../common/js/Utils";
 import { PageType, QuestionType } from "../../../../common/enums/DBEnums";
 import { ChatGroupResync } from "../../../../common/interfaces/HTTPToClientData";
-import { IResponseMCQ, IResponseQualitative } from '../../../../common/interfaces/DBSchema';
+import { IResponseMCQ, IResponseQualitative } from "../../../../common/interfaces/DBSchema";
 
 export interface IState {
     quizSession: IQuizSession | null;
