@@ -37,7 +37,7 @@ export interface QuizScheduleData {
 
 export interface QuizScheduleDataAdmin {
   quizzes: NetworkData.IQuizOverNetwork[];
-  questions: TypeQuestion[];  
+  questions: TypeQuestion[];
 }
 
 // Also handles the initial retrieval

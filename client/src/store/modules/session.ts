@@ -66,6 +66,12 @@ const mutationKeys = {
     SET_QUIZ_AVAILABILITY: "Setting quiz availability"
 };
 
+
+// Grabs the reference from user.ts
+function getToken(): string | null {
+    return store.getters.token;
+}
+
 async function handleGroupJoin(data?: IWSToClientData.ChatGroupFormed) {
     if (!data) {
         throw Error("No data for group join");
@@ -229,7 +235,7 @@ async function handleReconnect(data: any) {
             quizSession = (await API.request(API.POST, API.QUIZSESSION + "fetchByUserQuiz", {
                 userId: userSession.userId,
                 quizId: quiz._id
-            })).data;
+            }, undefined, getToken())).data;
 
             // If we have a quiz session assign it else, do nothing
             if (!quizSession) {
@@ -245,7 +251,7 @@ async function handleReconnect(data: any) {
     // We have a quiz session (whether it is an on client disconnect or not)
     // The next step is to check for our socket session
     const socketPresent: { outcome: boolean } = await API.request(API.POST, API.QUIZSESSION + "findSession",
-        state.quizSession!);
+        state.quizSession!, undefined, getToken());
 
     if (socketPresent.outcome) {
         // Notify the server of a resync
@@ -260,7 +266,8 @@ async function handleReconnect(data: any) {
                     "recoverSession", state.quizSession!);
 
             const userResponses: Response[] =
-                (await API.request(API.GET, API.RESPONSE + "quizSession/" + state.quizSession!._id, {})).data;
+                (await API.request(API.GET, API.RESPONSE + "quizSession/" + state.quizSession!._id, {},
+                    undefined, getToken())).data;
 
             if (groupSession) {
                 await handleGroupJoin(groupSession.chatGroupFormed);
@@ -328,7 +335,9 @@ const getters = {
 };
 const actions = {
     createQuizSession({ commit }: {commit: Commit}, quizSession: IQuizSession) {
-        return API.request(API.PUT, API.QUIZSESSION + "create", quizSession).then((id: { outgoingId: string }) => {
+        return API.request(API.PUT, API.QUIZSESSION + "create", quizSession, undefined,
+            getToken()).then((id: { outgoingId: string }) => {
+
             quizSession._id = id.outgoingId;
             commit(mutationKeys.SET_QUIZ_SESSION, quizSession);
             return id.outgoingId;
@@ -340,15 +349,19 @@ const actions = {
     },
 
     retrieveQuizSession({ commit }: { commit: Commit }, id: string) {
-        return API.request(API.GET, API.QUIZSESSION + "quizsession/" + id, {}).then((data:
+        return API.request(API.GET, API.QUIZSESSION + "quizsession/" + id, {}, undefined,
+            getToken()).then((data:
             { session: IQuizSession }) => {
+
             commit(mutationKeys.SET_QUIZ_SESSION, data.session);
             return data;
         });
     },
 
     sendResponse({ commit }: {commit: Commit}, response: Response) {
-        return API.request(API.PUT, API.RESPONSE + "create", response).then((id: { outgoingId: string}) => {
+        return API.request(API.PUT, API.RESPONSE + "create", response, undefined,
+            getToken()).then((id: { outgoingId: string}) => {
+
             response._id = id.outgoingId;
             commit(mutationKeys.ADD_RESPONSE, response);
             return id.outgoingId;

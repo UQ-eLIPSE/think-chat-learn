@@ -19,6 +19,7 @@ export default class Login extends Vue {
     // Essentially redirects to the main page assuming login is correct
     setIdToken(q as string);
     const response = getLoginResponse();
+    await this.$store.dispatch("storeSessionToken", q);
 
     // If we have a response, fetch more data due to NGINX limitations
     const quizScheduleData: QuizScheduleData = decodeToken(await this.$store.dispatch("handleToken"));
@@ -26,7 +27,8 @@ export default class Login extends Vue {
     // If we have a response , set the appropiate data and so on
     if (response) {
       await this.$store.dispatch("setUser", response.user);
-      await this.$store.dispatch("setQuiz", quizScheduleData.quiz ? convertNetworkQuizIntoQuiz(quizScheduleData.quiz) : null);
+      await this.$store.dispatch("setQuiz", quizScheduleData.quiz ?
+        convertNetworkQuizIntoQuiz(quizScheduleData.quiz) : null);
       await this.$store.dispatch("setQuestions", quizScheduleData.questions);
       await this.$store.dispatch("setAvailability", response.available);
       // Don't send the end time

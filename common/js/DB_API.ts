@@ -20,16 +20,18 @@ export interface IApi {
     RESPONSE: string;
     CHATGROUP: string;
 
-    request(method: string, url: string, data: {}, contentType?: string | undefined): Promise<any>;
+    request(method: string, url: string, data: {},
+            contentType?: string | undefined, token?: string | null): Promise<any>;
 }
 
 export const API: IApi = {
-    request(method: string, url: string, data: object|undefined, contentType?: string|undefined): AxiosPromise {
+    request(method: string, url: string, data: object|undefined,
+        contentType?: string|undefined, token?: string | null): AxiosPromise {
         return axios({
             method,
             url: API_URL + url,
             headers: {
-                "Authorization": "Bearer " + getIdToken(),
+                "Authorization": "Bearer " + (token ? token : getIdToken()),
                 "Content-Type": contentType ? contentType : "application/json"
             },
             data
@@ -38,7 +40,9 @@ export const API: IApi = {
             setIdToken(res.headers["access-token"]);
             return res;
         })
-        .then((res: any) => res.data);
+        .then((res: any) => res.data).catch((e) => {
+            alert(e);
+        });
     },
 
     POST: "post",

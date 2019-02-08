@@ -5,17 +5,20 @@ import { API } from "../../../../common/js/DB_API";
 
 export interface IState {
     user: IUser | null;
-    session: IUserSession |null ;
+    session: IUserSession |null;
+    token: string | null;
 }
 
 const state: IState = {
     user: null,
-    session: null
+    session: null,
+    token: null
 };
 
 const mutationKeys = {
   SET_USER: "Setting User",
-  SET_SESSION: "Setting a session"
+  SET_SESSION: "Setting a session",
+  STORE_TOKEN: "Storing token"
 };
 
 const getters = {
@@ -24,6 +27,10 @@ const getters = {
     },
     userSession: (): IUserSession | null => {
         return state.session;
+    },
+
+    token: (): string | null => {
+        return state.token;
     }
 };
 const actions = {
@@ -36,7 +43,8 @@ const actions = {
     },
 
     createSession({ commit }: { commit: Commit }, session: IUserSession) {
-        return API.request(API.PUT, API.USERSESSION + "create", session).then((id: { outgoingId: string }) => {
+        return API.request(API.PUT, API.USERSESSION + "create", session, undefined,
+            state.token).then((id: { outgoingId: string }) => {
             session._id = id.outgoingId;
             commit(mutationKeys.SET_SESSION, session);
         });
@@ -46,13 +54,18 @@ const actions = {
         const session = state.session!;
         session.endTime = new Date().toISOString();
 
-        return API.request(API.POST, API.USERSESSION + "update", session).then((outcome: boolean) => {
+        return API.request(API.POST, API.USERSESSION + "update", session, undefined,
+            state.token).then((outcome: boolean) => {
             commit(mutationKeys.SET_SESSION, session);
         });
     },
 
-    handleToken({ commit }: { commit: Commit}, token: string) {
+    handleToken({ commit }: { commit: Commit }, token: string) {
         return API.request(API.POST, API.USER + "handleToken", {});
+    },
+
+    storeSessionToken({ commit }: { commit: Commit }, token: string) {
+        return commit(mutationKeys.STORE_TOKEN, token);
     }
 };
 
@@ -60,8 +73,13 @@ const mutations = {
     [mutationKeys.SET_USER](funcState: IState, data: IUser) {
         Vue.set(funcState, "user", data);
     },
+
     [mutationKeys.SET_SESSION](funcState: IState, data: IUserSession) {
         Vue.set(funcState, "session", data);
+    },
+
+    [mutationKeys.STORE_TOKEN](funcState: IState, data: string) {
+        Vue.set(funcState, "token", data);
     }
 };
 

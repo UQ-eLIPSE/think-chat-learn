@@ -180,9 +180,6 @@ import Timer from "./components/Timer/Timer.vue";
 export default class App extends Vue {
   private renderRestart = false;
 
-  private mounted() {
-  }
-
   private restartSocket() {
     this.$store.getters.socketState.socket.restart();
   }
