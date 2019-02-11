@@ -112,6 +112,7 @@ export default class Receipt extends Vue {
         });
 
         this.$store.dispatch("finishSession");
+        window.location.href = "https://learn.uq.edu.au";
       }
     }
 }
