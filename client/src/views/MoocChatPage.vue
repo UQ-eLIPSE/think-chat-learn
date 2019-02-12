@@ -47,11 +47,9 @@
         <div v-else-if="page.type === PageType.DISCUSSION_PAGE && chatGroup">
           <!-- Note a lot of things have to be done to get here -->
           <div v-for="answer in chatGroup.groupAnswers[question._id]" class="content" :key="answer._id">
-            {{`Client ${answer.clientIndex} wrote this: ${answer.answer.content} with a confidence of ${answer.answer.confidence}`}}
+            {{`Student ${answer.clientIndex} wrote this: ${answer.answer.content}`}}
           </div>
         </div>
-        <button :class="[ !(currentIndex > 0) ? 'disabled' : '', 'primary']" :disabled="!(currentIndex > 0)" @click="goToPreviousPage()">Go To Previous Page</button>
-        <button :class="[ !(maxIndex > currentIndex) ? 'disabled' : '', 'primary']" :disabled="!(maxIndex > currentIndex)" @click="goToNextPage()">Go To Next Page</button>
       </div>
     </div>
   </div>
@@ -275,16 +273,6 @@ export default class MoocChatPage extends Vue {
     this.confidence = this.DEFAULT_CONFIDENCE;
   }
 
-  // Goes the to the next page by incrementing the current count
-  private goToNextPage() {
-    if (!this.quiz || !this.quiz.pages) {
-      return;
-    }
-
-    // Remember to increment afterwards
-    this.$store.dispatch("incrementCurrentIndex");
-  }
-
   // Goes to a page based on the number provided. Defaults to max
   private goToPage(pageNumber: number = this.maxIndex) {
     if (!this.quiz || !this.quiz.pages) {
@@ -299,14 +287,6 @@ export default class MoocChatPage extends Vue {
     // Even if we go to the reflection page, we set the current index regardless
     // such that the tracker is in place
     this.$store.dispatch("setCurrentIndex", pageNumber);
-  }
-
-  private goToPreviousPage() {
-    if (!this.quiz || !this.quiz.pages) {
-      return;
-    }
-
-    this.$store.dispatch("decrementCurrentIndex");
   }
 
   // Increments the max index to allow users to go to next page

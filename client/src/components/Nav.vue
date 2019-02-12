@@ -1,6 +1,6 @@
 <template>
   <header>
-    <div class="nav-item logo"><span class="logo-bold">MOOC</span>chat</div>
+    <div class="nav-item logo"><a href="https://www.elipse.uq.edu.au"><span class="logo-bold">MOOC</span>chat</a></div>
     <div class="nav-item course-name">
       {{ `${user ? user.username : "No User"} - Session Id: ${quizSession ? quizSession._id : "N/A"}` }}
     </div>
@@ -42,6 +42,11 @@ header {
 
     .logo-bold {
       font-weight: 700 !important;
+    }
+
+    a {
+      all: unset;
+      cursor: pointer;
     }
   }
 

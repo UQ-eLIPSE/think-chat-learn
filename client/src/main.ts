@@ -14,7 +14,9 @@ import {
   faPrint,
   faRedoAlt,
   faStar,
-  faCommentDots
+  faCommentDots,
+  faArrowRight,
+  faArrowLeft
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
@@ -27,7 +29,9 @@ library.add(
   faPrint,
   faRedoAlt,
   faStar,
-  faCommentDots
+  faCommentDots,
+  faArrowRight,
+  faArrowLeft
 );
 
 Vue.use(Buefy);

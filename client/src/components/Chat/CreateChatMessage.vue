@@ -7,6 +7,7 @@
       v-model="loadedMessage"
       :disabled="!canType"
     />
+    <span v-if="disabledText !== ''">{{disabledText}}</span>
     <button class="secondary" @click="sendMessage()">Send</button>
   </div>
 </template>
@@ -52,6 +53,7 @@ import { PageType } from "../../../../common/enums/DBEnums";
 export default class CreateChatMessage extends Vue {
 
   private loadedMessage: string = "";
+  private MAX_LENGTH: number = 1024;
 
   get user(): IUser | null {
     return this.$store.getters.user;
@@ -106,6 +108,22 @@ export default class CreateChatMessage extends Vue {
     return true;
   }
 
+  get disabledText(): string {
+    if (!this.canType) {
+      // Basic diagnosis would be to only consider discussion page and current group. It would be very concerning
+      // if the socket was null for instance
+      if (!this.groupJoin) {
+        return "Disabled: Not part of a group yet";
+      } else if (this.currentPage && this.currentPage.type !== PageType.DISCUSSION_PAGE) {
+        return "Disabled: The group is not on a discussion page";
+      }
+
+      return "Chat disabled";
+    } else {
+      return "";
+    }
+  }
+
   // Sends the typing state to the listening sockets to the group, including self!
   private sendTypingState(state: boolean) {
 
@@ -124,14 +142,16 @@ export default class CreateChatMessage extends Vue {
 
   private sendMessage() {
     // Sends a message to the server. Note that we do
-    // not preload messages (as in push local messages to itself immediately)
-    if (!this.canType) {
+    // not preload messages (as in push local messages to itself immediately). Also note that the we should not be able
+    // to send empty messages. We could to save our selves memory, to only allow messages of certain lengths
+    // right now the messages will be trunctated to 1024 characters
+    if (!this.canType || this.loadedMessage === "") {
       console.log("Attempted to send message in a bad typing state");
       return;
     }
 
     const message: IWSToServerData.ChatGroupSendMessage = {
-        message: this.loadedMessage,
+        message: this.loadedMessage.slice(0, this.MAX_LENGTH),
         groupId: this.groupJoin!.groupId!,
         questionId: this.referredQuestion!._id!,
         quizSessionId: this.quizSession!._id!,

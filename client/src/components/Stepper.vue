@@ -2,8 +2,10 @@
   <div
     class="stepper"
     :style="`width: ${steps.length * 100}px`"
+    v-if="renderBasedOnRoute"
   >
     <ul>
+      <font-awesome-icon :style="(currentIndex > 0) ? { color: 'green' } : { color: 'grey' }" icon="arrow-left" @click="(currentIndex > 0) ? goToPreviousPage() : () => {}"/>
       <span class="bar"></span>
       <li v-for="(step, index) in steps" :key="index">
         <span
@@ -24,6 +26,7 @@
           :class="step.status"
         >{{ step.title }}</span>
       </li>
+      <font-awesome-icon :style="(maxIndex > currentIndex) ? { color: 'green' } : { color: 'grey' }" icon="arrow-right" @click="(maxIndex > currentIndex) ? goToNextPage(): () => {}"/>
     </ul>
   </div>
 </template>
@@ -120,7 +123,7 @@
           content: "";
           height: 5px;
           position: absolute;
-          width: 4.2rem;
+          width: 3.8rem;
           right: 55px;
           top: -25px;
         }
@@ -155,6 +158,7 @@
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
 import { IQuiz } from "../../../common/interfaces/ToClientData";
+import { Names } from "../router";
 
 enum Progress {
   COMPLETE = "complete",
@@ -190,6 +194,10 @@ export default class Stepper extends Vue {
 
   get Progress() {
     return Progress;
+  }
+
+  get renderBasedOnRoute() {
+    return this.$route.name === Names.MOOCCHAT_PAGE;
   }
 
   /**
@@ -260,6 +268,24 @@ export default class Stepper extends Vue {
     }
 
     return status;
+  }
+
+  // Goes the to the next page by incrementing the current count
+  private goToNextPage() {
+    if (!this.quiz || !this.quiz.pages) {
+      return;
+    }
+
+    // Remember to increment afterwards
+    this.$store.dispatch("incrementCurrentIndex");
+  }
+
+  private goToPreviousPage() {
+    if (!this.quiz || !this.quiz.pages) {
+      return;
+    }
+
+    this.$store.dispatch("decrementCurrentIndex");
   }
 }
 </script>
