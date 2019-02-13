@@ -52,3 +52,8 @@ export interface QuestionRequestData {
   page: DBSchema.Page;
   question: TypeQuestion | null;
 }
+
+export interface QuestionReconnectData {
+  pages: DBSchema.Page[];
+  questions: TypeQuestion[];
+}

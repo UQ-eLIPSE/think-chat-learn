@@ -34,6 +34,7 @@ export class QuizSessionService extends BaseService{
 
         // When creating the quiz session, set the complete to false
         // as we only allow the value to be true from updates
+        data.startTime = Date.now();
         data.complete = false;
         return this.quizSessionRepo.create(data);
     }

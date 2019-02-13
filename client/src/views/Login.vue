@@ -23,7 +23,6 @@ export default class Login extends Vue {
 
     // If we have a response, fetch more data due to NGINX limitations
     const quizScheduleData: QuizScheduleData = decodeToken(await this.$store.dispatch("handleToken"));
-
     // If we have a response , set the appropiate data and so on
     if (response) {
       await this.$store.dispatch("setUser", response.user);
@@ -36,7 +35,6 @@ export default class Login extends Vue {
           userId: response.user._id,
           course: response.courseId,
           startTime: Date.now(),
-          role: LTIRoles.STUDENT
       };
 
       await this.$store.dispatch("createSession", session);

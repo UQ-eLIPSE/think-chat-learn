@@ -49,6 +49,7 @@ export interface IQuizSession extends Document {
   responses?: OID[];
   // Mark the session as complete if applicable
   complete?: boolean;
+  startTime?: number;
 }
 
 // Contains a question in which people can answer.

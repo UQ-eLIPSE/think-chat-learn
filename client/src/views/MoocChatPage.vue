@@ -1,5 +1,5 @@
 <template>
-  <div class="magic">
+  <div class="magic" v-if="page">
     <div class="columns">
       <div class="column pane1">
         <h1>{{page ? page.title : ""}}</h1>

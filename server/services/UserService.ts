@@ -5,7 +5,7 @@ import { ILTIData } from "../../common/interfaces/ILTIData";
 import { LTIAuth } from "../js/auth/lti/LTIAuth";
 import { IMoocchatIdentityInfo } from "../js/auth/IMoocchatIdentityInfo";
 import { IUser, IQuiz } from "../../common/interfaces/DBSchema";
-import { LoginResponse, AdminLoginResponse, QuizScheduleData, QuizScheduleDataAdmin, TypeQuestion, Page, QuestionRequestData } from "../../common/interfaces/ToClientData";
+import { LoginResponse, AdminLoginResponse, QuizScheduleData, QuizScheduleDataAdmin, TypeQuestion, Page, QuestionRequestData, QuestionReconnectData } from "../../common/interfaces/ToClientData";
 import { QuestionRepository } from "../repositories/QuestionRepository";
 import { convertQuizIntoNetworkQuiz } from "../../common/js/NetworkDataUtils";
 import { IQuizOverNetwork } from "../../common/interfaces/NetworkData";
@@ -145,7 +145,12 @@ export class UserService extends BaseService{
 
     public async handlePageRequest(quizId: string, pageId: string, quizSessionId: string, groupId: string | null): Promise<QuestionRequestData | null> {
         return UserServiceHelper.getPageBasedOnIdsAndTime(quizId, pageId, quizSessionId, groupId, this.quizRepo,
-            this.questionRepo, this.quizSessionRepo, this.chatGroupRepo, this.userSessionRepo);
+            this.questionRepo, this.quizSessionRepo, this.chatGroupRepo);
+    }
+
+    public async handleReconnect(quizId: string, quizSessionId: string, groupId: string | null): Promise<QuestionReconnectData> {
+        return UserServiceHelper.getQuizBasedOnTime(quizId, quizSessionId, groupId, this.quizRepo,
+            this.questionRepo, this.quizSessionRepo, this.chatGroupRepo);
     }
 
     public async handleFetch(token: LoginResponse | AdminLoginResponse): Promise<QuizScheduleData | QuizScheduleDataAdmin | null> {
@@ -178,7 +183,6 @@ export class UserService extends BaseService{
                             
             
             const questions = await UserServiceHelper.RetrieveQuestions(this.questionRepo, questionIds);
-
             // The great filter
             questions.forEach((element) => {
                 // Title is fine to send over, content is not until it is requested
@@ -292,10 +296,86 @@ class UserServiceHelper {
         return questions;
     }
 
+    public static async getQuizBasedOnTime(quizId: string, quizSessionId: string, groupId: string | null,
+        quizRepo: QuizRepository, questionRepo: QuestionRepository, quizSessionRepo: QuizSessionRepository,
+        chatGroupRepo: ChatGroupRepository): Promise<QuestionReconnectData> {
+
+        const now = Date.now();
+
+        const pages: Page[] = [];
+
+        // Fetch the details
+        const quiz = await quizRepo.findOne(quizId);
+        const quizSession = await quizSessionRepo.findOne(quizSessionId);
+
+        if (!quiz || !quizSession) {
+            throw Error(`Invalid Quiz Id of ${quizId} or Quiz session Id of ${quizSession}`);
+        }
+
+
+        // Essentially what happens is that we need to check some times
+        // the first check is to see what index we are up to based on time
+        let firstDiscussionIndex = quiz.pages!.findIndex((element) => {
+            return element.type == PageType.DISCUSSION_PAGE;
+        });
+
+        // Worst case we check every page due to not having a single discussion
+        if (firstDiscussionIndex === -1) {
+            firstDiscussionIndex = quiz.pages!.length;
+        }
+
+        let runningTime = quizSession.startTime!;
+        for (let i = 0; i < firstDiscussionIndex; i++) {
+            if (runningTime >= now) {
+                break;
+            } else {
+                runningTime = runningTime + Utils.DateTime.minToMs(quiz.pages![i].timeoutInMins!);
+
+                // We have a good page
+                pages.push(quiz.pages![i]);
+            }
+        }
+
+        // It is fine to have a non-existant group but we need to use the discussion index as a reference
+        if (groupId) {
+            const group = await chatGroupRepo.findOne(groupId);
+
+            if (!group) {
+                throw Error(`Invalid group id of ${groupId}`);
+            }
+
+            // Do the same thing with discussion page index except use the group formation as the reference
+            let runningTime = group.startTime!;
+            for (let i = firstDiscussionIndex; i < quiz.pages!.length; i++) {
+                if (runningTime >= now) {
+                    break;
+                } else {
+                    runningTime = runningTime + Utils.DateTime.minToMs(quiz.pages![i].timeoutInMins!);
+    
+                    // We have a good page
+                    pages.push(quiz.pages![i]);
+                }
+            }
+        }
+
+        // From this point on we grab every single question associated with the pages
+        const questionSet = new Set();
+        pages.forEach((element) => {
+            if ((element.type === PageType.QUESTION_ANSWER_PAGE) || (element.type === PageType.DISCUSSION_PAGE)) {
+                // Fetch the question in the set
+                questionSet.add(element.questionId);
+            }
+        });
+
+        const questions = await questionRepo.findByIdArray(Array.from(questionSet));
+
+        return { questions, pages };
+    }
+
     
     public static async getPageBasedOnIdsAndTime(quizId: string, pageId: string, quizSessionId: string, groupId: string | null,
         quizRepo: QuizRepository, questionRepo: QuestionRepository, quizSessionRepo: QuizSessionRepository,
-        chatGroupRepo: ChatGroupRepository, userSessionRepo: UserSessionRepository): Promise<QuestionRequestData | null> {
+        chatGroupRepo: ChatGroupRepository): Promise<QuestionRequestData | null> {
 
         const now = Date.now();
 
@@ -328,7 +408,6 @@ class UserServiceHelper {
             potentialQuestion = await questionRepo.findOne(desiredPage.questionId);
         }
 
-
         // If the >= discussion page index (except when it is not there)
         let requireGroupId = false;
         if ((desiredPageIndex > firstDiscussionIndex) && (firstDiscussionIndex !== -1)) {
@@ -356,12 +435,6 @@ class UserServiceHelper {
         } else if (requireGroupId && !groupId) {
             throw Error(`Attempted to fetch page of id ${pageId} without a groupId`);
         } else {
-            // Check if quiz session time is good
-            const userSession = await userSessionRepo.findOne(quizSession.userSessionId!);
-
-            if (!userSession) {
-                throw Error(`Quiz Session Id of ${quizSessionId} points to invalid userSession`)
-            }
 
             // Otherwise check the time
             const timeNeeded = quiz.pages!.slice(0, desiredPageIndex).reduce((time, page) => {
@@ -369,7 +442,7 @@ class UserServiceHelper {
                 return time;
             }, 0);
     
-            if (now >= userSession.startTime! + timeNeeded) {
+            if (now >= quizSession.startTime! + timeNeeded) {
                 // Return the page
                 return { page: desiredPage, question: potentialQuestion };
             }

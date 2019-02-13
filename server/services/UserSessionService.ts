@@ -19,14 +19,14 @@ export class UserSessionService extends BaseService{
 
     // Simply an override. 
     public async updateUserSession(data: IUserSession): Promise<boolean> {
-        // Don't update if the user id has changed
+        // Don't update if the user id has changed also don't let admin things (which pretty much does nothing)
+        // change
         const maybeUserSession = await this.userSessionRepo.findOne(data._id!);
-        if (maybeUserSession && maybeUserSession.userId === data.userId) {
+        if (maybeUserSession && maybeUserSession.userId === data.userId && maybeUserSession.role === data.role) {
             return this.userSessionRepo.updateOne(data);
+        } else {
+            throw Error("Invalid user session");
         }
-
-        return false;
-
     }
 
     // Deletes a quiz based on the incoming id

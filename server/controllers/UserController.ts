@@ -52,11 +52,21 @@ export class UserController extends BaseController {
         })
     }
 
+    private getQuizQuestionForReconnect(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
+        this.userService.handleReconnect(req.body.quizId, req.body.quizSessionId, req.body.groupId).then((output) => {
+            res.json(output);
+        }).catch((e) => {
+            console.log(e);
+            res.sendStatus(500);
+        })        
+    }
+
     public setupRoutes() {
         this.router.post("/admin", this.handleAdminLogin.bind(this));
         this.router.post("/login", this.handleLTILogin.bind(this));
         this.router.post("/me", this.refreshToken.bind(this));
         this.router.post("/handleToken", this.getQuizByToken.bind(this));
         this.router.post("/page", this.getPageByIds.bind(this));
+        this.router.post("/reconnectData", this.getQuizQuestionForReconnect.bind(this));
     }
 }

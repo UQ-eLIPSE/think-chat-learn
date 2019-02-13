@@ -76,9 +76,9 @@ export abstract class BaseRepository<T extends Document>{
         return result;
     }
 
-    async findByIdArray(_id: string[]): Promise<T[] | null>;
-    async findByIdArray(item: Partial<T>[]): Promise<T[] | null>;
-    async findByIdArray(identifier: string[] | Partial<T>[]): Promise<T[] | null> {
+    async findByIdArray(_id: string[]): Promise<T[]>;
+    async findByIdArray(item: Partial<T>[]): Promise<T[]>;
+    async findByIdArray(identifier: string[] | Partial<T>[]): Promise<T[]> {
         // Type checking for arrays takes a little bit of effort
         if (Array.isArray(identifier)) {
             // Unfortunately typescript gets angry with not being able to 

@@ -2,7 +2,8 @@ import Vue from "vue";
 import { Commit } from "vuex";
 import { IUserSession, IQuizSession, Response, IQuiz,
     IDiscussionPage,
-    TypeQuestion } from "../../../../common/interfaces/ToClientData";
+    TypeQuestion, 
+    QuestionReconnectData} from "../../../../common/interfaces/ToClientData";
 import API from "../../../../common/js/DB_API";
 
 // Websocket interfaces
@@ -269,10 +270,23 @@ async function handleReconnect(data: any) {
                 (await API.request(API.GET, API.RESPONSE + "quizSession/" + state.quizSession!._id, {},
                     undefined, getToken())).data;
 
+            const quizQuestionData: QuestionReconnectData = await API.request(API.POST, API.USER + "/reconnectData", {
+                quizId: state.quizSession!.quizId,
+                quizSessionId: state.quizSession!._id,
+                groupId: groupSession && groupSession.chatGroupFormed.groupId ?
+                    groupSession.chatGroupFormed.groupId : null
+            });
+
+            // Set the things as a result
+            await store.commit("Setting the pages", quizQuestionData.pages);
+            await store.commit("Setting questions", quizQuestionData.questions);
+
             if (groupSession) {
                 await handleGroupJoin(groupSession.chatGroupFormed);
-                await store.dispatch("updatePageBasedOnTime", groupSession.startTime);
+                await store.dispatch("updatePageBasedOnTime", { time: groupSession.startTime, isGroup: true });
                 await store.dispatch("updateSocketMessages", groupSession.messages);
+            } else {
+                await store.dispatch("updatePageBasedOnTime", { time: quizSession!.startTime, isGroup: false });
             }
 
             if (userResponses) {
@@ -284,15 +298,14 @@ async function handleReconnect(data: any) {
 
         Vue.set(state, "resync", true);
 
-        // We then check if the quiz session has a group id
+        // We then check if the quiz session has a group id and notify everyone
         if (state.socketState!.chatGroupFormed) {
             setTimeout(() => state.socketState!.socket!.emit(WebsocketEvents.OUTBOUND.CHAT_GROUP_RECONNECT, {
                 quizSessionId: state.quizSession!._id,
                 groupId: state.socketState!.chatGroupFormed!.groupId }
             ), 1000);
-        } else {
-            // If we reach this point, we by default go to page 0
         }
+
     } else {
         // No present socket session present. Don't bother with reconnection. This could possibly mean that the
         // server has gone down or the socket session has been garbage collected
@@ -394,23 +407,29 @@ const actions = {
         return commit(mutationKeys.SET_SOCKET_MESSAGES, data);
     },
 
-    updatePageBasedOnTime({ commit }: {commit: Commit}, startTime: number) {
+    updatePageBasedOnTime({ commit }: {commit: Commit}, data: { time: number, isGroup: boolean } ) {
         // Given a quiz, compute the amount of time for each page.
         const currentTime = Date.now();
-        let trackedTime = startTime;
+        let trackedTime = data.time;
         const quiz: IQuiz | null = store.getters.quiz;
         if (!quiz || !quiz.pages) {
             return;
         }
+
+
 
         // Since the group formation occurs at the first discussion, we iterate from there
         const firstDiscussionIndex = quiz.pages.findIndex((element) => {
             return element.type === PageType.DISCUSSION_PAGE;
         });
 
+        // Our bounds are based whether or not we are doing this for a group or not
+        const lowerIndex = data.isGroup ? firstDiscussionIndex : 0;
+        const upperIndex = data.isGroup ? quiz.pages.length : firstDiscussionIndex;
+
         let i = 0;
 
-        for (i = firstDiscussionIndex ; i < quiz.pages.length; i++) {
+        for (i = lowerIndex ; i < upperIndex; i++) {
             const lowerBound = trackedTime;
             const upperBound = trackedTime + Utils.DateTime.minToMs(quiz.pages[i].timeoutInMins);
             if (currentTime >= lowerBound && upperBound >= currentTime) {

@@ -1,6 +1,7 @@
 import Vue from "vue";
 import { Commit } from "vuex";
-import { IQuiz, TypeQuestion, IDiscussionPage, QuestionRequestData } from "../../../../common/interfaces/ToClientData";
+import { IQuiz, TypeQuestion, IDiscussionPage,
+    QuestionRequestData, Page } from "../../../../common/interfaces/ToClientData";
 import { PageType } from "../../../../common/enums/DBEnums";
 import API from "../../../../common/js/DB_API";
 import { MoocChatStateMessageTypes } from "@/enums";
@@ -26,9 +27,9 @@ const state: IState = {
 
 const mutationKeys = {
     SET_QUIZ: "Setting a quiz",
-    SET_QUESTIONS: "Setting a question",
+    SET_QUESTIONS: "Setting questions",
     SET_CURRENT_DISCUSSION: "Setting current discussion",
-
+    SET_PAGES: "Setting the pages",
     // Current page settings
     INCREMENTING_CURRENT_INDEX: "Incrementing the current index",
     DECREMENTING_CURRENT_INDEX: "Decrementing the current index",
@@ -41,7 +42,6 @@ function getQuestionById(id: string): TypeQuestion | null {
     const output = state.questions.find((question) => {
         return question._id === id;
     });
-
     return output ? output : null;
 }
 
@@ -152,8 +152,41 @@ const mutations = {
         Vue.set(funcState, "quiz", data);
     },
 
+    [mutationKeys.SET_PAGES](funcState: IState, data: Page[]) {
+        if (funcState.quiz && funcState.quiz.pages) {
+            for (let i = 0 ; i < data.length; i++) {
+                const index = funcState.quiz.pages.findIndex((element) => {
+                    return element._id === data[i]._id;
+                });
+
+                // Push if not there
+                if (index !== -1) {
+                    Vue.set(funcState.quiz.pages, index, data[i]);
+                } else {
+                    Vue.set(funcState.quiz.pages, funcState.quiz.pages.length, data[i]);
+                }
+
+            }
+        }
+    },
+
     [mutationKeys.SET_QUESTIONS](funcState: IState, data: TypeQuestion[]) {
-        Vue.set(funcState, "questions", data);
+        if (funcState.questions) {
+            for (let i = 0 ; i < data.length; i++) {
+                const index = funcState.questions.findIndex((element) => {
+                    return element._id === data[i]._id;
+                });
+
+                // Don't bother with assignment of pages if it does not exist
+                if (index !== -1) {
+                    Vue.set(funcState.questions, index, data[i]);
+                } else {
+                    Vue.set(funcState.questions, funcState.questions.length, data[i]);
+                }
+
+            }
+        }
+
     },
 
     [mutationKeys.SET_CURRENT_DISCUSSION](funcState: IState, id: string) {
