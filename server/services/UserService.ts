@@ -14,6 +14,7 @@ import { QuizSessionRepository } from "../repositories/QuizSessionRepository";
 import { ChatGroupRepository } from "../repositories/ChatGroupRepository";
 import { UserSessionRepository } from "../repositories/UserSessionRepository";
 import { Utils } from "../../common/js/Utils";
+import { Conf } from "../config/Conf";
 
 export class UserService extends BaseService{
 
@@ -326,7 +327,7 @@ class UserServiceHelper {
 
         let runningTime = quizSession.startTime!;
         for (let i = 0; i < firstDiscussionIndex; i++) {
-            if (runningTime >= now) {
+            if (runningTime >= now + Conf.pageSlack) {
                 break;
             } else {
                 runningTime = runningTime + Utils.DateTime.minToMs(quiz.pages![i].timeoutInMins!);
@@ -347,7 +348,7 @@ class UserServiceHelper {
             // Do the same thing with discussion page index except use the group formation as the reference
             let runningTime = group.startTime!;
             for (let i = firstDiscussionIndex; i < quiz.pages!.length; i++) {
-                if (runningTime >= now) {
+                if (runningTime >= now + Conf.pageSlack) {
                     break;
                 } else {
                     runningTime = runningTime + Utils.DateTime.minToMs(quiz.pages![i].timeoutInMins!);
@@ -427,7 +428,7 @@ class UserServiceHelper {
                 return time;
             }, 0);
     
-            if (now >= group.startTime! + timeNeeded) {
+            if (now + Conf.pageSlack >= group.startTime! + timeNeeded) {
                 // Return the page
                 return { page: desiredPage, question: potentialQuestion };
             }
@@ -442,7 +443,7 @@ class UserServiceHelper {
                 return time;
             }, 0);
     
-            if (now >= quizSession.startTime! + timeNeeded) {
+            if (now + Conf.pageSlack >= quizSession.startTime! + timeNeeded) {
                 // Return the page
                 return { page: desiredPage, question: potentialQuestion };
             }

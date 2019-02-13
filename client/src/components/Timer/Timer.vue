@@ -14,14 +14,24 @@
 <script lang="ts">
 import { Vue, Component, Watch, Prop } from "vue-property-decorator";
 import { EmitterEvents } from "../../emitters";
-import { TimerSettings } from "../../interfaces";
+import { TimerSettings, SocketState } from "../../interfaces";
 import { EventBus } from "../../EventBus";
+import { IQuiz, IQuizSession } from "../../../../common/interfaces/DBSchema";
+import * as IWSToClientData from "../../../../common/interfaces/IWSToClientData";
+import { Conf } from "../../../config/Conf";
+
+enum FETCH_STATES {
+  READY = 0,
+  FETCHING = 1,
+  DONE = 2
+}
 
 @Component({})
 export default class Timer extends Vue {
 
   private isRunning: boolean = false;
   private timeoutHandler: number = -1;
+  private fetching: FETCH_STATES = FETCH_STATES.READY;
 
   // Use Date as setTimeout is not meant to accurate
   private endTime: number = new Date().getTime();
@@ -32,6 +42,28 @@ export default class Timer extends Vue {
   private MS_TO_MINUTES_FACTOR: number = 60000;
   private MS_TO_SECONDS_FACTOR: number = 1000;
   private TIME_AMOUNT_MS: number = 100;
+  // Time to fetch question
+  private FETCH_TIME: number = Conf.pageFetchTime;
+
+  get maxIndex(): number {
+    return this.$store.getters.maxIndex;
+  }
+
+  get quiz(): IQuiz | null {
+    return this.$store.getters.quiz;
+  }
+
+  get socketState(): SocketState | null {
+    return this.$store.getters.socketState;
+  }
+
+  get chatGroup(): IWSToClientData.ChatGroupFormed | null {
+    return this.socketState && this.socketState.chatGroupFormed ? this.socketState.chatGroupFormed : null;
+  }
+
+  get quizSession(): IQuizSession | null {
+    return this.$store.getters.quizSession;
+  }
 
   @Watch("isRunning")
   private checkRunningStatus(newVal: boolean, oldVal: boolean) {
@@ -49,6 +81,8 @@ export default class Timer extends Vue {
 
     window.clearTimeout(this.timeoutHandler);
 
+    this.fetching = FETCH_STATES.READY;
+
     this.timeoutHandler = window.setInterval(() => {
       const timeLeft = this.endTime - Date.now();
 
@@ -60,6 +94,21 @@ export default class Timer extends Vue {
         this.isRunning = false;
       } else {
         this.timeLeftInMinutesSeconds = this.getTimeLeftInMinutesSeconds(timeLeft);
+
+        if (this.fetching === FETCH_STATES.READY && timeLeft <= this.FETCH_TIME) {
+          // Send a page request
+          this.fetching = FETCH_STATES.FETCHING;
+          if (this.maxIndex + 1 < this.quiz!.pages!.length) {
+              this.$store.dispatch("getPage", {
+                quizId: this.quiz!._id,
+                pageId: this.quiz!.pages![this.maxIndex + 1]._id,
+                quizSessionId: this.quizSession!._id,
+                groupId: this.chatGroup && this.chatGroup.groupId ? this.chatGroup.groupId : null
+              }).then(() => {
+                this.fetching = FETCH_STATES.DONE;
+              });
+          }          
+        }
       }
     }, this.TIME_AMOUNT_MS);
 

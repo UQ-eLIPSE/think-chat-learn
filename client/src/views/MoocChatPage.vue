@@ -86,7 +86,6 @@
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator";
 import Confidence from "../components/Confidence.vue";
-import Timer from "../components/Timer/Timer.vue";
 import { IQuiz, Page, Response, TypeQuestion,
   IQuizSession, IUserSession, IQuestionAnswerPage, IDiscussionPage,
   IUser } from "../../../common/interfaces/ToClientData";
@@ -101,8 +100,7 @@ import { EmitterEvents } from "../emitters";
 
 @Component({
   components: {
-    Confidence,
-    Timer
+    Confidence
   }
 })
 export default class MoocChatPage extends Vue {
@@ -328,10 +326,11 @@ export default class MoocChatPage extends Vue {
       await this.sendResponse();
     }
 
-    let numTries = 0;
+    this.incrementMaxIndex();
+    this.goToPage();
 
     // Attempt to poll
-    this.fetchPage(numTries);
+    //this.fetchPage(numTries);
   }
 
   private async fetchPage(numTries: number) {
@@ -343,19 +342,6 @@ export default class MoocChatPage extends Vue {
           quizSessionId: this.quizSession!._id,
           groupId: this.chatGroup && this.chatGroup.groupId ? this.chatGroup.groupId : null
         });
-    }
-
-    if (outcome == false) {
-      if (numTries <= 5) {
-        window.setTimeout(() => {
-          this.fetchPage(numTries + 1);
-        }, 10000);
-      } else {
-        alert("Failed to fetch page. Please contact your course coordinater");
-      }
-    } else { 
-      this.incrementMaxIndex();
-      this.goToPage();
     }
   }
 

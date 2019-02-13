@@ -52,8 +52,10 @@ export const Conf: IConf = {
     },
     folders: {
         clientFolder: "/../../client/dist/",
-        adminFolder:  "/../../client/dist/"
-    }
+        adminFolder:  "/../../admin/dist/"
+    },
+    // Make sure this is larger than or equal to page delay for client
+    pageSlack: 10000
 }
 
 
@@ -113,4 +115,5 @@ interface IConf {
         clientFolder: string,
         adminFolder: string
     }
+    pageSlack: number
 }
