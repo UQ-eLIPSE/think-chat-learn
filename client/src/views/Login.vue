@@ -35,7 +35,7 @@ export default class Login extends Vue {
       const session: IUserSession = {
           userId: response.user._id,
           course: response.courseId,
-          startTime: (new Date()).toString(),
+          startTime: Date.now(),
           role: LTIRoles.STUDENT
       };
 

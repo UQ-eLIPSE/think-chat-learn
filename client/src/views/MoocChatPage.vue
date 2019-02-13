@@ -320,7 +320,7 @@ export default class MoocChatPage extends Vue {
   // next page while checking if the response needs to be sent
   // We also increment the max index
   private async handleTimeOut() {
-    if (!this.quiz || !this.quiz.pages || !this.quiz.pages[this.maxIndex]) {
+    if (!this.quiz || !this.quiz.pages || !this.quiz.pages[this.maxIndex] || !this.quizSession) {
       return;
     }
 
@@ -328,9 +328,35 @@ export default class MoocChatPage extends Vue {
       await this.sendResponse();
     }
 
-    this.incrementMaxIndex();
+    let numTries = 0;
 
-    this.goToPage();
+    // Attempt to poll
+    this.fetchPage(numTries);
+  }
+
+  private async fetchPage(numTries: number) {
+    let outcome = true;
+    if (this.maxIndex + 1 < this.quiz!.pages!.length) {
+        outcome = await this.$store.dispatch("getPage", {
+          quizId: this.quiz!._id,
+          pageId: this.quiz!.pages![this.maxIndex + 1]._id,
+          quizSessionId: this.quizSession!._id,
+          groupId: this.chatGroup && this.chatGroup.groupId ? this.chatGroup.groupId : null
+        });
+    }
+
+    if (outcome == false) {
+      if (numTries <= 5) {
+        window.setTimeout(() => {
+          this.fetchPage(numTries + 1);
+        }, 10000);
+      } else {
+        alert("Failed to fetch page. Please contact your course coordinater");
+      }
+    } else { 
+      this.incrementMaxIndex();
+      this.goToPage();
+    }
   }
 
   // If this page becomes a discussion page, handles the instantiation of the sockets and the sessions in the db

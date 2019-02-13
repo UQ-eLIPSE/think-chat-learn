@@ -107,7 +107,8 @@ export default class App {
         this.chatGroupRepository = new ChatGroupRepository(this.database, "uq_chatGroup");
         this.responseRepository = new ResponseRepository(this.database, "uq_responses");
 
-        this.userService = new UserService(this.userRepository, this.quizRepository, this.questionRepository);
+        this.userService = new UserService(this.userRepository, this.quizRepository, this.questionRepository,
+            this.chatGroupRepository, this.quizSessionRepository, this.userSessionRepository);
         this.quizService = new QuizService(this.quizRepository);
         this.questionService = new QuestionService(this.questionRepository);
         this.userSessionService = new UserSessionService(this.userSessionRepository);

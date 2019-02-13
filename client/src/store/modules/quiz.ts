@@ -1,6 +1,6 @@
 import Vue from "vue";
 import { Commit } from "vuex";
-import { IQuiz, TypeQuestion, IDiscussionPage } from "../../../../common/interfaces/ToClientData";
+import { IQuiz, TypeQuestion, IDiscussionPage, QuestionRequestData } from "../../../../common/interfaces/ToClientData";
 import { PageType } from "../../../../common/enums/DBEnums";
 import API from "../../../../common/js/DB_API";
 import { MoocChatStateMessageTypes } from "@/enums";
@@ -119,6 +119,31 @@ const actions = {
 
     incrementMaxIndex({ commit }: {commit: Commit}) {
         return commit(mutationKeys.INCREMENTING_MAX_INDEX);
+    },
+
+    getPage({ commit }: {commit: Commit}, data: any) {
+        return API.request(API.POST, API.USER + "page/", data).then((output: QuestionRequestData | null) => {
+            if (!output) {
+                return false;
+            }
+
+            // Store the pages and possibly the question
+            state.quiz!.pages![state.currentIndex + 1] = output.page;
+            commit(mutationKeys.SET_QUIZ, state.quiz);
+            const question = output.question;
+            if (question) {
+                // Find the reference
+                state.questions.forEach((element, index) => {
+                    if (element._id === question._id) {
+                        state.questions[index] = question;
+                    }
+                });
+
+                commit(mutationKeys.SET_QUESTIONS, state.questions);
+            }
+
+            return true;
+        });
     }
 };
 

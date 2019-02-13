@@ -5,23 +5,35 @@ import { ILTIData } from "../../common/interfaces/ILTIData";
 import { LTIAuth } from "../js/auth/lti/LTIAuth";
 import { IMoocchatIdentityInfo } from "../js/auth/IMoocchatIdentityInfo";
 import { IUser, IQuiz } from "../../common/interfaces/DBSchema";
-import { LoginResponse, AdminLoginResponse, QuizScheduleData, QuizScheduleDataAdmin } from "../../common/interfaces/ToClientData";
+import { LoginResponse, AdminLoginResponse, QuizScheduleData, QuizScheduleDataAdmin, TypeQuestion, Page, QuestionRequestData } from "../../common/interfaces/ToClientData";
 import { QuestionRepository } from "../repositories/QuestionRepository";
 import { convertQuizIntoNetworkQuiz } from "../../common/js/NetworkDataUtils";
 import { IQuizOverNetwork } from "../../common/interfaces/NetworkData";
 import { QuestionType, PageType } from "../../common/enums/DBEnums";
+import { QuizSessionRepository } from "../repositories/QuizSessionRepository";
+import { ChatGroupRepository } from "../repositories/ChatGroupRepository";
+import { UserSessionRepository } from "../repositories/UserSessionRepository";
+import { Utils } from "../../common/js/Utils";
 
 export class UserService extends BaseService{
 
     protected readonly userRepo: UserRepository;
     protected readonly quizRepo: QuizRepository;
     protected readonly questionRepo: QuestionRepository;
+    protected readonly quizSessionRepo: QuizSessionRepository;
+    protected readonly chatGroupRepo: ChatGroupRepository;
+    protected readonly userSessionRepo: UserSessionRepository;
 
-    constructor(_userRepo: UserRepository, _quizRepo: QuizRepository, _questionRepo: QuestionRepository){
+
+    constructor(_userRepo: UserRepository, _quizRepo: QuizRepository, _questionRepo: QuestionRepository, _chatGroupRepo: ChatGroupRepository,
+        _quizSessionRepo: QuizSessionRepository, _userSessionRepo: UserSessionRepository){
         super();
         this.userRepo = _userRepo;
         this.quizRepo = _quizRepo;
         this.questionRepo = _questionRepo;
+        this.chatGroupRepo = _chatGroupRepo;
+        this.quizSessionRepo = _quizSessionRepo;
+        this.userSessionRepo = _userSessionRepo;
     }
 
     public async handleLogin(request: ILTIData): Promise<LoginResponse> {
@@ -131,6 +143,11 @@ export class UserService extends BaseService{
         return UserServiceHelper.FindUser(this.userRepo, userId);
     }
 
+    public async handlePageRequest(quizId: string, pageId: string, quizSessionId: string, groupId: string | null): Promise<QuestionRequestData | null> {
+        return UserServiceHelper.getPageBasedOnIdsAndTime(quizId, pageId, quizSessionId, groupId, this.quizRepo,
+            this.questionRepo, this.quizSessionRepo, this.chatGroupRepo, this.userSessionRepo);
+    }
+
     public async handleFetch(token: LoginResponse | AdminLoginResponse): Promise<QuizScheduleData | QuizScheduleDataAdmin | null> {
         if ((token as AdminLoginResponse).isAdmin) {
             const quizzes = await this.quizRepo.findAll({ course: token.courseId });
@@ -161,6 +178,19 @@ export class UserService extends BaseService{
                             
             
             const questions = await UserServiceHelper.RetrieveQuestions(this.questionRepo, questionIds);
+
+            // The great filter
+            questions.forEach((element) => {
+                // Title is fine to send over, content is not until it is requested
+                delete element.content;
+            });
+
+            quizSchedule.pages!.forEach((element, index) => {
+                if (index !== 0) {
+                    delete element.content;
+                    delete element.timeoutInMins;
+                }
+            });
 
             const output: QuizScheduleData = {
                 questions,
@@ -260,5 +290,91 @@ class UserServiceHelper {
         });
 
         return questions;
+    }
+
+    
+    public static async getPageBasedOnIdsAndTime(quizId: string, pageId: string, quizSessionId: string, groupId: string | null,
+        quizRepo: QuizRepository, questionRepo: QuestionRepository, quizSessionRepo: QuizSessionRepository,
+        chatGroupRepo: ChatGroupRepository, userSessionRepo: UserSessionRepository): Promise<QuestionRequestData | null> {
+
+        const now = Date.now();
+
+        // Fetch the details
+        const quiz = await quizRepo.findOne(quizId);
+        const quizSession = await quizSessionRepo.findOne(quizSessionId);
+
+        if (!quiz || !quizSession) {
+            throw Error(`Invalid Quiz Id of ${quizId} or Quiz session Id of ${quizSession}`);
+        }
+
+        const desiredPageIndex = quiz.pages!.findIndex((element) => {
+            return element._id === pageId;
+        });
+
+        const firstDiscussionIndex = quiz.pages!.findIndex((element) => {
+            return element.type == PageType.DISCUSSION_PAGE;
+        });
+
+        // Somehow the page does not exist
+        if (desiredPageIndex == -1) {
+            throw Error(`Invalid Quiz Id of ${quizId} or Quiz session Id of ${quizSession}`);
+        }
+
+        const desiredPage = quiz.pages![desiredPageIndex];
+
+        let potentialQuestion = null;
+        
+        if ((desiredPage.type === PageType.QUESTION_ANSWER_PAGE) || (desiredPage.type === PageType.DISCUSSION_PAGE)) {
+            potentialQuestion = await questionRepo.findOne(desiredPage.questionId);
+        }
+
+
+        // If the >= discussion page index (except when it is not there)
+        let requireGroupId = false;
+        if ((desiredPageIndex > firstDiscussionIndex) && (firstDiscussionIndex !== -1)) {
+            requireGroupId = true;
+        }
+
+        if (requireGroupId && groupId) {
+            const group = await chatGroupRepo.findOne(groupId);
+
+            if (!group) {
+                throw Error(`Invalid group id of ${groupId}`);
+            }
+
+            // Check if the amount of time is good
+            const timeNeeded = quiz.pages!.slice(firstDiscussionIndex, desiredPageIndex).reduce((time, page) => {
+                time = time + Utils.DateTime.minToMs(page.timeoutInMins);
+                return time;
+            }, 0);
+    
+            if (now >= group.startTime! + timeNeeded) {
+                // Return the page
+                return { page: desiredPage, question: potentialQuestion };
+            }
+
+        } else if (requireGroupId && !groupId) {
+            throw Error(`Attempted to fetch page of id ${pageId} without a groupId`);
+        } else {
+            // Check if quiz session time is good
+            const userSession = await userSessionRepo.findOne(quizSession.userSessionId!);
+
+            if (!userSession) {
+                throw Error(`Quiz Session Id of ${quizSessionId} points to invalid userSession`)
+            }
+
+            // Otherwise check the time
+            const timeNeeded = quiz.pages!.slice(0, desiredPageIndex).reduce((time, page) => {
+                time = time + Utils.DateTime.minToMs(page.timeoutInMins);
+                return time;
+            }, 0);
+    
+            if (now >= userSession.startTime! + timeNeeded) {
+                // Return the page
+                return { page: desiredPage, question: potentialQuestion };
+            }
+        }
+
+        return null;
     }
 }

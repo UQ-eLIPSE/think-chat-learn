@@ -32,8 +32,8 @@ export interface IUser extends Document {
 export interface IUserSession extends Document {
   userId?: OID;
   // Note these two times should be the tostring of a valid date
-  startTime?: string;
-  endTime?: string;
+  startTime?: number;
+  endTime?: number;
   course?: string;
   // Currently an enum
   role?: LTIRoles;
@@ -49,8 +49,6 @@ export interface IQuizSession extends Document {
   responses?: OID[];
   // Mark the session as complete if applicable
   complete?: boolean;
-  // Mark the page just in case for progress
-  pageNumber?: number;
 }
 
 // Contains a question in which people can answer.

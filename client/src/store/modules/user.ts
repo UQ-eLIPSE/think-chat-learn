@@ -52,7 +52,7 @@ const actions = {
 
     finishSession({ commit }: { commit: Commit }) {
         const session = state.session!;
-        session.endTime = new Date().toISOString();
+        session.endTime = Date.now();
 
         return API.request(API.POST, API.USERSESSION + "update", session, undefined,
             state.token).then((outcome: boolean) => {

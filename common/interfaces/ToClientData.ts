@@ -46,3 +46,9 @@ export interface AdminLoginResponse {
   courseId: string;
   isAdmin: boolean;
 }
+
+// Pages and possibly a question
+export interface QuestionRequestData {
+  page: DBSchema.Page;
+  question: TypeQuestion | null;
+}
