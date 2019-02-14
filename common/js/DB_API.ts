@@ -26,7 +26,7 @@ export interface IApi {
 
 export const API: IApi = {
     request(method: string, url: string, data: object|undefined,
-        contentType?: string|undefined, token?: string | null): AxiosPromise {
+            contentType?: string|undefined, token?: string | null): AxiosPromise {
         return axios({
             method,
             url: API_URL + url,

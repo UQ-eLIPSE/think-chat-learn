@@ -2,7 +2,7 @@
   <footer>
     <div class="columns is-vcentered">
       <div class="column is-vcentered">
-        <a href="http://uq.edu.au/">
+        <a href="https://uq.edu.au/">
           <img
             src="../../public/uq-logo-white.png"
             alt="The University of Queensland"

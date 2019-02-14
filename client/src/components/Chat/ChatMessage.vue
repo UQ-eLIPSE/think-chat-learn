@@ -21,6 +21,7 @@
   margin-bottom: 10px;
   margin-left: 15px;
   position: relative;
+  word-break: break-word;
   label {
     width: 30px;
     height: 30px;

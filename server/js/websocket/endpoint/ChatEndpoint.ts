@@ -338,9 +338,16 @@ export class ChatEndpoint extends WSEndpoint {
         // Grab the response 
         const response = await responseService.getResponse(data.responseId);
 
+        
         if (!response) {
             throw Error(`Invalid response of id ${data.responseId}`);
         }
+
+        delete response.confidence;
+        delete response.quizSessionId;
+        delete response._id;
+        delete response.quizId;
+        delete response.type;
 
         const responderIndex = chatGroup.quizSessionIds!.findIndex((sessionId) => { 
             return data.quizSessionId === sessionId
@@ -350,6 +357,9 @@ export class ChatEndpoint extends WSEndpoint {
             const sock = socketSession.getSocket();
 
             if (sock) {
+                // Delete sensitive information such as confidence and quiz session id
+                // The id of the response doesn't need
+
                 const chatGroupUpdate: IWSToClientData.UserResponseUpdate = {
                     response: response,
                     responderIndex

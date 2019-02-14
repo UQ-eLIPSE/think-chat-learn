@@ -12,7 +12,7 @@ import Receipt from "./views/Receipt.vue";
 
 Vue.use(Router);
 
-const names = {
+export const Names = {
   LANDING: "Landing",
   MOOCCHAT_PAGE: "MoocChatPage",
   DISCUSSION: "Discussion",
@@ -29,46 +29,46 @@ export const router = new Router({
   routes: [
     {
       path: "/",
-      name: names.LANDING,
+      name: Names.LANDING,
       component: Landing
     },
     {
       path: "/page",
-      name: names.MOOCCHAT_PAGE,
+      name: Names.MOOCCHAT_PAGE,
       component: MoocChatPage
     },
     {
       path: "/discussion",
-      name: names.DISCUSSION,
+      name: Names.DISCUSSION,
       component: Discussion
     },
     {
       path: "/reflection",
-      name: names.REFLECTION,
+      name: Names.REFLECTION,
       component: Reflection
     },
     {
       path: "/survey",
-      name: names.SURVEY,
+      name: Names.SURVEY,
       component: Survey
     },
     {
       path: "/finish",
-      name: names.FINISH,
+      name: Names.FINISH,
       component: Finish
     },
     {
       path: "/login",
-      name: names.LOGIN,
+      name: Names.LOGIN,
       component: Login
     },
     {
       path: "/allocation",
-      name: names.GROUP_ALLOCATION,
+      name: Names.GROUP_ALLOCATION,
       component: GroupAllocation
     }, {
       path: "/receipt",
-      name: names.RECEIPT,
+      name: Names.RECEIPT,
       component: Receipt
     }
   ]
@@ -90,12 +90,12 @@ function checkValidTransition(to: Route, from: Route): boolean {
   // page -> receipt
 
   // Note the initial login is always null
-  if ((from.name === null && to.name === names.LOGIN) ||
-    (from.name === names.LOGIN && to.name === names.LANDING) ||
-    (from.name === names.LANDING && to.name === names.MOOCCHAT_PAGE) ||
-    (from.name === names.MOOCCHAT_PAGE) && to.name === names.GROUP_ALLOCATION ||
-    (from.name === names.GROUP_ALLOCATION && to.name === names.MOOCCHAT_PAGE) ||
-    (from.name === names.MOOCCHAT_PAGE && to.name === names.RECEIPT)) {
+  if ((from.name === null && to.name === Names.LOGIN) ||
+    (from.name === Names.LOGIN && to.name === Names.LANDING) ||
+    (from.name === Names.LANDING && to.name === Names.MOOCCHAT_PAGE) ||
+    (from.name === Names.MOOCCHAT_PAGE) && to.name === Names.GROUP_ALLOCATION ||
+    (from.name === Names.GROUP_ALLOCATION && to.name === Names.MOOCCHAT_PAGE) ||
+    (from.name === Names.MOOCCHAT_PAGE && to.name === Names.RECEIPT)) {
     return true;
   }
   return false;
