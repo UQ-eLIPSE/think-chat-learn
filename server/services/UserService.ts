@@ -398,7 +398,7 @@ class UserServiceHelper {
 
         // Somehow the page does not exist
         if (desiredPageIndex == -1) {
-            throw Error(`Invalid Quiz Id of ${quizId} or Quiz session Id of ${quizSession}`);
+            throw Error(`Invalid pageId of ${pageId} or quiz id of ${quizId}`);
         }
 
         const desiredPage = quiz.pages![desiredPageIndex];

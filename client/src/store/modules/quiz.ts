@@ -128,7 +128,7 @@ const actions = {
             }
 
             // Store the pages and possibly the question
-            state.quiz!.pages![state.currentIndex + 1] = output.page;
+            state.quiz!.pages![state.maxIndex + 1] = output.page;
             commit(mutationKeys.SET_QUIZ, state.quiz);
             const question = output.question;
             if (question) {
