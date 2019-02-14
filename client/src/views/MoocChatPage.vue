@@ -329,8 +329,6 @@ export default class MoocChatPage extends Vue {
     this.incrementMaxIndex();
     this.goToPage();
 
-    // Attempt to poll
-    //this.fetchPage(numTries);
   }
 
   private async fetchPage(numTries: number) {

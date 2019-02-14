@@ -107,7 +107,7 @@ export default class Timer extends Vue {
               }).then(() => {
                 this.fetching = FETCH_STATES.DONE;
               });
-          }          
+          }
         }
       }
     }, this.TIME_AMOUNT_MS);

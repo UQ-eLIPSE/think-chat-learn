@@ -2,7 +2,7 @@ import Vue from "vue";
 import { Commit } from "vuex";
 import { IUserSession, IQuizSession, Response, IQuiz,
     IDiscussionPage,
-    TypeQuestion, 
+    TypeQuestion,
     QuestionReconnectData} from "../../../../common/interfaces/ToClientData";
 import API from "../../../../common/js/DB_API";
 
