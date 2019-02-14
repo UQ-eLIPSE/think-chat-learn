@@ -199,7 +199,7 @@ export class MoocchatWaitPool {
 
             const waitTime = Date.now() - firstInQueueData.timestamp;
 
-            return waitTime > MoocchatWaitPool.DesiredMaxWaitTime - 10000;
+            return waitTime > MoocchatWaitPool.DesiredMaxWaitTime;
         });
     }
 
