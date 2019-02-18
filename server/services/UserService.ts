@@ -185,9 +185,11 @@ export class UserService extends BaseService{
             
             const questions = await UserServiceHelper.RetrieveQuestions(this.questionRepo, questionIds);
             // The great filter
-            questions.forEach((element) => {
+            questions.forEach((element, index) => {
                 // Title is fine to send over, content is not until it is requested
-                delete element.content;
+                if (index !== 0) {
+                    delete element.content;
+                }
             });
 
             quizSchedule.pages!.forEach((element, index) => {
