@@ -6,11 +6,12 @@
         <div @click="restartSocket()">Restart</div>
       </template>
       <Stepper steps=5 />
+      <Timer />
       <div class="content-container">
         <router-view class="router-panel" />
       </div>
     </section>
-    <Timer />
+
     <Footer />
   </div>
 </template>
@@ -27,8 +28,12 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
+  @media screen and (min-width: 1682px) {
+    height: 88vh;
+  }
+
   #app {
-    height: 86vh;
+    height: 100%;
   }
 
   .center {
@@ -61,6 +66,10 @@ body {
     margin-bottom: 0.5em;
   }
 
+  a {
+    cursor: pointer;
+  }
+
   button {
     border: none;
     border-radius: 5px;
@@ -71,11 +80,7 @@ body {
     font-weight: 600;
     height: 46px;
     min-width: 215px;
-    margin-right: 1em;
     padding: 0 30px;
-
-    &:hover {
-    }
 
     &.primary {
       background-color: $primary;
@@ -93,7 +98,6 @@ body {
   section {
     background-color: $mainBg;
     height: 100%;
-    overflow: hidden;
 
     .content-container {
       background-color: $white;
@@ -102,7 +106,8 @@ body {
       box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.15);
       left: 0;
       max-width: 1570px;
-      margin: 0 auto;
+      margin: 1em auto 1em auto;
+      width: 85%;
     }
   }
 

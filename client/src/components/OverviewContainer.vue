@@ -16,17 +16,21 @@
 
 .overviewContainer {
   margin-right: 2em;
+  @media only screen and (max-width: 850px) {
+    margin-right: 0em;
+  }
+
   .overview {
     background: #f9fbfc;
     border: 1px solid #eff2f4;
     border-radius: 5px;
     float: left;
-    height: 215px;
+    max-width: 635px;
     margin-left: 25px;
     margin-top: 45px;
+    min-height: 13.45em;
     padding: 0.75em 2em 2em 3.25em;
     position: relative;
-    width: 675px;
 
     &:nth-child(2n + 3) {
       margin-left: 45px;

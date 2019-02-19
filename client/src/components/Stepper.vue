@@ -5,9 +5,21 @@
     v-if="renderBasedOnRoute"
   >
     <ul>
-      <font-awesome-icon :style="(currentIndex > 0) ? { color: 'green' } : { color: 'grey' }" icon="arrow-left" @click="(currentIndex > 0) ? goToPreviousPage() : () => {}"/>
+      <font-awesome-icon
+        :style="(currentIndex > 0) ? { color: 'green' } : { color: 'grey' }"
+        icon="arrow-left"
+        @click="(currentIndex > 0) ? goToPreviousPage() : () => {}"
+      />
       <span class="bar"></span>
-      <li v-for="(step, index) in steps" :key="index">
+      <button
+        :class="[ !(currentIndex > 0) ? 'disabled' : '', 'primary']"
+        :disabled="!(currentIndex > 0)"
+        @click="goToPreviousPage()"
+      />
+      <li
+        v-for="(step, index) in steps"
+        :key="index"
+      >
         <span
           class="status"
           :class="[step.status, step.relativeIndex === currentIndex ? 'gold-border' : '']"
@@ -26,7 +38,11 @@
           :class="step.status"
         >{{ step.title }}</span>
       </li>
-      <font-awesome-icon :style="(maxIndex > currentIndex) ? { color: 'green' } : { color: 'grey' }" icon="arrow-right" @click="(maxIndex > currentIndex) ? goToNextPage(): () => {}"/>
+      <font-awesome-icon
+        :style="(maxIndex > currentIndex) ? { color: 'green' } : { color: 'grey' }"
+        icon="arrow-right"
+        @click="(maxIndex > currentIndex) ? goToNextPage(): () => {}"
+      />
     </ul>
   </div>
 </template>
@@ -61,7 +77,7 @@
         &:before {
           width: 0px;
           height: 0px;
-        }   
+        }
       }
     }
 
@@ -174,7 +190,6 @@ interface Steps {
 
 @Component({})
 export default class Stepper extends Vue {
-
   /** The offset of the receipt page relative to the end of quiz pages */
   private RECEIPT_OFFSET = 0;
 
@@ -213,7 +228,6 @@ export default class Stepper extends Vue {
     } else {
       // This is the initial quiz pages
       const arr = this.quiz.pages.reduce((steps: Steps[], element, index) => {
-
         let status: Progress;
 
         status = this.computeStatus(this.maxIndex, index);
@@ -230,7 +244,10 @@ export default class Stepper extends Vue {
 
       const receipt: Steps = {
         title: "Receipt",
-        status: this.computeStatus(this.maxIndex, this.quiz.pages.length + this.RECEIPT_OFFSET),
+        status: this.computeStatus(
+          this.maxIndex,
+          this.quiz.pages.length + this.RECEIPT_OFFSET
+        ),
         relativeIndex: this.quiz.pages.length + this.RECEIPT_OFFSET
       };
 
@@ -241,9 +258,12 @@ export default class Stepper extends Vue {
       if (this.currentIndex - this.STEP_AMOUNT <= 0) {
         return arr.slice(0, 2 * this.STEP_AMOUNT);
       } else if (this.currentIndex + this.STEP_AMOUNT >= arr.length) {
-        return arr.slice(arr.length - (2 * this.STEP_AMOUNT), arr.length);
+        return arr.slice(arr.length - 2 * this.STEP_AMOUNT, arr.length);
       } else {
-        return arr.slice(this.currentIndex - this.STEP_AMOUNT, this.currentIndex + this.STEP_AMOUNT);
+        return arr.slice(
+          this.currentIndex - this.STEP_AMOUNT,
+          this.currentIndex + this.STEP_AMOUNT
+        );
       }
     }
   }

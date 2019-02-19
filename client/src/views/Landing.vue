@@ -87,15 +87,26 @@
       </OverviewContainer>
     </div>
     <div class="center margin-top">
-      <button v-if="quiz && quizAvailable && !quizSession" class="primary" tag="button" @click="startQuizSession()">
+      <button
+        v-if="quiz && quizAvailable && !quizSession"
+        class="primary"
+        tag="button"
+        @click="startQuizSession()"
+      >
         Start Session
       </button>
       <!-- TODO Style unavailable button -->
       <!-- Note button was used instead of router-link due to @click not being listened -->
-      <button v-else-if="!quizSession" class="primary">
+      <button
+        v-else-if="!quizSession"
+        class="primary"
+      >
         The quiz is not available for Quiz {{quiz.title}}
       </button>
-      <button v-else class="primary">
+      <button
+        v-else
+        class="primary"
+      >
         Attempt has been marked as completed
       </button>
     </div>
@@ -106,7 +117,11 @@
 @import "../../css/variables.scss";
 
 .landing {
-  padding: 2em 3em 3em 3em;
+  padding: 1.5em;
+
+  @media only screen and (max-width: 1483px) {
+    padding: 1.5em;
+  }
 
   .content-inner-container {
     display: flex;
@@ -139,7 +154,12 @@
 
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator";
-import { IUser, IQuiz, IQuizSession, IUserSession } from "../../../common/interfaces/ToClientData";
+import {
+  IUser,
+  IQuiz,
+  IQuizSession,
+  IUserSession
+} from "../../../common/interfaces/ToClientData";
 import OverviewContainer from "../components/OverviewContainer.vue";
 import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
 import * as IWSToServerData from "../../../common/interfaces/IWSToServerData";
@@ -176,7 +196,9 @@ export default class Landing extends Vue {
   }
 
   get socket(): WebsocketManager | null {
-    return this.socketState && this.socketState.socket ? this.socketState.socket : null;
+    return this.socketState && this.socketState.socket
+      ? this.socketState.socket
+      : null;
   }
 
   get quizAvailable(): boolean {
@@ -193,20 +215,29 @@ export default class Landing extends Vue {
     }
 
     const outgoingQuizSession: IQuizSession = {
-        quizId: this.quiz!._id,
-        userSessionId: this.userSession!._id,
-        responses: []
+      quizId: this.quiz!._id,
+      userSessionId: this.userSession!._id,
+      responses: []
     };
 
-    this.$store.dispatch("createQuizSession", outgoingQuizSession).then(() => {
-      this.socket!.emitData<IWSToServerData.StoreSession>(WebsocketEvents.OUTBOUND.STORE_QUIZ_SESSION_SOCKET, {
-        quizSessionId: this.quizSession!._id!
+    this.$store
+      .dispatch("createQuizSession", outgoingQuizSession)
+      .then(() => {
+        this.socket!.emitData<IWSToServerData.StoreSession>(
+          WebsocketEvents.OUTBOUND.STORE_QUIZ_SESSION_SOCKET,
+          {
+            quizSessionId: this.quizSession!._id!
+          }
+        );
+        EventBus.$emit(
+          EmitterEvents.START_TIMER,
+          this.$store.getters.currentTimerSettings
+        );
+        this.$router.push("/page");
+      })
+      .catch((e: Error) => {
+        console.log(e);
       });
-      EventBus.$emit(EmitterEvents.START_TIMER, this.$store.getters.currentTimerSettings);
-      this.$router.push("/page");
-    }).catch((e: Error) => {
-      console.log(e);
-    });
   }
 
   private mounted() {
@@ -219,10 +250,14 @@ export default class Landing extends Vue {
     this.$router.push("/page");
 
     // New timer settings assuming it has been generated
-    const tempSettings: TimerSettings | null = this.$store.getters.currentTimerSettings;
+    const tempSettings: TimerSettings | null = this.$store.getters
+      .currentTimerSettings;
     if (tempSettings) {
       tempSettings.timeoutInMins = this.$store.getters.resyncAmount;
-      EventBus.$emit(EmitterEvents.START_TIMER, this.$store.getters.currentTimerSettings);
+      EventBus.$emit(
+        EmitterEvents.START_TIMER,
+        this.$store.getters.currentTimerSettings
+      );
     }
   }
 }

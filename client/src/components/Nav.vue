@@ -1,20 +1,26 @@
 <template>
   <header>
-    <div class="nav-item logo"><a href="https://www.elipse.uq.edu.au"><span class="logo-bold">MOOC</span>chat</a></div>
+    <div class="nav-item logo"><a href="/client/#/"><span class="logo-bold">MOOC</span>chat</a></div>
     <div class="nav-item course-name">
       {{ `${user ? user.username : "No User"} - Session Id: ${quizSession ? quizSession._id : "N/A"}` }}
     </div>
     <div class="nav-item">
       <span>{{
-        user ? `Welcome, ${user.firstName}` : "Please login via Blackboard"
+        user ? `${user.firstName}` : "Please login via Blackboard"
         }}
       </span>
       <span>
         <a @click="changeChatState()">
-          <font-awesome-icon :style="{ color: !newMessage || !groupFormed ? 'grey' : 'red' }" icon="comment-dots" />
+          <font-awesome-icon
+            :style="{ color: !newMessage || !groupFormed ? 'grey' : 'red' }"
+            icon="comment-dots"
+          />
         </a>
         <transition name="slide">
-          <Chat :chatMessages="chatMessages" v-if="toggleChat" />
+          <Chat
+            :chatMessages="chatMessages"
+            v-if="toggleChat"
+          />
         </transition>
       </span>
     </div>
@@ -34,8 +40,8 @@ header {
   padding: 1.5em 3em;
   width: 100%;
 
-  .logo {
-    color: #225566;
+  .logo a {
+    color: #225566 !important;
     font-family: "Lato", sans-serif;
     font-size: 1.825em !important;
     font-weight: 500 !important;
@@ -124,7 +130,10 @@ export default class Nav extends Vue {
 
   // In short, if we have a message and the chat is off, notify new message
   @Watch("chatMessages")
-  private handleMessageNotification(newVal: MoocChatMessage[], oldVal: MoocChatMessage[]) {
+  private handleMessageNotification(
+    newVal: MoocChatMessage[],
+    oldVal: MoocChatMessage[]
+  ) {
     if (!this.toggleChat) {
       this.newMessage = true;
     }
