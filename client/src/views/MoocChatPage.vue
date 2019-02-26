@@ -4,7 +4,7 @@
       <div class="column pane1">
         <h1>{{page ? page.title : ""}}</h1>
         <div class="content" v-html="page.content"/>
-        <template v-if="question">
+        <template v-if="question && page.type === PageType.QUESTION_ANSWER_PAGE">
           <h1>{{question ? question.title : ""}}</h1>
           <div class="content" v-if="question" v-html="question.content"></div>
         </template>
@@ -327,7 +327,7 @@ export default class MoocChatPage extends Vue {
   @Watch("maxIndex")
   private handlePageChange(newVal: number | null, oldVal: number | null) {
     if (!this.quiz || !this.userSession || !this.quiz.pages) {
-      console.log("Missing quiz or user session");
+      console.error("Missing quiz or user session");
       return;
     }
 
@@ -343,7 +343,10 @@ export default class MoocChatPage extends Vue {
           groupId: this.chatGroup!.groupId!
         };
 
-        this.emitGroupUpdate(() => {});
+        // Only send over a response if we can update
+        if (this.currentResponse && this.currentResponse._id) {
+          this.emitGroupUpdate(() => {});
+        }
 
         EventBus.$emit(EmitterEvents.START_TIMER, this.$store.getters.currentTimerSettings);
       } else {

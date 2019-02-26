@@ -101,7 +101,7 @@ const actions = {
 
             return commit("Appending a state message",
                 { incomingState: MoocChatStateMessageTypes.NEW_DISCUSSION_QUESTION, message:
-                `New question to discuss. Please discuss about ${state.currentDiscussionQuestion!.title}`});
+                `New discussion point. Please discuss about ${state.quiz.pages[index]!.title}`});
         }
     },
 
