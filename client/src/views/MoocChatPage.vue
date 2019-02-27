@@ -64,7 +64,7 @@
             class="content"
             :key="answer._id"
           >
-            {{`Student ${answer.clientIndex} wrote this: ${answer.answer.content}`}}
+            {{`Student ${answer.clientIndex} wrote this: ${answer.answer.content} with a confidence of ${answer.answer.confidence}`}}
           </div>
         </div>
       </div>

@@ -53,6 +53,9 @@ header {
     a {
       all: unset;
       cursor: pointer;
+      &:hover {
+        color: inherit;
+      }
     }
   }
 

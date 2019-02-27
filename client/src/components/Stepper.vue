@@ -1,6 +1,7 @@
 <template>
   <div
     class="stepper"
+    v-if="steps.length > 0"
     :style="`width: ${steps.length * 100}px`"
     v-if="renderBasedOnRoute"
   >
@@ -43,9 +44,17 @@
         icon="arrow-right"
         @click="(maxIndex > currentIndex) ? goToNextPage(): () => {}"
       />
+      <button
+        :class="[ !(maxIndex > currentIndex) ? 'disabled' : '', 'primary']"
+        :disabled="!(maxIndex > currentIndex)"
+        @click="goToNextPage()"
+      />
     </ul>
   </div>
 </template>
+
+<!-- 
+         -->
 
 <style lang="scss" scoped>
 @import "../../css/variables.scss";

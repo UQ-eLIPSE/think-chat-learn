@@ -88,16 +88,23 @@
     </div>
     <div class="center margin-top">
       <button
-        v-if="quiz && quizAvailable && !quizSession"
+        <<<<<<<
+        Updated
+        upstream
+        v-if="quiz && quizAvailable && !quizSession"=======v-if="quiz"
+      >>>>>>> Stashed changes
         class="primary"
         tag="button"
         @click="startQuizSession()"
-      >
+        >
         Start Session
       </button>
       <!-- TODO Style unavailable button -->
       <!-- Note button was used instead of router-link due to @click not being listened -->
       <button
+        <<<<<<<
+        Updated
+        upstream
         v-else-if="!quizSession"
         class="primary"
       >
@@ -108,6 +115,13 @@
         class="primary"
       >
         Attempt has been marked as completed
+        =======
+        v-else
+        class="primary"
+        tag="button"
+        >
+        No Session Available
+        >>>>>>> Stashed changes
       </button>
     </div>
   </div>
