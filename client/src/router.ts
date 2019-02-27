@@ -11,7 +11,6 @@ import GroupAllocation from "./views/GroupAllocation.vue";
 import Receipt from "./views/Receipt.vue";
 
 Vue.use(Router);
-
 export const Names = {
   LANDING: "Landing",
   MOOCCHAT_PAGE: "MoocChatPage",
@@ -66,7 +65,8 @@ export const router = new Router({
       path: "/allocation",
       name: Names.GROUP_ALLOCATION,
       component: GroupAllocation
-    }, {
+    },
+    {
       path: "/receipt",
       name: Names.RECEIPT,
       component: Receipt
@@ -88,14 +88,15 @@ function checkValidTransition(to: Route, from: Route): boolean {
   // page -> allocation
   // allocation -> page
   // page -> receipt
-
   // Note the initial login is always null
-  if ((from.name === null && to.name === Names.LOGIN) ||
+  if (
+    (from.name === null && to.name === Names.LOGIN) ||
     (from.name === Names.LOGIN && to.name === Names.LANDING) ||
     (from.name === Names.LANDING && to.name === Names.MOOCCHAT_PAGE) ||
-    (from.name === Names.MOOCCHAT_PAGE) && to.name === Names.GROUP_ALLOCATION ||
+    (from.name === Names.MOOCCHAT_PAGE && to.name === Names.GROUP_ALLOCATION) ||
     (from.name === Names.GROUP_ALLOCATION && to.name === Names.MOOCCHAT_PAGE) ||
-    (from.name === Names.MOOCCHAT_PAGE && to.name === Names.RECEIPT)) {
+    (from.name === Names.MOOCCHAT_PAGE && to.name === Names.RECEIPT)
+  ) {
     return true;
   }
   return false;

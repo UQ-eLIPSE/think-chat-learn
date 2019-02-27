@@ -1,13 +1,12 @@
 <template>
   <div
     class="stepper"
-    v-if="steps.length > 0"
     :style="`width: ${steps.length * 100}px`"
     v-if="renderBasedOnRoute"
   >
     <ul>
       <font-awesome-icon
-        :style="(currentIndex > 0) ? { color: 'green' } : { color: 'grey' }"
+        :style="(currentIndex > 0) ? { color: 'green' } : { color: '#eff2f4' }"
         icon="arrow-left"
         @click="(currentIndex > 0) ? goToPreviousPage() : () => {}"
       />
@@ -40,7 +39,7 @@
         >{{ step.title }}</span>
       </li>
       <font-awesome-icon
-        :style="(maxIndex > currentIndex) ? { color: 'green' } : { color: 'grey' }"
+        :style="(maxIndex > currentIndex) ? { color: 'green' } : { color: '#eff2f4' }"
         icon="arrow-right"
         @click="(maxIndex > currentIndex) ? goToNextPage(): () => {}"
       />

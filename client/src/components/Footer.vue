@@ -31,7 +31,7 @@ footer {
   position: fixed;
   width: 100%;
 
-  @media only screen and (max-width: 1483px) {
+  @media (max-width: 1685px) {
     position: relative;
   }
 

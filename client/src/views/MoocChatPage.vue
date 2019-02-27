@@ -83,9 +83,6 @@
     margin-top: 0;
     .column {
       padding: 2em 3em 3em 3em;
-      &.pane1 {
-      }
-
       &.pane2 {
         background-color: #fafafa;
       }
@@ -94,7 +91,7 @@
 }
 
 .disabled {
-  background-color: grey;
+  background-color: #eff2f4;
 }
 </style>
 
@@ -390,8 +387,6 @@ export default class MoocChatPage extends Vue {
           questionId: this.currentDiscussionQuestion!._id!,
           groupId: this.chatGroup!.groupId!
         };
-
-        this.emitGroupUpdate(() => {});
 
         EventBus.$emit(
           EmitterEvents.START_TIMER,

@@ -28,7 +28,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  @media screen and (min-width: 1682px) {
+  @media (min-width: 1682px) {
     height: 88vh;
   }
 
@@ -46,7 +46,7 @@ body {
 
   h1 {
     color: $primary;
-    font-size: 2.25em;
+    font-size: 1.75em;
     font-weight: 600;
     line-height: 45px;
     margin-bottom: 0.5em;
@@ -84,9 +84,6 @@ body {
 
     &.primary {
       background-color: $primary;
-
-      &:hover {
-      }
     }
 
     &.secondary {
@@ -98,6 +95,7 @@ body {
   section {
     background-color: $mainBg;
     height: 100%;
+    padding-top: 25px;
 
     .content-container {
       background-color: $white;
