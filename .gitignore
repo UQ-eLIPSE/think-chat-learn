@@ -68,7 +68,7 @@ client/dist
 admin/dist
 
 # Images in public dist for dev purposes
-client/public/img/
+client/public/*
 
 # Env values for client and admin
 client/envs

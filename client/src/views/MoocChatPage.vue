@@ -43,13 +43,6 @@
           </b-field>
           <Confidence :currentResponse="currentResponse" @CONFIDENCE_CHANGE="handleConfidenceChange" />          
         </div>
-        <!-- Handle Chat Page data -->
-        <div v-else-if="page.type === PageType.DISCUSSION_PAGE && chatGroup">
-          <!-- Note a lot of things have to be done to get here -->
-          <div v-for="answer in chatGroup.groupAnswers[question._id]" class="content" :key="answer._id">
-            {{`Student ${answer.clientIndex} wrote this: ${answer.answer.content}`}}
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -343,11 +336,6 @@ export default class MoocChatPage extends Vue {
           groupId: this.chatGroup!.groupId!
         };
 
-        // Only send over a response if we can update
-        if (this.currentResponse && this.currentResponse._id) {
-          this.emitGroupUpdate(() => {});
-        }
-
         EventBus.$emit(EmitterEvents.START_TIMER, this.$store.getters.currentTimerSettings);
       } else {
         this.$router.push("/allocation");
@@ -358,28 +346,6 @@ export default class MoocChatPage extends Vue {
     } else {
       EventBus.$emit(EmitterEvents.START_TIMER, this.$store.getters.currentTimerSettings);
     }
-  }
-
-  // TODO update group state
-  private emitGroupUpdate(callback: (data?: IWSToClientData.UserResponseUpdate) => void) {
-    if (!this.socket || !this.currentResponse || !this.currentResponse._id ||
-      !this.chatGroup || !this.chatGroup.groupId || !this.quizSession || !this.quizSession._id) {
-      console.error("Missing parameters/field for group update");
-      return;
-    }
-
-    if (this.chatGroup.groupAnswers[this.currentResponse.questionId] &&
-      this.chatGroup.groupAnswers[this.currentResponse.questionId].find((element) => {
-      return element.answer._id === this.currentResponse!._id;
-    })) {
-      return;
-    }
-
-    this.socket!.emitData<IWSToServerData.ChatGroupUpdateResponse>(WebsocketEvents.OUTBOUND.CHAT_GROUP_UPDATE, {
-      responseId: this.currentResponse!._id!,
-      groupId: this.chatGroup!.groupId!,
-      quizSessionId: this.quizSession!._id!
-    });
   }
 
   // Sends a join request to the server. Once completed, runs the callback to instantiate an actual textbox

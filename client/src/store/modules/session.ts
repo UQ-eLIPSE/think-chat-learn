@@ -417,11 +417,15 @@ const actions = {
         }
 
 
-
         // Since the group formation occurs at the first discussion, we iterate from there
-        const firstDiscussionIndex = quiz.pages.findIndex((element) => {
+        let firstDiscussionIndex = quiz.pages.findIndex((element) => {
             return element.type === PageType.DISCUSSION_PAGE;
         });
+
+        if (firstDiscussionIndex === -1) {
+            // Solve the case in which we have no discussion at all
+            firstDiscussionIndex = quiz.pages.length;
+        }
 
         // Our bounds are based whether or not we are doing this for a group or not
         const lowerIndex = data.isGroup ? firstDiscussionIndex : 0;
