@@ -2,12 +2,12 @@
   <div class="create-chat-message">
     <textarea
       type="text"
-      placeholder="Share your ideas"
-      @focus="sendTypingState(true)" @blur="sendTypingState(false)"
+      :placeholder="disabledText !== '' ? disabledText : 'Share your ideas'"
+      @focus="sendTypingState(true)"
+      @blur="sendTypingState(false)"
       v-model="loadedMessage"
       :disabled="!canType"
     />
-    <span v-if="disabledText !== ''">{{disabledText}}</span>
     <button class="secondary" @click="sendMessage()">Send</button>
   </div>
 </template>
@@ -18,7 +18,7 @@
     border: none;
     font-family: "Open Sans", sans-serif;
     font-size: 0.75em;
-    height: 81px;
+    height: 110px;
     margin: 0px;
     resize: none;
     width: 100%;
@@ -41,17 +41,22 @@
 import { Vue, Component, Prop } from "vue-property-decorator";
 import * as IWSToServerData from "../../../../common/interfaces/IWSToServerData";
 import * as IWSToClientData from "../../../../common/interfaces/IWSToClientData";
-import { IQuizSession, IQuiz, Response, IUser, IDiscussionPage, TypeQuestion,
-  Page } from "../../../../common/interfaces/ToClientData";
+import {
+  IQuizSession,
+  IQuiz,
+  Response,
+  IUser,
+  IDiscussionPage,
+  TypeQuestion,
+  Page
+} from "../../../../common/interfaces/ToClientData";
 import { WebsocketManager } from "../../../js/WebsocketManager";
 import { WebsocketEvents } from "../../../js/WebsocketEvents";
 import { SocketState, Dictionary } from "../../interfaces";
 import { PageType } from "../../../../common/enums/DBEnums";
 
-
 @Component({})
 export default class CreateChatMessage extends Vue {
-
   private loadedMessage: string = "";
   private MAX_LENGTH: number = 1024;
 
@@ -80,11 +85,15 @@ export default class CreateChatMessage extends Vue {
   }
 
   get socket(): WebsocketManager | null {
-    return this.socketState && this.socketState.socket ? this.socketState.socket : null;
+    return this.socketState && this.socketState.socket
+      ? this.socketState.socket
+      : null;
   }
 
   get groupJoin(): IWSToClientData.ChatGroupFormed | null {
-    return this.socketState && this.socketState.chatGroupFormed ? this.socketState.chatGroupFormed : null;
+    return this.socketState && this.socketState.chatGroupFormed
+      ? this.socketState.chatGroupFormed
+      : null;
   }
 
   get maxIndex(): number {
@@ -100,9 +109,16 @@ export default class CreateChatMessage extends Vue {
   }
 
   get canType(): boolean {
-    if (!this.quiz || !this.quizSession || !this.socket ||
-      !this.quizSession || !this.groupJoin || !this.referredQuestion || !this.currentPage
-      || this.currentPage.type !== PageType.DISCUSSION_PAGE) {
+    if (
+      !this.quiz ||
+      !this.quizSession ||
+      !this.socket ||
+      !this.quizSession ||
+      !this.groupJoin ||
+      !this.referredQuestion ||
+      !this.currentPage ||
+      this.currentPage.type !== PageType.DISCUSSION_PAGE
+    ) {
       return false;
     }
     return true;
@@ -113,12 +129,15 @@ export default class CreateChatMessage extends Vue {
       // Basic diagnosis would be to only consider discussion page and current group. It would be very concerning
       // if the socket was null for instance
       if (!this.groupJoin) {
-        return "Disabled: Not part of a group yet";
-      } else if (this.currentPage && this.currentPage.type !== PageType.DISCUSSION_PAGE) {
-        return "Disabled: The group is not on a discussion page";
+        return "Chat is currently disabled as you're not part of a group yet";
+      } else if (
+        this.currentPage &&
+        this.currentPage.type !== PageType.DISCUSSION_PAGE
+      ) {
+        return "Chat is currenly disabled as your group is not on a discussion page";
       }
 
-      return "Chat disabled";
+      return "Chat is currently disabled";
     } else {
       return "";
     }
@@ -126,7 +145,6 @@ export default class CreateChatMessage extends Vue {
 
   // Sends the typing state to the listening sockets to the group, including self!
   private sendTypingState(state: boolean) {
-
     // TODO form questionId connection and discussion page in the db and admin page
     if (this.canType) {
       const output: IWSToServerData.ChatGroupTypingNotification = {
@@ -136,7 +154,9 @@ export default class CreateChatMessage extends Vue {
       };
 
       this.socket!.emitData<IWSToServerData.ChatGroupTypingNotification>(
-        WebsocketEvents.OUTBOUND.CHAT_GROUP_TYPING_NOTIFICATION, output);
+        WebsocketEvents.OUTBOUND.CHAT_GROUP_TYPING_NOTIFICATION,
+        output
+      );
     }
   }
 
@@ -151,15 +171,17 @@ export default class CreateChatMessage extends Vue {
     }
 
     const message: IWSToServerData.ChatGroupSendMessage = {
-        message: this.loadedMessage.slice(0, this.MAX_LENGTH),
-        groupId: this.groupJoin!.groupId!,
-        questionId: this.referredQuestion!._id!,
-        quizSessionId: this.quizSession!._id!,
-        userId: this.user!._id!
+      message: this.loadedMessage.slice(0, this.MAX_LENGTH),
+      groupId: this.groupJoin!.groupId!,
+      questionId: this.referredQuestion!._id!,
+      quizSessionId: this.quizSession!._id!,
+      userId: this.user!._id!
     };
 
     this.socket!.emitData<IWSToServerData.ChatGroupSendMessage>(
-      WebsocketEvents.OUTBOUND.CHAT_GROUP_SEND_MESSAGE, message);
+      WebsocketEvents.OUTBOUND.CHAT_GROUP_SEND_MESSAGE,
+      message
+    );
 
     this.loadedMessage = "";
   }

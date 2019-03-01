@@ -18,12 +18,18 @@
         </span>
         <span>
           <a @click="changeChatState()">
-            <font-awesome-icon
-              :style="{ color: !newMessage || !groupFormed ? '#dbdbdb' : 'red' }"
-              icon="comment-dots"
-            />
+            <b-tooltip
+              :class="!newMessage || !groupFormed ? 'disabled' : 'active'"
+              :label="!newMessage || !groupFormed ? 'Chat is currently disabled' : 'Open chat window'"
+              position="is-left"
+            >
+              <font-awesome-icon
+                class="is-dark"
+                :class="!newMessage || !groupFormed ? 'disabled' : 'active'"
+                icon="comment-dots"
+              />
+            </b-tooltip>
           </a>
-
         </span>
       </div>
     </header>

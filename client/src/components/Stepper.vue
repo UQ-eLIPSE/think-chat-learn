@@ -5,24 +5,26 @@
     v-if="renderBasedOnRoute"
   >
     <ul>
-      <font-awesome-icon
-        :style="(currentIndex > 0) ? { color: 'green' } : { color: '#eff2f4' }"
-        icon="arrow-left"
-        @click="(currentIndex > 0) ? goToPreviousPage() : () => {}"
-      />
+      <a class="arrow">
+        <font-awesome-icon
+          :class="(currentIndex > 0) ? 'active' : 'disabled'"
+          icon="arrow-left"
+          @click="(currentIndex > 0) ? goToPreviousPage() : () => {}"
+        />
+      </a>
       <span class="bar"></span>
-      <button
+      <!-- <button
         :class="[ !(currentIndex > 0) ? 'disabled' : '', 'primary']"
         :disabled="!(currentIndex > 0)"
         @click="goToPreviousPage()"
-      />
+      /> -->
       <li
         v-for="(step, index) in steps"
         :key="index"
       >
         <span
           class="status"
-          :class="[step.status, step.relativeIndex === currentIndex ? 'gold-border' : '']"
+          :class="[step.status, step.relativeIndex === currentIndex ? 'active-status' : '']"
         >
           <font-awesome-icon
             v-if="step.status === Progress.COMPLETE"
@@ -36,24 +38,25 @@
         <span
           class="title"
           :class="step.status"
-        >{{ step.title }}</span>
+        >
+          {{ step.title }}
+        </span>
       </li>
-      <font-awesome-icon
-        :style="(maxIndex > currentIndex) ? { color: 'green' } : { color: '#eff2f4' }"
-        icon="arrow-right"
-        @click="(maxIndex > currentIndex) ? goToNextPage(): () => {}"
-      />
-      <button
+      <a class="arrow">
+        <font-awesome-icon
+          :class="(maxIndex > currentIndex) ? 'active' : 'disabled'"
+          icon="arrow-right"
+          @click="(maxIndex > currentIndex) ? goToNextPage(): () => {}"
+        />
+      </a>
+      <!-- <button
         :class="[ !(maxIndex > currentIndex) ? 'disabled' : '', 'primary']"
         :disabled="!(maxIndex > currentIndex)"
         @click="goToNextPage()"
-      />
+      /> -->
     </ul>
   </div>
 </template>
-
-<!-- 
-         -->
 
 <style lang="scss" scoped>
 @import "../../css/variables.scss";
@@ -61,12 +64,38 @@
 .stepper {
   margin: 0 auto;
   padding: 1.875em;
-  .gold-border {
-    border: 1px solid yellow;
+  .active-status {
+    border: 0px;
   }
   ul {
     display: flex;
     justify-content: space-between;
+
+    a.arrow {
+      &:hover {
+        cursor: default;
+      }
+      svg {
+        margin-top: 5px;
+        &.active {
+          color: $text;
+          &:hover {
+            background-color: $text;
+            border-radius: 20px;
+            color: $white;
+            cursor: pointer;
+            height: 1.25em;
+            padding: 3px;
+            width: 1.25em;
+          }
+        }
+
+        &.disabled {
+          color: $disabled;
+          cursor: auto;
+        }
+      }
+    }
 
     .bar {
       background-color: $text;
@@ -143,14 +172,14 @@
         text-align: center;
 
         // Background bar - if number of steps ever becomes a set number this would be nice to re-implement
-        &:before {
-          content: "";
-          height: 5px;
-          position: absolute;
-          width: 3.8rem;
-          right: 55px;
-          top: -25px;
-        }
+        // &:before {
+        //   content: "";
+        //   height: 5px;
+        //   position: absolute;
+        //   width: 3.8rem;
+        //   right: 55px;
+        //   top: -25px;
+        // }
 
         &.complete {
           color: $text;

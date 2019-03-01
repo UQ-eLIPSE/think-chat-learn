@@ -1,5 +1,5 @@
 <template>
-  <div class="magic">
+  <div class="contentContainer">
     <div class="columns">
       <div class="column pane1">
         <h1>{{page ? page.title : ""}}</h1>
@@ -73,7 +73,7 @@
 </template>
 
 <style lang="scss" scoped>
-.magic {
+.contentContainer {
   height: 100%;
   .columns {
     height: 100%;

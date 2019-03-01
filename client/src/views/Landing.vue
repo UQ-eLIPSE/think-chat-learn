@@ -80,8 +80,7 @@
             <font-awesome-icon
               class="base4"
               icon="circle"
-            /> You’ll be presented a receipt of completion at the end for you to
-            save or print
+            /> Upon completion of the survey you'll be given an attempt id
           </li>
         </ul>
       </OverviewContainer>

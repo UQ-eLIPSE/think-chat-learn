@@ -47,7 +47,7 @@
   bottom: 0;
   box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.15);
   height: 100vh;
-  margin-top: 75px;
+  padding-top: 75px;
   position: fixed;
   right: 0;
   width: 400px;

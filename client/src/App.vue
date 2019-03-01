@@ -28,10 +28,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  @media (min-width: 1682px) {
-    height: 88vh;
-  }
-
   #app {
     height: 100%;
   }
@@ -67,7 +63,13 @@ body {
   }
 
   a {
+    color: $text;
     cursor: pointer;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 
   button {
@@ -94,8 +96,13 @@ body {
   }
   section {
     background-color: $mainBg;
+    // height: 100%;
     height: 100%;
     padding-top: 25px;
+
+    @media (min-width: 1685px) {
+      height: calc(100vh - 171px);
+    }
 
     .content-container {
       background-color: $white;
@@ -137,6 +144,20 @@ body {
   }
   .switch input[type="checkbox"]:checked + .check {
     background: $baseLight3;
+  }
+  .tooltip.is-left.is-primary.disabled:before {
+    border-left: 5px solid $baseLight1;
+  }
+  .tooltip.is-left.is-primary.active:before {
+    border-left: 5px solid $baseLight2;
+  }
+  .tooltip.is-primary.disabled:after {
+    background: $baseLight1;
+    color: white;
+  }
+  .tooltip.is-primary.active:after {
+    background: $baseLight2;
+    color: white;
   }
 
   // Countdown Timer styling

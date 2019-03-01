@@ -5,7 +5,6 @@ import MoocChatPage from "./views/MoocChatPage.vue";
 import Discussion from "./views/Discussion.vue";
 import Reflection from "./views/Reflection.vue";
 import Survey from "./views/Survey.vue";
-import Finish from "./views/Finish.vue";
 import Login from "./views/Login.vue";
 import GroupAllocation from "./views/GroupAllocation.vue";
 import Receipt from "./views/Receipt.vue";
@@ -17,7 +16,6 @@ export const Names = {
   DISCUSSION: "Discussion",
   REFLECTION: "Reflection",
   SURVEY: "Survey",
-  FINISH: "Finish",
   LOGIN: "Login",
   GROUP_ALLOCATION: "Group Allocation",
   RECEIPT: "Receipt"
@@ -50,11 +48,6 @@ export const router = new Router({
       path: "/survey",
       name: Names.SURVEY,
       component: Survey
-    },
-    {
-      path: "/finish",
-      name: Names.FINISH,
-      component: Finish
     },
     {
       path: "/login",

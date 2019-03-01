@@ -28,11 +28,11 @@ footer {
   height: 75px;
   left: 0;
   padding: 3em 3em;
-  position: fixed;
+  position: inherit;
   width: 100%;
 
-  @media (max-width: 1685px) {
-    position: relative;
+  @media (min-width: 1685px) {
+    position: fixed;
   }
 
   a {
