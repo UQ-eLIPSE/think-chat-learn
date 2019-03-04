@@ -166,7 +166,6 @@ export default class QuizPage extends Vue {
   }
 
   createQuiz() {
-    console.log("triggity");
     // For each quiz we have to figure out the type and assign the appropiate types
     // Output pages
     const outgoingPages: Page[] = [];

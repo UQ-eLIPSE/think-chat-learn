@@ -65,7 +65,7 @@
   margin: 0 auto;
   padding: 1.875em;
   .active-status {
-    border: 0px;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.35);
   }
   ul {
     display: flex;

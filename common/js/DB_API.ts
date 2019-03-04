@@ -37,7 +37,6 @@ export const API: IApi = {
     contentType?: string | undefined,
     token?: string | null
   ): AxiosPromise {
-    console.log(API_URL + url);
     return axios({
       method,
       url: API_URL + url,

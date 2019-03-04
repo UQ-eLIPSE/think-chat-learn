@@ -96,7 +96,6 @@ body {
   }
   section {
     background-color: $mainBg;
-    // height: 100%;
     height: 100%;
     padding-top: 25px;
 
@@ -153,11 +152,11 @@ body {
   }
   .tooltip.is-primary.disabled:after {
     background: $baseLight1;
-    color: white;
+    color: $white;
   }
   .tooltip.is-primary.active:after {
     background: $baseLight2;
-    color: white;
+    color: $white;
   }
 
   // Countdown Timer styling

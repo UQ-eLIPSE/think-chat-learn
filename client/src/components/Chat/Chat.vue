@@ -54,7 +54,7 @@
   z-index: 1;
 
   .message-container {
-    height: 100%;
+    height: calc(100vh - 263px);
     overflow: scroll;
     padding: 15px;
   }

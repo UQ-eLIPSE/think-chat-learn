@@ -1,7 +1,7 @@
 <template>
   <div
     class="timer"
-    v-if="timeLeftInMinutesSeconds !== '0:00'"
+    v-show="['MoocChatPage', 'Discussion', 'Reflection'].includes($route.name)"
   >
     <b>Time remaining:</b> {{timeLeftInMinutesSeconds}}
   </div>
