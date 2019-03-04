@@ -50,12 +50,12 @@ export class UserService extends BaseService{
             throw new Error(`No course associated with identity`);
         }
 
-        if (!request.custom_quizId) {
+        if (!request.custom_quizid) {
             throw new Error(`No quiz provided`);
         }
 
         // Fetching the quiz is done regardless. Whether or not they can create a quiz session is a different story
-        const quizSchedule = await this.quizRepo.findOne(request.custom_quizId);
+        const quizSchedule = await this.quizRepo.findOne(request.custom_quizid);
 
         if (!quizSchedule) {
             throw new Error(`No scheduled quiz available`)

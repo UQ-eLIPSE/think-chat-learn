@@ -15,7 +15,7 @@ export interface ILTIData {
     oauth_version: string;
 
     // Referred quiz
-    custom_quizId: string;
+    custom_quizid: string;
 
     // Optional
     context_id?: string;
