@@ -5,10 +5,13 @@
       :placeholder="disabledText !== '' ? disabledText : 'Share your ideas'"
       @focus="sendTypingState(true)"
       @blur="sendTypingState(false)"
+      @keydown.enter.exact.prevent
+      @keyup.enter.exact="sendMessage()"
+      @keydown.enter.shift.exact="newline"
       v-model="loadedMessage"
       :disabled="!canType"
     />
-    <button class="secondary" @click="sendMessage()">Send</button>
+    <button class="secondary" @click="sendMessage()">Submit</button>
   </div>
 </template>
 
@@ -141,6 +144,11 @@ export default class CreateChatMessage extends Vue {
     } else {
       return "";
     }
+  }
+
+  // Used shift + enter keypress for a new line in chat window
+  private newLine() {
+    this.loadedMessage = `${this.loadedMessage}\n`;
   }
 
   // Sends the typing state to the listening sockets to the group, including self!

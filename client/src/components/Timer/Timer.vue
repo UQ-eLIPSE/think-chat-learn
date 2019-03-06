@@ -3,7 +3,7 @@
     class="timer"
     v-show="['MoocChatPage', 'Discussion', 'Reflection'].includes($route.name)"
   >
-    <b>Time remaining:</b> {{timeLeftInMinutesSeconds}}
+    <b>Next page will load in:</b> {{timeLeftInMinutesSeconds}}
   </div>
 </template>
 
@@ -11,14 +11,14 @@
 @import "../../../css/variables.scss";
 .timer {
   background-color: rgba(96, 175, 161, 0.15);
-  border: 3px solid $baseDark1;
+  border: 2px solid $baseDark1;
   border-radius: 5px;
   color: $baseDark1;
   font-size: 20px;
   margin: 0 auto;
   padding: 8px 8px;
   text-align: center;
-  width: 250px;
+  width: 20%;
 }
 </style>
 

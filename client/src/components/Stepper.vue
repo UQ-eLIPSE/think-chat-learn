@@ -1,16 +1,17 @@
 <template>
   <div
     class="stepper"
-    :style="`width: ${steps.length * 100}px`"
+    :style="`width: ${steps.length * 175}px`"
     v-if="renderBasedOnRoute"
   >
     <ul>
-      <a class="arrow">
-        <font-awesome-icon
-          :class="(currentIndex > 0) ? 'active' : 'disabled'"
-          icon="arrow-left"
-          @click="(currentIndex > 0) ? goToPreviousPage() : () => {}"
-        />
+      <a
+        class="arrow"
+        :class="(currentIndex > 0) ? 'active' : 'disabled'"
+        @click="(currentIndex > 0) ? goToPreviousPage() : () => {}"
+      >
+        <font-awesome-icon icon="arrow-left" />
+        <span>Back</span>
       </a>
       <span class="bar"></span>
       <!-- <button
@@ -42,12 +43,13 @@
           {{ step.title }}
         </span>
       </li>
-      <a class="arrow">
-        <font-awesome-icon
-          :class="(maxIndex > currentIndex) ? 'active' : 'disabled'"
-          icon="arrow-right"
-          @click="(maxIndex > currentIndex) ? goToNextPage(): () => {}"
-        />
+      <a
+        class="arrow"
+        :class="(maxIndex > currentIndex) ? 'active' : 'disabled'"
+        @click="(maxIndex > currentIndex) ? goToNextPage(): () => {}"
+      >
+        <span>Next</span>
+        <font-awesome-icon icon="arrow-right" />
       </a>
       <!-- <button
         :class="[ !(maxIndex > currentIndex) ? 'disabled' : '', 'primary']"
@@ -65,34 +67,53 @@
   margin: 0 auto;
   padding: 1.875em;
   .active-status {
+    border: 3px solid $white;
     box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.35);
+    box-sizing: initial;
   }
   ul {
     display: flex;
     justify-content: space-between;
 
     a.arrow {
+      align-items: center;
+      background: $buttonBg;
+      border: 1px solid $text;
+      border-radius: 5px;
+      display: flex;
+      height: 35px;
+      margin-top: 9px;
+      padding: 1em 0.75em;
+
+      &.disabled {
+        border: 1px solid $disabled;
+        color: $disabled;
+        cursor: auto;
+
+        &:hover {
+          background: inherit;
+          color: inherit;
+          cursor: inherit;
+          text-decoration: none;
+        }
+      }
+
       &:hover {
-        cursor: default;
+        background: $text;
+        color: $white;
+        cursor: pointer;
+        text-decoration: none;
       }
       svg {
-        margin-top: 5px;
-        &.active {
-          color: $text;
-          &:hover {
-            background-color: $text;
-            border-radius: 20px;
-            color: $white;
-            cursor: pointer;
-            height: 1.25em;
-            padding: 3px;
-            width: 1.25em;
-          }
-        }
-
-        &.disabled {
-          color: $disabled;
-          cursor: auto;
+        margin: 0 5px;
+      }
+      span {
+        font-weight: 600;
+      }
+      &.active {
+        color: $text;
+        &:hover {
+          color: $white;
         }
       }
     }
@@ -107,6 +128,7 @@
       right: 55px;
       top: -25px;
     }
+
     /* Fixes the case where the first list element is in progress. It's a lot easier to override
     then to create an overly complex rule to bring this element as an exception */
     li:nth-of-type(1) {
@@ -170,6 +192,7 @@
         margin-top: 5px;
         position: relative;
         text-align: center;
+        word-break: inherit;
 
         // Background bar - if number of steps ever becomes a set number this would be nice to re-implement
         // &:before {
