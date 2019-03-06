@@ -3,7 +3,7 @@
     <textarea
       type="text"
       placeholder="Share your ideas"
-      @focus="sendTypingState(true)" @blur="sendTypingState(false)"
+      @keydown="resetTimer()"
       v-model="loadedMessage"
       :disabled="!canType"
     />
@@ -48,12 +48,15 @@ import { WebsocketEvents } from "../../../js/WebsocketEvents";
 import { SocketState, Dictionary } from "../../interfaces";
 import { PageType } from "../../../../common/enums/DBEnums";
 
+// Amount of time to send a false state
+const TIMEOUT = 1500;
 
 @Component({})
 export default class CreateChatMessage extends Vue {
 
   private loadedMessage: string = "";
   private MAX_LENGTH: number = 1024;
+  private typingStateHandle: number = -1;
 
   get user(): IUser | null {
     return this.$store.getters.user;
@@ -123,21 +126,34 @@ export default class CreateChatMessage extends Vue {
       return "";
     }
   }
+  
+  private resetTimer() {
+    // Have not assigned a timer yet. Reduce the number of messages sent by only sending if the timer is out
+    if (this.typingStateHandle !== -1) {
+      this.sendTypingState(true);
+      window.clearTimeout(this.typingStateHandle);
+    }
+
+    this.typingStateHandle = window.setTimeout(() => {
+      this.sendTypingState(false);
+      // remember to unassign the handle
+      this.typingStateHandle = -1;
+    }, TIMEOUT);
+
+  }
 
   // Sends the typing state to the listening sockets to the group, including self!
   private sendTypingState(state: boolean) {
 
     // TODO form questionId connection and discussion page in the db and admin page
-    if (this.canType) {
-      const output: IWSToServerData.ChatGroupTypingNotification = {
-        isTyping: state,
-        quizSessionId: this.quizSession!._id!,
-        groupId: this.groupJoin!.groupId!
-      };
+    const output: IWSToServerData.ChatGroupTypingNotification = {
+      isTyping: state,
+      quizSessionId: this.quizSession!._id!,
+      groupId: this.groupJoin!.groupId!
+    };
 
-      this.socket!.emitData<IWSToServerData.ChatGroupTypingNotification>(
-        WebsocketEvents.OUTBOUND.CHAT_GROUP_TYPING_NOTIFICATION, output);
-    }
+    this.socket!.emitData<IWSToServerData.ChatGroupTypingNotification>(
+      WebsocketEvents.OUTBOUND.CHAT_GROUP_TYPING_NOTIFICATION, output);
   }
 
   private sendMessage() {
@@ -162,6 +178,13 @@ export default class CreateChatMessage extends Vue {
       WebsocketEvents.OUTBOUND.CHAT_GROUP_SEND_MESSAGE, message);
 
     this.loadedMessage = "";
+
+    // Immediately set the typing state to false and handle the timer. Clear the timer for due diligence
+    if (this.typingStateHandle !== -1) {
+      window.clearTimeout(this.typingStateHandle);
+      this.typingStateHandle = -1;
+    }
+    this.sendTypingState(false);
   }
 }
 </script>
