@@ -1,12 +1,16 @@
 <template>
-  <div class="magic" v-if="page">
+  <div class="contentContainer" v-if="page">
     <div class="columns">
       <div class="column pane1">
         <h1>{{page ? page.title : ""}}</h1>
         <div class="content" v-html="page.content"/>
         <template v-if="question && page.type === PageType.QUESTION_ANSWER_PAGE">
           <h1>{{question ? question.title : ""}}</h1>
-          <div class="content" v-if="question" v-html="question.content"></div>
+          <div
+            class="content"
+            v-if="question"
+            v-html="question.content"
+          ></div>
         </template>
       </div>
       <!-- For now only question answer pages have this -->
@@ -36,12 +40,18 @@
               </b-input>
             </template>
             <div v-else-if="QuestionType.MCQ === question.type">
-              <p v-for="option in question.options" :key="option._id">
+              <p
+                v-for="option in question.options"
+                :key="option._id"
+              >
                 {{option.content}}
               </p>
-            </div>          
+            </div>
           </b-field>
-          <Confidence :currentResponse="currentResponse" @CONFIDENCE_CHANGE="handleConfidenceChange" />          
+          <Confidence
+            :currentResponse="currentResponse"
+            @CONFIDENCE_CHANGE="handleConfidenceChange"
+          />
         </div>
       </div>
     </div>
@@ -49,7 +59,7 @@
 </template>
 
 <style lang="scss" scoped>
-.magic {
+.contentContainer {
   height: 100%;
   .columns {
     height: 100%;
@@ -59,9 +69,6 @@
     margin-top: 0;
     .column {
       padding: 2em 3em 3em 3em;
-      &.pane1 {
-      }
-
       &.pane2 {
         background-color: #fafafa;
       }
@@ -70,7 +77,7 @@
 }
 
 .disabled {
-  background-color: grey;
+  background-color: #eff2f4;
 }
 </style>
 
@@ -140,7 +147,11 @@ export default class MoocChatPage extends Vue {
 
   // If we get an out of bound for the pages, set to null
   get page(): Page | null {
-    if (this.quiz && this.quiz.pages && (this.currentIndex < this.quiz.pages.length)) {
+    if (
+      this.quiz &&
+      this.quiz.pages &&
+      this.currentIndex < this.quiz.pages.length
+    ) {
       return this.quiz.pages[this.currentIndex];
     } else {
       return null;
@@ -158,20 +169,27 @@ export default class MoocChatPage extends Vue {
   }
 
   get question(): TypeQuestion | null {
-    if (!this.page || !((this.page.type === PageType.QUESTION_ANSWER_PAGE) ||
-      (this.page.type === PageType.DISCUSSION_PAGE))) {
+    if (
+      !this.page ||
+      !(
+        this.page.type === PageType.QUESTION_ANSWER_PAGE ||
+        this.page.type === PageType.DISCUSSION_PAGE
+      )
+    ) {
       return null;
     }
 
     return this.$store.getters.getQuestionById(this.page.questionId);
   }
 
-  get socketState(): SocketState| null {
+  get socketState(): SocketState | null {
     return this.$store.getters.socketState;
   }
 
   get socket(): WebsocketManager | null {
-    return this.socketState && this.socketState.socket ? this.socketState.socket : null;
+    return this.socketState && this.socketState.socket
+      ? this.socketState.socket
+      : null;
   }
 
   // Empty should be default behaviour if no socket state is present
@@ -180,12 +198,15 @@ export default class MoocChatPage extends Vue {
   }
 
   get chatGroup(): IWSToClientData.ChatGroupFormed | null {
-    return this.socketState && this.socketState.chatGroupFormed ? this.socketState.chatGroupFormed : null;
+    return this.socketState && this.socketState.chatGroupFormed
+      ? this.socketState.chatGroupFormed
+      : null;
   }
 
   get typingNotifications(): IWSToClientData.ChatGroupTypingNotification | null {
-    return this.socketState && this.socketState.chatTypingNotifications ?
-      this.socketState.chatTypingNotifications : null;
+    return this.socketState && this.socketState.chatTypingNotifications
+      ? this.socketState.chatTypingNotifications
+      : null;
   }
 
   get responses(): Dictionary<Response> {
@@ -216,8 +237,11 @@ export default class MoocChatPage extends Vue {
     switch (this.quiz.pages[this.maxIndex].type) {
       case PageType.DISCUSSION_PAGE:
       case PageType.QUESTION_ANSWER_PAGE:
-        return this.$store.getters.getQuestionById((this.quiz.pages[this.maxIndex] as IDiscussionPage |
-          IQuestionAnswerPage).questionId);
+        return this.$store.getters.getQuestionById(
+          (this.quiz.pages[this.maxIndex] as
+            | IDiscussionPage
+            | IQuestionAnswerPage).questionId
+        );
       default:
         return null;
     }
@@ -229,8 +253,14 @@ export default class MoocChatPage extends Vue {
 
   private sendResponse() {
     // If there is no question on the max index we don't care
-    if (!this.quiz || !this.currentMaxQuestion
-      || !this.quiz._id || !this.quizSession || !this.quizSession._id || !this.quiz.pages) {
+    if (
+      !this.quiz ||
+      !this.currentMaxQuestion ||
+      !this.quiz._id ||
+      !this.quizSession ||
+      !this.quizSession._id ||
+      !this.quiz.pages
+    ) {
       return Promise.resolve();
     }
 
@@ -242,17 +272,21 @@ export default class MoocChatPage extends Vue {
         type: QuestionType.QUALITATIVE,
         content: this.responseContent,
         confidence: this.confidence,
-        questionId: (this.quiz.pages[this.maxIndex] as IQuestionAnswerPage).questionId!,
+        questionId: (this.quiz.pages[this.maxIndex] as IQuestionAnswerPage)
+          .questionId!,
         quizId: this.quiz._id,
         quizSessionId: this.quizSession._id
       };
 
       // TODO, snackbar for errors?
-      return this.$store.dispatch("sendResponse", response).then((responseId) => {
-        this.responseContent = "";
-      }).catch((e: Error) => {
-        console.log(e);
-      });
+      return this.$store
+        .dispatch("sendResponse", response)
+        .then(responseId => {
+          this.responseContent = "";
+        })
+        .catch((e: Error) => {
+          console.log(e);
+        });
     } else {
       return Promise.resolve();
     }
@@ -324,12 +358,18 @@ export default class MoocChatPage extends Vue {
       return;
     }
 
-    if (newVal && newVal < this.quiz.pages.length && this.quiz.pages[newVal].type === PageType.DISCUSSION_PAGE) {
-
+    if (
+      newVal &&
+      newVal < this.quiz.pages.length &&
+      this.quiz.pages[newVal].type === PageType.DISCUSSION_PAGE
+    ) {
       // Upon changing to a discussion page, if we are in a group we need to check if the group state
       // is good. If it is then we proceed as normal. If we don't have a group go to the allocation page
-      if (this.socketState && this.socketState.chatGroupFormed &&
-        (this.currentIndex === this.maxIndex)) {
+      if (
+        this.socketState &&
+        this.socketState.chatGroupFormed &&
+        this.currentIndex === this.maxIndex
+      ) {
         // TODO handle a a bad group/check group state
         const data = {
           questionId: this.currentDiscussionQuestion!._id!,
@@ -344,28 +384,45 @@ export default class MoocChatPage extends Vue {
         });
       }
     } else {
-      EventBus.$emit(EmitterEvents.START_TIMER, this.$store.getters.currentTimerSettings);
+      EventBus.$emit(
+        EmitterEvents.START_TIMER,
+        this.$store.getters.currentTimerSettings
+      );
     }
   }
 
   // Sends a join request to the server. Once completed, runs the callback to instantiate an actual textbox
-  private emitJoinRequest(callback: (data?: IWSToClientData.ChatGroupFormed) => void) {
-      if (!this.socket || !this.quiz || !this.quizSession || !this.currentResponse ||
-        !this.quizSession._id || !this.currentResponse._id || !this.socketState) {
-        console.error("Sent a join request without a socket or quiz");
-        return;
-      } else if (this.socketState.chatGroupFormed) {
-        console.error("Attempted to send a join request while already in a group");
-        return;
-      }
+  private emitJoinRequest(
+    callback: (data?: IWSToClientData.ChatGroupFormed) => void
+  ) {
+    if (
+      !this.socket ||
+      !this.quiz ||
+      !this.quizSession ||
+      !this.currentResponse ||
+      !this.quizSession._id ||
+      !this.currentResponse._id ||
+      !this.socketState
+    ) {
+      console.error("Sent a join request without a socket or quiz");
+      return;
+    } else if (this.socketState.chatGroupFormed) {
+      console.error(
+        "Attempted to send a join request while already in a group"
+      );
+      return;
+    }
 
-      this.socket!.emitData<IWSToServerData.ChatGroupJoin>(WebsocketEvents.OUTBOUND.CHAT_GROUP_JOIN_REQUEST, {
-          quizId: this.quiz._id!,
-          questionId: this.question!._id!,
-          quizSessionId: this.quizSession!._id!,
-          responseId: this.currentResponse!._id!,
-          userId: this.user!._id!
-      });
+    this.socket!.emitData<IWSToServerData.ChatGroupJoin>(
+      WebsocketEvents.OUTBOUND.CHAT_GROUP_JOIN_REQUEST,
+      {
+        quizId: this.quiz._id!,
+        questionId: this.question!._id!,
+        quizSessionId: this.quizSession!._id!,
+        responseId: this.currentResponse!._id!,
+        userId: this.user!._id!
+      }
+    );
   }
 
   private mounted() {

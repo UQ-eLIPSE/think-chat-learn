@@ -6,11 +6,12 @@
         <div @click="restartSocket()">Restart</div>
       </template>
       <Stepper steps=5 />
+      <Timer />
       <div class="content-container">
         <router-view class="router-panel" />
       </div>
     </section>
-    <Timer />
+
     <Footer />
   </div>
 </template>
@@ -28,7 +29,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 
   #app {
-    height: 86vh;
+    height: 100%;
   }
 
   .center {
@@ -41,7 +42,7 @@ body {
 
   h1 {
     color: $primary;
-    font-size: 2.25em;
+    font-size: 1.75em;
     font-weight: 600;
     line-height: 45px;
     margin-bottom: 0.5em;
@@ -61,6 +62,16 @@ body {
     margin-bottom: 0.5em;
   }
 
+  a {
+    color: $text;
+    cursor: pointer;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
   button {
     border: none;
     border-radius: 5px;
@@ -71,17 +82,10 @@ body {
     font-weight: 600;
     height: 46px;
     min-width: 215px;
-    margin-right: 1em;
     padding: 0 30px;
-
-    &:hover {
-    }
 
     &.primary {
       background-color: $primary;
-
-      &:hover {
-      }
     }
 
     &.secondary {
@@ -93,7 +97,11 @@ body {
   section {
     background-color: $mainBg;
     height: 100%;
-    overflow: hidden;
+    padding-top: 25px;
+
+    @media (min-width: 1685px) {
+      height: calc(100vh - 171px);
+    }
 
     .content-container {
       background-color: $white;
@@ -102,7 +110,8 @@ body {
       box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.15);
       left: 0;
       max-width: 1570px;
-      margin: 0 auto;
+      margin: 1em auto 1em auto;
+      width: 85%;
     }
   }
 
@@ -134,6 +143,20 @@ body {
   }
   .switch input[type="checkbox"]:checked + .check {
     background: $baseLight3;
+  }
+  .tooltip.is-left.is-primary.disabled:before {
+    border-left: 5px solid $baseLight1;
+  }
+  .tooltip.is-left.is-primary.active:before {
+    border-left: 5px solid $baseLight2;
+  }
+  .tooltip.is-primary.disabled:after {
+    background: $baseLight1;
+    color: $white;
+  }
+  .tooltip.is-primary.active:after {
+    background: $baseLight2;
+    color: $white;
   }
 
   // Countdown Timer styling

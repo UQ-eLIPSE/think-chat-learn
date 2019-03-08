@@ -1,16 +1,31 @@
 <template>
   <div
     class="stepper"
-    :style="`width: ${steps.length * 100}px`"
+    :style="`width: ${steps.length * 175}px`"
     v-if="renderBasedOnRoute"
   >
     <ul>
-      <font-awesome-icon :style="(currentIndex > 0) ? { color: 'green' } : { color: 'grey' }" icon="arrow-left" @click="(currentIndex > 0) ? goToPreviousPage() : () => {}"/>
+      <a
+        class="arrow"
+        :class="(currentIndex > 0) ? 'active' : 'disabled'"
+        @click="(currentIndex > 0) ? goToPreviousPage() : () => {}"
+      >
+        <font-awesome-icon icon="arrow-left" />
+        <span>Back</span>
+      </a>
       <span class="bar"></span>
-      <li v-for="(step, index) in steps" :key="index">
+      <!-- <button
+        :class="[ !(currentIndex > 0) ? 'disabled' : '', 'primary']"
+        :disabled="!(currentIndex > 0)"
+        @click="goToPreviousPage()"
+      /> -->
+      <li
+        v-for="(step, index) in steps"
+        :key="index"
+      >
         <span
           class="status"
-          :class="[step.status, step.relativeIndex === currentIndex ? 'gold-border' : '']"
+          :class="[step.status, step.relativeIndex === currentIndex ? 'active-status' : '']"
         >
           <font-awesome-icon
             v-if="step.status === Progress.COMPLETE"
@@ -24,9 +39,23 @@
         <span
           class="title"
           :class="step.status"
-        >{{ step.title }}</span>
+        >
+          {{ step.title }}
+        </span>
       </li>
-      <font-awesome-icon :style="(maxIndex > currentIndex) ? { color: 'green' } : { color: 'grey' }" icon="arrow-right" @click="(maxIndex > currentIndex) ? goToNextPage(): () => {}"/>
+      <a
+        class="arrow"
+        :class="(maxIndex > currentIndex) ? 'active' : 'disabled'"
+        @click="(maxIndex > currentIndex) ? goToNextPage(): () => {}"
+      >
+        <span>Next</span>
+        <font-awesome-icon icon="arrow-right" />
+      </a>
+      <!-- <button
+        :class="[ !(maxIndex > currentIndex) ? 'disabled' : '', 'primary']"
+        :disabled="!(maxIndex > currentIndex)"
+        @click="goToNextPage()"
+      /> -->
     </ul>
   </div>
 </template>
@@ -37,12 +66,57 @@
 .stepper {
   margin: 0 auto;
   padding: 1.875em;
-  .gold-border {
-    border: 1px solid yellow;
+  .active-status {
+    border: 3px solid $white;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.35);
+    box-sizing: initial;
   }
   ul {
     display: flex;
     justify-content: space-between;
+
+    a.arrow {
+      align-items: center;
+      background: $buttonBg;
+      border: 1px solid $text;
+      border-radius: 5px;
+      display: flex;
+      height: 35px;
+      margin-top: 9px;
+      padding: 1em 0.75em;
+
+      &.disabled {
+        border: 1px solid $disabled;
+        color: $disabled;
+        cursor: auto;
+
+        &:hover {
+          background: inherit;
+          color: inherit;
+          cursor: inherit;
+          text-decoration: none;
+        }
+      }
+
+      &:hover {
+        background: $text;
+        color: $white;
+        cursor: pointer;
+        text-decoration: none;
+      }
+      svg {
+        margin: 0 5px;
+      }
+      span {
+        font-weight: 600;
+      }
+      &.active {
+        color: $text;
+        &:hover {
+          color: $white;
+        }
+      }
+    }
 
     .bar {
       background-color: $text;
@@ -54,6 +128,7 @@
       right: 55px;
       top: -25px;
     }
+
     /* Fixes the case where the first list element is in progress. It's a lot easier to override
     then to create an overly complex rule to bring this element as an exception */
     li:nth-of-type(1) {
@@ -61,7 +136,7 @@
         &:before {
           width: 0px;
           height: 0px;
-        }   
+        }
       }
     }
 
@@ -117,16 +192,17 @@
         margin-top: 5px;
         position: relative;
         text-align: center;
+        word-break: inherit;
 
         // Background bar - if number of steps ever becomes a set number this would be nice to re-implement
-        &:before {
-          content: "";
-          height: 5px;
-          position: absolute;
-          width: 3.8rem;
-          right: 55px;
-          top: -25px;
-        }
+        // &:before {
+        //   content: "";
+        //   height: 5px;
+        //   position: absolute;
+        //   width: 3.8rem;
+        //   right: 55px;
+        //   top: -25px;
+        // }
 
         &.complete {
           color: $text;
@@ -174,7 +250,6 @@ interface Steps {
 
 @Component({})
 export default class Stepper extends Vue {
-
   /** The offset of the receipt page relative to the end of quiz pages */
   private RECEIPT_OFFSET = 0;
 
@@ -213,7 +288,6 @@ export default class Stepper extends Vue {
     } else {
       // This is the initial quiz pages
       const arr = this.quiz.pages.reduce((steps: Steps[], element, index) => {
-
         let status: Progress;
 
         status = this.computeStatus(this.maxIndex, index);
@@ -230,7 +304,10 @@ export default class Stepper extends Vue {
 
       const receipt: Steps = {
         title: "Receipt",
-        status: this.computeStatus(this.maxIndex, this.quiz.pages.length + this.RECEIPT_OFFSET),
+        status: this.computeStatus(
+          this.maxIndex,
+          this.quiz.pages.length + this.RECEIPT_OFFSET
+        ),
         relativeIndex: this.quiz.pages.length + this.RECEIPT_OFFSET
       };
 
@@ -241,9 +318,12 @@ export default class Stepper extends Vue {
       if (this.currentIndex - this.STEP_AMOUNT <= 0) {
         return arr.slice(0, 2 * this.STEP_AMOUNT);
       } else if (this.currentIndex + this.STEP_AMOUNT >= arr.length) {
-        return arr.slice(arr.length - (2 * this.STEP_AMOUNT), arr.length);
+        return arr.slice(arr.length - 2 * this.STEP_AMOUNT, arr.length);
       } else {
-        return arr.slice(this.currentIndex - this.STEP_AMOUNT, this.currentIndex + this.STEP_AMOUNT);
+        return arr.slice(
+          this.currentIndex - this.STEP_AMOUNT,
+          this.currentIndex + this.STEP_AMOUNT
+        );
       }
     }
   }

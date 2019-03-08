@@ -22,6 +22,7 @@
 
 .container {
   padding: 4em 0;
+  width: 80%;
 
   .notifyTone {
     display: flex;
@@ -52,7 +53,9 @@ export default class GroupAllocation extends Vue {
   }
 
   get chatGroup(): IWSToClientData.ChatGroupFormed | null {
-    return this.socketState && this.socketState.chatGroupFormed ? this.socketState.chatGroupFormed : null;
+    return this.socketState && this.socketState.chatGroupFormed
+      ? this.socketState.chatGroupFormed
+      : null;
   }
 
   private goToMoocChatPage() {
@@ -77,17 +80,21 @@ export default class GroupAllocation extends Vue {
   @Watch("chatGroup")
   private async handleChatGroupChange(
     newVal: IWSToClientData.ChatGroupFormed | null,
-    oldVal: IWSToClientData.ChatGroupFormed | null) {
-      if (newVal) {
-        // Play the tone if applicable
-        if (this.notifyTone && this.notifyAudio) {
-          this.notifyAudio.play();
-        }
-
-        this.goToMoocChatPage();
-        EventBus.$emit(EmitterEvents.START_TIMER, this.$store.getters.currentTimerSettings);
-        EventBus.$emit(EmitterEvents.GROUP_FORMED);
+    oldVal: IWSToClientData.ChatGroupFormed | null
+  ) {
+    if (newVal) {
+      // Play the tone if applicable
+      if (this.notifyTone && this.notifyAudio) {
+        this.notifyAudio.play();
       }
+
+      this.goToMoocChatPage();
+      EventBus.$emit(
+        EmitterEvents.START_TIMER,
+        this.$store.getters.currentTimerSettings
+      );
+      EventBus.$emit(EmitterEvents.GROUP_FORMED);
+    }
   }
 }
 </script>

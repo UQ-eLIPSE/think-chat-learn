@@ -5,20 +5,17 @@ import MoocChatPage from "./views/MoocChatPage.vue";
 import Discussion from "./views/Discussion.vue";
 import Reflection from "./views/Reflection.vue";
 import Survey from "./views/Survey.vue";
-import Finish from "./views/Finish.vue";
 import Login from "./views/Login.vue";
 import GroupAllocation from "./views/GroupAllocation.vue";
 import Receipt from "./views/Receipt.vue";
 
 Vue.use(Router);
-
 export const Names = {
   LANDING: "Landing",
   MOOCCHAT_PAGE: "MoocChatPage",
   DISCUSSION: "Discussion",
   REFLECTION: "Reflection",
   SURVEY: "Survey",
-  FINISH: "Finish",
   LOGIN: "Login",
   GROUP_ALLOCATION: "Group Allocation",
   RECEIPT: "Receipt"
@@ -53,11 +50,6 @@ export const router = new Router({
       component: Survey
     },
     {
-      path: "/finish",
-      name: Names.FINISH,
-      component: Finish
-    },
-    {
       path: "/login",
       name: Names.LOGIN,
       component: Login
@@ -66,7 +58,8 @@ export const router = new Router({
       path: "/allocation",
       name: Names.GROUP_ALLOCATION,
       component: GroupAllocation
-    }, {
+    },
+    {
       path: "/receipt",
       name: Names.RECEIPT,
       component: Receipt
@@ -88,14 +81,15 @@ function checkValidTransition(to: Route, from: Route): boolean {
   // page -> allocation
   // allocation -> page
   // page -> receipt
-
   // Note the initial login is always null
-  if ((from.name === null && to.name === Names.LOGIN) ||
+  if (
+    (from.name === null && to.name === Names.LOGIN) ||
     (from.name === Names.LOGIN && to.name === Names.LANDING) ||
     (from.name === Names.LANDING && to.name === Names.MOOCCHAT_PAGE) ||
-    (from.name === Names.MOOCCHAT_PAGE) && to.name === Names.GROUP_ALLOCATION ||
+    (from.name === Names.MOOCCHAT_PAGE && to.name === Names.GROUP_ALLOCATION) ||
     (from.name === Names.GROUP_ALLOCATION && to.name === Names.MOOCCHAT_PAGE) ||
-    (from.name === Names.MOOCCHAT_PAGE && to.name === Names.RECEIPT)) {
+    (from.name === Names.MOOCCHAT_PAGE && to.name === Names.RECEIPT)
+  ) {
     return true;
   }
   return false;

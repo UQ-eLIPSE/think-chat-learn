@@ -1,29 +1,26 @@
 {
-	"compilerOptions": {
-        "target": "es2015",
-        "module": "commonjs",
+  "compilerOptions": {
+    "target": "es2015",
+    "module": "commonjs",
 
-        "noImplicitAny": true,
-        "noImplicitThis": true,
-        "noImplicitReturns": true,
-        "strictNullChecks": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": true,
+    "strictNullChecks": true,
 
-        "noUnusedLocals": false,
-        // "noUnusedParameters": true,
+    "noUnusedLocals": false,
+    // "noUnusedParameters": true,
 
-        "removeComments": true,
-        "preserveConstEnums": true,
-        "forceConsistentCasingInFileNames": true,
-        
-        "experimentalDecorators": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "forceConsistentCasingInFileNames": true,
 
-        "sourceMap": true,
+    "experimentalDecorators": true,
 
-        "outDir": "../build",
-        "rootDir": "../"
-    },
-    "files": [
-        "./index.d.ts",
-        "./main.ts"
-    ]
+    "sourceMap": true,
+
+    "outDir": "../build",
+    "rootDir": "../"
+  },
+  "files": ["./index.d.ts", "./main.ts"]
 }

@@ -46,7 +46,7 @@
           <h3>Complete a brief survey and finish</h3>
           <ul>
             <li>Fill out a survey about your MOOCchat experience</li>
-            <li>You'll be presented a receipt of completion at the end for you to save or print</li>
+            <li>You'll be presented an attempt id upon completion</li>
           </ul>
         </li>
       </ol>

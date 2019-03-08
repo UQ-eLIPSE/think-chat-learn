@@ -5,6 +5,9 @@ import store from "./store";
 import Buefy from "buefy";
 import "buefy/dist/buefy.css";
 import { library } from "@fortawesome/fontawesome-svg-core";
+// import VueVirtualScroller from "vue-virtual-scroller";
+import "vue-virtual-scroller/dist/vue-virtual-scroller.css";
+
 import {
   faChalkboard,
   faCircle,
@@ -35,6 +38,7 @@ library.add(
 );
 
 Vue.use(Buefy);
+// Vue.use(VueVirtualScroller);
 Vue.component("font-awesome-icon", FontAwesomeIcon);
 Vue.config.productionTip = false;
 

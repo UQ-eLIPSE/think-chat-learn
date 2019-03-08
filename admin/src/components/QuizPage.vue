@@ -51,7 +51,11 @@
         v-model="page.questionId"
         v-if="(page.type === PageType.QUESTION_ANSWER_PAGE) || (page.type === PageType.DISCUSSION_PAGE)"
       >
-        <option v-for="question in questions" :key="question._id" :value="question._id">{{question.title}}</option>
+        <option
+          v-for="question in questions"
+          :key="question._id"
+          :value="question._id"
+        >{{question.title}}</option>
       </select>
       <select
         v-model="page.surveryId"
@@ -74,7 +78,7 @@
     >Create new page</button>
     <button
       type="button"
-      @click="createQuiz()"
+      @click="createQuiz"
     >Create Quiz</button>
   </div>
 </template>
@@ -85,23 +89,27 @@
 }
 </style>
 <script lang="ts">
-
 import { Vue, Component, Prop } from "vue-property-decorator";
-import { IPage,
-    IQuestionAnswerPage, IInfoPage,
-    IDiscussionPage, ISurveyPage, IQuiz, Page, TypeQuestion } from "../../../common/interfaces/ToClientData";
+import {
+  IPage,
+  IQuestionAnswerPage,
+  IInfoPage,
+  IDiscussionPage,
+  ISurveyPage,
+  IQuiz,
+  Page,
+  TypeQuestion
+} from "../../../common/interfaces/ToClientData";
 import { PageType } from "../../../common/enums/DBEnums";
 import { getAdminLoginResponse } from "../../../common/js/front_end_auth";
 import { IQuizOverNetwork } from "../../../common/interfaces/NetworkData";
 
-@Component({
-})
+@Component({})
 export default class QuizPage extends Vue {
   // Default values for quizzes
   private quizTitle: string = "";
 
   @Prop({ default: "" }) private id!: string;
-
 
   // The start date in ISO8601. Note that Buefy doesn't really have datetime just date and time unfortunately
   private startDate: Date | null = null;
@@ -112,7 +120,7 @@ export default class QuizPage extends Vue {
   // The pages that are wanted to be created. Use
   // a dictionary as we would like to use the temp id
   // instead of index
-  private pageDict: {[key: string]: Page} = {};
+  private pageDict: { [key: string]: Page } = {};
 
   // The internal id of pages created. Tossed away when sending
   private mountedId: number = 0;
@@ -122,11 +130,13 @@ export default class QuizPage extends Vue {
     const temp: Page[] = [];
 
     // Sort the keys then push the elements in order
-    Object.keys(this.pageDict).sort((a, b) => {
-      return parseInt(a, 10) - parseInt(b, 10);
-    }).forEach((element) => {
-      temp.push(this.pageDict[parseInt(element, 10)]);
-    });
+    Object.keys(this.pageDict)
+      .sort((a, b) => {
+        return parseInt(a, 10) - parseInt(b, 10);
+      })
+      .forEach(element => {
+        temp.push(this.pageDict[parseInt(element, 10)]);
+      });
 
     return temp;
   }
@@ -155,13 +165,13 @@ export default class QuizPage extends Vue {
     return loginDetails ? loginDetails.courseId : "";
   }
 
-  private createQuiz() {
+  createQuiz() {
     // For each quiz we have to figure out the type and assign the appropiate types
     // Output pages
     const outgoingPages: Page[] = [];
 
     // Iterate through each page and strip the appropaite values
-    this.pages.forEach((element) => {
+    this.pages.forEach(element => {
       // Note it is possile for unique elements to be stored in the front end
       // but only the relevant data is sent over to the back end
       switch (element.type) {
@@ -207,13 +217,23 @@ export default class QuizPage extends Vue {
       throw Error("Missing start or end datetimes");
     }
 
-    const availableStart = new Date(this.startDate.getFullYear(),
-      this.startDate.getMonth(), this.startDate.getDate(),
-      this.startTime.getHours(), this.startTime.getMinutes(), this.startTime.getSeconds()).toString();
+    const availableStart = new Date(
+      this.startDate.getFullYear(),
+      this.startDate.getMonth(),
+      this.startDate.getDate(),
+      this.startTime.getHours(),
+      this.startTime.getMinutes(),
+      this.startTime.getSeconds()
+    ).toString();
 
-    const availableEnd = new Date(this.endDate.getFullYear(),
-      this.endDate.getMonth(), this.endDate.getDate(),
-      this.endTime.getHours(), this.endTime.getMinutes(), this.endTime.getSeconds()).toString();
+    const availableEnd = new Date(
+      this.endDate.getFullYear(),
+      this.endDate.getMonth(),
+      this.endDate.getDate(),
+      this.endTime.getHours(),
+      this.endTime.getMinutes(),
+      this.endTime.getSeconds()
+    ).toString();
 
     const outgoingQuiz: IQuizOverNetwork = {
       title: this.quizTitle,
@@ -229,19 +249,17 @@ export default class QuizPage extends Vue {
     } else {
       this.$store.dispatch("createQuiz", outgoingQuiz);
     }
-
-
   }
 
   // The reason for the mounted id is that we need it for rendering purposes
   // but toss it away later for db calls.
   private createPage() {
     const output: IQuestionAnswerPage = {
-        type: PageType.QUESTION_ANSWER_PAGE,
-        title: "Some Title",
-        content: "",
-        questionId: "",
-        timeoutInMins: 2
+      type: PageType.QUESTION_ANSWER_PAGE,
+      title: "Some Title",
+      content: "",
+      questionId: "",
+      timeoutInMins: 2
     };
 
     // Remember vue set is need for rendering to occur
@@ -253,7 +271,7 @@ export default class QuizPage extends Vue {
     if (this.id === "") {
       this.createPage();
     } else {
-      const loadedQuiz = this.quizzes.find((element) => {
+      const loadedQuiz = this.quizzes.find(element => {
         return element._id === this.id;
       });
 
@@ -268,18 +286,17 @@ export default class QuizPage extends Vue {
 
         this.quizTitle = loadedQuiz.title;
 
-        const emptyDict: {[key: string]: Page} = {};
+        const emptyDict: { [key: string]: Page } = {};
 
         // At this point, the loaded quiz and their elemenets should not have null values
         // Remember to use the mounted values as we must be able to mix the loaded
         // values with the non-loaded.
         this.pageDict = loadedQuiz.pages.reduce((dict, element) => {
-            dict[(this.mountedId++).toString()] = element;
-            return dict;
+          dict[(this.mountedId++).toString()] = element;
+          return dict;
         }, emptyDict);
       }
     }
-
   }
 }
 </script>

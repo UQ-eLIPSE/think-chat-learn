@@ -1,24 +1,33 @@
 <template>
-  <header>
-    <div class="nav-item logo"><a href="https://www.elipse.uq.edu.au"><span class="logo-bold">MOOC</span>chat</a></div>
-    <div class="nav-item course-name">
-      {{ `${user ? user.username : "No User"} - Session Id: ${quizSession ? quizSession._id : "N/A"}` }}
-    </div>
-    <div class="nav-item">
-      <span>{{
-        user ? `Welcome, ${user.firstName}` : "Please login via Blackboard"
-        }}
-      </span>
-      <span>
-        <a @click="changeChatState()">
-          <font-awesome-icon :style="{ color: !newMessage || !groupFormed ? 'grey' : 'red' }" icon="comment-dots" />
-        </a>
-        <transition name="slide">
-          <Chat :chatMessages="chatMessages" v-if="toggleChat" />
-        </transition>
-      </span>
-    </div>
-  </header>
+  <div>
+    <transition name="slide">
+      <Chat
+        :chatMessages="chatMessages"
+        v-if="toggleChat"
+      />
+    </transition>
+    <header>
+      <div class="nav-item logo"><a href="/client/#/"><span class="logo-bold">MOOC</span>chat</a></div>
+      <div class="nav-item course-name">
+        {{ `${user ? user.username : "No User"} - Session Id: ${quizSession ? quizSession._id : "N/A"}` }}
+      </div>
+      <div class="nav-item">
+        <span>{{
+          user ? `${user.firstName}` : "Please login via Blackboard"
+          }}
+        </span>
+        <span>
+          <a @click="changeChatState()">
+            <font-awesome-icon
+              class="is-dark"
+              :class="!newMessage || !groupFormed ? 'disabled' : 'active'"
+              icon="comment-dots"
+            />
+          </a>
+        </span>
+      </div>
+    </header>
+  </div>
 </template>
 
 <style lang="scss" scoped>
@@ -32,12 +41,14 @@ header {
   height: 75px;
   left: 0;
   padding: 1.5em 3em;
+  position: relative;
   width: 100%;
+  z-index: 2;
 
-  .logo {
-    color: #225566;
+  .logo a {
+    color: #225566 !important;
     font-family: "Lato", sans-serif;
-    font-size: 1.825em !important;
+    font-size: 1.25em !important;
     font-weight: 500 !important;
 
     .logo-bold {
@@ -47,6 +58,9 @@ header {
     a {
       all: unset;
       cursor: pointer;
+      &:hover {
+        color: inherit;
+      }
     }
   }
 
@@ -124,13 +138,16 @@ export default class Nav extends Vue {
 
   // In short, if we have a message and the chat is off, notify new message
   @Watch("chatMessages")
-  private handleMessageNotification(newVal: MoocChatMessage[], oldVal: MoocChatMessage[]) {
+  private handleMessageNotification(
+    newVal: MoocChatMessage[],
+    oldVal: MoocChatMessage[]
+  ) {
     if (!this.toggleChat) {
       this.newMessage = true;
     }
   }
 
-  private changeChatState() {
+  public changeChatState() {
     this.toggleChat = !this.toggleChat;
     this.newMessage = false;
   }

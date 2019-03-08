@@ -27,7 +27,7 @@ export default class Login extends Vue {
       await this.$store.dispatch("setUser", response.user);
 
       // Remember to convert network quizzes to one with dates
-      await this.$store.dispatch(
+      await this.$store.dispatch( 
         "setQuizzes",
         quizScheduleData.quizzes.reduce((arr: IQuiz[], element) => {
           arr.push(convertNetworkQuizIntoQuiz(element));

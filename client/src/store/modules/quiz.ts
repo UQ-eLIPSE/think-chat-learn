@@ -8,21 +8,21 @@ import { MoocChatStateMessageTypes } from "@/enums";
 import { TimerSettings } from "@/interfaces";
 
 export interface IState {
-    quiz: IQuiz | null;
-    questions: TypeQuestion[];
-    currentDiscussionQuestion: TypeQuestion | null;
-    // The difference between the two indices is that the currentIndex is what should be
-    // rendered and max is what pages can be rendered
-    currentIndex: number;
-    maxIndex: number;
+  quiz: IQuiz | null;
+  questions: TypeQuestion[];
+  currentDiscussionQuestion: TypeQuestion | null;
+  // The difference between the two indices is that the currentIndex is what should be
+  // rendered and max is what pages can be rendered
+  currentIndex: number;
+  maxIndex: number;
 }
 
 const state: IState = {
-    quiz: null,
-    questions: [],
-    currentDiscussionQuestion: null,
-    currentIndex: 0,
-    maxIndex: 0,
+  quiz: null,
+  questions: [],
+  currentDiscussionQuestion: null,
+  currentIndex: 0,
+  maxIndex: 0
 };
 
 const mutationKeys = {
@@ -46,43 +46,42 @@ function getQuestionById(id: string): TypeQuestion | null {
 }
 
 const getters = {
-    quiz: (): IQuiz | null => {
-        return state.quiz;
-    },
+  quiz: (): IQuiz | null => {
+    return state.quiz;
+  },
 
-    questions: (): TypeQuestion[] => {
-        return state.questions;
-    },
+  questions: (): TypeQuestion[] => {
+    return state.questions;
+  },
 
-    getQuestionById: () => {
-        return getQuestionById;
-    },
+  getQuestionById: () => {
+    return getQuestionById;
+  },
 
-    currentDiscussionQuestion: (): TypeQuestion | null => {
-        return state.currentDiscussionQuestion;
-    },
+  currentDiscussionQuestion: (): TypeQuestion | null => {
+    return state.currentDiscussionQuestion;
+  },
 
-    currentIndex: (): number => {
-        return state.currentIndex;
-    },
+  currentIndex: (): number => {
+    return state.currentIndex;
+  },
 
-    maxIndex: (): number => {
-        return state.maxIndex;
-    },
+  maxIndex: (): number => {
+    return state.maxIndex;
+  },
 
-    currentTimerSettings: (): TimerSettings | null => {
-
-        if (!state.quiz || !state.quiz.pages || !state.quiz.pages[state.maxIndex]) {
-            return null;
-        }
-
-        const output: TimerSettings = {
-            referencedPageId: state.quiz.pages[state.maxIndex]._id!,
-            timeoutInMins: state.quiz.pages[state.maxIndex].timeoutInMins
-        };
-
-        return output;
+  currentTimerSettings: (): TimerSettings | null => {
+    if (!state.quiz || !state.quiz.pages || !state.quiz.pages[state.maxIndex]) {
+      return null;
     }
+
+    const output: TimerSettings = {
+      referencedPageId: state.quiz.pages[state.maxIndex]._id!,
+      timeoutInMins: state.quiz.pages[state.maxIndex].timeoutInMins
+    };
+
+    return output;
+  }
 };
 const actions = {
     setQuiz({ commit }: {commit: Commit}, quiz: IQuiz | null) {
@@ -105,17 +104,17 @@ const actions = {
         }
     },
 
-    incrementCurrentIndex({ commit }: {commit: Commit}) {
-        return commit(mutationKeys.INCREMENTING_CURRENT_INDEX);
-    },
+  incrementCurrentIndex({ commit }: { commit: Commit }) {
+    return commit(mutationKeys.INCREMENTING_CURRENT_INDEX);
+  },
 
-    setCurrentIndex({ commit }: {commit: Commit}, pageNumber: number) {
-        return commit(mutationKeys.SET_CURRENT_INDEX, pageNumber);
-    },
+  setCurrentIndex({ commit }: { commit: Commit }, pageNumber: number) {
+    return commit(mutationKeys.SET_CURRENT_INDEX, pageNumber);
+  },
 
-    decrementCurrentIndex({ commit }: {commit: Commit}) {
-        return commit(mutationKeys.DECREMENTING_CURRENT_INDEX);
-    },
+  decrementCurrentIndex({ commit }: { commit: Commit }) {
+    return commit(mutationKeys.DECREMENTING_CURRENT_INDEX);
+  },
 
     incrementMaxIndex({ commit }: {commit: Commit}) {
         return commit(mutationKeys.INCREMENTING_MAX_INDEX);
@@ -148,9 +147,9 @@ const actions = {
 };
 
 const mutations = {
-    [mutationKeys.SET_QUIZ](funcState: IState, data: IQuiz | null) {
-        Vue.set(funcState, "quiz", data);
-    },
+  [mutationKeys.SET_QUIZ](funcState: IState, data: IQuiz | null) {
+    Vue.set(funcState, "quiz", data);
+  },
 
     [mutationKeys.SET_PAGES](funcState: IState, data: Page[]) {
         if (funcState.quiz && funcState.quiz.pages) {
@@ -189,34 +188,34 @@ const mutations = {
 
     },
 
-    [mutationKeys.SET_CURRENT_DISCUSSION](funcState: IState, id: string) {
-        Vue.set(funcState, "currentDiscussionQuestion", getQuestionById(id));
-    },
+  [mutationKeys.SET_CURRENT_DISCUSSION](funcState: IState, id: string) {
+    Vue.set(funcState, "currentDiscussionQuestion", getQuestionById(id));
+  },
 
-    [mutationKeys.INCREMENTING_CURRENT_INDEX](funcState: IState) {
-        Vue.set(funcState, "currentIndex", funcState.currentIndex + 1);
-    },
+  [mutationKeys.INCREMENTING_CURRENT_INDEX](funcState: IState) {
+    Vue.set(funcState, "currentIndex", funcState.currentIndex + 1);
+  },
 
-    [mutationKeys.DECREMENTING_CURRENT_INDEX](funcState: IState) {
-        Vue.set(funcState, "currentIndex", funcState.currentIndex - 1);
-    },
+  [mutationKeys.DECREMENTING_CURRENT_INDEX](funcState: IState) {
+    Vue.set(funcState, "currentIndex", funcState.currentIndex - 1);
+  },
 
-    [mutationKeys.SET_CURRENT_INDEX](funcState: IState, data: number) {
-        Vue.set(funcState, "currentIndex", data);
-    },
+  [mutationKeys.SET_CURRENT_INDEX](funcState: IState, data: number) {
+    Vue.set(funcState, "currentIndex", data);
+  },
 
-    [mutationKeys.INCREMENTING_MAX_INDEX](funcState: IState) {
-        Vue.set(funcState, "maxIndex", funcState.maxIndex + 1);
-    },
+  [mutationKeys.INCREMENTING_MAX_INDEX](funcState: IState) {
+    Vue.set(funcState, "maxIndex", funcState.maxIndex + 1);
+  },
 
-    [mutationKeys.SET_MAX_INDEX](funcState: IState, index: number) {
-        Vue.set(funcState, "maxIndex", index);
-    }
+  [mutationKeys.SET_MAX_INDEX](funcState: IState, index: number) {
+    Vue.set(funcState, "maxIndex", index);
+  }
 };
 
 export default {
-    state,
-    getters,
-    actions,
-    mutations
+  state,
+  getters,
+  actions,
+  mutations
 };
