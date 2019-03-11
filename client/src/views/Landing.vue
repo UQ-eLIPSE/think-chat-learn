@@ -117,6 +117,7 @@
 @import "../../css/variables.scss";
 
 .landing {
+  margin-bottom: 175px;
   padding: 1.5em;
 
   @media only screen and (max-width: 1483px) {
