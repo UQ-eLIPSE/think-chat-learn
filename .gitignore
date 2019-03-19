@@ -76,6 +76,11 @@ client/.env.*
 admin/.env.*
 
 # Config values for production
-server/config/production
-common/config/production
-client/config/production
+client/config/production/*
+common/config/production/*
+server/config/production/*
+
+
+!server/config/production/.gitkeep
+!common/config/production/.gitkeep
+!client/config/production/.gitkeep
