@@ -71,7 +71,8 @@ admin/dist
 client/public/*
 
 # Env values for client and admin
-client/envs
+client/envs/*
+!client/envs/.gitkeep
 client/.env.*
 admin/.env.*
 
