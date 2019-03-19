@@ -105,7 +105,7 @@ class ExtractQuestions {
             
             response.forEach((resp) => {
                 // Remember to strip all tabs. Will replace with spaces
-                userQuizDict[user._id!][resp.questionId!] = (resp as IResponseQualitative).content.replace("\t", " ");
+                userQuizDict[user._id!][resp.questionId!] = (resp as IResponseQualitative).content.replace(/\t+/g, "").replace(/\n+/g, " ");
                 questionSet.add(resp.questionId!);
             });
         }
@@ -157,7 +157,7 @@ class ExtractQuestions {
                 // Hard code the qustion id
                 stringy = stringy + QUESTION_HEADERS[0] + (j + 1) + "\t";
 
-                stringy = stringy + questionIdArr[j] + "\t";
+                stringy = stringy + questionContent[questionIdArr[j]] + "\t";
 
                 // Fetch the answer
                 if ((userQuizDict[user._id!][questionIdArr[j]] && (userQuizDict[user._id!][questionIdArr[j]] !== ""))) {
