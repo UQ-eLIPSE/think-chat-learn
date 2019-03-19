@@ -79,3 +79,7 @@ admin/.env.*
 server/config/production
 common/config/production
 client/config/production
+
+# Script to handle question extaction
+server/utils/query.ts
+output.tsv
