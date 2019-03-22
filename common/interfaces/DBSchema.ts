@@ -134,6 +134,7 @@ export interface IPage extends Document {
 export interface IDiscussionPage extends IPage {
   type: PageType.DISCUSSION_PAGE;
   questionId: string;
+  displayResponses: boolean;
 }
 
 // Contains a linkage to a question/prompt which could be used
