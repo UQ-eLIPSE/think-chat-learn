@@ -12,7 +12,7 @@
 
 <style lang="scss" scoped>
 #app {
-  font-family: "Robot-Light", sans-serif;
+  font-family: "Roboto-Light", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   height: 100vh;
@@ -25,6 +25,9 @@
 }
 #routerpanel {
   overflow-y: scroll;
+  width: calc(100% - 20rem);
+  max-height: 100%;
+  overflow: scroll;
 }
 </style>
 

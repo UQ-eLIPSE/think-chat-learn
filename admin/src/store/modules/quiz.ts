@@ -7,17 +7,23 @@ import { convertNetworkQuizIntoQuiz, convertNetworkQuizzesIntoQuizzes } from "..
 
 export interface IState {
     quiz: IQuiz[];
+    course: string;
+    chatGroups: any[]
 }
 
 const state: IState = {
-    quiz: []
+    quiz: [],
+    course: '',
+    chatGroups: []
 };
 
 const mutationKeys = {
     SET_QUIZ: "Setting a quiz",
-    SET_QUIZZES: "Setting a quizzes",
+    SET_QUIZZES: "Setting a quiz",
     DELETE_QUIZ: "Deleting a quiz",
-    EDIT_QUIZ: "Editing a quiz"
+    EDIT_QUIZ: "Editing a quiz",
+    SET_COURSE: "setCourse",
+    SET_CHATGROUPS: "setChatGroups"
 };
 
 const getters = {
@@ -47,7 +53,11 @@ const actions = {
             commit(mutationKeys.SET_QUIZZES, convertNetworkQuizzesIntoQuizzes(output));
         });
     },
-
+    async getChatGroups({ commit }: {commit: Commit}, quizId: string) {
+        await API.request(API.GET, API.CHATGROUP + `getChatGroups?quizid=${quizId}`, {}).then((output: any[]) => {
+            commit(mutationKeys.SET_CHATGROUPS, output);
+        });
+    },
     setQuizzes({ commit }: {commit: Commit}, data: IQuiz[]) {
         commit(mutationKeys.SET_QUIZZES, data);
     },
@@ -83,6 +93,12 @@ const mutations = {
         if (index !== -1) {
             Vue.set(funcState.quiz, index, data);
         }
+    },
+    [mutationKeys.SET_COURSE](funcState: IState, course: string) {
+        funcState.course = course;
+    },
+    [mutationKeys.SET_CHATGROUPS](funcState: IState, chatGroups: any[]) {
+        funcState.chatGroups = chatGroups;
     }
 };
 

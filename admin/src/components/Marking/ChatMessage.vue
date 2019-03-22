@@ -1,19 +1,32 @@
 <template>
   <div class="chat-message">
     <CircularNumberLabel :numeral="numeral" />
-    <div
-      class="message"
-      :class="`base${+numeral}`"
-    >
+    <div class="message"
+         :class="`base${+numeral} ${selected?'selected':''}`">
       <span>{{ content }}</span>
-      <!-- <p>is typing</p> -->
-      <template v-if="isTyping">
-        <Spinner />
-      </template>
     </div>
   </div>
 </template>
 
+
+
+<script lang="ts">
+import { Vue, Component, Prop } from "vue-property-decorator";
+import CircularNumberLabel from "./CircularNumberLabel.vue";
+
+@Component({
+  components: {
+    CircularNumberLabel
+  }
+})
+export default class ChatMessage extends Vue {
+  // @Prop({}) private userNumber!: string;
+  @Prop({ required: true, default: () => '' }) private content!: string;
+  @Prop({}) private numeral!: number;
+  @Prop({ default: false }) private isTyping!: boolean;
+  @Prop({ required: false, default: false }) private selected!: boolean;
+}
+</script>
 <style lang="scss" scoped>
 @import "../../../css/variables.scss";
 
@@ -40,18 +53,30 @@
 
     &.base1 {
       border: 1px solid $baseLight1;
+      &.selected {
+        border-width: 4px;
+      }
     }
 
     &.base2 {
       border: 1px solid $baseLight2;
+      &.selected {
+        border-width: 4px;
+      }
     }
 
     &.base3 {
       border: 1px solid $baseLight3;
+      &.selected {
+        border-width: 4px;
+      }
     }
 
     &.base4 {
       border: 1px solid $baseLight4;
+      &.selected {
+        border-width: 4px;
+      }
     }
 
     span {
@@ -61,22 +86,3 @@
   }
 }
 </style>
-
-<script lang="ts">
-import { Vue, Component, Prop } from "vue-property-decorator";
-import CircularNumberLabel from "../CircularNumberLabel.vue";
-import Spinner from "../Spinner.vue";
-
-@Component({
-  components: {
-    CircularNumberLabel,
-    Spinner
-  }
-})
-export default class ChatMessage extends Vue {
-  // @Prop({}) private userNumber!: string;
-  @Prop({}) private content!: string;
-  @Prop({}) private numeral!: number;
-  @Prop({ default: false }) private isTyping!: boolean;
-}
-</script>

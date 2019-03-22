@@ -8,7 +8,8 @@ export function convertNetworkQuizIntoQuiz(quiz: IQuizOverNetwork): IQuiz {
         availableStart: new Date(quiz.availableStart!),
         title: quiz.title,
         course: quiz.course,
-        pages: quiz.pages
+        pages: quiz.pages,
+        markingConfiguration: quiz.markingConfiguration
     };
 
     return output;

@@ -184,6 +184,7 @@ export default class App {
             // For logging in we use the api endpoints (and redirect there)
             this.express.use("/client", express.static(__dirname + Conf.folders.clientFolder));
             this.express.use("/admin", express.static(__dirname + Conf.folders.adminFolder));
+            this.express.use("/server-static", express.static(__dirname + Conf.folders.markingFolder ));
         }
         
         // LTI launcher page only available in test mode
@@ -219,19 +220,19 @@ export default class App {
         
         
         
-        // MOOCchat standard client
-        this.express.post("/", (req, res) => {
-            res.render("index.ejs", { conf: Conf, postData: req.body });
-        });
+        // // MOOCchat standard client
+        // this.express.post("/", (req, res) => {
+        //     res.render("index.ejs", { conf: Conf, postData: req.body });
+        // });
         
-        this.express.get("/", (req, res) => {
-            res.render("index.ejs", { conf: Conf });
-        });
+        // this.express.get("/", (req, res) => {
+        //     res.render("index.ejs", { conf: Conf });
+        // });
         
-        // Admin client
-        this.express.post("/admin", function(req, res) {
-            res.render("admin.ejs", { postData: req.body });
-        });
+        // // Admin client
+        // this.express.post("/admin", function(req, res) {
+        //     res.render("admin.ejs", { postData: req.body });
+        // });
         
         this.express.use("/user", this.userController.getRouter());
         this.express.use("/quiz", this.quizController.getRouter());

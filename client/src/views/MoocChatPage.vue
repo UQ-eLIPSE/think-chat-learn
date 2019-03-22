@@ -53,6 +53,19 @@
             @CONFIDENCE_CHANGE="handleConfidenceChange"
           />
         </div>
+        <!-- Handle Chat Page data -->
+        <div v-else-if="page.type === PageType.DISCUSSION_PAGE && chatGroup && displayResponsesEnabled">
+          <h2>Responses</h2>
+          <!-- Note a lot of things have to be done to get here -->
+          <div
+            v-for="answer in chatGroup.groupAnswers[question._id]"
+            class="content"
+            :key="answer._id"
+          >
+            <ChatMessage :content="answer.answer.content" :numeral="answer.clientIndex" />
+            <!-- {{`Student ${answer.clientIndex}'s response: ${answer.answer.content} with a confidence of ${answer.answer.confidence}`}} -->
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -95,10 +108,12 @@ import { WebsocketEvents } from "../../js/WebsocketEvents";
 import { WebsocketManager } from "../../js/WebsocketManager";
 import { EventBus } from "../EventBus";
 import { EmitterEvents } from "../emitters";
+import ChatMessage from '../components/Chat/ChatMessage.vue';
 
 @Component({
   components: {
-    Confidence
+    Confidence,
+    ChatMessage
   }
 })
 export default class MoocChatPage extends Vue {
@@ -350,6 +365,13 @@ export default class MoocChatPage extends Vue {
     }
   }
 
+  get displayResponsesEnabled() {
+    if(this.page && this.page.type === PageType.DISCUSSION_PAGE) {
+      return this.page.displayResponses;
+    }
+
+    return false;
+  }
   // If this page becomes a discussion page, handles the instantiation of the sockets and the sessions in the db
   @Watch("maxIndex")
   private handlePageChange(newVal: number | null, oldVal: number | null) {

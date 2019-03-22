@@ -37,6 +37,28 @@ export class UserService extends BaseService{
         this.userSessionRepo = _userSessionRepo;
     }
 
+    public async handleLoginWrapper(request: ILTIData) {
+            // Get user+quiz info, check validity
+        const identity = UserServiceHelper.ProcessLtiObject(request);
+
+        if(this.isLtiAdmin(identity)) {
+            let html = `
+                <html>
+                    <form method="POST" action="/">`;
+            
+                    const inputString = Object.keys(request).reduce((str, k) => str + `<input type="hidden" name="${k}" value="${request[k]}" />`, ``);
+                    
+                    const rest = `
+                        <input type="submit" value="Launch admin panel" formaction="/user/admin">
+                        <input type="submit" value="Launch student view" formaction="/user/login">
+                    </form>
+                </html>
+            `;
+            return { isAdmin: true, html: html + inputString + rest };
+        } else {
+            return { isAdmin: false };
+        }
+    }
     public async handleLogin(request: ILTIData): Promise<LoginResponse> {
         // Get user+quiz info, check validity
         const identity = UserServiceHelper.ProcessLtiObject(request);
@@ -90,6 +112,25 @@ export class UserService extends BaseService{
         return output;
     }
 
+    public isLtiAdmin(identity: IMoocchatIdentityInfo) {
+        try {
+            const adminRoles = [
+                "instructor",
+                "teachingassistant",
+                "administrator",
+            ];
+
+            const isAdmin = (identity.roles || []).some(role => {
+                return adminRoles.findIndex((element) => {
+                    return element === role.toLowerCase();
+                }) !== -1;
+            });
+
+            return isAdmin;
+        } catch (e) {
+            return false;
+        }
+    }
     // Returns just the user details for now
     public async handleAdminLogin(request: ILTIData): Promise<AdminLoginResponse> {
         // Get user+quiz info, check validity
@@ -104,19 +145,19 @@ export class UserService extends BaseService{
             throw new Error(`No course associated with identity`);
         }
 
-        const adminRoles = [
-            "instructor",
-            "teachingassistant",
-            "administrator",
-        ];
+        // const adminRoles = [
+        //     "instructor",
+        //     "teachingassistant",
+        //     "administrator",
+        // ];
 
-        const isAdmin = (identity.roles || []).some(role => {
-            return adminRoles.findIndex((element) => {
-                return element === role.toLowerCase();
-            }) !== -1;
-        });
+        // const isAdmin = (identity.roles || []).some(role => {
+        //     return adminRoles.findIndex((element) => {
+        //         return element === role.toLowerCase();
+        //     }) !== -1;
+        // });
 
-        if (!isAdmin) {
+        if (!this.isLtiAdmin(identity)) {
             throw new Error("Not an admin");
         }
 

@@ -117,8 +117,57 @@ export interface IQuiz extends Document {
   // they are stored as strings due the fact that sending a date over is not feasible
   availableStart?: Date;
   availableEnd?: Date;
+  markingConfiguration?: MarkingConfiguration
 }
 
+export type MarkingConfiguration = SimpleMarkConfig | ElipssMarkConfig;
+
+
+export interface SimpleMarkConfig {
+  type: MarkMode.SIMPLE_MARKING;
+  allowMultipleMarkers: boolean;
+  maximumMarks: number;
+}
+
+export interface ElipssMarkConfig {
+  type: MarkMode.ELIPSS_MARKING;
+  allowMultipleMarkers: boolean;
+  maximumMarks: number;
+}
+
+export interface SimpleMark {
+  type: MarkMode.SIMPLE_MARKING;
+  quizSessionId: string;
+  markerId: string;
+  mark: {
+    value: number;
+    feedbackText: string;
+  }
+}
+
+export interface ElipssMark {
+  type: MarkMode.ELIPSS_MARKING;
+  quizSessionId: string;
+  user: IUser;
+  markerId: string;
+  mark: {
+    value: {
+      evaluating: number,
+      interpreting: number,
+      analysing: number,
+      makingArguments: number,
+      accuracyOfArgument: number,
+      expressingAndResponding: number,
+      depthOfReflection: number,
+    };
+    feedbackText: string;
+  }
+}
+
+export enum MarkMode {
+  SIMPLE_MARKING = 'SIMPLE_MARKING',
+  ELIPSS_MARKING = 'ELIPSS_MARKING'
+}
 // A page to be rendered. All pages contain at the very
 // least a type (to indicate how to be rendered),
 // a title and some content
@@ -134,6 +183,7 @@ export interface IPage extends Document {
 export interface IDiscussionPage extends IPage {
   type: PageType.DISCUSSION_PAGE;
   questionId: string;
+  displayResponses?: boolean;
 }
 
 // Contains a linkage to a question/prompt which could be used
@@ -182,4 +232,4 @@ export interface IChatGroup extends Document {
 }
 
 // export type MarkingMethod = "MOUSOKU";
-export type MarkingMethod = string;
+// export type MarkingMethod = string;
