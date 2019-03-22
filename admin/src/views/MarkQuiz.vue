@@ -41,7 +41,7 @@
         <MarkQuizMarkingSection :question="selectedQuestion"
                                 :chatGroup="selectedGroup"
                                 :quizSessionMap="quizSessionMap"
-                                :currentQuizSession="currentUserQuizSession"
+                                :currentQuizSession.sync="currentUserQuizSession"
                                 class="marking-section"
                                 :quiz="q"
                                 :chatMessages="selectedQuestionChatMessages" />
@@ -59,10 +59,12 @@
 
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator";
-import { IQuiz, QuizScheduleDataAdmin, Page, IDiscussionPage, IQuestionAnswerPage, IQuizSession, IChatGroup, IUserSession, IUser } from "../../../common/interfaces/ToClientData";
+import { IQuiz, QuizScheduleDataAdmin, Page, IDiscussionPage, IQuestionAnswerPage, IQuizSession, IChatGroup, IUserSession, IUser, QuizSessionDataObject } from "../../../common/interfaces/ToClientData";
+
 import { PageType } from "../../../common/enums/DBEnums";
 import MarkQuizMarkingSection from '../components/Marking/MarkQuizMarkingSection.vue';
 import { API } from "../../../common/js/DB_API";
+
 
 @Component({
   components: {
@@ -73,7 +75,7 @@ export default class MarkQuiz extends Vue {
   private selectedGroupId: string = '';
   private selectedQuestionId: string = '';
   private selectedUsernameInChatGroup: string = '';
-  private quizSessionMap: { [key: string]: { quizSession: IQuizSession | undefined, userSession: IUserSession | undefined, user: IUser | undefined, responses: Response[] } } = {}
+  private quizSessionMap: { [key: string]: QuizSessionDataObject } = {}
   get q() {
     if (!this.$route.params.id) return null;
     return this.quizzes.find((q) => q._id === this.$route.params.id);
@@ -215,7 +217,7 @@ export default class MarkQuiz extends Vue {
           // Fetch
           const quizSessionResponse = await API.request(API.GET, (API.QUIZSESSION + "quizsession-marking/" + qid), {});
           const quizSession = quizSessionResponse.session as IQuizSession;
-          this.quizSessionMap[qid] = { quizSession: quizSession, userSession: undefined, user: undefined, responses: [] };
+          this.quizSessionMap[qid] = { quizSession: quizSession, userSession: undefined, user: undefined, responses: [], marks: undefined };
           const userSessionResponse = await API.request(API.GET, API.USERSESSION + "marking/" + quizSession.userSessionId, {});
           this.quizSessionMap[qid].userSession = userSessionResponse;
 
@@ -231,6 +233,12 @@ export default class MarkQuiz extends Vue {
           } else {
             this.quizSessionMap[qid].responses = [];
           }
+
+          // const marksResponse = await API.request(API.GET, API.MARKS + "/quizSession/" + qid, {});
+
+          // if(marksResponse.data) {
+          //   this.quizSessionMap[qid].marks = marksResponse.data;
+          // }
         }
       }));
 

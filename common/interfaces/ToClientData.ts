@@ -57,3 +57,5 @@ export interface QuestionReconnectData {
   pages: DBSchema.Page[];
   questions: TypeQuestion[];
 }
+
+export type QuizSessionDataObject = { quizSession: IQuizSession | undefined, userSession: IUserSession | undefined, user: IUser | undefined, responses: Response[], marks: DBSchema.ElipssMark | undefined  };

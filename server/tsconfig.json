@@ -9,7 +9,6 @@
     "strictNullChecks": true,
 
     "noUnusedLocals": false,
-    // "noUnusedParameters": true,
 
     "removeComments": true,
     "preserveConstEnums": true,

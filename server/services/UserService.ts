@@ -16,7 +16,7 @@ import { UserSessionRepository } from "../repositories/UserSessionRepository";
 import { Utils } from "../../common/js/Utils";
 import { Conf } from "../config/Conf";
 
-export class UserService extends BaseService{
+export class UserService extends BaseService {
 
     protected readonly userRepo: UserRepository;
     protected readonly quizRepo: QuizRepository;
@@ -27,7 +27,7 @@ export class UserService extends BaseService{
 
 
     constructor(_userRepo: UserRepository, _quizRepo: QuizRepository, _questionRepo: QuestionRepository, _chatGroupRepo: ChatGroupRepository,
-        _quizSessionRepo: QuizSessionRepository, _userSessionRepo: UserSessionRepository){
+        _quizSessionRepo: QuizSessionRepository, _userSessionRepo: UserSessionRepository) {
         super();
         this.userRepo = _userRepo;
         this.quizRepo = _quizRepo;
@@ -38,19 +38,19 @@ export class UserService extends BaseService{
     }
 
     public async handleLoginWrapper(request: ILTIData) {
-            // Get user+quiz info, check validity
+        // Get user+quiz info, check validity
         const identity = UserServiceHelper.ProcessLtiObject(request);
 
-        if(this.isLtiAdmin(identity)) {
+        if (this.isLtiAdmin(identity)) {
             let html = `
                 <html>
                     <form method="POST" action="/">`;
-            
-                    const inputString = Object.keys(request).reduce((str, k) => str + `<input type="hidden" name="${k}" value="${request[k]}" />`, ``);
-                    
-                    const rest = `
-                        <input type="submit" value="Launch admin panel" formaction="/user/admin">
-                        <input type="submit" value="Launch student view" formaction="/user/login">
+
+            const inputString = Object.keys(request).reduce((str, k) => str + `<input type="hidden" name="${k}" value="${request[k]}" />`, ``);
+
+            const rest = `
+                        <input type="submit" value="Launch admin panel" formaction="${Conf.endpointUrl}/user/admin">
+                        <input type="submit" value="Launch student view" formaction="${Conf.endpointUrl}/user/login">
                     </form>
                 </html>
             `;
@@ -90,12 +90,12 @@ export class UserService extends BaseService{
         const questionIds: string[] = [];
 
         quizSchedule.pages!.forEach((element) => {
-            if (((element.type === PageType.QUESTION_ANSWER_PAGE) || (element.type === PageType.DISCUSSION_PAGE)) 
+            if (((element.type === PageType.QUESTION_ANSWER_PAGE) || (element.type === PageType.DISCUSSION_PAGE))
                 && questionIds.findIndex((id) => { return id === element.questionId; }) === -1) {
                 questionIds.push(element.questionId);
             }
         });
-            
+
         const available = Date.now() >= quizSchedule!.availableStart!.getTime() &&
             quizSchedule.availableEnd!.getTime() >= Date.now() ? true : false;
         const questions = await UserServiceHelper.RetrieveQuestions(this.questionRepo, questionIds);
@@ -202,8 +202,7 @@ export class UserService extends BaseService{
 
             const output: QuizScheduleDataAdmin = {
                 questions,
-                quizzes: quizzes.reduce((arr: IQuizOverNetwork[], element) => 
-                { arr.push(convertQuizIntoNetworkQuiz(element)); return arr; }, []),                
+                quizzes: quizzes.reduce((arr: IQuizOverNetwork[], element) => { arr.push(convertQuizIntoNetworkQuiz(element)); return arr; }, []),
             }
 
             return output;
@@ -217,13 +216,13 @@ export class UserService extends BaseService{
             }
 
             quizSchedule.pages!.forEach((element) => {
-                if (((element.type === PageType.QUESTION_ANSWER_PAGE) || (element.type === PageType.DISCUSSION_PAGE)) 
+                if (((element.type === PageType.QUESTION_ANSWER_PAGE) || (element.type === PageType.DISCUSSION_PAGE))
                     && questionIds.findIndex((id) => { return id === element.questionId; }) === -1) {
                     questionIds.push(element.questionId);
                 }
             });
-                            
-            
+
+
             const questions = await UserServiceHelper.RetrieveQuestions(this.questionRepo, questionIds);
             // The great filter
             questions.forEach((element, index) => {
@@ -274,13 +273,13 @@ class UserServiceHelper {
 
     // Gets the user from the DB based on id
     public static async RetrieveUser(userRepo: UserRepository, identity: IMoocchatIdentityInfo): Promise<IUser> {
-        
+
         let user = await userRepo.findOne({
             username: identity.identityId
         });
 
         // Create a new user
-        if(!user) {
+        if (!user) {
             const maybeId = await userRepo.create({
                 username: identity.identityId,
                 firstName: identity.name.given,
@@ -304,7 +303,7 @@ class UserServiceHelper {
         return Promise.resolve(user);
     }
 
-    public static async FindUser(userRepo: UserRepository, id: string ): Promise<IUser | null> {
+    public static async FindUser(userRepo: UserRepository, id: string): Promise<IUser | null> {
         return userRepo.findOne(id);
     }
 
@@ -395,7 +394,7 @@ class UserServiceHelper {
                     break;
                 } else {
                     runningTime = runningTime + Utils.DateTime.minToMs(quiz.pages![i].timeoutInMins!);
-    
+
                     // We have a good page
                     pages.push(quiz.pages![i]);
                 }
@@ -416,7 +415,7 @@ class UserServiceHelper {
         return { questions, pages };
     }
 
-    
+
     public static async getPageBasedOnIdsAndTime(quizId: string, pageId: string, quizSessionId: string, groupId: string | null,
         quizRepo: QuizRepository, questionRepo: QuestionRepository, quizSessionRepo: QuizSessionRepository,
         chatGroupRepo: ChatGroupRepository): Promise<QuestionRequestData | null> {
@@ -447,7 +446,7 @@ class UserServiceHelper {
         const desiredPage = quiz.pages![desiredPageIndex];
 
         let potentialQuestion = null;
-        
+
         if ((desiredPage.type === PageType.QUESTION_ANSWER_PAGE) || (desiredPage.type === PageType.DISCUSSION_PAGE)) {
             potentialQuestion = await questionRepo.findOne(desiredPage.questionId);
         }
@@ -470,7 +469,7 @@ class UserServiceHelper {
                 time = time + Utils.DateTime.minToMs(page.timeoutInMins);
                 return time;
             }, 0);
-    
+
             if (now + Conf.pageSlack >= group.startTime! + timeNeeded) {
                 // Return the page
                 return { page: desiredPage, question: potentialQuestion };
@@ -485,7 +484,7 @@ class UserServiceHelper {
                 time = time + Utils.DateTime.minToMs(page.timeoutInMins);
                 return time;
             }, 0);
-    
+
             if (now + Conf.pageSlack >= quizSession.startTime! + timeNeeded) {
                 // Return the page
                 return { page: desiredPage, question: potentialQuestion };

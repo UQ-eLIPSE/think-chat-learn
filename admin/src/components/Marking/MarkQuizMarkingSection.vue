@@ -1,41 +1,52 @@
 <template>
   <div class="marking-section">
-    <div>Chat messages</div>
-    <div class="chat"
-         v-if="chatMessages">
-      <div class="message-container">
-        <div v-for="m in chatMessages"
-             :key="m._id">
-          <ChatMessage v-if="m"
-                       :selected="messageBelongsToCurrentQuizSession(m.quizSessionId)"
-                       :numeral="getNumeralFromQuizSessionId(m.quizSessionId)"
-                       :content="m.content" />
+    <div class="row">
+      <div class="chat-messages">
+        <div>Chat messages</div>
+        <div class="chat"
+             v-if="chatMessages">
+          <div class="message-container">
+            <div v-for="m in chatMessages"
+                 :key="m._id">
+              <ChatMessage v-if="m"
+                           :selected="messageBelongsToCurrentQuizSession(m.quizSessionId)"
+                           :numeral="getNumeralFromQuizSessionId(m.quizSessionId)"
+                           :content="m.content" />
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-    <div>Responses</div>
-    <div class="responses message-container" v-if="currentChatGroupResponses">
-      <ChatMessage v-for="r in currentChatGroupResponses" v-if="r" :key="r._id"
+      <div class="responses-container">
+        <h1>Responses</h1>
+        <div class="responses message-container"
+             v-if="currentChatGroupResponses">
+          <ChatMessage v-for="r in currentChatGroupResponses"
+                       v-if="r"
+                       :key="r._id"
                        :selected="responseBelongsToCurrentQuizSession(r.quizSessionId)"
                        :numeral="getNumeralFromQuizSessionId(r.quizSessionId)"
                        :content="r.content" />
+        </div>
+      </div>
     </div>
-    <div>Marking Rubric</div>
-    <MarkingRubric :quiz="quiz"></MarkingRubric>
+    <h1>Marking Rubric</h1>
+    <MarkingComponent :quiz="quiz"
+                      :question="question"
+                      :currentQuizSession.sync="currentQuizSession"></MarkingComponent>
   </div>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop } from "vue-property-decorator";
-import { IQuiz, QuizScheduleDataAdmin, Page, IDiscussionPage, IQuestion, IQuestionAnswerPage, IQuizSession, IUserSession, IUser, IChatGroup, Response } from "../../../../common/interfaces/ToClientData";
+import { IQuiz, QuizScheduleDataAdmin, Page, IDiscussionPage, IQuestion, IQuestionAnswerPage, IQuizSession, IUserSession, IUser, IChatGroup, Response, QuizSessionDataObject } from "../../../../common/interfaces/ToClientData";
 import { PageType } from "../../../../common/enums/DBEnums";
 import ChatMessage from './ChatMessage.vue';
-import MarkingRubric from './MarkingRubric.vue';
+import MarkingComponent from './MarkingComponent.vue';
 
 @Component({
   components: {
     ChatMessage,
-    MarkingRubric
+    MarkingComponent
   }
 })
 export default class MarkQuizMarkingSection extends Vue {
@@ -43,7 +54,7 @@ export default class MarkQuizMarkingSection extends Vue {
   @Prop({ required: true, default: () => null }) private question: IQuestionAnswerPage | undefined;
   @Prop({ required: false, default: () => [] }) private chatMessages: any[] | undefined;
   @Prop({ required: false, default: () => { } }) private quizSessionMap: { [key: string]: { quizSession: IQuizSession | undefined, userSession: IUserSession | undefined, user: IUser | undefined, responses: Response[] } } | undefined
-  @Prop({ required: false, default: () => { } }) private currentQuizSession: { quizSession: IQuizSession | undefined, userSession: IUserSession | undefined, user: IUser | undefined, responses: Response[] } | undefined
+  @Prop({ required: false, default: () => { } }) private currentQuizSession: QuizSessionDataObject | undefined
   @Prop({ required: false, default: () => { } }) private quiz: IQuiz | undefined;
 
 
@@ -53,12 +64,7 @@ export default class MarkQuizMarkingSection extends Vue {
   }
 
   get currentChatGroupResponses() {
-    if(!this.chatGroup || !this.quizSessionMap || !this.question) return [];
-
-
-
-
-
+    if (!this.chatGroup || !this.quizSessionMap || !this.question) return [];
 
     const chatGroupQuizSessionIds = this.chatGroup.quizSessionIds || [];
     // Fetch responses for quiz session ids in the current group pertaining to the current question
@@ -66,11 +72,11 @@ export default class MarkQuizMarkingSection extends Vue {
     console.log('Quiz sessions of those present in current chat group: ')
     console.log(chatGroupQuizSessions)
     const responsesForCurrentQuestion: Response[] = [];
-    
+
     chatGroupQuizSessions.forEach((qs) => {
-      const responseToCurrentQuestion = qs.responses.find((r) => r.questionId === this.question.questionId!);
+      const responseToCurrentQuestion = qs.responses.find((r) => r.questionId === this.question!.questionId!);
       console.log('response for quiz session ', qs!.quizSession!._id, ": \n ", responseToCurrentQuestion);
-      if(responseToCurrentQuestion) {
+      if (responseToCurrentQuestion) {
         responsesForCurrentQuestion.push(responseToCurrentQuestion);
       }
     });
@@ -128,15 +134,34 @@ export default class MarkQuizMarkingSection extends Vue {
 .chat {
   background-color: #f7f8f8;
   box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.15);
-  height: 100vh;
+  max-height: 30vh;
   padding-top: 75px;
   width: 50%;
   z-index: 1;
 
   .message-container {
-    height: 100%;
+    max-height: 100%;
     overflow: scroll;
     padding: 15px;
   }
+}
+
+.row {
+  display: flex;
+  width: 100%;
+  height: 30vh;
+}
+
+.chat-messages {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  width: 70%;
+}
+.responses-container {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  width: 30%;
 }
 </style>

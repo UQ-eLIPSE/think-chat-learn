@@ -138,29 +138,41 @@ export interface ElipssMarkConfig {
 export interface SimpleMark {
   type: MarkMode.SIMPLE_MARKING;
   quizSessionId: string;
-  markerId: string;
-  mark: {
-    value: number;
-    feedbackText: string;
+  questionMarks: {
+    [questionId: string]: {
+      mark: {
+        value: number | null;
+        markerId: string | null;
+        feedbackText: string;
+        timestamp: Date | null;
+      }
+    }
   }
 }
 
+export type ElipssCategoryMarkValue = number | null;
+export interface ElipssMarkValue {
+  mark: {
+    value: {
+      evaluating: ElipssCategoryMarkValue,
+      interpreting: ElipssCategoryMarkValue,
+      analysing: ElipssCategoryMarkValue,
+      makingArguments: ElipssCategoryMarkValue,
+      accuracyOfArgument: ElipssCategoryMarkValue,
+      expressingAndResponding: ElipssCategoryMarkValue,
+      depthOfReflection: ElipssCategoryMarkValue,
+    };
+    feedbackText: string;
+    markerId: string | null;
+    timestamp: Date | null;
+  }
+}
 export interface ElipssMark {
   type: MarkMode.ELIPSS_MARKING;
   quizSessionId: string;
   user: IUser;
-  markerId: string;
-  mark: {
-    value: {
-      evaluating: number,
-      interpreting: number,
-      analysing: number,
-      makingArguments: number,
-      accuracyOfArgument: number,
-      expressingAndResponding: number,
-      depthOfReflection: number,
-    };
-    feedbackText: string;
+  questionMarks: {
+    [questionId: string]: ElipssMarkValue
   }
 }
 
