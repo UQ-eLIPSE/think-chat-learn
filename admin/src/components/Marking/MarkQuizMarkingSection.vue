@@ -9,7 +9,7 @@
             <div v-for="m in chatMessages"
                  :key="m._id">
               <ChatMessage v-if="m"
-                           :selected="messageBelongsToCurrentQuizSession(m.quizSessionId)"
+                           :selected="messageBelongsTocurrentQuizSessionInfoObject(m.quizSessionId)"
                            :numeral="getNumeralFromQuizSessionId(m.quizSessionId)"
                            :content="m.content" />
             </div>
@@ -23,16 +23,14 @@
           <ChatMessage v-for="r in currentChatGroupResponses"
                        v-if="r"
                        :key="r._id"
-                       :selected="responseBelongsToCurrentQuizSession(r.quizSessionId)"
+                       :selected="responseBelongsTocurrentQuizSessionInfoObject(r.quizSessionId)"
                        :numeral="getNumeralFromQuizSessionId(r.quizSessionId)"
                        :content="r.content" />
         </div>
       </div>
     </div>
     <h1>Marking Rubric</h1>
-    <MarkingComponent :quiz="quiz"
-                      :question="question"
-                      :currentQuizSession.sync="currentQuizSession"></MarkingComponent>
+    <MarkingComponent></MarkingComponent>
   </div>
 </template>
 
@@ -50,52 +48,33 @@ import MarkingComponent from './MarkingComponent.vue';
   }
 })
 export default class MarkQuizMarkingSection extends Vue {
-  @Prop({ required: true, default: () => null }) private chatGroup: IChatGroup | undefined;
-  @Prop({ required: true, default: () => null }) private question: IQuestionAnswerPage | undefined;
-  @Prop({ required: false, default: () => [] }) private chatMessages: any[] | undefined;
-  @Prop({ required: false, default: () => { } }) private quizSessionMap: { [key: string]: { quizSession: IQuizSession | undefined, userSession: IUserSession | undefined, user: IUser | undefined, responses: Response[] } } | undefined
-  @Prop({ required: false, default: () => { } }) private currentQuizSession: QuizSessionDataObject | undefined
-  @Prop({ required: false, default: () => { } }) private quiz: IQuiz | undefined;
 
-
-  getUsernameFromQuizSessionId(qid: string) {
-    if (!this.quizSessionMap || !this.quizSessionMap[qid] || !this.quizSessionMap[qid]!.user || !this.quizSessionMap[qid].user!.username!) return '?';
-    return this.quizSessionMap![qid]!.user!.username!
+  get currentQuizSessionInfoObject(): QuizSessionDataObject | undefined {
+    return this.$store.getters.currentQuizSessionInfoObjectInfoObject;
   }
 
+  get chatMessages() {
+    if(!this.$store.getters.currentChatGroupQuestionMessages) return [];
+    return this.$store.getters.currentChatGroupQuestionMessages;
+  }
   get currentChatGroupResponses() {
-    if (!this.chatGroup || !this.quizSessionMap || !this.question) return [];
-
-    const chatGroupQuizSessionIds = this.chatGroup.quizSessionIds || [];
-    // Fetch responses for quiz session ids in the current group pertaining to the current question
-    const chatGroupQuizSessions = Object.keys(this.quizSessionMap!).filter((qid: string) => chatGroupQuizSessionIds!.indexOf(qid) !== -1).map((ccgId: string) => this.quizSessionMap![ccgId]);
-    console.log('Quiz sessions of those present in current chat group: ')
-    console.log(chatGroupQuizSessions)
-    const responsesForCurrentQuestion: Response[] = [];
-
-    chatGroupQuizSessions.forEach((qs) => {
-      const responseToCurrentQuestion = qs.responses.find((r) => r.questionId === this.question!.questionId!);
-      console.log('response for quiz session ', qs!.quizSession!._id, ": \n ", responseToCurrentQuestion);
-      if (responseToCurrentQuestion) {
-        responsesForCurrentQuestion.push(responseToCurrentQuestion);
-      }
-    });
-
-    return responsesForCurrentQuestion;
+    return this.$store.getters.currentChatGroupQuestionResponses || [];
   }
-  messageBelongsToCurrentQuizSession(qid: string): boolean {
-    if (!this.currentQuizSession || !this.currentQuizSession.quizSession) return false;
-    return (this.currentQuizSession.quizSession._id === qid);
+  messageBelongsTocurrentQuizSessionInfoObject(qid: string): boolean {
+    if (!this.currentQuizSessionInfoObject || !this.currentQuizSessionInfoObject.quizSession) return false;
+    return (this.currentQuizSessionInfoObject.quizSession._id === qid);
   }
 
-
-  responseBelongsToCurrentQuizSession(qid: string): boolean {
-    if (!this.currentQuizSession || !this.currentQuizSession.quizSession) return false;
-    return (this.currentQuizSession.quizSession._id === qid);
+  get currentChatGroup() { 
+    return this.$store.getters.currentChatGroup;
+  }
+  responseBelongsTocurrentQuizSessionInfoObject(qid: string): boolean {
+    if (!this.currentQuizSessionInfoObject || !this.currentQuizSessionInfoObject.quizSession) return false;
+    return (this.currentQuizSessionInfoObject.quizSession._id === qid);
   }
   getNumeralFromQuizSessionId(qid: string) {
-    if (!this.chatGroup || !this.chatGroup.quizSessionIds) return 1;
-    const ind = this.chatGroup.quizSessionIds.indexOf(qid);
+    if (!this.currentChatGroup || !this.currentChatGroup.quizSessionIds) return 1;
+    const ind = this.currentChatGroup.quizSessionIds.indexOf(qid);
     if (ind === -1) return 1;
     return ind + 1;
 
@@ -158,6 +137,7 @@ export default class MarkQuizMarkingSection extends Vue {
   flex-direction: column;
   width: 70%;
 }
+
 .responses-container {
   display: flex;
   flex-shrink: 0;

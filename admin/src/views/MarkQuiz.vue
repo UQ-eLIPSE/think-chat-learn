@@ -32,19 +32,16 @@
           </span>
         </div>
 
-        <select v-model="selectedUsernameInChatGroup">
-          <option v-for="s in groupQuizSessions"
-                  :key="s.user.username"
-                  :value="s.user.username">{{ s.user.username }}</option>
-        </select>
+        <label>
+          Current user
+          <select v-model="currentQuizSessionId">
+            <option v-for="s in currentGroupQuizSessionInfoObjects"
+                    :key="s.quizSession._id"
+                    :value="s.quizSession._id">{{ s.user.username }}</option>
+          </select>
+        </label>
 
-        <MarkQuizMarkingSection :question="selectedQuestion"
-                                :chatGroup="selectedGroup"
-                                :quizSessionMap="quizSessionMap"
-                                :currentQuizSession.sync="currentUserQuizSession"
-                                class="marking-section"
-                                :quiz="q"
-                                :chatMessages="selectedQuestionChatMessages" />
+        <MarkQuizMarkingSection class="marking-section" />
       </div>
 
     </div>
@@ -65,6 +62,11 @@ import { PageType } from "../../../common/enums/DBEnums";
 import MarkQuizMarkingSection from '../components/Marking/MarkQuizMarkingSection.vue';
 import { API } from "../../../common/js/DB_API";
 
+Component.registerHooks([
+  'beforeRouteEnter',
+  'beforeRouteLeave',
+  'beforeRouteUpdate' // for vue-router 2.2+
+])
 
 @Component({
   components: {
@@ -72,10 +74,34 @@ import { API } from "../../../common/js/DB_API";
   }
 })
 export default class MarkQuiz extends Vue {
-  private selectedGroupId: string = '';
-  private selectedQuestionId: string = '';
-  private selectedUsernameInChatGroup: string = '';
-  private quizSessionMap: { [key: string]: QuizSessionDataObject } = {}
+
+
+  get markingState() {
+    return this.$store.getters.currentMarkingContext;
+  }
+
+  get currentQuizSessionId() {
+    return this.markingState.currentQuizSessionId;
+  }
+
+  set currentQuizSessionId(id: string) {
+    this.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuizSessionId', value: id });
+  }
+  get selectedGroupId() {
+    return this.markingState.currentChatGroupId;
+  }
+
+  set selectedGroupId(groupId: string) {
+    this.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentChatGroupId', value: groupId });
+  }
+
+  get selectedQuestionId() {
+    return this.markingState.currentQuestionId;
+  }
+
+  set selectedQuestionId(questionId: string) {
+    this.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuestionId', value: questionId });
+  }
   get q() {
     if (!this.$route.params.id) return null;
     return this.quizzes.find((q) => q._id === this.$route.params.id);
@@ -84,9 +110,6 @@ export default class MarkQuiz extends Vue {
     return this.$store.getters.quizzes || [];
   }
 
-  get currentUserQuizSession() {
-    return this.groupQuizSessions.find((s) => s.user!.username === this.selectedUsernameInChatGroup)
-  }
   getQuestionById(questionId: string) {
     if (!this.q || !this.q.pages) return undefined;
     return this.q.pages.find((p) => p.type === PageType.QUESTION_ANSWER_PAGE && (p as IQuestionAnswerPage).questionId === questionId);
@@ -99,7 +122,7 @@ export default class MarkQuiz extends Vue {
     }
   }
 
-    get selectedQuestionResponses() {
+  get selectedQuestionResponses() {
     if (this.chatGroupQuestionIdMap && this.chatGroupQuestionIdMap[this.selectedQuestionId]) {
       return this.chatGroupQuestionIdMap[this.selectedQuestionId].messages;
     } else {
@@ -145,148 +168,88 @@ export default class MarkQuiz extends Vue {
     }
   }
 
+  changeQuizSession() {
+
+  }
   get selectedUser() {
     if (!this.selectedGroup) return undefined;
     this.selectedGroup.quizSessionIds
   }
 
-  get groupQuizSessions() {
-    if (!this.selectedGroup || !this.quizSessionMap) return [];
-    const users = Object.keys(this.quizSessionMap).filter((qid) => this.selectedGroup!.quizSessionIds!.indexOf(qid) !== -1).map((quizSessionId) => {
-      return this.quizSessionMap[quizSessionId]
-    });
-
-    return users || [];
+  get quizSessionInfoMap() {
+    return this.$store.getters.quizSessionInfoMap;
   }
-  // get quizSessionUserMap() {
-  //   let map: { [questionId: string]: { messages: any[] } } = {};
-  // }
+  // get groupQuizSessions() {
+  //   // if (!this.selectedGroup || !this.quizSessionMap) return [];
+  //   // const users = Object.keys(this.quizSessionMap).filter((qid) => this.selectedGroup!.quizSessionIds!.indexOf(qid) !== -1).map((quizSessionId) => {
+  //   //   return this.quizSessionMap[quizSessionId]
+  //   // });
 
-
-  async fetchAllGroupQuizSessions() {
-    if(this.chatGroups.length > 0) {
-      await Promise.all(this.chatGroups.map(async (chatGroup: IChatGroup) => await this.fetchGroupQuizSessions(chatGroup)));
-    } 
-  }
-
-  // async fetchQuizSessions() {
+  //   // return users || [];
   //   try {
-
-  //     console.log('Fetching sessions');
-  //     if (!this.selectedGroup) return;
-  //     const quizSessionPromises = await Promise.all((this.selectedGroup.quizSessionIds || []).map(async (qid) => {
-  //       // Check if already loaded in memory
-  //       if (this.quizSessionMap[qid] && this.quizSessionMap[qid].quizSession && this.quizSessionMap[qid].userSession) return;
-  //       else {
-  //         // Fetch
-  //         const quizSessionResponse = await API.request(API.GET, (API.QUIZSESSION + "quizsession-marking/" + qid), {});
-  //         const quizSession = quizSessionResponse.session as IQuizSession;
-  //         this.quizSessionMap[qid] = { quizSession: quizSession, userSession: undefined, user: undefined, responses: [] };
-  //         const userSessionResponse = await API.request(API.GET, API.USERSESSION + "marking/" + quizSession.userSessionId, {});
-  //         this.quizSessionMap[qid].userSession = userSessionResponse;
-
-  //         const userResponse = await API.request(API.GET, API.USER + "marking/" + userSessionResponse.userId, {});
-  //         this.quizSessionMap[qid].user = userResponse;
-
-  //         const responseResponse = await API.request(API.GET, API.RESPONSE + "/quizSession/" + qid, {});
-
-  //         console.log('Response response');
-  //         console.log(responseResponse);
-  //         if (responseResponse.data) {
-  //           this.quizSessionMap[qid].responses = responseResponse.data;
-  //         }
-  //       }
-  //     }));
-
-
+  //     if (this.quizSessionInfoMap && this.selectedGroup) {
+  //       return Object.keys(this.quizSessionInfoMap).filter((quizSessionId) => this.selectedGroup!.quizSessionIds!.indexOf(quizSessionId) !== -1).map((q) => this.quizSessionInfoMap[q]);
+  //     } else {
+  //       return [];
+  //     }
   //   } catch (e) {
-  //     console.log('Could not fetch quiz session data');
+  //     return [];
   //   }
   // }
 
+  get currentGroupQuizSessionInfoObjects() {
+    return this.$store.getters.currentGroupQuizSessionInfoObjects;
+  }
 
-    async fetchGroupQuizSessions(chatGroup: IChatGroup) {
-    try {
+  get currentUserSessionInfo() {
+    if (this.markingState.currentQuizSessionId) {
+      return this.$store.getters.quizSessionInfoMap[this.markingState.currentQuizSessionId];
+    }
 
-      console.log('Fetching sessions');
-      if (!chatGroup) return;
-      const quizSessionPromises = await Promise.all((chatGroup.quizSessionIds || []).map(async (qid) => {
-        // Check if already loaded in memory
-        if (this.quizSessionMap[qid] && this.quizSessionMap[qid].quizSession && this.quizSessionMap[qid].userSession) return;
-        else {
-          // Fetch
-          const quizSessionResponse = await API.request(API.GET, (API.QUIZSESSION + "quizsession-marking/" + qid), {});
-          const quizSession = quizSessionResponse.session as IQuizSession;
-          this.quizSessionMap[qid] = { quizSession: quizSession, userSession: undefined, user: undefined, responses: [], marks: undefined };
-          const userSessionResponse = await API.request(API.GET, API.USERSESSION + "marking/" + quizSession.userSessionId, {});
-          this.quizSessionMap[qid].userSession = userSessionResponse;
+    return null;
+  }
 
-          const userResponse = await API.request(API.GET, API.USER + "marking/" + userSessionResponse.userId, {});
-          this.quizSessionMap[qid].user = userResponse;
-
-          const responseResponse = await API.request(API.GET, API.RESPONSE + "/quizSession/" + qid, {});
-
-          console.log('Response response');
-          console.log(responseResponse);
-          if (responseResponse.data) {
-            this.quizSessionMap[qid].responses = responseResponse.data;
-          } else {
-            this.quizSessionMap[qid].responses = [];
-          }
-
-          // const marksResponse = await API.request(API.GET, API.MARKS + "/quizSession/" + qid, {});
-
-          // if(marksResponse.data) {
-          //   this.quizSessionMap[qid].marks = marksResponse.data;
-          // }
-        }
+  async beforeRouteEnter(to: any, from: any, next: any) {
+    next(async (vm: any) => {
+      if (!vm.q || !vm.q._id) {
+        if (!vm.$route.params.id) return;
+        vm.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuizId', value: vm.$route.params.id });
+      }
+      await vm.$store.dispatch("getChatGroups", vm.q._id);
+      const chatGroups = vm.$store.getters.chatGroups;
+      const chatGroupsInformationPromises = await Promise.all(chatGroups.map(async (g: IChatGroup) => {
+        const chatGroupsQuizSessionPromises = Promise.all((g!.quizSessionIds || []).map(async (qs) => {
+          await vm.$store.dispatch("getQuizSessionInfo", qs);
+        }));
       }));
 
+      // Set up initial state
+      if (!vm.$store.getters.currentMarkingContext.currentChatGroupId) {
 
-    } catch (e) {
-      console.log('Could not fetch quiz session data');
-    }
-  }
+        if (chatGroups && chatGroups.length > 0) {
+          vm.selectedGroupId = chatGroups[0]._id;
+          vm.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentChatGroupId', value: chatGroups[0]._id });
+        }
 
-  // @Watch('selectedGroupId')
-  // async groupHandler() {
-  //   await this.fetchQuizSessions();
-  //     if (this.orderedDiscussionPageQuestionIds.length > 0) {
-  //       this.selectedQuestionId = this.orderedDiscussionPageQuestionIds[0]
-  //     }
+        const questionsIds = vm.orderedDiscussionPageQuestionIds;
+        if (questionsIds && questionsIds.length > 0) {
+          vm.selectedQuestionId = questionsIds[0];
+          vm.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuestionId', value: questionsIds[0] });
+        }
 
-  //     if (this.groupQuizSessions.length > 0) {
-  //       this.selectedUsernameInChatGroup = this.groupQuizSessions[0].user!.username!;
-  //     }
-  // }
+        const currentChatGroup = vm.selectedGroup;
+        if (currentChatGroup) {
+          const quizSessionIds = (<IChatGroup>currentChatGroup).quizSessionIds || [];
+          if (quizSessionIds.length > 0) {
+            const currentQuizSessionIdBeingMarked = quizSessionIds[0];
+            vm.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuizSessionId', value: currentQuizSessionIdBeingMarked });
+          }
 
-  // @Watch('selectedQuestionId')
-  // async questionHandler() {
-  //   await this.fetchQuizSessions();
-  // }
+        }
 
-  // @Watch('chatGroups.length')
-  // async chatGroupHandler() {
-  //   if (this.chatGroups.length > 0) {
-  //     this.selectedGroupId = this.chatGroups[0]._id
-  //   }
-  // }
+      }
 
-  // @Watch('orderedDiscussionPageQuestionIds.length')
-  // async questionsHandler() {
-  //   if (this.orderedDiscussionPageQuestionIds.length > 0) {
-  //     this.selectedQuestionId = this.orderedDiscussionPageQuestionIds[0]
-  //   }
-  // }
-  async created() {
-    if (!this.q || !this.q._id) return;
-    await this.$store.dispatch("getChatGroups", this.q._id);
-    await this.fetchAllGroupQuizSessions();
-    // if (this.chatGroups.length > 0) {
-    //   this.selectedGroupId = this.chatGroups[0]._id
-    // }
-
-
+    })
   }
 }
 </script>

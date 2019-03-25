@@ -41,17 +41,19 @@
 
             </tr>
         </table>
+        <button class="button" @click.prevent="saveMark">Save</button>
     </div>
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop } from "vue-property-decorator";
+import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import { IQuiz, QuizScheduleDataAdmin, Page, IDiscussionPage, IQuestionAnswerPage, QuizSessionDataObject } from "../../../../common/interfaces/ToClientData";
 import { PageType } from "../../../../common/enums/DBEnums";
 import * as Schema from "../../../../common/interfaces/DBSchema";
 
 @Component({})
 export default class ElipssMarkingComponent extends Vue {
+    @Prop({ type: String, required: true, default: () => '' }) private currentUsername: string | undefined;
     @Prop({ required: true, default: () => { } }) private quiz: IQuiz | undefined;
     @Prop({ required: true, default: () => { } }) private currentQuizSession: QuizSessionDataObject | undefined
     @Prop({ required: true, default: () => null }) private question: IQuestionAnswerPage | undefined;
@@ -146,8 +148,7 @@ export default class ElipssMarkingComponent extends Vue {
         }
     }
 
-
-    created() {
+    initializeRubric() {
         if (!this.currentQuizSession || !this.question) { console.log('something wong'); return; }
         if (!this.currentQuizSession.marks) {
             this.currentQuizSession.marks = this.initElipssMarks();
@@ -158,6 +159,24 @@ export default class ElipssMarkingComponent extends Vue {
         if (!this.currentQuizSession.marks!.questionMarks[this.question.questionId]) {
             this.currentQuizSession.marks!.questionMarks![this.question.questionId] = this.initElipssMark();
         }
+    }
+
+    get marker() {
+        return this.$store.getters.user;
+    }
+
+    saveMark() {
+        console.log(this.marker);
+        console.log(this.mark);
+    }
+
+    @Watch('currentUsername')
+    userChangedHandler() {
+        this.initializeRubric();
+    }
+
+    created() {
+        this.initializeRubric();
     }
 }
 </script>

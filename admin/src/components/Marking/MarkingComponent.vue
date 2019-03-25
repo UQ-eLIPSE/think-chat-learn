@@ -1,8 +1,8 @@
 <template>
   <div class="marking-rubric"
-       v-if="quiz.markingConfiguration">
+       v-if="markingConfig">
     <div v-if="isElipssMark">
-      <ElipssMarkingComponent v-if="currentQuizSession && question" :quiz="quiz" :currentQuizSession.sync="currentQuizSession" :question="question"></ElipssMarkingComponent>
+      <ElipssMarkingComponent></ElipssMarkingComponent>
 
 
     </div>
@@ -27,19 +27,33 @@ import ElipssMarkingComponent from "./ElipssMarkingComponent.vue";
   }
 })
 export default class MarkingComponent extends Vue {
-  @Prop({ required: true, default: () => { } }) private quiz: IQuiz | undefined;
-  @Prop({ required: true, default: () => { } }) private currentQuizSession: QuizSessionDataObject | undefined
-  @Prop({ required: true, default: () => null }) private question: IQuestionAnswerPage | undefined;
+  // @Prop({ type: String, required: true, default: () => '' }) private currentUsername: string | undefined;
+  // @Prop({ required: true, default: () => { } }) private quiz: IQuiz | undefined;
+  // @Prop({ required: true, default: () => { } }) private currentQuizSession: QuizSessionDataObject | undefined
+  // @Prop({ required: true, default: () => null }) private question: IQuestionAnswerPage | undefined;
+  // @Prop({ required: false, default: () => { } }) private quizSessionMap: { [key: string]: QuizSessionDataObject } | undefined
+
   // private mark: Schema.ElipssMark | Schema.SimpleMark = 
+
+  get quiz() {
+    return this.$store.getters.currentQuiz;
+  }
+
+  get markingConfig() {
+    if(!this.quiz) return undefined;
+    return this.quiz.markingConfiguration;
+  }
+ 
   get isElipssMark() {
-    if (!this.quiz || !this.quiz.markingConfiguration) return false;
+    if (!this.quiz || !this.markingConfig) return false;
     return this.quiz.markingConfiguration.type === Schema.MarkMode.ELIPSS_MARKING;
   }
 
   get isSimpleMark() {
-    if (!this.quiz || !this.quiz.markingConfiguration) return false;
+    if (!this.quiz || !this.markingConfig) return false;
     return this.quiz.markingConfiguration.type === Schema.MarkMode.SIMPLE_MARKING;
   }
+  
 }
 </script>
 <style scoped>
