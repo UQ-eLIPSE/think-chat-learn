@@ -50,7 +50,7 @@ import MarkingComponent from './MarkingComponent.vue';
 export default class MarkQuizMarkingSection extends Vue {
 
   get currentQuizSessionInfoObject(): QuizSessionDataObject | undefined {
-    return this.$store.getters.currentQuizSessionInfoObjectInfoObject;
+    return this.$store.getters.currentQuizSessionInfoObject;
   }
 
   get chatMessages() {

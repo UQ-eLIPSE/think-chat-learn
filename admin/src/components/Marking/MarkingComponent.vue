@@ -27,14 +27,6 @@ import ElipssMarkingComponent from "./ElipssMarkingComponent.vue";
   }
 })
 export default class MarkingComponent extends Vue {
-  // @Prop({ type: String, required: true, default: () => '' }) private currentUsername: string | undefined;
-  // @Prop({ required: true, default: () => { } }) private quiz: IQuiz | undefined;
-  // @Prop({ required: true, default: () => { } }) private currentQuizSession: QuizSessionDataObject | undefined
-  // @Prop({ required: true, default: () => null }) private question: IQuestionAnswerPage | undefined;
-  // @Prop({ required: false, default: () => { } }) private quizSessionMap: { [key: string]: QuizSessionDataObject } | undefined
-
-  // private mark: Schema.ElipssMark | Schema.SimpleMark = 
-
   get quiz() {
     return this.$store.getters.currentQuiz;
   }

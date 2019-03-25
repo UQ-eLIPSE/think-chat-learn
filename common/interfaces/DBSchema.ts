@@ -170,7 +170,7 @@ export interface ElipssMarkValue {
 export interface ElipssMark {
   type: MarkMode.ELIPSS_MARKING;
   quizSessionId: string;
-  user: IUser;
+  userId: IUser["_id"];
   questionMarks: {
     [questionId: string]: ElipssMarkValue
   }

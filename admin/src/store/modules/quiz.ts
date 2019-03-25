@@ -1,7 +1,7 @@
 import Vue from "vue";
 import { Commit, ActionTree, GetterTree } from "vuex";
 import { IQuiz, QuizSessionDataObject, IChatGroup, IQuestion, IQuestionAnswerPage } from "../../../../common/interfaces/ToClientData";
-import { IQuizSession, IChatMessage, Page } from "../../../../common/interfaces/DBSchema";
+import { IQuizSession, IChatMessage, Page, ElipssMark, MarkMode } from "../../../../common/interfaces/DBSchema";
 import { PageType } from "../../../../common/enums/DBEnums";
 import { API } from "../../../../common/js/DB_API";
 import { IQuizOverNetwork } from "../../../../common/interfaces/NetworkData";
@@ -14,7 +14,8 @@ type CurrentMarkingContext = {
     currentQuizSessionId: string | null,
     currentChatGroupId: string | null,
     currentQuizId: string | null,
-    currentQuestionId: string | null
+    currentQuestionId: string | null,
+    currentMarks: ElipssMark | undefined | null ;
 };
 
 export interface IState {
@@ -22,7 +23,7 @@ export interface IState {
     course: string;
     chatGroups: any[];
     quizSessionInfoMap: QuizSessionInfoMap;
-    currentMarkingContext: CurrentMarkingContext
+    currentMarkingContext: CurrentMarkingContext;
 }
 
 const state: IState = {
@@ -35,7 +36,8 @@ const state: IState = {
         currentQuizSessionId: null,
         currentChatGroupId: null,
         currentQuizId: null,
-        currentQuestionId: null
+        currentQuestionId: null,
+        currentMarks: null
     }
 };
 
@@ -88,14 +90,14 @@ const getters: GetterTree<IState, undefined> = {
         const questionPages = ((getters.currentQuiz as IQuiz).pages || []).filter((p) => p.type === PageType.QUESTION_ANSWER_PAGE) as IQuestionAnswerPage[];
         return questionPages || [];
     },
-    currentQuestion: (state, getters): IQuestionAnswerPage | undefined => {
-        if(!getters.currentQuiz || !state.currentMarkingContext.currentQuestionId) return undefined;
-        return (getters.currentQuizQuestions as IQuestionAnswerPage[]).find((q) => q.questionId === state.currentMarkingContext.currentQuestionId);
+    currentQuestion: (state, getters): any | undefined => {
+        if(!getters.currentQuiz) return undefined;
+        return ((getters.currentQuiz as IQuiz).pages || []).filter((p) => p.type === PageType.QUESTION_ANSWER_PAGE).find((qp) => (qp as IQuestionAnswerPage).questionId === state.currentMarkingContext.currentQuestionId!);
     },
     currentQuizSessionInfoObject: (state, getters): QuizSessionDataObject | undefined => {
         if(!state.currentMarkingContext || !state.currentMarkingContext.currentQuizSessionId) return undefined;
         const currentSessionId = state.currentMarkingContext.currentQuizSessionId;
-        return state.quizSessionInfoMap[currentSessionId];
+        return getters.quizSessionInfoMap[currentSessionId];
     },
     currentGroupQuizSessionInfoObjects(state, getters): QuizSessionDataObject[] {
         const currentChatGroup = getters.currentChatGroup as IChatGroup | undefined;
@@ -121,23 +123,26 @@ const getters: GetterTree<IState, undefined> = {
     currentChatGroupResponsesMap: (state, getters): { [questionId: string]: Response[] } => {
         const currentChatGroup:  IChatGroup | undefined = getters.currentChatGroup;
         if(!currentChatGroup || !state.quizSessionInfoMap) return {};
-        const groupSessionInfoObjects = (currentChatGroup.quizSessionIds || []).map((qid) => state.quizSessionInfoMap[qid]);
-        let currentChatGroupResponsesMap:{ [questionId: string]: Response[] }  = {};
+        const groupSessionInfoObjectResponses = (currentChatGroup.quizSessionIds || []).filter((qid) => state.quizSessionInfoMap[qid]).map((qid) => state.quizSessionInfoMap[qid].responses);
+        let map:{ [questionId: string]: any[] }  = {};
 
-        
-        Object.keys(groupSessionInfoObjects).forEach((quizSessionId) => {
-            if(!state.quizSessionInfoMap[quizSessionId]) return;
-           state.quizSessionInfoMap[quizSessionId].responses.forEach((response) => {
-                if(currentChatGroupResponsesMap[response.questionId] === undefined) currentChatGroupResponsesMap[response.questionId] = [];
-                currentChatGroupResponsesMap[response.questionId].push(response as any);
-            });
+        groupSessionInfoObjectResponses.forEach((responseArray) => {
+            responseArray.forEach((response) => {
+                if(map[response.questionId] === undefined) map[response.questionId] = [];
+                map[response.questionId].push(response);
+            })
         });
-        return currentChatGroupResponsesMap;
+        console.log(map);
+        return map;
     },
     currentChatGroupQuestionResponses: (state, getters): Response[] => {
         const currentChatGroupResponsesMap = getters.currentChatGroupResponsesMap;
         if(!currentChatGroupResponsesMap || !state.currentMarkingContext.currentQuestionId) return [];
         return currentChatGroupResponsesMap[state.currentMarkingContext.currentQuestionId] || [];
+    },
+    currentMarks: (state, getters): ElipssMark | undefined | null => {
+        if(!getters.currentQuizSessionInfoObject) return undefined;
+        return getters.currentQuizSessionInfoObject.marks;
     }
 
 };
@@ -179,16 +184,25 @@ const actions: ActionTree<IState, undefined> = {
         });
     },
     async getQuizSessionInfo(context, quizSessionId: string) {
+        // Fetch quiz session by quiz session id
         const quizSessionResponse = await API.request(API.GET, (API.QUIZSESSION + "quizsession-marking/" + quizSessionId), {});
 
         const quizSession = quizSessionResponse.session as IQuizSession;
+        
+        // Fetch user session by user session id
         const userSessionResponse = await API.request(API.GET, API.USERSESSION + "marking/" + quizSession.userSessionId, {});
         const userSession = userSessionResponse;
+        
+        // Fetch user by userId
         const user = await API.request(API.GET, API.USER + "marking/" + userSessionResponse.userId, {});
 
+        // Fetch responses by quiz session id
         const responseResponse = await API.request(API.GET, API.RESPONSE + "/quizSession/" + quizSessionId, {});
         const responses = responseResponse.data ? responseResponse.data : [];
-        const payload = { quizSession: quizSession, userSession: userSession, user: user, responses: responses } as QuizSessionDataObject;
+        
+        // Get marks by quiz session id
+        // const marksResponse = 
+        const payload = { quizSession: quizSession, userSession: userSession, user: user, responses: responses, marks: undefined } as QuizSessionDataObject;
         Vue.set(context.state.quizSessionInfoMap, quizSessionId, payload);
     }
 };
@@ -223,7 +237,14 @@ const mutations = {
         funcState.chatGroups = chatGroups;
     },
     UPDATE_CURRENT_MARKING_CONTEXT(state: IState, payload: any) {
+        console.log('Updating marking context:', payload.prop);
+        console.log(payload);
         Vue.set(state.currentMarkingContext, payload.prop, payload.value);
+    },
+    SET_MARKS(state: IState, payload: any) {
+        const newObject = Object.assign({}, state.quizSessionInfoMap[payload.quizSessionId], { marks: payload.marks });
+        console.log(newObject);
+        Vue.set(state.quizSessionInfoMap, payload.quizSessionId, newObject);
     }
 };
 

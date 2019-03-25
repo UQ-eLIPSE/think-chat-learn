@@ -1,7 +1,7 @@
 <template>
-    <div class="marking-rubric"
-         v-if="quiz.markingConfiguration">
-        <table class="marks-table">
+    <div class="marking-rubric">
+        <table class="marks-table"
+               v-if="marks">
             <tr>Individual Mark</tr>
             <tr v-for="c in individualCategories"
                 class="values-row"
@@ -13,9 +13,9 @@
                     :key="m">
                     <label> {{ m }}
                         <input type="radio"
+                               v-model="currentMarks"
                                class="number-mark"
                                :value="m"
-                               @change="setMark(m, c)"
                                :name="c" />
                     </label>
                 </td>
@@ -33,7 +33,6 @@
                         <input type="radio"
                                class="number-mark"
                                :value="m"
-                               @change="setMark(m, c)"
                                :name="c" />
                     </label>
                 </td>
@@ -41,7 +40,8 @@
 
             </tr>
         </table>
-        <button class="button" @click.prevent="saveMark">Save</button>
+        <button class="button"
+                @click.prevent="''">Save</button>
     </div>
 </template>
 
@@ -50,48 +50,69 @@ import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import { IQuiz, QuizScheduleDataAdmin, Page, IDiscussionPage, IQuestionAnswerPage, QuizSessionDataObject } from "../../../../common/interfaces/ToClientData";
 import { PageType } from "../../../../common/enums/DBEnums";
 import * as Schema from "../../../../common/interfaces/DBSchema";
+Component.registerHooks([
+  'beforeRouteEnter',
+  'beforeRouteLeave',
+  'beforeRouteUpdate' // for vue-router 2.2+
+])
 
 @Component({})
 export default class ElipssMarkingComponent extends Vue {
-    @Prop({ type: String, required: true, default: () => '' }) private currentUsername: string | undefined;
-    @Prop({ required: true, default: () => { } }) private quiz: IQuiz | undefined;
-    @Prop({ required: true, default: () => { } }) private currentQuizSession: QuizSessionDataObject | undefined
-    @Prop({ required: true, default: () => null }) private question: IQuestionAnswerPage | undefined;
-    // private mark: Schema.ElipssMark | Schema.SimpleMark = 
-    get isElipssMark() {
-        if (!this.quiz || !this.quiz.markingConfiguration) return false;
-        return this.quiz.markingConfiguration.type === Schema.MarkMode.ELIPSS_MARKING;
+    private marks: Schema.ElipssMark | undefined;
+    get currentMarks() {
+        return this.marks;
     }
 
-    get isSimpleMark() {
-        if (!this.quiz || !this.quiz.markingConfiguration) return false;
-        return this.quiz.markingConfiguration.type === Schema.MarkMode.SIMPLE_MARKING;
+
+    set currentMarks(marks: Schema.ElipssMark | undefined) {
+        this.marks = marks;
     }
 
-    get mark(): Schema.ElipssMarkValue["mark"] | null {
-        if (!this.currentQuizSession || !this.question || !this.currentQuizSession!.marks || !this.currentQuizSession!.marks.questionMarks) return null;
-        return this.currentQuizSession!.marks!.questionMarks![this.question!.questionId!].mark;
+    beforeRouteEnter(to: any, from: any, next: any) {
+        next((vm: any) => {
+
+        })
+    }
+    created() {
+        if (this.$store.state.Quiz.currentMarkingContext && this.$store.state.Quiz.currentMarkingContext.currentMarks) {
+            this.currentMarks = this.$store.state.Quiz.currentMarkingContext.currentMarks;
+        } else {
+            const questionId = this.$store.state.Quiz.currentMarkingContext.currentQuestionId;
+            const quizSessionId = this.$store.state.Quiz.currentMarkingContext.currentQuizSessionId;
+            const userId = this.$store.state.Quiz.quizSessionInfoMap[quizSessionId].user._id;
+
+            const m = {
+                type: Schema.MarkMode.ELIPSS_MARKING as any,
+                quizSessionId: quizSessionId,
+                userId: userId,
+                questionMarks: {
+                    [questionId]: this.initElipssMark()
+                }
+            }
+
+            this.currentMarks = m;
+        }
+    }
+    get markingContext() {
+        return this.$store.getters.currentMarkingContext;
+    }
+    get currentQuestionId() {
+        if (!this.markingContext) return undefined;
+        return this.markingContext.currentQuestionId;
     }
 
-    get categories() {
-        if (!this.mark) return [];
 
-        return Object.keys(this.mark!.value)
-    }
-
-    setMark(m: any, c: string) {
-        if (!this.mark || !this.mark.value) return;
-        Vue.set(this.mark.value, `${c}`, m);
-    }
     initElipssMarks(): Schema.ElipssMark {
-        return {
-            type: Schema.MarkMode.ELIPSS_MARKING,
-            quizSessionId: this.currentQuizSession!.quizSession!._id!,
-            user: this.currentQuizSession!.user!,
+        const m = {
+            type: Schema.MarkMode.ELIPSS_MARKING as any,
+            quizSessionId: '',
+            userId: '',
             questionMarks: {
-                [this.question!.questionId]: this.initElipssMark()
+                [this.currentQuestionId]: this.initElipssMark()
             }
         }
+        console.log(m);
+        return m;
     }
 
     get individualCategories() {
@@ -140,43 +161,29 @@ export default class ElipssMarkingComponent extends Vue {
         }
     }
 
+    get quiz() {
+        return this.$store.getters.currentQuiz;
+    }
+    get markingConfig() {
+        if (!this.quiz) return undefined;
+        return this.quiz.markingConfiguration;
+    }
     get possibleMarkValues() {
-        if (!this.quiz || !this.quiz.markingConfiguration) {
+        if (!this.markingConfig) {
             return [];
         } else {
-            return new Array(this.quiz.markingConfiguration.maximumMarks).fill(0).map((m, i) => i + 1);
+            return new Array(this.markingConfig.maximumMarks).fill(0).map((m, i) => i + 1);
         }
     }
 
-    initializeRubric() {
-        if (!this.currentQuizSession || !this.question) { console.log('something wong'); return; }
-        if (!this.currentQuizSession.marks) {
-            this.currentQuizSession.marks = this.initElipssMarks();
-            console.log('Current quiz session marks');
-            console.log(this.currentQuizSession.marks);
-
-        }
-        if (!this.currentQuizSession.marks!.questionMarks[this.question.questionId]) {
-            this.currentQuizSession.marks!.questionMarks![this.question.questionId] = this.initElipssMark();
-        }
-    }
 
     get marker() {
         return this.$store.getters.user;
     }
 
-    saveMark() {
-        console.log(this.marker);
-        console.log(this.mark);
-    }
-
-    @Watch('currentUsername')
-    userChangedHandler() {
-        this.initializeRubric();
-    }
-
-    created() {
-        this.initializeRubric();
+    get categories() {
+        const empty = JSON.parse(JSON.stringify(this.initElipssMark().mark.value));
+        return Object.keys(empty);
     }
 }
 </script>
