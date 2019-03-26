@@ -158,7 +158,7 @@ export interface Mark extends Document {
   userId: IUser["_id"];
   questionId: string;
   timestamp: Date | null;
-  markerUserId: string | null;
+  markerId: string | null;
 }
 export interface ElipssMark extends Mark  {
   type: MarkMode.ELIPSS_MARKING;

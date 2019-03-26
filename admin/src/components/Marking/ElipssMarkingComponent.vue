@@ -53,6 +53,8 @@ import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import { IQuiz, QuizScheduleDataAdmin, Page, IDiscussionPage, IQuestionAnswerPage, QuizSessionDataObject } from "../../../../common/interfaces/ToClientData";
 import { PageType } from "../../../../common/enums/DBEnums";
 import * as Schema from "../../../../common/interfaces/DBSchema";
+import { API } from "../../../../common/js/DB_API";
+
 Component.registerHooks([
   'beforeRouteEnter',
   'beforeRouteLeave',
@@ -61,48 +63,99 @@ Component.registerHooks([
 
 @Component({})
 export default class ElipssMarkingComponent extends Vue {
-    // private marks: Schema.ElipssMark | undefined;
+    private marks: Schema.ElipssMark | undefined;
 
     get currentMarkingContext() {
         return this.$store.getters.currentMarkingContext;
     }
-    get marksInStoreMap() {
-        if(!this.currentMarkingContext) return null;
-        if(!this.currentMarkingContext.currentQuizSessionId || !this.$store.getters.quizSessionInfoMap) return null;
-        if(!this.$store.getters.quizSessionInfoMap[this.currentMarkingContext.currentQuizSessionId]) return null;
-        return this.$store.getters.quizSessionInfoMap[this.currentMarkingContext.currentQuizSessionId].marks;
-    }
 
-    get currentMarks() {
-        if(!this.currentMarkingContext || !this.currentMarkingContext.currentMarks || !this.currentMarkingContext.currentQuestionId || !this.currentMarkingContext.currentMarks.questionMarks) return null;
-        return this.currentMarkingContext.currentMarks
-    }
+    // get marksMap() {
+    //     return this.$store.getters.marksMap;
+    // }
 
-    get currentMarksMark() {
-        if(!this.currentMarkingContext || !this.currentMarkingContext.currentMarks || !this.currentMarkingContext.currentQuestionId || !this.currentMarkingContext.currentMarks.questionMarks) return null;
-        return this.currentMarkingContext.currentMarks.questionMarks[this.currentMarkingContext.currentQuestionId].mark;
-    }
-    get currentMarksValue() {
-        if(!this.currentMarkingContext || !this.currentMarkingContext.currentMarks || !this.currentMarkingContext.currentQuestionId || !this.currentMarkingContext.currentMarks.questionMarks) return null;
-        return this.currentMarkingContext.currentMarks.questionMarks[this.currentMarkingContext.currentQuestionId].mark.value;
-    }
-    get marks() {
-        if(!this.currentMarkingContext || !this.currentMarkingContext.currentQuizSessionId || !this.initElipssMarks()) return null;
-        if(!this.marksInStoreMap) {
-            if(!this.currentMarkingContext.currentMarks) {
-                this.$store.commit("UPDATE_CURRENT_MARKING_CONTEXT", { prop: "currentMarks", value: this.initElipssMarks() });
-            } else {
-                return this.currentMarkingContext.currentMarks;
+    // get marksInStoreMap() {
+    //     if(!this.currentMarkingContext) return null;
+    //     if(!this.currentMarkingContext.currentQuizSessionId || !this.$store.getters.quizSessionInfoMap) return null;
+    //     if(!this.$store.getters.quizSessionInfoMap[this.currentMarkingContext.currentQuizSessionId]) return null;
+    //     return this.$store.getters.quizSessionInfoMap[this.currentMarkingContext.currentQuizSessionId].marks;
+    // }
+
+    // get currentMarks() {
+    //     if(!this.currentMarkingContext || !this.currentMarkingContext.currentMarks || !this.currentMarkingContext.currentQuestionId || !this.currentMarkingContext.currentMarks.questionMarks) return null;
+    //     return this.currentMarkingContext.currentMarks
+    // }
+
+    // get currentMarksMark() {
+    //     if(!this.currentMarkingContext || !this.currentMarkingContext.currentMarks || !this.currentMarkingContext.currentQuestionId || !this.currentMarkingContext.currentMarks.questionMarks) return null;
+    //     return this.currentMarkingContext.currentMarks.questionMarks[this.currentMarkingContext.currentQuestionId].mark;
+    // }
+    // get currentMarksValue() {
+    //     if(!this.currentMarkingContext || !this.currentMarkingContext.currentMarks || !this.currentMarkingContext.currentQuestionId || !this.currentMarkingContext.currentMarks.questionMarks) return null;
+    //     return this.currentMarkingContext.currentMarks.questionMarks[this.currentMarkingContext.currentQuestionId].mark.value;
+    // }
+    // get marks() {
+    //     if(!this.currentMarkingContext || !this.currentMarkingContext.currentQuizSessionId || !this.initElipssMarks()) return null;
+    //     if(!this.marksInStoreMap) {
+    //         if(!this.currentMarkingContext.currentMarks) {
+    //             this.$store.commit("UPDATE_CURRENT_MARKING_CONTEXT", { prop: "currentMarks", value: this.initElipssMarks() });
+    //         } else {
+    //             return this.currentMarkingContext.currentMarks;
+    //         }
+    //     } else {
+    //         this.$store.commit("UPDATE_CURRENT_MARKING_CONTEXT", { prop: "currentMarks", value: this.marksInStoreMap });
+    //         return this.currentMarkingContext.currentMarks;
+    //     } 
+    // }
+
+    async fetchMarksForQuestion() {
+        try {
+                const currentMarkingContext = this.currentMarkingContext;
+                const quizSessionId = currentMarkingContext.currentQuestionId;
+                const questionId = currentMarkingContext.currentQuestionId;
+                const quizSessionIdMarks = await API.request(API.GET, API.MARKS + `/quizSessionId/${quizSessionId}/questionId/${questionId}`, {});
+                const marker = this.marker;
+                let marks: any = null;
+                if(Array.isArray(quizSessionIdMarks)) {
+                    marks = quizSessionIdMarks.find((mark) => mark.markerId === marker._id)
+                    if(!marks) throw new Error();
+                    this.marks = marks;
+                } else {
+                    throw new Error();
+                }
+            } catch (e) {
+                this.marks = this.initMark();
             }
-        } else {
-            this.$store.commit("UPDATE_CURRENT_MARKING_CONTEXT", { prop: "currentMarks", value: this.marksInStoreMap });
-            return this.currentMarkingContext.currentMarks;
-        } 
     }
 
-    beforeRouteEnter(to: any, from: any, next: any) {
-        next((vm: any) => {
-
+    initMark(): Schema.ElipssMark {
+        const currentMarkingContext = this.currentMarkingContext;
+        const quizSessionId = currentMarkingContext.currentQuestionId;
+        const questionId = currentMarkingContext.currentQuestionId;
+        const currentQuizSessionInfoObject = this.$store.getters.currentQuizSessionInfoObject;
+        const marker = this.marker;
+        return {
+            type: Schema.MarkMode.ELIPSS_MARKING,
+            questionId: questionId,
+            quizSessionId: quizSessionId,
+            markerId: marker._id,
+            userId: currentQuizSessionInfoObject.user._id,
+            timestamp: null, 
+            mark: {
+                value: {
+                    evaluating: null,
+                    interpreting: null,
+                    analysing: null,
+                    makingArguments: null,
+                    accuracyOfArgument: null,
+                    expressingAndResponding: null,
+                    depthOfReflection: null
+                },
+                feedbackText: ''
+            } 
+        }
+    }
+    async beforeRouteEnter(to: any, from: any, next: any) {
+        next(async(vm: any) => {
         })
     }
  
@@ -156,25 +209,6 @@ export default class ElipssMarkingComponent extends Vue {
         })
     }
 
-    initElipssMark(): Schema.ElipssMarkValue {
-        return {
-            mark: {
-                value: {
-                    evaluating: null,
-                    interpreting: null,
-                    analysing: null,
-                    makingArguments: null,
-                    accuracyOfArgument: null,
-                    expressingAndResponding: null,
-                    depthOfReflection: null,
-                },
-                feedbackText: '',
-                markerId: null,
-                timestamp: null
-            }
-        }
-    }
-
     get quiz() {
         return this.$store.getters.currentQuiz;
     }
@@ -196,25 +230,25 @@ export default class ElipssMarkingComponent extends Vue {
     }
 
     get categories() {
-        const empty = JSON.parse(JSON.stringify(this.initElipssMark().mark.value));
+        const empty = JSON.parse(JSON.stringify(this.initMark().mark.value));
         return Object.keys(empty);
     }
 
     saveMarks() {
-        if(!this.currentMarks) return;
+        if(!this.marks) return;
 
-        const marksToBeSaved: Schema.ElipssMark = Object.assign({}, this.currentMarks);
+        // const marksToBeSaved: Schema.ElipssMark = Object.assign({}, this.marks);
 
-        // Update marks metadata
-        // Get current question ID
-        const markerId = this.marker.username;
-        const timestamp = Date.now();
-        const currentQuestionId = this.currentMarkingContext.currentQuestionId;
-        // We assume feedback text and
-        marksToBeSaved.questionMarks[currentQuestionId].mark.markerId = markerId;
-        marksToBeSaved.questionMarks[currentQuestionId].mark.timestamp = timestamp as any;
+        // // Update marks metadata
+        // // Get current question ID
+        // const markerId = this.marker.username;
+        // const timestamp = Date.now();
+        // const currentQuestionId = this.currentMarkingContext.currentQuestionId;
+        // // We assume feedback text and
+        // marksToBeSaved.questionMarks[currentQuestionId].mark.markerId = markerId;
+        // marksToBeSaved.questionMarks[currentQuestionId].mark.timestamp = timestamp as any;
         
-        console.log('Saving these marks: ', marksToBeSaved);
+        console.log('Saving these marks: ', this.marks);
     }
 }
 </script>

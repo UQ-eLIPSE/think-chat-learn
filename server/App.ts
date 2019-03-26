@@ -24,6 +24,7 @@ import { UserSessionService } from "./services/UserSessionService";
 import { QuizSessionService } from "./services/QuizSessionService";
 import { ChatGroupService } from "./services/ChatGroupService";
 import { ResponseService } from "./services/ResponseService";
+import { MarksService } from "./services/MarksService";
 
 // Controllers
 import { UserController } from "./controllers/UserController";
@@ -33,6 +34,7 @@ import { UserSessionController } from "./controllers/UserSessionController";
 import { QuizSessionController } from "./controllers/QuizSessionController";
 import { ChatGroupController } from "./controllers/ChatGroupController";
 import { ResponseController } from "./controllers/ResponseController";
+import { MarksController } from "./controllers/MarksController";
 
 // Authenticator for students
 import { StudentAuthenticatorMiddleware } from "./js/auth/StudentPageAuth";
@@ -70,6 +72,7 @@ export default class App {
     private quizSessionController: QuizSessionController
     private responseController: ResponseController;
     private chatGroupController: ChatGroupController;
+    private marksController: MarksController;
 
     // Socket io things
     private socketIO: SocketIO.Server;
@@ -106,6 +109,7 @@ export default class App {
         this.quizSessionRepository = new QuizSessionRepository(this.database, "uq_quizSession");
         this.chatGroupRepository = new ChatGroupRepository(this.database, "uq_chatGroup");
         this.responseRepository = new ResponseRepository(this.database, "uq_responses");
+        this.marksRepository = new MarksRepository(this.database, "uq_marks");
 
         this.userService = new UserService(this.userRepository, this.quizRepository, this.questionRepository,
             this.chatGroupRepository, this.quizSessionRepository, this.userSessionRepository);
@@ -116,7 +120,7 @@ export default class App {
             this.quizRepository, this.responseRepository);
         this.chatGroupService = new ChatGroupService(this.chatGroupRepository, this.responseRepository);
         this.responseService = new ResponseService(this.responseRepository, this.quizSessionRepository, this.quizRepository);
-
+        this.marksService = new MarksService(this.quizSessionRepository, this.quizRepository, this.chatGroupRepository, this.userSessionRepository, this.questionRepository);
         this.userController = new UserController(this.userService);
         this.quizController = new QuizController(this.quizService);
         this.questionController = new QuestionController(this.questionService);
@@ -241,6 +245,7 @@ export default class App {
         this.express.use("/quizsession", this.quizSessionController.getRouter());
         this.express.use("/response", this.responseController.getRouter());
         this.express.use("/chatgroup", this.chatGroupController.getRouter());
+        this.express.use("/marks", this.marksController.getRouter());
     }
 
     // Only login gets affected
