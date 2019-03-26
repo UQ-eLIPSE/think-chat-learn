@@ -13,10 +13,10 @@
                     :key="m">
                     <label> {{ m }}
                         <input type="radio"
-                               v-model="currentMarks"
+                                v-if="currentMarksValue"
                                class="number-mark"
-                               :value="m"
-                               :name="c" />
+                               v-model="currentMarksValue[c]"
+                               :value="m"/>
                     </label>
                 </td>
             </tr>
@@ -31,17 +31,20 @@
                     :key="m">
                     <label> {{ m }}
                         <input type="radio"
+                                v-if="currentMarksValue"
                                class="number-mark"
-                               :value="m"
-                               :name="c" />
+                               v-model="currentMarksValue[c]"
+                               :value="m"/>
                     </label>
                 </td>
             </tr>
 
             </tr>
         </table>
+        <label> Feedback
+        <textarea v-if="currentMarksMark" v-model="currentMarksMark.feedbackText"></textarea></label>
         <button class="button"
-                @click.prevent="''">Save</button>
+                @click.prevent="saveMarks">Save</button>
     </div>
 </template>
 
@@ -58,14 +61,43 @@ Component.registerHooks([
 
 @Component({})
 export default class ElipssMarkingComponent extends Vue {
-    private marks: Schema.ElipssMark | undefined;
-    get currentMarks() {
-        return this.marks;
+    // private marks: Schema.ElipssMark | undefined;
+
+    get currentMarkingContext() {
+        return this.$store.getters.currentMarkingContext;
+    }
+    get marksInStoreMap() {
+        if(!this.currentMarkingContext) return null;
+        if(!this.currentMarkingContext.currentQuizSessionId || !this.$store.getters.quizSessionInfoMap) return null;
+        if(!this.$store.getters.quizSessionInfoMap[this.currentMarkingContext.currentQuizSessionId]) return null;
+        return this.$store.getters.quizSessionInfoMap[this.currentMarkingContext.currentQuizSessionId].marks;
     }
 
+    get currentMarks() {
+        if(!this.currentMarkingContext || !this.currentMarkingContext.currentMarks || !this.currentMarkingContext.currentQuestionId || !this.currentMarkingContext.currentMarks.questionMarks) return null;
+        return this.currentMarkingContext.currentMarks
+    }
 
-    set currentMarks(marks: Schema.ElipssMark | undefined) {
-        this.marks = marks;
+    get currentMarksMark() {
+        if(!this.currentMarkingContext || !this.currentMarkingContext.currentMarks || !this.currentMarkingContext.currentQuestionId || !this.currentMarkingContext.currentMarks.questionMarks) return null;
+        return this.currentMarkingContext.currentMarks.questionMarks[this.currentMarkingContext.currentQuestionId].mark;
+    }
+    get currentMarksValue() {
+        if(!this.currentMarkingContext || !this.currentMarkingContext.currentMarks || !this.currentMarkingContext.currentQuestionId || !this.currentMarkingContext.currentMarks.questionMarks) return null;
+        return this.currentMarkingContext.currentMarks.questionMarks[this.currentMarkingContext.currentQuestionId].mark.value;
+    }
+    get marks() {
+        if(!this.currentMarkingContext || !this.currentMarkingContext.currentQuizSessionId || !this.initElipssMarks()) return null;
+        if(!this.marksInStoreMap) {
+            if(!this.currentMarkingContext.currentMarks) {
+                this.$store.commit("UPDATE_CURRENT_MARKING_CONTEXT", { prop: "currentMarks", value: this.initElipssMarks() });
+            } else {
+                return this.currentMarkingContext.currentMarks;
+            }
+        } else {
+            this.$store.commit("UPDATE_CURRENT_MARKING_CONTEXT", { prop: "currentMarks", value: this.marksInStoreMap });
+            return this.currentMarkingContext.currentMarks;
+        } 
     }
 
     beforeRouteEnter(to: any, from: any, next: any) {
@@ -73,26 +105,7 @@ export default class ElipssMarkingComponent extends Vue {
 
         })
     }
-    created() {
-        if (this.$store.state.Quiz.currentMarkingContext && this.$store.state.Quiz.currentMarkingContext.currentMarks) {
-            this.currentMarks = this.$store.state.Quiz.currentMarkingContext.currentMarks;
-        } else {
-            const questionId = this.$store.state.Quiz.currentMarkingContext.currentQuestionId;
-            const quizSessionId = this.$store.state.Quiz.currentMarkingContext.currentQuizSessionId;
-            const userId = this.$store.state.Quiz.quizSessionInfoMap[quizSessionId].user._id;
-
-            const m = {
-                type: Schema.MarkMode.ELIPSS_MARKING as any,
-                quizSessionId: quizSessionId,
-                userId: userId,
-                questionMarks: {
-                    [questionId]: this.initElipssMark()
-                }
-            }
-
-            this.currentMarks = m;
-        }
-    }
+ 
     get markingContext() {
         return this.$store.getters.currentMarkingContext;
     }
@@ -102,11 +115,12 @@ export default class ElipssMarkingComponent extends Vue {
     }
 
 
-    initElipssMarks(): Schema.ElipssMark {
+    initElipssMarks(): Schema.ElipssMark | null {
+        if(!this.currentMarkingContext || !this.currentMarkingContext.currentQuizSessionId || !this.$store.getters.currentQuizSessionInfoObject) return null;
         const m = {
             type: Schema.MarkMode.ELIPSS_MARKING as any,
-            quizSessionId: '',
-            userId: '',
+            quizSessionId: this.currentMarkingContext.currentQuizSessionId,
+            userId: this.$store.getters.currentQuizSessionInfoObject.user._id,
             questionMarks: {
                 [this.currentQuestionId]: this.initElipssMark()
             }
@@ -184,6 +198,23 @@ export default class ElipssMarkingComponent extends Vue {
     get categories() {
         const empty = JSON.parse(JSON.stringify(this.initElipssMark().mark.value));
         return Object.keys(empty);
+    }
+
+    saveMarks() {
+        if(!this.currentMarks) return;
+
+        const marksToBeSaved: Schema.ElipssMark = Object.assign({}, this.currentMarks);
+
+        // Update marks metadata
+        // Get current question ID
+        const markerId = this.marker.username;
+        const timestamp = Date.now();
+        const currentQuestionId = this.currentMarkingContext.currentQuestionId;
+        // We assume feedback text and
+        marksToBeSaved.questionMarks[currentQuestionId].mark.markerId = markerId;
+        marksToBeSaved.questionMarks[currentQuestionId].mark.timestamp = timestamp as any;
+        
+        console.log('Saving these marks: ', marksToBeSaved);
     }
 }
 </script>

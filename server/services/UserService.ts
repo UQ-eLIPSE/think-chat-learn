@@ -38,6 +38,7 @@ export class UserService extends BaseService {
     }
 
     public async handleLoginWrapper(request: ILTIData) {
+        console.log('Handle login received');
         // Get user+quiz info, check validity
         const identity = UserServiceHelper.ProcessLtiObject(request);
 
@@ -47,7 +48,7 @@ export class UserService extends BaseService {
                     <form method="POST" action="/">`;
 
             const inputString = Object.keys(request).reduce((str, k) => str + `<input type="hidden" name="${k}" value="${request[k]}" />`, ``);
-
+            console.log('Endpoint: ',Conf.endpointUrl);
             const rest = `
                         <input type="submit" value="Launch admin panel" formaction="${Conf.endpointUrl}/user/admin">
                         <input type="submit" value="Launch student view" formaction="${Conf.endpointUrl}/user/login">

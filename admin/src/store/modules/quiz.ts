@@ -1,7 +1,7 @@
 import Vue from "vue";
 import { Commit, ActionTree, GetterTree } from "vuex";
 import { IQuiz, QuizSessionDataObject, IChatGroup, IQuestion, IQuestionAnswerPage } from "../../../../common/interfaces/ToClientData";
-import { IQuizSession, IChatMessage, Page, ElipssMark, MarkMode } from "../../../../common/interfaces/DBSchema";
+import { IQuizSession, IChatMessage, Page, ElipssMark, MarkMode, Mark } from "../../../../common/interfaces/DBSchema";
 import { PageType } from "../../../../common/enums/DBEnums";
 import { API } from "../../../../common/js/DB_API";
 import { IQuizOverNetwork } from "../../../../common/interfaces/NetworkData";
@@ -15,8 +15,10 @@ type CurrentMarkingContext = {
     currentChatGroupId: string | null,
     currentQuizId: string | null,
     currentQuestionId: string | null,
-    currentMarks: ElipssMark | undefined | null ;
+    currentMarks: ElipssMark | undefined | null;
 };
+
+type MarksQuestionUserMap = { [quizSessionId: string]: { [questionId: string]: { [markerId: string]: Mark } } };
 
 export interface IState {
     quiz: IQuiz[];
@@ -24,6 +26,7 @@ export interface IState {
     chatGroups: any[];
     quizSessionInfoMap: QuizSessionInfoMap;
     currentMarkingContext: CurrentMarkingContext;
+    marksQuestionUserMap: MarksQuestionUserMap;
 }
 
 const state: IState = {
@@ -38,7 +41,8 @@ const state: IState = {
         currentQuizId: null,
         currentQuestionId: null,
         currentMarks: null
-    }
+    },
+    marksQuestionUserMap: {}
 };
 
 const mutationKeys = {
@@ -51,8 +55,11 @@ const mutationKeys = {
 };
 
 const getters: GetterTree<IState, undefined> = {
-    quizzes: (): IQuiz[] | null => {
+    quizzes: (state): IQuiz[] | null => {
         return state.quiz;
+    },
+    marksMap: (state): MarksQuestionUserMap => {
+        return state.marksQuestionUserMap;
     },
     quizSessionInfoMap: (): QuizSessionInfoMap => {
         return state.quizSessionInfoMap;
@@ -199,10 +206,8 @@ const actions: ActionTree<IState, undefined> = {
         // Fetch responses by quiz session id
         const responseResponse = await API.request(API.GET, API.RESPONSE + "/quizSession/" + quizSessionId, {});
         const responses = responseResponse.data ? responseResponse.data : [];
-        
-        // Get marks by quiz session id
-        // const marksResponse = 
-        const payload = { quizSession: quizSession, userSession: userSession, user: user, responses: responses, marks: undefined } as QuizSessionDataObject;
+
+        const payload = { quizSession: quizSession, userSession: userSession, user: user, responses: responses } as QuizSessionDataObject;
         Vue.set(context.state.quizSessionInfoMap, quizSessionId, payload);
     }
 };
@@ -243,6 +248,7 @@ const mutations = {
     },
     SET_MARKS(state: IState, payload: any) {
         const newObject = Object.assign({}, state.quizSessionInfoMap[payload.quizSessionId], { marks: payload.marks });
+        console.log('Setting marks.... in store....');
         console.log(newObject);
         Vue.set(state.quizSessionInfoMap, payload.quizSessionId, newObject);
     }

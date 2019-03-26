@@ -58,4 +58,4 @@ export interface QuestionReconnectData {
   questions: TypeQuestion[];
 }
 
-export type QuizSessionDataObject = { quizSession: IQuizSession | undefined, userSession: IUserSession | undefined, user: IUser | undefined, responses: Response[], marks: DBSchema.ElipssMark | undefined  };
+export type QuizSessionDataObject = { quizSession: IQuizSession | null, userSession: IUserSession | null, user: IUser | null, responses: Response[] };

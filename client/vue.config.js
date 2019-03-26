@@ -5,5 +5,5 @@ module.exports = {
   // Change based on the directory needs
   baseUrl: process.env.NODE_ENV === 'production'
     ? '/production-end-point/'
-    : '/client'
+    : '/client/'
 }

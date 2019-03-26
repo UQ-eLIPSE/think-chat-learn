@@ -135,24 +135,8 @@ export interface ElipssMarkConfig {
   maximumMarks: number;
 }
 
-export interface SimpleMark {
-  type: MarkMode.SIMPLE_MARKING;
-  quizSessionId: string;
-  questionMarks: {
-    [questionId: string]: {
-      mark: {
-        value: number | null;
-        markerId: string | null;
-        feedbackText: string;
-        timestamp: Date | null;
-      }
-    }
-  }
-}
-
 export type ElipssCategoryMarkValue = number | null;
 export interface ElipssMarkValue {
-  mark: {
     value: {
       evaluating: ElipssCategoryMarkValue,
       interpreting: ElipssCategoryMarkValue,
@@ -163,18 +147,29 @@ export interface ElipssMarkValue {
       depthOfReflection: ElipssCategoryMarkValue,
     };
     feedbackText: string;
-    markerId: string | null;
-    timestamp: Date | null;
-  }
 }
-export interface ElipssMark {
-  type: MarkMode.ELIPSS_MARKING;
+interface SimpleMarkValue {
+  value: number | null;
+  feedbackText: string;
+}
+export interface Mark extends Document {
+  type: MarkMode;
   quizSessionId: string;
   userId: IUser["_id"];
-  questionMarks: {
-    [questionId: string]: ElipssMarkValue
-  }
+  questionId: string;
+  timestamp: Date | null;
+  markerUserId: string | null;
 }
+export interface ElipssMark extends Mark  {
+  type: MarkMode.ELIPSS_MARKING;
+  mark: ElipssMarkValue;
+}
+
+export interface SimpleMark extends Mark  {
+  type: MarkMode.SIMPLE_MARKING;
+  mark: SimpleMarkValue;
+}
+
 
 export enum MarkMode {
   SIMPLE_MARKING = 'SIMPLE_MARKING',
