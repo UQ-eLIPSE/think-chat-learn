@@ -2,7 +2,7 @@
   <div class="marking-section">
     <div class="row">
       <div class="chat-messages">
-        <h1>Chat messages</h1>
+        <h3>Chat messages</h3>
         <div class="chat"
              v-if="chatMessages">
           <div class="message-container">
@@ -19,7 +19,7 @@
 
       <div class="column">
         <div class="responses-container">
-          <h1>Responses</h1>
+          <h3>Responses</h3>
           <div class="responses message-container"
                v-if="currentChatGroupResponses">
             <ChatMessage v-for="r in currentChatGroupResponses"
