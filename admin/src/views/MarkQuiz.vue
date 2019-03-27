@@ -48,7 +48,12 @@
 
     <div v-else>Select a group from the dropdown list</div>
 
-
+    <div class="step-navigation">
+      <button type="button"
+              @click.prevent="previous">Previous</button>
+      <button type="button"
+              @click.prevent="next">Next</button>
+    </div>
   </div>
 
   </div>
@@ -75,7 +80,108 @@ Component.registerHooks([
 })
 export default class MarkQuiz extends Vue {
 
+  goToChatgroup(chatGroupIndex: number, questionIndex: number, quizSessionIndex: number) {
+    if (!this.chatGroups) return;
+    if (!this.chatGroups[chatGroupIndex]) {
+      this.selectedGroupId = this.chatGroups[0]._id;
+      return;
+    }
+    this.selectedGroupId = this.chatGroups[chatGroupIndex]._id;
 
+    this.goToQuestion(questionIndex, quizSessionIndex);
+  }
+
+  goToQuestion(questionIndex: number, quizSessionIndex: number) {
+    if (!this.orderedDiscussionPageQuestionIds) return;
+    if (!this.orderedDiscussionPageQuestionIds[questionIndex]) this.selectedQuestionId = this.orderedDiscussionPageQuestionIds[0];
+    else this.selectedQuestionId = this.orderedDiscussionPageQuestionIds[questionIndex];
+    // Set the quiz session id as the first
+    this.goToQuizSession(quizSessionIndex);
+  }
+
+  goToQuizSession(index: number) {
+    if (!this.currentGroupQuizSessionInfoObjects) return;
+    if(!this.currentGroupQuizSessionInfoObjects[index]) this.currentQuizSessionId = this.currentGroupQuizSessionInfoObjects[0].quizSession._id
+    else this.currentQuizSessionId = this.currentGroupQuizSessionInfoObjects[index].quizSession._id;
+  }
+
+  next() {
+    // Check from lowest level to highest level
+    // Check if next user/quiz session available
+    if (this.currentGroupQuizSessionInfoObjects.length > 0) {
+      const quizSessionIndex = this.currentGroupQuizSessionInfoObjects.findIndex((s: any) => s.quizSession._id === this.currentQuizSessionId);
+      if (quizSessionIndex === -1) {
+        this.goToQuizSession(0);
+        return;
+      } else if (this.currentGroupQuizSessionInfoObjects.length > 1 && quizSessionIndex < this.currentGroupQuizSessionInfoObjects.length - 1) {
+        // More than one quiz session exists, can move to the next one
+        this.goToQuizSession(quizSessionIndex + 1);
+        return;
+      }
+    }
+    if (this.orderedDiscussionPageQuestionIds.length > 0) {
+      // Check if next question available
+      const questionIndex = this.orderedDiscussionPageQuestionIds.indexOf(this.selectedQuestionId);
+      if (questionIndex === -1) {
+        this.goToQuestion(0, 0);
+        return;
+      } else if (this.orderedDiscussionPageQuestionIds.length > 1 && questionIndex < this.orderedDiscussionPageQuestionIds.length - 1) {
+        this.goToQuestion(questionIndex + 1, 0);
+        return;
+      }
+    }
+
+    if (this.chatGroups.length > 0) {
+      const chatGroupIndex = this.chatGroups.findIndex((cg: IChatGroup) => cg._id === this.selectedGroupId);
+      if (chatGroupIndex === -1) {
+        this.goToChatgroup(0, 0, 0);
+        return;
+      } else if (this.chatGroups.length > 1 && chatGroupIndex < this.chatGroups.length - 1) {
+        this.goToChatgroup(chatGroupIndex + 1, 0, 0);
+        return;
+      }
+    }
+  }
+
+  previous() {
+    // Check from lowest level to highest level
+    // Check if next user/quiz session available
+    if (this.currentGroupQuizSessionInfoObjects.length > 0) {
+      const quizSessionIndex = this.currentGroupQuizSessionInfoObjects.findIndex((s: any) => s.quizSession._id === this.currentQuizSessionId);
+      if (quizSessionIndex === -1) {
+        this.goToQuizSession(0);
+        return;
+      } else if (this.currentGroupQuizSessionInfoObjects.length > 1 && quizSessionIndex > 0) {
+        // More than one quiz session exists, can move to the next one
+        this.goToQuizSession(quizSessionIndex - 1);
+        return;
+      }
+    }
+    if (this.orderedDiscussionPageQuestionIds.length > 0) {
+      // Check if next question available
+      const questionIndex = this.orderedDiscussionPageQuestionIds.indexOf(this.selectedQuestionId);
+      if (questionIndex === -1) {
+        this.goToQuestion(0, 0);
+        return;
+      } else if (this.orderedDiscussionPageQuestionIds.length > 1 && questionIndex > 0) {
+        this.goToQuestion(questionIndex - 1, 0);
+        this.goToQuizSession(this.currentGroupQuizSessionInfoObjects.length - 1);
+        return;
+      }
+    }
+
+    if (this.chatGroups.length > 0) {
+      const chatGroupIndex = this.chatGroups.findIndex((cg: IChatGroup) => cg._id === this.selectedGroupId);
+      if (chatGroupIndex === -1) {
+        this.goToChatgroup(0, 0, 0);
+        return;
+      } else if (this.chatGroups.length > 1 && chatGroupIndex > 0) {
+        this.goToChatgroup(chatGroupIndex - 1, 0, 0);
+        this.goToQuestion(this.orderedDiscussionPageQuestionIds.length - 1, this.currentGroupQuizSessionInfoObjects.length - 1);
+        return;
+      }
+    }
+  }
   get markingState() {
     return this.$store.getters.currentMarkingContext;
   }
@@ -197,7 +303,7 @@ export default class MarkQuiz extends Vue {
   //   }
   // }
 
-  get currentGroupQuizSessionInfoObjects() {
+  get currentGroupQuizSessionInfoObjects(): any[] {
     return this.$store.getters.currentGroupQuizSessionInfoObjects;
   }
 
@@ -210,42 +316,42 @@ export default class MarkQuiz extends Vue {
   }
 
   async fetchAllQuizSessionInfo(vm: any) {
-      if (!vm.$route.params.id) return;
-      vm.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuizId', value: vm.$route.params.id });
+    if (!vm.$route.params.id) return;
+    vm.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuizId', value: vm.$route.params.id });
 
-      await vm.$store.dispatch("getChatGroups", vm.q._id);
-      const chatGroups = vm.$store.getters.chatGroups;
-      const chatGroupsInformationPromises = await Promise.all(chatGroups.map(async (g: IChatGroup) => {
-        const chatGroupsQuizSessionPromises = Promise.all((g!.quizSessionIds || []).map(async (qs) => {
-          await vm.$store.dispatch("getQuizSessionInfo", qs);
-        }));
+    await vm.$store.dispatch("getChatGroups", vm.q._id);
+    const chatGroups = vm.$store.getters.chatGroups;
+    const chatGroupsInformationPromises = await Promise.all(chatGroups.map(async (g: IChatGroup) => {
+      const chatGroupsQuizSessionPromises = Promise.all((g!.quizSessionIds || []).map(async (qs) => {
+        await vm.$store.dispatch("getQuizSessionInfo", qs);
       }));
+    }));
 
-      // Set up initial state
-      if (!vm.$store.getters.currentMarkingContext.currentChatGroupId) {
+    // Set up initial state
+    if (!vm.$store.getters.currentMarkingContext.currentChatGroupId) {
 
-        if (chatGroups && chatGroups.length > 0) {
-          vm.selectedGroupId = chatGroups[0]._id;
-          vm.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentChatGroupId', value: chatGroups[0]._id });
-        }
+      if (chatGroups && chatGroups.length > 0) {
+        vm.selectedGroupId = chatGroups[0]._id;
+        vm.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentChatGroupId', value: chatGroups[0]._id });
+      }
 
-        const questionsIds = vm.orderedDiscussionPageQuestionIds;
-        if (questionsIds && questionsIds.length > 0) {
-          vm.selectedQuestionId = questionsIds[0];
-          vm.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuestionId', value: questionsIds[0] });
-        }
+      const questionsIds = vm.orderedDiscussionPageQuestionIds;
+      if (questionsIds && questionsIds.length > 0) {
+        vm.selectedQuestionId = questionsIds[0];
+        vm.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuestionId', value: questionsIds[0] });
+      }
 
-        const currentChatGroup = vm.selectedGroup;
-        if (currentChatGroup) {
-          const quizSessionIds = (<IChatGroup>currentChatGroup).quizSessionIds || [];
-          if (quizSessionIds.length > 0) {
-            const currentQuizSessionIdBeingMarked = quizSessionIds[0];
-            vm.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuizSessionId', value: currentQuizSessionIdBeingMarked });
-          }
-
+      const currentChatGroup = vm.selectedGroup;
+      if (currentChatGroup) {
+        const quizSessionIds = (<IChatGroup>currentChatGroup).quizSessionIds || [];
+        if (quizSessionIds.length > 0) {
+          const currentQuizSessionIdBeingMarked = quizSessionIds[0];
+          vm.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuizSessionId', value: currentQuizSessionIdBeingMarked });
         }
 
       }
+
+    }
   }
   async beforeRouteEnter(to: any, from: any, next: any) {
     next(async (vm: any) => {
