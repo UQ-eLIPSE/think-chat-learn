@@ -13,10 +13,10 @@
                     :key="m">
                     <label> {{ m }}
                         <input type="radio"
-                                v-if="currentMarksValue"
+                               v-if="marks"
                                class="number-mark"
-                               v-model="currentMarksValue[c]"
-                               :value="m"/>
+                               v-model="marks.mark.value[c]"
+                               :value="m" />
                     </label>
                 </td>
             </tr>
@@ -31,10 +31,10 @@
                     :key="m">
                     <label> {{ m }}
                         <input type="radio"
-                                v-if="currentMarksValue"
+                               v-if="marks"
                                class="number-mark"
-                               v-model="currentMarksValue[c]"
-                               :value="m"/>
+                               v-model="marks.mark.value[c]"
+                               :value="m" />
                     </label>
                 </td>
             </tr>
@@ -42,7 +42,9 @@
             </tr>
         </table>
         <label> Feedback
-        <textarea v-if="currentMarksMark" v-model="currentMarksMark.feedbackText"></textarea></label>
+            <textarea v-if="marks"
+                      v-model="marks.mark.feedbackText"></textarea>
+        </label>
         <button class="button"
                 @click.prevent="saveMarks">Save</button>
     </div>
@@ -56,14 +58,13 @@ import * as Schema from "../../../../common/interfaces/DBSchema";
 import { API } from "../../../../common/js/DB_API";
 
 Component.registerHooks([
-  'beforeRouteEnter',
-  'beforeRouteLeave',
-  'beforeRouteUpdate' // for vue-router 2.2+
+    'updated',
+    'created'
 ])
 
 @Component({})
 export default class ElipssMarkingComponent extends Vue {
-    private marks: Schema.ElipssMark | undefined;
+    private marks: Schema.ElipssMark | undefined | null = null;
 
     get currentMarkingContext() {
         return this.$store.getters.currentMarkingContext;
@@ -108,28 +109,30 @@ export default class ElipssMarkingComponent extends Vue {
     // }
 
     async fetchMarksForQuestion() {
+        console.log('Fetching marks')
         try {
-                const currentMarkingContext = this.currentMarkingContext;
-                const quizSessionId = currentMarkingContext.currentQuestionId;
-                const questionId = currentMarkingContext.currentQuestionId;
-                const quizSessionIdMarks = await API.request(API.GET, API.MARKS + `/quizSessionId/${quizSessionId}/questionId/${questionId}`, {});
-                const marker = this.marker;
-                let marks: any = null;
-                if(Array.isArray(quizSessionIdMarks)) {
-                    marks = quizSessionIdMarks.find((mark) => mark.markerId === marker._id)
-                    if(!marks) throw new Error();
-                    this.marks = marks;
-                } else {
-                    throw new Error();
-                }
-            } catch (e) {
-                this.marks = this.initMark();
+            const currentMarkingContext = this.currentMarkingContext;
+            const quizSessionId = currentMarkingContext.currentQuizSessionId;
+            const questionId = currentMarkingContext.currentQuestionId;
+            const quizSessionIdMarks = await API.request(API.GET, API.MARKS + `quizSessionId/${quizSessionId}/questionId/${questionId}`, {});
+            console.log('Marks for this question for quiz session: ', quizSessionIdMarks);
+            const marker = this.marker;
+            let marks: any = null;
+            if (Array.isArray(quizSessionIdMarks)) {
+                marks = quizSessionIdMarks.find((mark) => mark.markerId === marker._id)
+                if (!marks) throw new Error();
+                this.marks = marks;
+            } else {
+                throw new Error();
             }
+        } catch (e) {
+            this.marks = this.initMark();
+        }
     }
 
     initMark(): Schema.ElipssMark {
         const currentMarkingContext = this.currentMarkingContext;
-        const quizSessionId = currentMarkingContext.currentQuestionId;
+        const quizSessionId = currentMarkingContext.currentQuizSessionId;
         const questionId = currentMarkingContext.currentQuestionId;
         const currentQuizSessionInfoObject = this.$store.getters.currentQuizSessionInfoObject;
         const marker = this.marker;
@@ -137,9 +140,11 @@ export default class ElipssMarkingComponent extends Vue {
             type: Schema.MarkMode.ELIPSS_MARKING,
             questionId: questionId,
             quizSessionId: quizSessionId,
-            markerId: marker._id,
-            userId: currentQuizSessionInfoObject.user._id,
-            timestamp: null, 
+            markerId: null,
+            userId: undefined,
+            username: undefined,
+            markerUsername: undefined,
+            timestamp: null,
             mark: {
                 value: {
                     evaluating: null,
@@ -151,14 +156,10 @@ export default class ElipssMarkingComponent extends Vue {
                     depthOfReflection: null
                 },
                 feedbackText: ''
-            } 
+            }
         }
     }
-    async beforeRouteEnter(to: any, from: any, next: any) {
-        next(async(vm: any) => {
-        })
-    }
- 
+
     get markingContext() {
         return this.$store.getters.currentMarkingContext;
     }
@@ -167,20 +168,25 @@ export default class ElipssMarkingComponent extends Vue {
         return this.markingContext.currentQuestionId;
     }
 
-
-    initElipssMarks(): Schema.ElipssMark | null {
-        if(!this.currentMarkingContext || !this.currentMarkingContext.currentQuizSessionId || !this.$store.getters.currentQuizSessionInfoObject) return null;
-        const m = {
-            type: Schema.MarkMode.ELIPSS_MARKING as any,
-            quizSessionId: this.currentMarkingContext.currentQuizSessionId,
-            userId: this.$store.getters.currentQuizSessionInfoObject.user._id,
-            questionMarks: {
-                [this.currentQuestionId]: this.initElipssMark()
-            }
-        }
-        console.log(m);
-        return m;
+    get currentQuizSessionId() {
+        if (!this.markingContext) return undefined;
+        return this.markingContext.currentQuizSessionId;
     }
+
+
+    // initElipssMarks(): Schema.ElipssMark | null {
+    //     if (!this.currentMarkingContext || !this.currentMarkingContext.currentQuizSessionId || !this.$store.getters.currentQuizSessionInfoObject) return null;
+    //     const m = {
+    //         type: Schema.MarkMode.ELIPSS_MARKING as any,
+    //         quizSessionId: this.currentMarkingContext.currentQuizSessionId,
+    //         userId: this.$store.getters.currentQuizSessionInfoObject.user._id,
+    //         questionMarks: {
+    //             [this.currentQuestionId]: this.initElipssMark()
+    //         }
+    //     }
+    //     console.log(m);
+    //     return m;
+    // }
 
     get individualCategories() {
         return this.categories.filter((c) => {
@@ -212,7 +218,7 @@ export default class ElipssMarkingComponent extends Vue {
     get quiz() {
         return this.$store.getters.currentQuiz;
     }
-    get markingConfig() {
+    get markingConfig(): Schema.ElipssMarkConfig | undefined {
         if (!this.quiz) return undefined;
         return this.quiz.markingConfiguration;
     }
@@ -234,22 +240,63 @@ export default class ElipssMarkingComponent extends Vue {
         return Object.keys(empty);
     }
 
-    saveMarks() {
-        if(!this.marks) return;
+    async saveMarks() {
+        try {
 
-        // const marksToBeSaved: Schema.ElipssMark = Object.assign({}, this.marks);
 
-        // // Update marks metadata
-        // // Get current question ID
-        // const markerId = this.marker.username;
-        // const timestamp = Date.now();
-        // const currentQuestionId = this.currentMarkingContext.currentQuestionId;
-        // // We assume feedback text and
-        // marksToBeSaved.questionMarks[currentQuestionId].mark.markerId = markerId;
-        // marksToBeSaved.questionMarks[currentQuestionId].mark.timestamp = timestamp as any;
-        
-        console.log('Saving these marks: ', this.marks);
+            if (!this.marks || !this.markingConfig || !this.currentQuestionId || !this.currentQuizSessionId) return;
+
+            const marksToBeSaved: Schema.ElipssMark = Object.assign({}, this.marks);
+
+            // Update marks metadata
+            // Get current question ID
+            const markerId = this.marker._id;
+            const timestamp = Date.now();
+            const quizSessionInfoObject = this.$store.getters.currentQuizSessionInfoObject;
+
+
+            // Store metadata in mark
+            marksToBeSaved.userId = quizSessionInfoObject.user._id;
+            marksToBeSaved.username = quizSessionInfoObject.user.username;
+            marksToBeSaved.markerId = markerId;
+            marksToBeSaved.timestamp = new Date();
+            marksToBeSaved.markerUsername = this.marker.username;
+
+            const multipleMarking = this.markingConfig.allowMultipleMarkers;
+
+            if (multipleMarking) {
+                const markSaveResponse = await API.request(API.POST, API.MARKS + `multiple/createOrUpdate/quizSessionId/${this.currentQuizSessionId}/questionId/${this.currentQuestionId}`, marksToBeSaved);
+                console.log(markSaveResponse)
+                alert('Saved');
+            } else {
+                const markSaveResponse = await API.request(API.POST, API.MARKS + `createOrUpdate/quizSessionId/${this.currentQuizSessionId}/questionId/${this.currentQuestionId}`, marksToBeSaved);
+                console.log(markSaveResponse)
+                alert('Saved');
+            }
+
+        } catch (e) {
+            console.log('Error: Could not save mark');
+        }
     }
+
+    async created() {
+        await this.fetchMarksForQuestion();
+    }
+
+
+    @Watch('currentQuizSessionId')
+    async quizSessionChangeHandler() {
+        console.log('Watch change detected');
+        this.fetchMarksForQuestion();
+    }
+
+    @Watch('currentQuestionId')
+    async questionChangeHandler() {
+        console.log('Watch change detected');
+        this.fetchMarksForQuestion();
+    }
+
+
 }
 </script>
 <style scoped>

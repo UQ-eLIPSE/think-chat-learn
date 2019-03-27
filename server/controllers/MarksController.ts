@@ -9,33 +9,62 @@ export class MarksController extends BaseController {
 
     protected marksService: MarksService;
 
-    constructor(_chatGroupService: ChatGroupService) {
+    constructor(_marksService: MarksService) {
         super();
-        this.chatGroupService = _chatGroupService;
+        this.marksService = _marksService;
     }
 
-    private recoverChatGroupStateByQuizSessionId(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        this.chatGroupService.reconstructChatGroup(req.body._id).then((data) => {
-            res.json(data);
+
+    private getMarksByQuizSessionQuestion(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
+        console.log('params: ', req.params);
+        if(!req.params.quizSessionId || !req.params.questionId) throw new Error('Parameters not supplied');
+
+        this.marksService.getMarksForQuizSessionQuestion(req.params.quizSessionId, req.params.questionId).then((result) => {
+            res.json(result).status(200);
         }).catch((e) => {
             console.log(e);
             res.sendStatus(400);
         });
     }
 
-    private getChatGroups(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        console.log('Changr froup endopirn');
-        this.chatGroupService.getChatGroups(req.query.quizid).then((result) => {
-            console.log(result);
-            res.json(result);
+    private getMarksByQuizSession(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
+        if(!req.params.quizSessionId) throw new Error('Parameters not supplied');
+
+        this.marksService.getMarksForQuizSessionQuestion(req.query.quizSessionId).then((result) => {
+            res.json(result).status(200);
         }).catch((e) => {
+            console.log(e);
+            res.sendStatus(400);
+        });
+    }
+
+    private createOrUpdateMarks(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
+        if(!req.params.quizSessionId || !req.params.questionId || !req.body) throw new Error('Parameters not supplied');
+        // TODO validate req.body as a valid mark
+        this.marksService.createOrUpdateMarks(req.params.quizSessionId, req.params.questionId, req.body).then((result) => {
+            res.json(result).status(200);
+        }).catch((e) => {
+            console.log(e);
+            res.sendStatus(400);
+        });
+    }
+
+    private createOrUpdateMarksMultiple(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
+        if(!req.params.quizSessionId || !req.params.questionId || !req.body) throw new Error('Parameters not supplied');
+        // TODO validate req.body as a valid mark
+        console.log('Request recd for multi marking');
+        this.marksService.createOrUpdateMarksMultiple(req.params.quizSessionId, req.params.questionId, req.body).then((result) => {
+            res.json(result).status(200);
+        }).catch((e) => {
+            console.log(e);
             res.sendStatus(400);
         });
     }
 
     public setupRoutes() {
-        this.router.post("/recoverSession", StudentAuthenticatorMiddleware.checkUserId(),
-            StudentAuthenticatorMiddleware.checkQuizSessionId(), this.recoverChatGroupStateByQuizSessionId.bind(this));
-        this.router.get('/getChatGroups', isAdmin(), this.getChatGroups.bind(this));
+        this.router.get("/quizSessionId/:quizSessionId/questionId/:questionId", isAdmin(), this.getMarksByQuizSessionQuestion.bind(this));
+        this.router.get("/quizSessionId/:quizSessionId", isAdmin(), this.getMarksByQuizSession.bind(this));
+        this.router.post("/createOrUpdate/quizSessionId/:quizSessionId/questionId/:questionId", isAdmin(), this.createOrUpdateMarks.bind(this));
+        this.router.post("/multiple/createOrUpdate/quizSessionId/:quizSessionId/questionId/:questionId", isAdmin(), this.createOrUpdateMarksMultiple.bind(this));
     }
 }

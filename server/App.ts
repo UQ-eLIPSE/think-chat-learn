@@ -15,6 +15,7 @@ import { UserSessionRepository } from "./repositories/UserSessionRepository";
 import { QuizSessionRepository } from "./repositories/QuizSessionRepository";
 import { ChatGroupRepository } from "./repositories/ChatGroupRepository";
 import { ResponseRepository } from "./repositories/ResponseRepository";
+import { MarksRepository } from "./repositories/MarksRepository";
 
 // Services
 import { UserService } from "./services/UserService";
@@ -54,6 +55,7 @@ export default class App {
     private quizSessionRepository: QuizSessionRepository;
     private chatGroupRepository: ChatGroupRepository;
     private responseRepository: ResponseRepository;
+    private marksRepository: MarksRepository;
 
     // Services
     private userService: UserService;
@@ -63,6 +65,7 @@ export default class App {
     private quizSessionService: QuizSessionService;
     private chatGroupService: ChatGroupService;
     private responseService: ResponseService;
+    private marksService: MarksService;
 
     // Controllers
     private userController: UserController;
@@ -120,7 +123,7 @@ export default class App {
             this.quizRepository, this.responseRepository);
         this.chatGroupService = new ChatGroupService(this.chatGroupRepository, this.responseRepository);
         this.responseService = new ResponseService(this.responseRepository, this.quizSessionRepository, this.quizRepository);
-        this.marksService = new MarksService(this.quizSessionRepository, this.quizRepository, this.chatGroupRepository, this.userSessionRepository, this.questionRepository);
+        this.marksService = new MarksService(this.marksRepository, this.quizRepository, this.quizSessionRepository);
         this.userController = new UserController(this.userService);
         this.quizController = new QuizController(this.quizService);
         this.questionController = new QuestionController(this.questionService);
@@ -128,7 +131,7 @@ export default class App {
         this.quizSessionController = new QuizSessionController(this.quizSessionService);
         this.responseController = new ResponseController(this.responseService);
         this.chatGroupController = new ChatGroupController(this.chatGroupService);
-
+        this.marksController = new MarksController(this.marksService);
         StudentAuthenticatorMiddleware.instantiate(this.userService, this.userSessionService, this.quizSessionService,
                 this.responseService);
 
@@ -139,6 +142,7 @@ export default class App {
         this.quizSessionController.setupRoutes();
         this.responseController.setupRoutes();
         this.chatGroupController.setupRoutes();
+        this.marksController.setupRoutes();
 
     }
 

@@ -31,6 +31,11 @@ export default class MarkingComponent extends Vue {
     return this.$store.getters.currentQuiz;
   }
 
+  get currentMarkingContext() {
+    return this.$store.getters.currentMarkingContext;
+  }
+
+
   get markingConfig() {
     if(!this.quiz) return undefined;
     return this.quiz.markingConfiguration;

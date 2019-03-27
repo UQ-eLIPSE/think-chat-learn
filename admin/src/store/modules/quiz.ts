@@ -204,7 +204,7 @@ const actions: ActionTree<IState, undefined> = {
         const user = await API.request(API.GET, API.USER + "marking/" + userSessionResponse.userId, {});
 
         // Fetch responses by quiz session id
-        const responseResponse = await API.request(API.GET, API.RESPONSE + "/quizSession/" + quizSessionId, {});
+        const responseResponse = await API.request(API.GET, API.RESPONSE + "quizSession/" + quizSessionId, {});
         const responses = responseResponse.data ? responseResponse.data : [];
 
         const payload = { quizSession: quizSession, userSession: userSession, user: user, responses: responses } as QuizSessionDataObject;

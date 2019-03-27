@@ -156,9 +156,11 @@ export interface Mark extends Document {
   type: MarkMode;
   quizSessionId: string;
   userId: IUser["_id"];
+  username: IUser["username"];
   questionId: string;
   timestamp: Date | null;
   markerId: string | null;
+  markerUsername: IUser["username"];
 }
 export interface ElipssMark extends Mark  {
   type: MarkMode.ELIPSS_MARKING;

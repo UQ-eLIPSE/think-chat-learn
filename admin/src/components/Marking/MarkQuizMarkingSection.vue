@@ -53,6 +53,10 @@ export default class MarkQuizMarkingSection extends Vue {
     return this.$store.getters.currentQuizSessionInfoObject;
   }
 
+  get currentMarkingContext() {
+    return this.$store.getters.currentMarkingContext;
+  }
+
   get chatMessages() {
     if(!this.$store.getters.currentChatGroupQuestionMessages) return [];
     return this.$store.getters.currentChatGroupQuestionMessages;
