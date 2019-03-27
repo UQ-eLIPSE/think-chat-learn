@@ -1,5 +1,5 @@
 <template>
-  <div class="marking-rubric"
+  <div class="marking"
        v-if="markingConfig">
     <div v-if="isElipssMark">
       <ElipssMarkingComponent></ElipssMarkingComponent>
@@ -78,5 +78,11 @@ export default class MarkingComponent extends Vue {
   flex-direction: column;
   border: 0.1em solid teal;
   padding: 0.5rem;
+}
+
+.marking {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
 }
 </style>

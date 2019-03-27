@@ -14,13 +14,13 @@
   // font-family: "Roboto-Light", sans-serif;
   // -webkit-font-smoothing: antialiased;
   // -moz-osx-font-smoothing: grayscale;
-  height: 100vh;
+  height: 100vh !important;
   width: 100vw;
   overflow: hidden;
 
   display: flex;
   flex-direction: row;
-  flex-wrap: no-wrap;
+  // flex-wrap: nowrap;
 }
 
 #routerpanel {
@@ -95,10 +95,10 @@ html {
       cursor: pointer;
       font-family: "Open Sans", sans-serif;
       font-size: 1em;
-      font-weight: 300;
-      height: 23px;
+      font-weight: 400;
+      height: 30px;
       min-width: 150px;
-      padding: 0 15px;
+      padding: 0 30px;
 
       &.primary {
         background-color: $primary;

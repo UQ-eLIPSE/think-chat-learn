@@ -1,5 +1,6 @@
 <template>
     <div class="marking-rubric">
+        <h3>Rubric</h3>
         <table class="marks-table"
                v-if="marks">
             <tr>Individual Mark</tr>
@@ -41,11 +42,11 @@
 
             </tr>
         </table>
-        <label> Feedback
+        <!-- <label> Feedback
             <textarea v-if="marks"
                       v-model="marks.mark.feedbackText"></textarea>
-        </label>
-        <button class="button primary"
+        </label> -->
+        <button type="button" class="primary"
                 @click.prevent="saveMarks">Save</button>
     </div>
 </template>
@@ -69,44 +70,6 @@ export default class ElipssMarkingComponent extends Vue {
     get currentMarkingContext() {
         return this.$store.getters.currentMarkingContext;
     }
-
-    // get marksMap() {
-    //     return this.$store.getters.marksMap;
-    // }
-
-    // get marksInStoreMap() {
-    //     if(!this.currentMarkingContext) return null;
-    //     if(!this.currentMarkingContext.currentQuizSessionId || !this.$store.getters.quizSessionInfoMap) return null;
-    //     if(!this.$store.getters.quizSessionInfoMap[this.currentMarkingContext.currentQuizSessionId]) return null;
-    //     return this.$store.getters.quizSessionInfoMap[this.currentMarkingContext.currentQuizSessionId].marks;
-    // }
-
-    // get currentMarks() {
-    //     if(!this.currentMarkingContext || !this.currentMarkingContext.currentMarks || !this.currentMarkingContext.currentQuestionId || !this.currentMarkingContext.currentMarks.questionMarks) return null;
-    //     return this.currentMarkingContext.currentMarks
-    // }
-
-    // get currentMarksMark() {
-    //     if(!this.currentMarkingContext || !this.currentMarkingContext.currentMarks || !this.currentMarkingContext.currentQuestionId || !this.currentMarkingContext.currentMarks.questionMarks) return null;
-    //     return this.currentMarkingContext.currentMarks.questionMarks[this.currentMarkingContext.currentQuestionId].mark;
-    // }
-    // get currentMarksValue() {
-    //     if(!this.currentMarkingContext || !this.currentMarkingContext.currentMarks || !this.currentMarkingContext.currentQuestionId || !this.currentMarkingContext.currentMarks.questionMarks) return null;
-    //     return this.currentMarkingContext.currentMarks.questionMarks[this.currentMarkingContext.currentQuestionId].mark.value;
-    // }
-    // get marks() {
-    //     if(!this.currentMarkingContext || !this.currentMarkingContext.currentQuizSessionId || !this.initElipssMarks()) return null;
-    //     if(!this.marksInStoreMap) {
-    //         if(!this.currentMarkingContext.currentMarks) {
-    //             this.$store.commit("UPDATE_CURRENT_MARKING_CONTEXT", { prop: "currentMarks", value: this.initElipssMarks() });
-    //         } else {
-    //             return this.currentMarkingContext.currentMarks;
-    //         }
-    //     } else {
-    //         this.$store.commit("UPDATE_CURRENT_MARKING_CONTEXT", { prop: "currentMarks", value: this.marksInStoreMap });
-    //         return this.currentMarkingContext.currentMarks;
-    //     } 
-    // }
 
     async fetchMarksForQuestion() {
         console.log('Fetching marks')
@@ -172,21 +135,6 @@ export default class ElipssMarkingComponent extends Vue {
         if (!this.markingContext) return undefined;
         return this.markingContext.currentQuizSessionId;
     }
-
-
-    // initElipssMarks(): Schema.ElipssMark | null {
-    //     if (!this.currentMarkingContext || !this.currentMarkingContext.currentQuizSessionId || !this.$store.getters.currentQuizSessionInfoObject) return null;
-    //     const m = {
-    //         type: Schema.MarkMode.ELIPSS_MARKING as any,
-    //         quizSessionId: this.currentMarkingContext.currentQuizSessionId,
-    //         userId: this.$store.getters.currentQuizSessionInfoObject.user._id,
-    //         questionMarks: {
-    //             [this.currentQuestionId]: this.initElipssMark()
-    //         }
-    //     }
-    //     console.log(m);
-    //     return m;
-    // }
 
     get individualCategories() {
         return this.categories.filter((c) => {

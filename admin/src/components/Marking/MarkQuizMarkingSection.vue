@@ -2,7 +2,7 @@
   <div class="marking-section">
     <div class="row">
       <div class="chat-messages">
-        <div>Chat messages</div>
+        <h1>Chat messages</h1>
         <div class="chat"
              v-if="chatMessages">
           <div class="message-container">
@@ -16,21 +16,25 @@
           </div>
         </div>
       </div>
-      <div class="container responses-container">
-        <h1>Responses</h1>
-        <div class="responses message-container"
-             v-if="currentChatGroupResponses">
-          <ChatMessage v-for="r in currentChatGroupResponses"
-                       v-if="r"
-                       :key="r._id"
-                       :selected="responseBelongsTocurrentQuizSessionInfoObject(r.quizSessionId)"
-                       :numeral="getNumeralFromQuizSessionId(r.quizSessionId)"
-                       :content="r.content" />
+
+      <div class="column">
+        <div class="responses-container">
+          <h1>Responses</h1>
+          <div class="responses message-container"
+               v-if="currentChatGroupResponses">
+            <ChatMessage v-for="r in currentChatGroupResponses"
+                         v-if="r"
+                         :key="r._id"
+                         :selected="responseBelongsTocurrentQuizSessionInfoObject(r.quizSessionId)"
+                         :numeral="getNumeralFromQuizSessionId(r.quizSessionId)"
+                         :content="r.content" />
+          </div>
         </div>
+        <MarkingComponent class="marking-component"></MarkingComponent>
       </div>
     </div>
-    <h1>Marking Rubric</h1>
-    <MarkingComponent></MarkingComponent>
+
+
   </div>
 </template>
 
@@ -58,7 +62,7 @@ export default class MarkQuizMarkingSection extends Vue {
   }
 
   get chatMessages() {
-    if(!this.$store.getters.currentChatGroupQuestionMessages) return [];
+    if (!this.$store.getters.currentChatGroupQuestionMessages) return [];
     return this.$store.getters.currentChatGroupQuestionMessages;
   }
   get currentChatGroupResponses() {
@@ -69,7 +73,7 @@ export default class MarkQuizMarkingSection extends Vue {
     return (this.currentQuizSessionInfoObject.quizSession._id === qid);
   }
 
-  get currentChatGroup() { 
+  get currentChatGroup() {
     return this.$store.getters.currentChatGroup;
   }
   responseBelongsTocurrentQuizSessionInfoObject(qid: string): boolean {
@@ -113,18 +117,24 @@ export default class MarkQuizMarkingSection extends Vue {
   padding: 0.5rem;
 }
 
+.marking-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.marking-section>* {
+  margin: 1rem 0;
+}
 
 .chat {
   background-color: #f7f8f8;
   box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.15);
   max-height: 30vh;
-  padding-top: 75px;
-  width: 50%;
-  z-index: 1;
+  width: 100%;
 
   .message-container {
     max-height: 100%;
-    overflow: scroll;
+    overflow: auto;
     padding: 15px;
   }
 }
@@ -132,20 +142,32 @@ export default class MarkQuizMarkingSection extends Vue {
 .row {
   display: flex;
   width: 100%;
-  height: 30vh;
+  height: 65vh;
 }
 
 .chat-messages {
   display: flex;
   flex-shrink: 0;
   flex-direction: column;
-  width: 70%;
+  width: 50%;
 }
 
 .responses-container {
   display: flex;
   flex-shrink: 0;
   flex-direction: column;
-  width: 30%;
+  max-height: 30vh;
+  overflow: auto;
+  // width: 50%;
+}
+
+.marking-component {
+  flex-shrink: 0;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  max-width: 50%;
 }
 </style>

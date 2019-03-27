@@ -1,5 +1,5 @@
 <template>
-  <div class="marking container has-text-centered">
+  <div id="quiz-mark-page" class="marking has-text-centered">
     <div v-if="q"
          class="container">
       <h3>Title: {{ q.title }}</h3>
@@ -426,5 +426,9 @@ export default class MarkQuiz extends Vue {
 
 .step-navigation>* {
   margin: 0 0.25rem;
+}
+
+.quiz-mark-page {
+  height: 100vh;
 }
 </style>
