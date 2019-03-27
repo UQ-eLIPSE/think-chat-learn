@@ -4,7 +4,7 @@
       <div class="chat-messages">
         <h3>Chat messages</h3>
         <div class="chat"
-             v-if="chatMessages">
+             v-if="chatMessages && chatMessages.length > 0">
           <div class="message-container">
             <div v-for="m in chatMessages"
                  :key="m._id">
@@ -15,19 +15,26 @@
             </div>
           </div>
         </div>
+        <div v-if="!chatMessages || !chatMessages.length > 0">
+          <span>No chat messages available</span>
+        </div>
       </div>
 
       <div class="column">
         <div class="responses-container">
           <h3>Responses</h3>
           <div class="responses message-container"
-               v-if="currentChatGroupResponses">
+               v-if="currentChatGroupResponses && currentChatGroupResponses.length > 0">
             <ChatMessage v-for="r in currentChatGroupResponses"
                          v-if="r"
                          :key="r._id"
                          :selected="responseBelongsTocurrentQuizSessionInfoObject(r.quizSessionId)"
                          :numeral="getNumeralFromQuizSessionId(r.quizSessionId)"
                          :content="r.content" />
+          </div>
+
+          <div v-if="!currentChatGroupResponses || !currentChatGroupResponses.length > 0">
+            <span>No responses available</span>
           </div>
         </div>
         <MarkingComponent class="marking-component"></MarkingComponent>

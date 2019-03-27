@@ -18,11 +18,9 @@
                                  class="button secondary"
                                  :to="{ name: 'mark-quiz', params: { id: q._id } }">Start marking</router-link>
                     <router-link tag="button"
+                                 id="view-marks"
                                  class="button secondary"
                                  :to="{ name: 'view-mark-quiz', params: { id: q._id } }">View marks</router-link>
-                    <button class="button secondary"
-                            id="export-marks"
-                            type="button">Export marks</button>
                 </div>
             </div>
             <router-view />
@@ -64,7 +62,7 @@
     background: rgba(1, 0, 0, 0.05);
 }
 
-#export-marks {
+#view-marks {
     background-color: $baseDark2;
     color: $white;
 }
