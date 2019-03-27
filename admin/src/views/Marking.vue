@@ -10,14 +10,18 @@
 
                 <h3>{{ q.title }}</h3>
                 <h5>Quiz ID: {{q._id}}</h5>
-                <span>Available Start: {{ q.availableStart }}</span>
-                <span>Available End: {{ q.availableEnd }}</span>
+                <span>Available Start: {{ new Date(q.availableStart).toString() }}</span>
+                <span>Available End: {{ new Date(q.availableEnd).toString() }}</span>
 
                 <div class="controls">
                     <router-link tag="button"
                                  class="button secondary"
                                  :to="{ name: 'mark-quiz', params: { id: q._id } }">Start marking</router-link>
-                    <button class="button secondary" id="export-marks"
+                    <router-link tag="button"
+                                 class="button secondary"
+                                 :to="{ name: 'view-mark-quiz', params: { id: q._id } }">View marks</router-link>
+                    <button class="button secondary"
+                            id="export-marks"
                             type="button">Export marks</button>
                 </div>
             </div>
@@ -50,9 +54,10 @@
     display: flex;
 }
 
-.controls > * {
+.controls>* {
     margin: 0 0.25rem;
 }
+
 .quiz-item:hover,
 .quiz-item:active,
 .quiz-item:focus {

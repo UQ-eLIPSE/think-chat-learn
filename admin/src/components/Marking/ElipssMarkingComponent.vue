@@ -43,11 +43,17 @@
             </tr>
         </table>
         <!-- <label> Feedback
-            <textarea v-if="marks"
-                      v-model="marks.mark.feedbackText"></textarea>
-        </label> -->
-        <button type="button" class="primary"
-                @click.prevent="saveMarks">Save</button>
+                        <textarea v-if="marks"
+                                  v-model="marks.mark.feedbackText"></textarea>
+                    </label> -->
+        <div class="save-controls">
+            <button type="button"
+                    class="primary"
+                    @click.prevent="saveMarks">Save Marks</button>
+            <div v-if="saveStatus.message.length > 0"
+                 :class="saveMessageClasses">{{ saveStatus.message }}</div>
+
+        </div>
     </div>
 </template>
 
@@ -66,7 +72,15 @@ Component.registerHooks([
 @Component({})
 export default class ElipssMarkingComponent extends Vue {
     private marks: Schema.ElipssMark | undefined | null = null;
+    private saveStatus: { message: string, success: boolean } = { message: '', success: true };
 
+    get saveMessageClasses() {
+        if (this.saveStatus.message.length === 0) return {};
+        return {
+            'success': this.saveStatus.success,
+            "error": !this.saveStatus.success
+        }
+    }
     get currentMarkingContext() {
         return this.$store.getters.currentMarkingContext;
     }
@@ -214,19 +228,33 @@ export default class ElipssMarkingComponent extends Vue {
 
             if (multipleMarking) {
                 const markSaveResponse = await API.request(API.POST, API.MARKS + `multiple/createOrUpdate/quizSessionId/${this.currentQuizSessionId}/questionId/${this.currentQuestionId}`, marksToBeSaved);
-                console.log(markSaveResponse)
-                alert('Saved');
+                if (markSaveResponse) {
+                    this.showSuccessMessage();
+                }
             } else {
                 const markSaveResponse = await API.request(API.POST, API.MARKS + `createOrUpdate/quizSessionId/${this.currentQuizSessionId}/questionId/${this.currentQuestionId}`, marksToBeSaved);
-                console.log(markSaveResponse)
-                alert('Saved');
+                if (markSaveResponse) {
+                    this.showSuccessMessage();
+                }
             }
 
         } catch (e) {
             console.log('Error: Could not save mark');
         }
     }
+    showSuccessMessage() {
+        this.saveStatus.message = "Saved";
+        this.saveStatus.success = true;
+        setTimeout(() => {
+            this.saveStatus.message = '';
+            this.saveStatus.success = true;
+        }, 2000);
+    }
 
+    showErrorMessage() {
+        this.saveStatus.message = "Error";
+        this.saveStatus.success = false;
+    }
     async created() {
         await this.fetchMarksForQuestion();
     }
@@ -300,5 +328,22 @@ export default class ElipssMarkingComponent extends Vue {
 .marks-table th {
     border: 1px solid #ddd;
     padding: 8px;
+}
+
+.success {
+    background: green;
+    width: 50%;
+    color: white;
+}
+
+.error {
+    background: lightcoral;
+    width: 50%;
+    color: white;
+}
+
+.save-controls {
+    display: flex;
+
 }
 </style>

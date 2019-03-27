@@ -22,15 +22,20 @@ export class MarksService extends BaseService {
         this.marksRepo = _marksRepo;
     }
 
-    public async getMarksForQuizSessionQuestion(quizSessionId: string, questionId?: string): Promise<ElipssMark[]> {
-        console.log('Fetching marks by quiz session id and question id', {
-            quizSessionId: quizSessionId,
-            questionId: questionId
-        });
+    public async getMarksForQuizSessionQuestion(quizSessionId: string, questionId: string): Promise<ElipssMark[]> {
+        console.log('Fetching marks by quiz session id and question id', );
 
         return this.marksRepo.findAll({
             quizSessionId: quizSessionId,
             questionId: questionId
+        })
+    }
+
+    public async getMarksForQuizSession(quizSessionId: string): Promise<ElipssMark[]> {
+        console.log('Fetching marks by quiz session id and question id', );
+
+        return this.marksRepo.findAll({
+            quizSessionId: quizSessionId
         })
     }
 

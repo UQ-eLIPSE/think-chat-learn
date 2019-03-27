@@ -7,6 +7,7 @@ import QuestionPage from "./components/QuestionPage.vue";
 import QuestionList from "./components/QuestionList.vue";
 import QuizList from "./components/QuizList.vue";
 import MarkQuiz from "./views/MarkQuiz.vue";
+import QuizMarkViewer from "./views/QuizMarkViewer.vue";
 import Marking from './views/Marking.vue';
 
 Vue.use(Router);
@@ -49,5 +50,10 @@ export default new Router({
     path: '/mark-quiz/:id',
     name: 'mark-quiz',
     component: MarkQuiz
+  },
+  {
+    path: '/view-mark-quiz/:id',
+    name: 'view-mark-quiz',
+    component: QuizMarkViewer
   }],
 });

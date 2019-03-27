@@ -30,7 +30,7 @@ export class MarksController extends BaseController {
     private getMarksByQuizSession(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
         if(!req.params.quizSessionId) throw new Error('Parameters not supplied');
 
-        this.marksService.getMarksForQuizSessionQuestion(req.query.quizSessionId).then((result) => {
+        this.marksService.getMarksForQuizSession(req.params.quizSessionId).then((result) => {
             res.json(result).status(200);
         }).catch((e) => {
             console.log(e);
