@@ -45,7 +45,7 @@
             <textarea v-if="marks"
                       v-model="marks.mark.feedbackText"></textarea>
         </label>
-        <button class="button"
+        <button class="button primary"
                 @click.prevent="saveMarks">Save</button>
     </div>
 </template>

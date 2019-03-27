@@ -7,7 +7,7 @@
             <router-link tag="li" to="/">Welcome</router-link>
             <router-link tag="li" to="/quizList">Quiz List</router-link>
             <router-link tag="li" to="/questionList">Question List</router-link>
-            <router-link tag="a" to="/marking">Marking</router-link>
+            <router-link tag="li" to="/marking">Marking</router-link>
         </ul>
     </div>
 </template>

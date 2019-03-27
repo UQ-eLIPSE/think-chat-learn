@@ -16,7 +16,7 @@
           </div>
         </div>
       </div>
-      <div class="responses-container">
+      <div class="container responses-container">
         <h1>Responses</h1>
         <div class="responses message-container"
              v-if="currentChatGroupResponses">

@@ -1,37 +1,38 @@
 <template>
-  <div class="marking">
+  <div class="marking container has-text-centered">
     <div v-if="q"
-         class="q-details">
+         class="container">
+      <h3>Title: {{ q.title }}</h3>
       <span>Quiz ID: {{q._id}}</span>
-      <span>Title: {{ q.title }}</span>
+
       <span>Available Start: {{ q.availableStart }}</span>
       <span>Available End: {{ q.availableEnd }}</span>
     </div>
 
-    <select v-model="selectedGroupId">
-      <option v-for="(g, i) in chatGroups"
-              :value="g._id"
-              :key="g._id"> Group {{i + 1}} ({{g._id}})</option>
-    </select>
+    <div class="container group-select">
+      <label> Group
+        <select v-model="selectedGroupId">
+          <option v-for="(g, i) in chatGroups"
+                  :value="g._id"
+                  :key="g._id"> Group {{i + 1}} ({{g._id}})</option>
+        </select>
+      </label>
+    </div>
 
     <div class="group-mark"
          v-if="selectedGroup">
-      <select v-model="selectedQuestionId">
-        <option v-for="(qid, i) in orderedDiscussionPageQuestionIds"
-                :value="qid"
-                :key="qid">{{ (getQuestionById(qid) || { title: qid }).title }}</option>
-      </select>
+      <label> Question
+        <select v-model="selectedQuestionId">
+          <option v-for="(qid, i) in orderedDiscussionPageQuestionIds"
+                  :value="qid"
+                  :key="qid">{{ (getQuestionById(qid) || { title: qid }).title }}</option>
+        </select>
+      </label>
+      <button type="button" class="primary"
+              @click="displayQuestionContent = !displayQuestionContent">{{ displayQuestionContent? 'Hide': 'Show' }} question content</button>
 
       <div class="question-discussion"
            v-if="selectedQuestion">
-        <div class="question-box">
-          <span> Question Title:
-            <b>{{ selectedQuestion.title }}</b>
-          </span>
-          <span> {{ selectedQuestion.content }}</b>
-          </span>
-        </div>
-
         <label>
           Current user
           <select v-model="currentQuizSessionId">
@@ -40,6 +41,17 @@
                     :value="s.quizSession._id">{{ s.user.username }}</option>
           </select>
         </label>
+
+
+        <div class="question-box"
+             v-if="displayQuestionContent">
+          <span> Question Title:
+            <b>{{ selectedQuestion.title }}</b>
+          </span>
+          <div v-html="selectedQuestion.content"></div>
+          </span>
+        </div>
+
 
         <MarkQuizMarkingSection class="marking-section" />
       </div>
@@ -50,9 +62,12 @@
 
     <div class="step-navigation">
       <button type="button"
-              @click.prevent="previous">Previous</button>
-      <button type="button"
-              @click.prevent="next">Next</button>
+              class="button secondary"
+              @click.prevent="previous">
+        < Previous</button>
+          <button type="button"
+                  class="button secondary"
+                  @click.prevent="next">Next ></button>
     </div>
   </div>
 
@@ -79,6 +94,7 @@ Component.registerHooks([
   }
 })
 export default class MarkQuiz extends Vue {
+  private displayQuestionContent: boolean = false;
 
   goToChatgroup(chatGroupIndex: number, questionIndex: number, quizSessionIndex: number) {
     if (!this.chatGroups) return;
@@ -101,7 +117,7 @@ export default class MarkQuiz extends Vue {
 
   goToQuizSession(index: number) {
     if (!this.currentGroupQuizSessionInfoObjects) return;
-    if(!this.currentGroupQuizSessionInfoObjects[index]) this.currentQuizSessionId = this.currentGroupQuizSessionInfoObjects[0].quizSession._id
+    if (!this.currentGroupQuizSessionInfoObjects[index]) this.currentQuizSessionId = this.currentGroupQuizSessionInfoObjects[0].quizSession._id
     else this.currentQuizSessionId = this.currentGroupQuizSessionInfoObjects[index].quizSession._id;
   }
 
@@ -365,7 +381,8 @@ export default class MarkQuiz extends Vue {
   // }
 }
 </script>
-<style scoped>
+<style lang="scss" scoped>
+@import "../../css/variables.scss";
 .sidebar {
   color: white;
   text-shadow: rgb(85, 85, 85) 0.05em 0.05em 0.05em;
@@ -400,5 +417,14 @@ export default class MarkQuiz extends Vue {
 .marking-section {
   max-height: 80vh;
   overflow: scroll;
+}
+
+.step-navigation {
+  display: flex;
+  justify-content: center;
+}
+
+.step-navigation>* {
+  margin: 0 0.25rem;
 }
 </style>

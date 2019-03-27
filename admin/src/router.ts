@@ -7,7 +7,7 @@ import QuestionPage from "./components/QuestionPage.vue";
 import QuestionList from "./components/QuestionList.vue";
 import QuizList from "./components/QuizList.vue";
 import MarkQuiz from "./views/MarkQuiz.vue";
-import Marking from './views/Marking2.vue';
+import Marking from './views/Marking.vue';
 
 Vue.use(Router);
 
