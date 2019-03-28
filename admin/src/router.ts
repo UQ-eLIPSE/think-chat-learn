@@ -9,6 +9,9 @@ import QuizList from "./components/QuizList.vue";
 import MarkQuiz from "./views/MarkQuiz.vue";
 import QuizMarkViewer from "./views/QuizMarkViewer.vue";
 import Marking from './views/Marking.vue';
+import MarkPlaceholder from './components/Marking/MarkPlaceholder.vue';
+import store from './store';
+import * as Schema from '../../common/interfaces/DBSchema';
 
 Vue.use(Router);
 
@@ -48,12 +51,37 @@ export default new Router({
   },
   {
     path: '/mark-quiz/:id',
-    name: 'mark-quiz',
-    component: MarkQuiz
-  },
-  {
-    path: '/view-mark-quiz/:id',
-    name: 'view-mark-quiz',
-    component: QuizMarkViewer
-  }],
+    name: 'mark-quiz-main',
+    component: MarkPlaceholder,
+    children: [
+      {
+        path: 'mark',
+        name: 'mark-quiz',
+        component: MarkQuiz
+      },
+      {
+        path: 'view-marks',
+        name: 'view-mark-quiz',
+        component: QuizMarkViewer
+      }
+    ],
+    beforeEnter: async (to: any, from: any, next: any) => {
+      if (!to.params.id) {
+        // Error
+        console.log('Quiz ID not present')
+      }
+
+      const quizId = to.params.id;
+      store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuizId', value: quizId });
+      await store.dispatch("getChatGroups", quizId);
+      const chatGroups = store.getters.chatGroups;
+      const chatGroupsInformationPromises = await Promise.all(chatGroups.map(async (g: Schema.IChatGroup) => {
+        const chatGroupsQuizSessionPromises = await Promise.all((g!.quizSessionIds || []).map(async (qs) => {
+          await store.dispatch("getQuizSessionInfo", qs);
+        }));
+      }));
+      next();
+    }
+  }
+  ]
 });

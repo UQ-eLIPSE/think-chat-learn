@@ -18,11 +18,9 @@ export default class Login extends Vue {
     // Essentially redirects to the main page assuming login is correct
     setIdToken(q as string);
     const response = getAdminLoginResponse();
-    console.log(response);
     // If we have a response, fetch more data due to NGINX limitations
     const otherToken = await this.$store.dispatch("handleToken");
     const quizScheduleData: QuizScheduleDataAdmin = decodeToken(otherToken);
-    // console.log(quizScheduleData);
     // If we have a response , set the appropiate data and so on
     if (response) {
       await this.$store.dispatch("setUser", response.user);

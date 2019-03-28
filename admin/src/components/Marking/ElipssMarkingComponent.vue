@@ -86,13 +86,11 @@ export default class ElipssMarkingComponent extends Vue {
     }
 
     async fetchMarksForQuestion() {
-        console.log('Fetching marks')
         try {
             const currentMarkingContext = this.currentMarkingContext;
             const quizSessionId = currentMarkingContext.currentQuizSessionId;
             const questionId = currentMarkingContext.currentQuestionId;
             const quizSessionIdMarks = await API.request(API.GET, API.MARKS + `quizSessionId/${quizSessionId}/questionId/${questionId}`, {});
-            console.log('Marks for this question for quiz session: ', quizSessionIdMarks);
             const marker = this.marker;
             let marks: any = null;
             if (Array.isArray(quizSessionIdMarks)) {
@@ -262,13 +260,11 @@ export default class ElipssMarkingComponent extends Vue {
 
     @Watch('currentQuizSessionId')
     async quizSessionChangeHandler() {
-        console.log('Watch change detected');
         this.fetchMarksForQuestion();
     }
 
     @Watch('currentQuestionId')
     async questionChangeHandler() {
-        console.log('Watch change detected');
         this.fetchMarksForQuestion();
     }
 

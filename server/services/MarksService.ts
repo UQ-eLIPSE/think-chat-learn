@@ -23,7 +23,6 @@ export class MarksService extends BaseService {
     }
 
     public async getMarksForQuizSessionQuestion(quizSessionId: string, questionId: string): Promise<ElipssMark[]> {
-        console.log('Fetching marks by quiz session id and question id', );
 
         return this.marksRepo.findAll({
             quizSessionId: quizSessionId,
@@ -32,7 +31,6 @@ export class MarksService extends BaseService {
     }
 
     public async getMarksForQuizSession(quizSessionId: string): Promise<ElipssMark[]> {
-        console.log('Fetching marks by quiz session id and question id', );
 
         return this.marksRepo.findAll({
             quizSessionId: quizSessionId
@@ -44,7 +42,6 @@ export class MarksService extends BaseService {
             quizSessionId: quizSessionId,
             questionId: questionId
         });
-        console.log('Current markers marks: ', currentMarkerMarks);
         if (currentMarkerMarks && Array.isArray(currentMarkerMarks)) {
             if (currentMarkerMarks.length > 1) {
                 // TODO: Delete unwanted
@@ -73,12 +70,10 @@ export class MarksService extends BaseService {
             questionId: questionId,
             markerId: newMarks.markerId
         });
-        console.log('In multi mkarking service', currentMarkerMarks);
         if (currentMarkerMarks && Array.isArray(currentMarkerMarks)) {
             if (currentMarkerMarks.length > 1) {
                 // Error condition
                 // TODO: Delete unwanted
-                console.log('Deleting unwanted marks');
                 const deletePromises = await Promise.all(currentMarkerMarks.filter(_ => _).map(async (m) => {
                     await this.marksRepo.deleteOne(m._id!);
                 }));

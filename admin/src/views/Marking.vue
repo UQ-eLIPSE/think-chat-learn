@@ -23,7 +23,7 @@
                                  :to="{ name: 'view-mark-quiz', params: { id: q._id } }">View marks</router-link>
                 </div>
             </div>
-            <router-view />
+            <!-- <router-view /> -->
         </ul>
     </div>
 </template>

@@ -333,16 +333,18 @@ export default class MarkQuiz extends Vue {
 
   async fetchAllQuizSessionInfo(vm: any) {
     if (!vm.$route.params.id) return;
-    vm.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuizId', value: vm.$route.params.id });
+    // This is being done on the parent route now
+    // vm.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuizId', value: vm.$route.params.id });
 
-    await vm.$store.dispatch("getChatGroups", vm.q._id);
+    // await vm.$store.dispatch("getChatGroups", vm.q._id);
+    // const chatGroups = vm.$store.getters.chatGroups;
+    // const chatGroupsInformationPromises = await Promise.all(chatGroups.map(async (g: IChatGroup) => {
+    //   const chatGroupsQuizSessionPromises = await Promise.all((g!.quizSessionIds || []).map(async (qs) => {
+    //     await vm.$store.dispatch("getQuizSessionInfo", qs);
+    //   }));
+    // }));
+
     const chatGroups = vm.$store.getters.chatGroups;
-    const chatGroupsInformationPromises = await Promise.all(chatGroups.map(async (g: IChatGroup) => {
-      const chatGroupsQuizSessionPromises = Promise.all((g!.quizSessionIds || []).map(async (qs) => {
-        await vm.$store.dispatch("getQuizSessionInfo", qs);
-      }));
-    }));
-
     // Set up initial state
     if (!vm.$store.getters.currentMarkingContext.currentChatGroupId) {
 

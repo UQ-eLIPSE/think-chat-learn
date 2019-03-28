@@ -139,7 +139,6 @@ const getters: GetterTree<IState, undefined> = {
                 map[response.questionId].push(response);
             })
         });
-        console.log(map);
         return map;
     },
     currentChatGroupQuestionResponses: (state, getters): Response[] => {
@@ -242,14 +241,10 @@ const mutations = {
         funcState.chatGroups = chatGroups;
     },
     UPDATE_CURRENT_MARKING_CONTEXT(state: IState, payload: any) {
-        console.log('Updating marking context:', payload.prop);
-        console.log(payload);
         Vue.set(state.currentMarkingContext, payload.prop, payload.value);
     },
     SET_MARKS(state: IState, payload: any) {
         const newObject = Object.assign({}, state.quizSessionInfoMap[payload.quizSessionId], { marks: payload.marks });
-        console.log('Setting marks.... in store....');
-        console.log(newObject);
         Vue.set(state.quizSessionInfoMap, payload.quizSessionId, newObject);
     }
 };
