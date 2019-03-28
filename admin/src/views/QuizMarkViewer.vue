@@ -15,11 +15,11 @@
         </div>
         <div class="stats">
             <!-- <span>Total student attempts: {{ totalAttempts }} </span>
-                                    <div>
-                                        <span>No. of marked students </span>
-                                        <span v-if="hasMultipleMarkersEnabled">(marked by at least one staff member)</span>
-                                        <span>{{ 15 }} </span>
-                                    </div> -->
+                                        <div>
+                                            <span>No. of marked students </span>
+                                            <span v-if="hasMultipleMarkersEnabled">(marked by at least one staff member)</span>
+                                            <span>{{ 15 }} </span>
+                                        </div> -->
         </div>
         <table class="marks-table">
             <thead>
@@ -43,9 +43,9 @@
                        class="question-row-group"
                        v-for="marksForQuestion in allMarksArray"
                        :key="marksForQuestion[0].questionId">
-                    <tr>
+                    <tr class="question-id-row">
                         <td colspan="100%">
-                            <b>Question ID: {{marksForQuestion[0].questionId}}</b>
+                            Question ID: {{marksForQuestion[0].questionId}}
                         </td>
                     </tr>
                     <tr v-for="(m, x) in marksForQuestion"
@@ -73,9 +73,9 @@
 
                 <tbody v-for="(questionId, i) in orderedDiscussionPageQuestionIds"
                        :key="questionId + 'unmarked' + i">
-                    <tr>
+                    <tr class="question-id-row">
                         <td colspan="100%">
-                            <b>Question ID: {{ questionId }}</b>
+                            Question ID: {{ questionId }}
                         </td>
                     </tr>
                     <!-- For every question id, check the unmarkedMap -->
@@ -338,6 +338,7 @@ export default class QuizMarkViewer extends Vue {
     padding: 0.25rem 0;
     background-color: rgba(1, 0, 0, 0.1);
 }
+
 .row-heading.unmarked {
     padding: 0.1rem 0;
     background-color: lightcoral;
@@ -352,5 +353,9 @@ export default class QuizMarkViewer extends Vue {
     font-weight: bold;
     font-size: 1.2em;
     margin: 0.5rem 0;
+}
+
+.question-id-row {
+    background: rgba(1, 1, 1, 0.03);
 }
 </style>
