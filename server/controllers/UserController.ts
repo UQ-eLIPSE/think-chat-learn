@@ -88,6 +88,7 @@ export class UserController extends BaseController {
 
     public setupRoutes() {
         this.router.post("/admin", this.handleAdminLogin.bind(this));
+        this.router.post("/admin-login", this.handleLTILogin.bind(this));
         this.router.post("/login", this.handleLoginWrapper.bind(this), this.handleLTILogin.bind(this));
         this.router.post("/me", this.refreshToken.bind(this));
         this.router.post("/handleToken", this.getQuizByToken.bind(this));

@@ -58,7 +58,7 @@ export class UserService extends BaseService {
             console.log('Endpoint: ',Conf.endpointUrl);
             const rest = `
                         <input type="submit" class="launch-buttons" value="Launch admin panel" formaction="${Conf.endpointUrl}/user/admin">
-                        <input type="submit" class="launch-buttons" value="Launch student view" formaction="${Conf.endpointUrl}/user/login">
+                        <input type="submit" class="launch-buttons" value="Launch student view" formaction="${Conf.endpointUrl}/user/admin-login">
                     </form>
                 </html>
             `;
