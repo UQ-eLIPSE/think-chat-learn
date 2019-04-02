@@ -156,16 +156,7 @@ export default class QuizPage extends Vue {
       maximumMarks: 5
     }
   }
-  getMarkingModeObject(mode: DBSchema.MarkMode) {
-    switch (mode) {
-      case DBSchema.MarkMode.ELIPSS_MARKING:
 
-        break;
-      case DBSchema.MarkMode.SIMPLE_MARKING:
-        break;
-
-    }(DBSchema.MarkMode.ELIPSS_MARKING)
-  }
   // Converts the dictionary to an array based on key number
   get pages() {
     const temp: Page[] = [];

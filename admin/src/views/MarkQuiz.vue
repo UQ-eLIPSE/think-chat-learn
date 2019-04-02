@@ -5,8 +5,8 @@
       <h3>Title: {{ q.title }}</h3>
       <span>Quiz ID: {{q._id}}</span>
 
-      <span>Available Start: {{ q.availableStart }}</span>
-      <span>Available End: {{ q.availableEnd }}</span>
+      <span>Available Start: {{ new Date(q.availableStart).toString() }}</span>
+      <span>Available End: {{ new Date(q.availableEnd).toString() }}</span>
     </div>
 
     <div class="container group-select">
@@ -64,10 +64,10 @@
       <button type="button"
               class="button secondary"
               @click.prevent="previous">
-        < Previous</button>
+        &lt; Previous</button>
           <button type="button"
                   class="button secondary"
-                  @click.prevent="next">Next ></button>
+                  @click.prevent="next">Next &gt;</button>
     </div>
   </div>
 

@@ -66,21 +66,25 @@ export default new Router({
       }
     ],
     beforeEnter: async (to: any, from: any, next: any) => {
-      if (!to.params.id) {
-        // Error
-        console.log('Quiz ID not present')
-      }
+      try {
+        if (!to.params.id) {
+          // Error
+          console.log('Quiz ID not present')
+        }
 
-      const quizId = to.params.id;
-      store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuizId', value: quizId });
-      await store.dispatch("getChatGroups", quizId);
-      const chatGroups = store.getters.chatGroups;
-      const chatGroupsInformationPromises = await Promise.all(chatGroups.map(async (g: Schema.IChatGroup) => {
-        const chatGroupsQuizSessionPromises = await Promise.all((g!.quizSessionIds || []).map(async (qs) => {
-          await store.dispatch("getQuizSessionInfo", qs);
+        const quizId = to.params.id;
+        store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuizId', value: quizId });
+        await store.dispatch("getChatGroups", quizId);
+        const chatGroups = store.getters.chatGroups;
+        await Promise.all(chatGroups.map(async (g: Schema.IChatGroup) => {
+          await Promise.all((g!.quizSessionIds || []).map(async (qs) => {
+            await store.dispatch("getQuizSessionInfo", qs);
+          }));
         }));
-      }));
-      next();
+        next();
+      } catch (e) {
+        // TODO: Handle Errors
+      }
     }
   }
   ]
