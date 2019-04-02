@@ -62,10 +62,32 @@ export default new Router({
       {
         path: 'view-marks',
         name: 'view-mark-quiz',
-        component: QuizMarkViewer
+        component: QuizMarkViewer,
+        beforeEnter: async(to: any, from: any, next: any) => {
+          try {
+            if (!to.params.id) {
+              // Error
+              console.log('Quiz ID not present')
+            }
+    
+            const chatGroups = store.getters.chatGroups;
+    
+            // Fetch the first chatGroups's quiz session info
+            
+    
+            await Promise.all(chatGroups.map(async (g: Schema.IChatGroup) => {
+              await Promise.all((g!.quizSessionIds || []).map(async (qs) => {
+                await store.dispatch("getQuizSessionInfoForMarking", qs);
+              }));
+            }));
+            next();
+          } catch (e) {
+            // TODO: Handle Errors
+          }
+        }
       }
     ],
-    beforeEnter: async (to: any, from: any, next: any) => {
+    beforeEnter: async(to: any, from: any, next: any) => {
       try {
         if (!to.params.id) {
           // Error
@@ -75,12 +97,7 @@ export default new Router({
         const quizId = to.params.id;
         store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuizId', value: quizId });
         await store.dispatch("getChatGroups", quizId);
-        const chatGroups = store.getters.chatGroups;
-        await Promise.all(chatGroups.map(async (g: Schema.IChatGroup) => {
-          await Promise.all((g!.quizSessionIds || []).map(async (qs) => {
-            await store.dispatch("getQuizSessionInfo", qs);
-          }));
-        }));
+        
         next();
       } catch (e) {
         // TODO: Handle Errors

@@ -208,6 +208,22 @@ const actions: ActionTree<IState, undefined> = {
 
         const payload = { quizSession: quizSession, userSession: userSession, user: user, responses: responses } as QuizSessionDataObject;
         Vue.set(context.state.quizSessionInfoMap, quizSessionId, payload);
+    },
+    async getQuizSessionInfoForMarking(context, quizSessionId: string) {
+        // Fetch quiz session by quiz session id
+        const quizSessionResponse = await API.request(API.GET, (API.QUIZSESSION + "quizsession-marking/" + quizSessionId), {});
+
+        const quizSession = quizSessionResponse.session as IQuizSession;
+        
+        // Fetch user session by user session id
+        const userSessionResponse = await API.request(API.GET, API.USERSESSION + "marking/" + quizSession.userSessionId, {});
+        const userSession = userSessionResponse;
+        
+        // Fetch user by userId
+        const user = await API.request(API.GET, API.USER + "marking/" + userSessionResponse.userId, {});
+
+        const payload = { quizSession: quizSession, userSession: userSession, user: user, responses: [] } as QuizSessionDataObject;
+        Vue.set(context.state.quizSessionInfoMap, quizSessionId, payload);
     }
 };
 

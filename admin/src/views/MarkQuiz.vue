@@ -1,5 +1,6 @@
 <template>
-  <div id="quiz-mark-page" class="marking has-text-centered">
+  <div id="quiz-mark-page"
+       class="marking has-text-centered">
     <div v-if="q"
          class="container">
       <h3>Title: {{ q.title }}</h3>
@@ -23,12 +24,13 @@
          v-if="selectedGroup">
       <label> Question
         <select v-model="selectedQuestionId">
-          <option v-for="(qid, i) in orderedDiscussionPageQuestionIds"
+          <option v-for="(qid) in orderedDiscussionPageQuestionIds"
                   :value="qid"
                   :key="qid">{{ (getQuestionById(qid) || { title: qid }).title }}</option>
         </select>
       </label>
-      <button type="button" class="primary"
+      <button type="button"
+              class="primary"
               @click="displayQuestionContent = !displayQuestionContent">{{ displayQuestionContent? 'Hide': 'Show' }} question content</button>
 
       <div class="question-discussion"
@@ -65,9 +67,9 @@
               class="button secondary"
               @click.prevent="previous">
         &lt; Previous</button>
-          <button type="button"
-                  class="button secondary"
-                  @click.prevent="next">Next &gt;</button>
+      <button type="button"
+              class="button secondary"
+              @click.prevent="next">Next &gt;</button>
     </div>
   </div>
 
@@ -96,6 +98,16 @@ Component.registerHooks([
 export default class MarkQuiz extends Vue {
   private displayQuestionContent: boolean = false;
 
+  @Watch('selectedGroupId')
+  async chatGroupIdChangeHandler() {
+    const chatGroup = this.selectedGroup;
+    if (chatGroup) {
+      const quizSessionInfoPromises = (chatGroup.quizSessionIds || []).map(async (qs) => await this.$store.dispatch('getQuizSessionInfo', qs));
+      console.log('Getting quiz session info -');
+      await Promise.all(quizSessionInfoPromises);
+    }
+
+  }
   goToChatgroup(chatGroupIndex: number, questionIndex: number, quizSessionIndex: number) {
     if (!this.chatGroups) return;
     if (!this.chatGroups[chatGroupIndex]) {
@@ -330,6 +342,9 @@ export default class MarkQuiz extends Vue {
 
     return null;
   }
+
+
+
 
   async fetchAllQuizSessionInfo(vm: any) {
     if (!vm.$route.params.id) return;

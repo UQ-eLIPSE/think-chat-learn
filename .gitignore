@@ -76,6 +76,6 @@ client/.env.*
 admin/.env.*
 
 # Config values for production
-#server/config/production
-#common/config/production
-#client/config/production
+server/config/production
+common/config/production
+client/config/production
