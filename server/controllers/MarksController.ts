@@ -16,7 +16,7 @@ export class MarksController extends BaseController {
 
 
     private getMarksByQuizSessionQuestion(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        if(!req.params.quizSessionId || !req.params.questionId) throw new Error('Parameters not supplied');
+        if (!req.params.quizSessionId || !req.params.questionId) throw new Error('Parameters not supplied');
 
         this.marksService.getMarksForQuizSessionQuestion(req.params.quizSessionId, req.params.questionId).then((result) => {
             res.json(result).status(200);
@@ -27,7 +27,7 @@ export class MarksController extends BaseController {
     }
 
     private getMarksByQuizSession(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        if(!req.params.quizSessionId) throw new Error('Parameters not supplied');
+        if (!req.params.quizSessionId) throw new Error('Parameters not supplied');
 
         this.marksService.getMarksForQuizSession(req.params.quizSessionId).then((result) => {
             res.json(result).status(200);
@@ -42,7 +42,7 @@ export class MarksController extends BaseController {
         const quizId = req.query.q;
         const currentPage = parseInt(req.query.c);
         const perPage = parseInt(req.query.p);
-        if(!quizId || !currentPage || !perPage) throw new Error('Pagination Parameters not supplied');
+        if (!quizId || !currentPage || !perPage) throw new Error('Pagination Parameters not supplied');
         this.marksService.getMarksForQuizPaginated(quizId, currentPage, perPage).then((result) => {
             res.json(result).status(200);
         }).catch((e) => {
@@ -52,7 +52,7 @@ export class MarksController extends BaseController {
     }
 
     private createOrUpdateMarks(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        if(!req.params.quizSessionId || !req.params.questionId || !req.body) throw new Error('Parameters not supplied');
+        if (!req.params.quizSessionId || !req.params.questionId || !req.body) throw new Error('Parameters not supplied');
         // TODO validate req.body as a valid mark
         this.marksService.createOrUpdateMarks(req.params.quizSessionId, req.params.questionId, req.body).then((result) => {
             res.json(result).status(200);
@@ -63,9 +63,8 @@ export class MarksController extends BaseController {
     }
 
     private createOrUpdateMarksMultiple(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        if(!req.params.quizSessionId || !req.params.questionId || !req.body) throw new Error('Parameters not supplied');
+        if (!req.params.quizSessionId || !req.params.questionId || !req.body) throw new Error('Parameters not supplied');
         // TODO validate req.body as a valid mark
-        console.log('Request recd for multi marking');
         this.marksService.createOrUpdateMarksMultiple(req.params.quizSessionId, req.params.questionId, req.body).then((result) => {
             res.json(result).status(200);
         }).catch((e) => {

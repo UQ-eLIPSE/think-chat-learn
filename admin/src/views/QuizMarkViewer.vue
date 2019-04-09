@@ -58,7 +58,7 @@
                        class="question-row-group">
 
                     <tr class="question-id-row">
-                        <td>{{ y + 1 }}</td>
+                        <td>{{ ((pagination.currentPage-1) * pagination.perPage) +  (y + 1) }}</td>
                         <td colspan="100%">
                             Username: {{ marksForQuizSession[0].username }}
                         </td>

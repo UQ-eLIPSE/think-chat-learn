@@ -103,7 +103,7 @@ export default class MarkQuiz extends Vue {
     const chatGroup = this.selectedGroup;
     if (chatGroup) {
       const quizSessionInfoPromises = (chatGroup.quizSessionIds || []).map(async (qs) => await this.$store.dispatch('getQuizSessionInfo', qs));
-      console.log('Getting quiz session info -');
+
       await Promise.all(quizSessionInfoPromises);
     }
 
