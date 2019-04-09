@@ -44,8 +44,7 @@ export class MarksController extends BaseController {
         const perPage = parseInt(req.query.p);
         if(!quizId || !currentPage || !perPage) throw new Error('Pagination Parameters not supplied');
         this.marksService.getMarksForQuizPaginated(quizId, currentPage, perPage).then((result) => {
-            if(result) res.json(result).status(200);
-            else res.sendStatus(500);
+            res.json(result).status(200);
         }).catch((e) => {
             console.log(e);
             res.sendStatus(400);

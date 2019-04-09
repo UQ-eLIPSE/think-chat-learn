@@ -80,7 +80,7 @@ export class MarksService extends BaseService {
         });
     }
     public async getMarksForQuizPaginated(quizId: string, currentPage: number, perPage: number) {
-        try {
+
 
             const quiz = await this.quizRepo.findOne(quizId);
             if(!quiz) throw new Error("Quiz could not be found");
@@ -115,7 +115,6 @@ export class MarksService extends BaseService {
                 questionIds.forEach((questionId) => {
                     if(quizSessionMarkMap[qs] === undefined) quizSessionMarkMap[qs] = {};
                     if(quizSessionMarkMap[qs][questionId] === undefined) {
-                        console.log('Question ID:', questionId, ' in quiz session:', qs);
                         quizSessionMarkMap[qs][questionId] = [];
                     }
                     
@@ -123,13 +122,7 @@ export class MarksService extends BaseService {
             })
             
             const quizSessionUserMap = await this.getQuizSessionUserMap(quizSessionsToFetch);
-            console.log("Quiz session user map: ", quizSessionUserMap);
             return { totalQuizSessions: total, marksMap: quizSessionMarkMap, quizSessionUserMap: quizSessionUserMap || null };
-
-        } catch (e) {
-            console.log(e);
-            return null;
-        }
     }
 
     public async getQuizSessionUserMap(quizSessionIds: string[]) {

@@ -240,7 +240,6 @@ export default class QuizMarkViewer extends Vue {
                     // Push empty mark
                     const username = (quizSessionUserMap[quizSessionId].user || { username: 'NA' }).username || 'NA';
                     const userId = (quizSessionUserMap[quizSessionId].user || { _id: 'NA' })._id || 'NA';
-                    console.log('Mark does not exist for quiz session: ', quizSessionId);
                     const emptyMark = this.getEmptyMarkForUserByMarkType(quizSessionId, questionId, username, userId);
                     if (emptyMark) quizSessionMarks.push(emptyMark);
                 } else {
