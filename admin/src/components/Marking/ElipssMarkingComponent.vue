@@ -120,6 +120,7 @@ export default class ElipssMarkingComponent extends Vue {
             username: undefined,
             markerUsername: undefined,
             timestamp: null,
+            quizId: null,
             mark: {
                 value: {
                     evaluating: null,
@@ -221,7 +222,7 @@ export default class ElipssMarkingComponent extends Vue {
             marksToBeSaved.markerId = markerId;
             marksToBeSaved.timestamp = new Date();
             marksToBeSaved.markerUsername = this.marker.username;
-
+            marksToBeSaved.quizId = this.quiz._id;
             const multipleMarking = this.markingConfig.allowMultipleMarkers;
 
             if (multipleMarking) {

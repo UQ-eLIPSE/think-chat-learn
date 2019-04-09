@@ -4,7 +4,7 @@ import { Document } from "../../common/interfaces/DBSchema";
 // Assumes strings for id transfers
 export abstract class BaseRepository<T extends Document>{
 
-    protected collection: Collection<T>;
+    public collection: Collection<T>;
 
     constructor(_db: Db, _collectionName:string){
         this.collection = _db.collection(_collectionName);

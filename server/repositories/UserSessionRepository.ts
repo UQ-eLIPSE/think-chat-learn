@@ -1,5 +1,6 @@
 import { BaseRepository } from "./BaseRepository";
 import { IUserSession } from "../../common/interfaces/ToClientData";
+import { ObjectId } from "bson";
 
 export class UserSessionRepository extends BaseRepository<IUserSession> {
     async findUserSessionsByUserId(userId: string): Promise<IUserSession[]> {

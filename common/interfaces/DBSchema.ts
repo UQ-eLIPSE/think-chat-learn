@@ -161,6 +161,7 @@ export interface Mark extends Document {
   timestamp: Date | null;
   markerId: string | null;
   markerUsername: IUser["username"];
+  quizId: string | null;
 }
 export interface ElipssMark extends Mark  {
   type: MarkMode.ELIPSS_MARKING;

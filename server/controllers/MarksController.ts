@@ -37,6 +37,21 @@ export class MarksController extends BaseController {
         });
     }
 
+    private getMarksByQuizId(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
+
+        const quizId = req.query.q;
+        const currentPage = parseInt(req.query.c);
+        const perPage = parseInt(req.query.p);
+        if(!quizId || !currentPage || !perPage) throw new Error('Pagination Parameters not supplied');
+        this.marksService.getMarksForQuizPaginated(quizId, currentPage, perPage).then((result) => {
+            if(result) res.json(result).status(200);
+            else res.sendStatus(500);
+        }).catch((e) => {
+            console.log(e);
+            res.sendStatus(400);
+        });
+    }
+
     private createOrUpdateMarks(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
         if(!req.params.quizSessionId || !req.params.questionId || !req.body) throw new Error('Parameters not supplied');
         // TODO validate req.body as a valid mark
@@ -62,6 +77,7 @@ export class MarksController extends BaseController {
 
     public setupRoutes() {
         this.router.get("/quizSessionId/:quizSessionId/questionId/:questionId", isAdmin(), this.getMarksByQuizSessionQuestion.bind(this));
+        this.router.get("/bulk/quiz", isAdmin(), this.getMarksByQuizId.bind(this));
         this.router.get("/quizSessionId/:quizSessionId", isAdmin(), this.getMarksByQuizSession.bind(this));
         this.router.post("/createOrUpdate/quizSessionId/:quizSessionId/questionId/:questionId", isAdmin(), this.createOrUpdateMarks.bind(this));
         this.router.post("/multiple/createOrUpdate/quizSessionId/:quizSessionId/questionId/:questionId", isAdmin(), this.createOrUpdateMarksMultiple.bind(this));

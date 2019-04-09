@@ -1,5 +1,5 @@
 import { BaseRepository } from "./BaseRepository";
-import { ElipssMark } from "../../common/interfaces/DBSchema";
+import { Mark } from "../../common/interfaces/DBSchema";
 
-export class MarksRepository extends BaseRepository<ElipssMark>{
+export class MarksRepository extends BaseRepository<Mark>{
 }
