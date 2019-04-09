@@ -192,7 +192,6 @@ export default class App {
             // For logging in we use the api endpoints (and redirect there)
             this.express.use("/client", express.static(__dirname + Conf.folders.clientFolder));
             this.express.use("/admin", express.static(__dirname + Conf.folders.adminFolder));
-            this.express.use("/server-static", express.static(__dirname + Conf.folders.markingFolder ));
         }
         
         // LTI launcher page only available in test mode
