@@ -1,29 +1,29 @@
 <template>
-    <div v-if="allMarksArray && q && markingConfiguration"
+    <div v-if="marksArray && q && markingConfiguration"
          class="quiz-mark-viewer">
         <h1>Quiz marks</h1>
         <h3>{{ q.title }}</h3>
         <span>Timings: {{ new Date(q.availableStart).toString() }} - {{ new Date(q.availableEnd).toString() }}</span>
 
         <div class="controls">
-            <!-- <label class="display-unmarked">Display unmarked students?
-                    <input type="checkbox"
-                           v-model="displayUnmarkedStudents" /> </label> -->
+
+            <b-field label="Items per page">
+                <b-select v-model="pagination.perPage">
+                    <option v-for="numPerPage in numberOfPaginationPerPageValues"
+                            :key="numPerPage"
+                            :value="numPerPage">{{ numPerPage }} students</option>
+                </b-select>
+            </b-field>
+
             <button class="primary"
                     type="button"
                     @click="exportToCsv">Export marks to CSV</button>
         </div>
         <div class="stats">
-            <!-- <span>Total student attempts: {{ totalAttempts }} </span>
-                                                                                        <div>
-                                                                                            <span>No. of marked students </span>
-                                                                                            <span v-if="hasMultipleMarkersEnabled">(marked by at least one staff member)</span>
-                                                                                            <span>{{ 15 }} </span>
-                                                                                        </div> -->
-            <select v-model="pagination.perPage">
-                <option v-for="numPerPage in numberOfPaginationPerPageValues" :key="numPerPage" :value="numPerPage">{{ numPerPage }} students</option> 
-            </select>
-            <b-pagination :total="pagination.total"
+            <span v-if="pagination.total">Total student attempts: {{ pagination.total }} </span>
+
+            <b-pagination class="pagination"
+                          :total="pagination.total"
                           :current.sync="pagination.currentPage"
                           order="is-centered"
                           size="is-medium"
@@ -35,6 +35,7 @@
         <table class="marks-table">
             <thead>
                 <tr class="row-heading">
+                    <td>#</td>
                     <td>Username</td>
                     <td>Question ID</td>
                     <td>Marked by</td>
@@ -57,6 +58,7 @@
                        class="question-row-group">
 
                     <tr class="question-id-row">
+                        <td>{{ y + 1 }}</td>
                         <td colspan="100%">
                             Username: {{ marksForQuizSession[0].username }}
                         </td>
@@ -64,6 +66,7 @@
                     <tr v-for="(m, x) in marksForQuizSession"
                         :class="getMarkRowClass(m)"
                         :key="m.quizSessionId + marksForQuizSession[0].questionId + x">
+                        <td></td>
                         <td>{{ (m || { username: 'NA'}).username || 'x' }}</td>
                         <td>{{ m.questionId }}</td>
                         <td>{{ m.markerUsername }}</td>
@@ -101,8 +104,7 @@ Component.registerHooks([
 export default class QuizMarkViewer extends Vue {
     private marksMap: { [quizSessionId: string]: { [questionId: string]: Schema.ElipssMark[] } } = {};
     private quizSessionUserMap: { [quizSessionId: string]: { userSessionId: string, user: IUser } } = {};
-    private allMarks: { [questionId: string]: { [quizSessionId: string]: Schema.ElipssMark[] } } = {};
-    private displayUnmarkedStudents: boolean = true;
+    // private allMarks: { [questionId: string]: { [quizSessionId: string]: Schema.ElipssMark[] } } = {};
     private numberOfPaginationPerPageValues: number[] = [5, 10, 25, 50, 100];
     private pagination: {
         total: number, perPage: number, currentPage: number
@@ -139,8 +141,9 @@ export default class QuizMarkViewer extends Vue {
 
     @Watch('pagination.perPage')
     async perPageChangeHandler() {
-        // await this.fetchAndUpdatePaginatedMarksForQuiz(this);
         this.pagination.currentPage = 1;
+        await this.fetchAndUpdatePaginatedMarksForQuiz(this);
+
     }
 
     get hasMultipleMarkersEnabled() {
@@ -172,9 +175,6 @@ export default class QuizMarkViewer extends Vue {
 
     }
 
-    get allMarksMap() {
-        return this.allMarks;
-    }
     get orderedDiscussionPageQuestionIds() {
         if (!this.q || !this.q.pages) return [];
         const discussionPages = this.q.pages.filter((p) => p.type === PageType.DISCUSSION_PAGE);
@@ -193,38 +193,7 @@ export default class QuizMarkViewer extends Vue {
         return null;
 
     }
-    get unmarkedUserMap() {
-        const unmarkedMap: { [questionId: string]: IUser[] } = {}
-        const chatGroups: IChatGroup[] | undefined | null = this.$store.getters.chatGroups;
-        if (!chatGroups || chatGroups.length === 0) return [];
-        // For every chat group, check quiz session id is marked or not
-        const quizSessionIds = chatGroups.reduce((combinedArr, chatGroup) => combinedArr.concat(chatGroup.quizSessionIds || []), [] as string[]);
 
-        // Check for every question, whether a quizSessionId is unmarked
-        this.orderedDiscussionPageQuestionIds.forEach((questionId) => {
-            quizSessionIds.forEach((quizSessionId) => {
-                // Now check if quiz session id exists in the allMarksMap
-                if (this.allMarksMap[questionId]) {
-                    if (this.allMarksMap[questionId][quizSessionId] && Array.isArray(this.allMarksMap[questionId][quizSessionId]) && this.allMarksMap[questionId][quizSessionId].length > 0) {
-                        // Marked, go to next iteration
-                        return;
-                    }
-                }
-                // Push to unmarked as a catch-all
-                if (!unmarkedMap[questionId]) unmarkedMap[questionId] = [];
-                const user = this.getUserFromQuizSessionId(quizSessionId);
-                if (!user) return;
-                // Add username of user to the unmarked array
-                unmarkedMap[questionId].push(user);
-
-            });
-
-
-        });
-
-
-        return unmarkedMap;
-    }
     getEmptyMarkForUserByMarkType(quizSessionId: string, questionId: string, username: string, userId: string): Schema.ElipssMark | Schema.SimpleMark | null {
         if (this.isElipssMark) {
             return {
@@ -257,11 +226,8 @@ export default class QuizMarkViewer extends Vue {
         }
     }
 
-    get marksArray() {
+    generateMarksArrayForMap(map: { [quizSessionId: string]: { [questionId: string]: Schema.Mark[] } }, quizSessionUserMap: {[quizSessionId: string]: {userSessionId: string, user: IUser}}) {
         let marks: Schema.Mark[][] = [];
-
-        const map = this.marksMap;
-        const quizSessionUserMap = this.quizSessionUserMap;
         if (Object.keys(quizSessionUserMap).length === 0) return marks;
         const quizSessionIds = Object.keys(map);
 
@@ -272,8 +238,8 @@ export default class QuizMarkViewer extends Vue {
             marksArrayPerQuestion.forEach((questionId) => {
                 if (!map[quizSessionId][questionId] || map[quizSessionId][questionId].length === 0) {
                     // Push empty mark
-                    const username = (this.quizSessionUserMap[quizSessionId].user || { username: 'NA' }).username || 'NA';
-                    const userId = (this.quizSessionUserMap[quizSessionId].user || { _id: 'NA' })._id || 'NA';
+                    const username = (quizSessionUserMap[quizSessionId].user || { username: 'NA' }).username || 'NA';
+                    const userId = (quizSessionUserMap[quizSessionId].user || { _id: 'NA' })._id || 'NA';
                     console.log('Mark does not exist for quiz session: ', quizSessionId);
                     const emptyMark = this.getEmptyMarkForUserByMarkType(quizSessionId, questionId, username, userId);
                     if (emptyMark) quizSessionMarks.push(emptyMark);
@@ -288,23 +254,10 @@ export default class QuizMarkViewer extends Vue {
 
         return marks;
     }
-    get allMarksArray() {
-        let marks: any[] = []
-        const map = this.allMarksMap;
-        const questionIds = Object.keys(map);
-        questionIds.forEach((questionId) => {
-            const quizSessionIds = Object.keys(map[questionId]) || [];
-            const marksArrayPerQuizSession: any[] = quizSessionIds.map((qid) => map[questionId][qid]);
-            let marksArray: any[] = []
-            marksArrayPerQuizSession.forEach((arr: Schema.ElipssMark[]) => {
-                arr.forEach((m) => {
-                    marksArray.push(m);
-                })
-            })
-            marks.push(marksArray);
-        });
-
-        return marks;
+    get marksArray() {
+        const map = this.marksMap;
+        const quizSessionUserMap = this.quizSessionUserMap;
+        return this.generateMarksArrayForMap(map, quizSessionUserMap);
     }
 
     get elipssMarkHeadings() {
@@ -346,10 +299,6 @@ export default class QuizMarkViewer extends Vue {
 
         const chatGroups = vm.$store.getters.chatGroups as IChatGroup[];
 
-        /**
-         * NEW BULK API REQUEST
-         */
-        // Need to send a POST request because sending an array and cannot predict the size of the array, therefore do not want to send these as query params
         await vm.fetchAndUpdatePaginatedMarksForQuiz(vm);
 
     }
@@ -358,14 +307,20 @@ export default class QuizMarkViewer extends Vue {
         await this.fetchAllMarksForQuiz(this);
     }
 
-    getOrderedMarkValuesArray(m: Schema.ElipssMark) {
+    getOrderedMarkValuesArray(m: Schema.ElipssMark | any) {
         const markValues: string[] = [];
-        this.elipssMarkHeadings.forEach((h: any) => {
-            markValues.push(((m as any).mark.value[h] as number).toString());
+        const valueObject = this.emptyElipssMarkValues.value;
+        this.elipssMarkHeadings.forEach((h) => {
+            const v: any = m.mark.value[h] ? (m.mark.value[h as any] as number).toString() : '-'
+            markValues.push(v)
         });
         return markValues;
     }
-    exportToCsv() {
+
+    async exportToCsv() {
+        const { totalQuizSessions, marksMap, quizSessionUserMap } = await API.request(API.GET, API.MARKS + `bulk/quiz?q=${this.$route.params.id}&c=1&p=${Number.MAX_SAFE_INTEGER}`, {})
+ 
+
         const csvRowArray: string[] = [];
 
         const DELIMITER = ","
@@ -374,14 +329,19 @@ export default class QuizMarkViewer extends Vue {
         const headRow = ["Username", "Question_ID", "Marked_By", ...this.elipssMarkHeadings].join(DELIMITER);
         csvRowArray.push(headRow);
 
-        this.allMarksArray.forEach((marksPerQuestionArray) => {
-
-            marksPerQuestionArray.forEach((m: Schema.ElipssMark) => {
+        const marksArray = this.generateMarksArrayForMap(marksMap, quizSessionUserMap)
+        marksArray.forEach((quizSessionMarksArray) => {
+            quizSessionMarksArray.forEach((m: Schema.Mark) => {
                 const csvRow: string[] = [];
-                csvRow.push(m.username || 'NA', m.questionId || 'NA', m.markerUsername || 'NA', ...this.getOrderedMarkValuesArray(m))
+                if (m.type === Schema.MarkMode.ELIPSS_MARKING) {
+                    csvRow.push(m.username || 'NA', m.questionId || 'NA', m.markerUsername || 'NA', ...this.getOrderedMarkValuesArray(m as Schema.ElipssMark))
+                }
+                if (m.type === Schema.MarkMode.SIMPLE_MARKING) {
+                    // TODO: Add marks for simple marking
+                }
                 csvRowArray.push(csvRow.join(DELIMITER));
             })
-        });
+        })
 
         const csvFileContents = "data:text/csv;charset=utf-8," + csvRowArray.join("\n");
 
@@ -396,6 +356,9 @@ export default class QuizMarkViewer extends Vue {
 </script>
 <style lang="scss" scoped>
 @import "../../css/variables.scss";
+.pagination {
+    margin: 1rem 0;
+}
 
 .quiz-mark-viewer {
     padding: 2rem;
@@ -428,14 +391,8 @@ export default class QuizMarkViewer extends Vue {
 
 .controls {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-around;
     padding: 1rem;
-}
-
-.display-unmarked {
-    font-weight: bold;
-    font-size: 1.2em;
-    margin: 0.5rem 0;
 }
 
 .question-id-row {
