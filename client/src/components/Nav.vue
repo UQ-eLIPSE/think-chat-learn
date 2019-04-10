@@ -13,7 +13,7 @@
       </div>
       <div class="nav-item">
         <span class="toggleChat">
-          <span class="title">Toggle chat</span>
+          <span class="title">Show chat</span>
           <b-switch v-model="toggleChat"></b-switch>
         </span>
         <span class="userAvatar">{{user ? `${user.firstName}` : "Please login via Blackboard"}}
