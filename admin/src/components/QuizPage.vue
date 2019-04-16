@@ -77,7 +77,7 @@
       </label>
       <label>Allow multiple markers? <input type="checkbox"
                v-model="markingConfiguration.allowMultipleMarkers" /></label>
-      <label>Max marks: <input type="number" v-model="markingConfiguration.maximumMarks" /> </label>
+      <label>Max marks: {{ markingConfiguration.maximumMarks }} </label>
     </div>
     <div class="controls">
       <button type="button"
@@ -346,7 +346,7 @@ export default class QuizPage extends Vue {
         this.endTime = new Date(loadedQuiz.availableEnd!);
 
         this.quizTitle = loadedQuiz.title;
-
+        this.markingConfiguration = loadedQuiz.markingConfiguration || this.elipssMarkConfig;
         const emptyDict: { [key: string]: Page } = {};
 
         // At this point, the loaded quiz and their elemenets should not have null values

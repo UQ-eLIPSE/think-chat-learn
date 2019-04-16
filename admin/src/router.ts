@@ -62,29 +62,7 @@ export default new Router({
       {
         path: 'view-marks',
         name: 'view-mark-quiz',
-        component: QuizMarkViewer,
-        // beforeEnter: async(to: any, from: any, next: any) => {
-        //   try {
-        //     if (!to.params.id) {
-        //       // Error
-        //       console.log('Quiz ID not present')
-        //     }
-    
-        //     const chatGroups = store.getters.chatGroups;
-    
-        //     // Fetch the first chatGroups's quiz session info
-            
-    
-        //     await Promise.all(chatGroups.map(async (g: Schema.IChatGroup) => {
-        //       await Promise.all((g!.quizSessionIds || []).map(async (qs) => {
-        //         await store.dispatch("getQuizSessionInfoForMarking", qs);
-        //       }));
-        //     }));
-        //     next();
-        //   } catch (e) {
-        //     // TODO: Handle Errors
-        //   }
-        // }
+        component: QuizMarkViewer
       }
     ],
     beforeEnter: async(to: any, from: any, next: any) => {
@@ -96,6 +74,10 @@ export default new Router({
 
         const quizId = to.params.id;
         store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuizId', value: quizId });
+        store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuizSessionId', value: null });
+        store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuestionId', value: null });
+        store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentMarks', value: null });
+        store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentChatGroupId', value: null });
         await store.dispatch("getChatGroups", quizId);
         
         next();

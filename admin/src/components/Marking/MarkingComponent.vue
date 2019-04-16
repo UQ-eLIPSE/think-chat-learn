@@ -8,7 +8,7 @@
     </div>
 
     <div v-else-if="isSimpleMark">
-
+      <SimpleMarkingComponent></SimpleMarkingComponent>
     </div>
   </div>
 </template>
@@ -19,11 +19,13 @@ import { IQuiz, QuizScheduleDataAdmin, Page, IDiscussionPage, IQuestionAnswerPag
 import { PageType } from "../../../../common/enums/DBEnums";
 import * as Schema from "../../../../common/interfaces/DBSchema";
 import ElipssMarkingComponent from "./ElipssMarkingComponent.vue";
+import SimpleMarkingComponent from "./SimpleMarkingComponent.vue";
 
 
 @Component({
   components: {
-    ElipssMarkingComponent
+    ElipssMarkingComponent,
+    SimpleMarkingComponent
   }
 })
 export default class MarkingComponent extends Vue {

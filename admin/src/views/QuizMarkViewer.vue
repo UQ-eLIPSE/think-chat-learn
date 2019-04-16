@@ -44,8 +44,7 @@
                             v-for="v in elipssMarkHeadings">{{ v }}</td>
                     </template>
                     <template v-if="isSimpleMark">
-                        <td :key="v"
-                            v-for="v in elipssMarkHeadings"></td>
+                        <td>Mark</td>
                     </template>
 
                 </tr>
@@ -58,7 +57,7 @@
                        class="question-row-group">
 
                     <tr class="question-id-row">
-                        <td>{{ ((pagination.currentPage-1) * pagination.perPage) +  (y + 1) }}</td>
+                        <td>{{ ((pagination.currentPage-1) * pagination.perPage) + (y + 1) }}</td>
                         <td colspan="100%">
                             Username: {{ marksForQuizSession[0].username }}
                         </td>
@@ -74,6 +73,34 @@
                             :key="m.quizSessionId + v + i">
                             {{ m.mark.value[v] }}
                         </td>
+                    </tr>
+                </tbody>
+            </template>
+
+            <template v-if="isSimpleMark">
+                <tbody v-for="(marksForQuizSession, y) in marksArray"
+                       :id="marksForQuizSession.quizSessionId + y.toString()"
+                       :key="marksForQuizSession.quizSessionId"
+                       class="question-row-group">
+
+                    <tr class="question-id-row">
+                        <td>{{ ((pagination.currentPage-1) * pagination.perPage) + (y + 1) }}</td>
+                        <td colspan="100%" v-show="marksForQuizSession[0].username">
+                            Username: {{ marksForQuizSession[0].username }}
+                        </td>
+                    </tr>
+                    <tr v-for="(m, x) in marksForQuizSession"
+                        :class="getMarkRowClass(m)"
+                        :key="m.quizSessionId + marksForQuizSession[0].questionId + x">
+                        <td></td>
+                        <td>{{ (m || { username: 'NA'}).username || 'x' }}</td>
+                        <td>{{ m.questionId }}</td>
+                        <td>{{ m.markerUsername }}</td>
+                        <td :key="m.quizSessionId + 'simple-mark'">{{ m.mark.value }}</td>
+                        <!-- <td v-for="(v, i) in Object.keys(m.mark.value)"
+                                    :key="m.quizSessionId + v + i">
+                                    {{ m.mark.value[v] }}
+                                </td> -->
                     </tr>
                 </tbody>
             </template>
@@ -102,9 +129,9 @@ Component.registerHooks([
     }
 })
 export default class QuizMarkViewer extends Vue {
-    private marksMap: { [quizSessionId: string]: { [questionId: string]: Schema.ElipssMark[] } } = {};
+    private marksMap: { [quizSessionId: string]: { [questionId: string]: (Schema.ElipssMark | Schema.SimpleMark)[] } } = {};
     private quizSessionUserMap: { [quizSessionId: string]: { userSessionId: string, user: IUser } } = {};
-    // private allMarks: { [questionId: string]: { [quizSessionId: string]: Schema.ElipssMark[] } } = {};
+
     private numberOfPaginationPerPageValues: number[] = [5, 10, 25, 50, 100];
     private pagination: {
         total: number, perPage: number, currentPage: number
@@ -169,8 +196,7 @@ export default class QuizMarkViewer extends Vue {
         if (markObject.type === Schema.MarkMode.ELIPSS_MARKING) {
             return markObject.markerUsername && markObject.userId && markObject.username && markObject.quizSessionId;
         } else if (markObject.type === Schema.MarkMode.SIMPLE_MARKING) {
-            // TODO: Complete for simple marking, return false for now
-            return false;
+            return markObject.markerUsername && markObject.userId && markObject.username && markObject.quizSessionId;
         }
 
     }
@@ -180,18 +206,6 @@ export default class QuizMarkViewer extends Vue {
         const discussionPages = this.q.pages.filter((p) => p.type === PageType.DISCUSSION_PAGE);
         const discussionPageQuestionIds = discussionPages.map((p) => (p as IDiscussionPage).questionId);
         return discussionPageQuestionIds;
-    }
-
-    getUserFromQuizSessionId(quizSessionId: string): IUser | null {
-        const quizSessionInfoMap = this.$store.getters.quizSessionInfoMap;
-        if (!quizSessionInfoMap) return null;
-        if (quizSessionInfoMap[quizSessionId] && quizSessionInfoMap[quizSessionId].user) {
-            return quizSessionInfoMap[quizSessionId].user;
-        }
-
-        // Return null by default
-        return null;
-
     }
 
     getEmptyMarkForUserByMarkType(quizSessionId: string, questionId: string, username: string, userId: string): Schema.ElipssMark | Schema.SimpleMark | null {
@@ -219,14 +233,28 @@ export default class QuizMarkViewer extends Vue {
                     feedbackText: ''
                 }
             }
+        } else if(this.isSimpleMark) {
+            return {
+                type: Schema.MarkMode.SIMPLE_MARKING,
+                questionId: questionId,
+                quizSessionId: quizSessionId,
+                markerId: null,
+                userId: userId,
+                username: username,
+                markerUsername: undefined,
+                timestamp: null,
+                quizId: null,
+                mark: {
+                    value: null,
+                    feedbackText: ''
+                }
+            };
         } else {
-            // TODO: Generate empty mark for simple marking
-            // Return null for now
             return null;
         }
     }
 
-    generateMarksArrayForMap(map: { [quizSessionId: string]: { [questionId: string]: Schema.Mark[] } }, quizSessionUserMap: {[quizSessionId: string]: {userSessionId: string, user: IUser}}) {
+    generateMarksArrayForMap(map: { [quizSessionId: string]: { [questionId: string]: Schema.Mark[] } }, quizSessionUserMap: { [quizSessionId: string]: { userSessionId: string, user: IUser } }) {
         let marks: Schema.Mark[][] = [];
         if (Object.keys(quizSessionUserMap).length === 0) return marks;
         const quizSessionIds = Object.keys(map);
@@ -306,7 +334,7 @@ export default class QuizMarkViewer extends Vue {
         await this.fetchAllMarksForQuiz(this);
     }
 
-    getOrderedMarkValuesArray(m: Schema.ElipssMark | any) {
+    getOrderedElipssMarkValuesArray(m: Schema.ElipssMark | any) {
         const markValues: string[] = [];
         const valueObject = this.emptyElipssMarkValues.value;
         this.elipssMarkHeadings.forEach((h) => {
@@ -316,14 +344,8 @@ export default class QuizMarkViewer extends Vue {
         return markValues;
     }
 
-    async exportToCsv() {
-        const { totalQuizSessions, marksMap, quizSessionUserMap } = await API.request(API.GET, API.MARKS + `bulk/quiz?q=${this.$route.params.id}&c=1&p=${Number.MAX_SAFE_INTEGER}`, {})
- 
-
-        const csvRowArray: string[] = [];
-
-        const DELIMITER = ","
-
+    // TODO: Add types for maps
+    populateElipssMarksRows(csvRowArray: string[], DELIMITER: string, marksMap: any, quizSessionUserMap: any) {
         // Push Header info
         const headRow = ["Username", "Question_ID", "Marked_By", ...this.elipssMarkHeadings].join(DELIMITER);
         csvRowArray.push(headRow);
@@ -332,15 +354,43 @@ export default class QuizMarkViewer extends Vue {
         marksArray.forEach((quizSessionMarksArray) => {
             quizSessionMarksArray.forEach((m: Schema.Mark) => {
                 const csvRow: string[] = [];
-                if (m.type === Schema.MarkMode.ELIPSS_MARKING) {
-                    csvRow.push(m.username || 'NA', m.questionId || 'NA', m.markerUsername || 'NA', ...this.getOrderedMarkValuesArray(m as Schema.ElipssMark))
-                }
-                if (m.type === Schema.MarkMode.SIMPLE_MARKING) {
-                    // TODO: Add marks for simple marking
-                }
+                csvRow.push(m.username || 'NA', m.questionId || 'NA', m.markerUsername || 'NA', ...this.getOrderedElipssMarkValuesArray(m as Schema.ElipssMark))
+
                 csvRowArray.push(csvRow.join(DELIMITER));
             })
         })
+    }
+
+    populateSimpleMarksRows(csvRowArray: string[], DELIMITER: string, marksMap: any, quizSessionUserMap: any) {
+        // Push Header info
+        const headRow = ["Username", "Question_ID", "Marked_By", "Mark"].join(DELIMITER);
+        csvRowArray.push(headRow);
+
+        const marksArray = this.generateMarksArrayForMap(marksMap, quizSessionUserMap)
+        marksArray.forEach((quizSessionMarksArray) => {
+            quizSessionMarksArray.forEach((m: Schema.Mark) => {
+                const csvRow: string[] = [];
+                const markValue = ((m as Schema.SimpleMark).mark.value || '-').toString();
+                csvRow.push(m.username || 'NA', m.questionId || 'NA', m.markerUsername || 'NA', markValue)
+
+                csvRowArray.push(csvRow.join(DELIMITER));
+            })
+        })
+    }
+    async exportToCsv() {
+        const { totalQuizSessions, marksMap, quizSessionUserMap } = await API.request(API.GET, API.MARKS + `bulk/quiz?q=${this.$route.params.id}&c=1&p=${Number.MAX_SAFE_INTEGER}`, {})
+
+        const DELIMITER = ","
+
+        const csvRowArray: string[] = [];
+        if (!this.markingConfiguration || !this.markingConfiguration.type) return;
+        if (this.markingConfiguration.type === Schema.MarkMode.ELIPSS_MARKING) {
+            this.populateElipssMarksRows(csvRowArray, DELIMITER, marksMap, quizSessionUserMap);
+        }
+
+        if (this.markingConfiguration.type === Schema.MarkMode.SIMPLE_MARKING) {
+            this.populateSimpleMarksRows(csvRowArray, DELIMITER, marksMap, quizSessionUserMap);
+        }
 
         const csvFileContents = "data:text/csv;charset=utf-8," + csvRowArray.join("\n");
 

@@ -50,20 +50,25 @@ export class MarksService extends BaseService {
     }
 
     public async createOrUpdateMarks(quizSessionId: string, questionId: string, newMarks: ElipssMark): Promise<boolean> {
-        const currentMarkerMarks = this.marksRepo.findAll({
+        const currentMarkerMarks = await this.marksRepo.findAll({
             quizSessionId: quizSessionId,
             questionId: questionId
         });
         if (currentMarkerMarks && Array.isArray(currentMarkerMarks)) {
             if (currentMarkerMarks.length > 1) {
-                // TODO: Delete unwanted
-                const deletePromises = await Promise.all(currentMarkerMarks.map(async (m) => {
-                    await this.marksRepo.deleteOne(m._id);
+                // Delete unwanted / invalidated marks
+                await Promise.all(currentMarkerMarks.map(async (m) => {
+                    await this.marksRepo.deleteOne(m._id!);
                 }));
                 const res = await this.marksRepo.create(newMarks);
                 if (res) return true;
                 return false;
+            } else if (currentMarkerMarks.length === 0) {
+                // Mark does not exist, create
+                const created = await this.marksRepo.create(newMarks);
+                return created ? true : false;
             } else {
+                // Single mark exists, update mark
                 const currentMark = currentMarkerMarks[0];
                 const currentMarkId = currentMark._id;
                 return await this.marksRepo.updateOne(newMarks, currentMarkId);
@@ -193,8 +198,8 @@ export class MarksService extends BaseService {
         if (currentMarkerMarks && Array.isArray(currentMarkerMarks)) {
             if (currentMarkerMarks.length > 1) {
                 // Error condition
-                // TODO: Delete unwanted
-                const deletePromises = await Promise.all(currentMarkerMarks.filter(_ => _).map(async (m) => {
+                // Delete unwanted / invalidated marks
+                await Promise.all(currentMarkerMarks.filter(_ => _).map(async (m) => {
                     await this.marksRepo.deleteOne(m._id!);
                 }));
                 const res = await this.marksRepo.create(newMarks);
