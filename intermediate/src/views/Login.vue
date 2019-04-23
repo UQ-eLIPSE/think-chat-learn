@@ -1,4 +1,5 @@
-<template> </template>
+<template>
+</template>
 
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
@@ -9,18 +10,18 @@ import {
 import { convertNetworkQuizIntoQuiz } from "../../../common/js/NetworkDataUtils";
 import { IUserSession } from "../../../common/interfaces/DBSchema";
 import { LTIRoles } from "../../../common/enums/DBEnums";
-import { QuizScheduleData, LoginResponse } from "../../../common/interfaces/ToClientData";
+import { QuizScheduleData, BackupLoginResponse } from "../../../common/interfaces/ToClientData";
 
-@Component
+@Component({})
 export default class Login extends Vue {
   private async created() {
     const q = this.$route.query.q;
 
     // Essentially redirects to the main page assuming login is correct
     setIdToken(q as string);
-    const response = getLoginResponse() as LoginResponse;
+    const response = getLoginResponse() as BackupLoginResponse;
     await this.$store.dispatch("storeSessionToken", q);
-
+  
     // If we have a response, fetch more data due to NGINX limitations
     const quizScheduleData: QuizScheduleData = decodeToken(await this.$store.dispatch("handleToken"));
     // If we have a response , set the appropiate data and so on
@@ -29,7 +30,6 @@ export default class Login extends Vue {
       await this.$store.dispatch("setQuiz", quizScheduleData.quiz ?
         convertNetworkQuizIntoQuiz(quizScheduleData.quiz) : null);
       await this.$store.dispatch("setQuestions", quizScheduleData.questions);
-      await this.$store.dispatch("setAvailability", response.available);
       // Don't send the end time
       const session: IUserSession = {
           userId: response.user._id,

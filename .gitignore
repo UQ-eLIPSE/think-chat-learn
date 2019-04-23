@@ -62,10 +62,11 @@ test-build
 # Config file to set up vue endpoint
 #client/vue.config.js
 #admin/vue.config.js
-
+intermediate/vue.config.js
 # Front end dist files
 client/dist
 admin/dist
+intermediate/dist
 
 # Images in public dist for dev purposes
 client/public/*
@@ -74,6 +75,7 @@ client/public/*
 client/envs
 client/.env.*
 admin/.env.*
+intermediate/.env.*
 
 # Config values for production
 server/config/production

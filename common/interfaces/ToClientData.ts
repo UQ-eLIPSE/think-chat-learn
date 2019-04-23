@@ -22,12 +22,31 @@ export type IChatGroup = DBSchema.IChatGroup;
 export type Response = DBSchema.Response;
 // API specific
 
+export enum LoginResponseTypes {
+  GENERIC_LOGIN = 1,
+  ADMIN_LOGIN = 2,
+  BACKUP_LOGIN = 3
+}
+
+interface GenericLogin {
+  type: LoginResponseTypes;
+}
+
 // Essentially the user should only have one page
-export interface LoginResponse {
+export interface LoginResponse extends GenericLogin {
+  type: LoginResponseTypes.GENERIC_LOGIN;
   user: IUser;
   courseId: string;
   quizId: string | null;
   available: boolean;
+}
+
+// Is also an admin
+export interface BackupLoginResponse extends GenericLogin {
+  type: LoginResponseTypes.BACKUP_LOGIN;
+  user: IUser;
+  courseId: string;
+  quizId: string | null;
 }
 
 export interface QuizScheduleData {
@@ -41,7 +60,8 @@ export interface QuizScheduleDataAdmin {
 }
 
 // Also handles the initial retrieval
-export interface AdminLoginResponse {
+export interface AdminLoginResponse extends GenericLogin {
+  type: LoginResponseTypes.ADMIN_LOGIN; 
   user: IUser;
   courseId: string;
   isAdmin: boolean;

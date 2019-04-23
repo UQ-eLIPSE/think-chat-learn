@@ -49,8 +49,8 @@ import {
   TypeQuestion,
   Page
 } from "../../../../common/interfaces/ToClientData";
-import { WebsocketManager } from "../../../js/WebsocketManager";
-import { WebsocketEvents } from "../../../js/WebsocketEvents";
+import { WebsocketManager } from "../../../../common/js/WebsocketManager";
+import { WebsocketEvents } from "../../../../common/js/WebsocketEvents";
 import { SocketState, Dictionary } from "../../interfaces";
 import { PageType } from "../../../../common/enums/DBEnums";
 

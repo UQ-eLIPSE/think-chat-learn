@@ -25,6 +25,17 @@ export class UserController extends BaseController {
 
     }
 
+    // Essentially the same as LTI login except we write the token differently
+    private handleLTIBackupLogin(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
+        this.userService.handleBackupLogin(req.body as ILTIData).then((output) => {
+            const token = jwt.sign(output as Object, Conf.jwt.SECRET, { expiresIn: Conf.jwt.TOKEN_LIFESPAN });
+            res.redirect(Conf.intermediatePage + "?q=" + token);
+        }).catch((e: Error) => {
+            res.status(500).send(e.message);
+        });
+
+    }    
+
     // The reason for the second end point is if the admin wants to pretend to be a student
     private handleAdminLogin(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
         this.userService.handleAdminLogin(req.body as ILTIData).then((output) => {
@@ -89,6 +100,7 @@ export class UserController extends BaseController {
     public setupRoutes() {
         this.router.post("/admin", this.handleAdminLogin.bind(this));
         this.router.post("/admin-login", this.handleLTILogin.bind(this));
+        this.router.post("/admin-intermediate-login", this.handleLTIBackupLogin.bind(this));
         this.router.post("/login", this.handleLoginWrapper.bind(this), this.handleLTILogin.bind(this));
         this.router.post("/me", this.refreshToken.bind(this));
         this.router.post("/handleToken", this.getQuizByToken.bind(this));

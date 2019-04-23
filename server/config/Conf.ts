@@ -13,6 +13,7 @@ export const Conf: IConf = {
     },
     adminPage: "http://localhost:8080/admin/#/login",
     clientPage: "http://localhost:8080/client/#/login",
+    intermediatePage: "http://localhost:8080/intermediate/#/login",
     jwt: {
         SECRET: "YOUR_SECRET",
         TOKEN_LIFESPAN: "7h"
@@ -54,6 +55,7 @@ export const Conf: IConf = {
     folders: {
         clientFolder: "/../../client/dist/",
         adminFolder:  "/../../admin/dist/",
+        intermediateFolder: "/../../intermediate/dist/",
         markingFolder: "/../../admin/static"
     },
     // Make sure this is larger than or equal to page delay for client
@@ -79,6 +81,7 @@ interface IConf {
         TOKEN_LIFESPAN: string
     },
     clientPage: string,
+    intermediatePage: string,
     adminPage: string,
     socketIo: {
         pingInterval: number,
@@ -117,6 +120,7 @@ interface IConf {
     folders: {
         clientFolder: string,
         adminFolder: string,
+        intermediateFolder: string,
         markingFolder: string
     }
     pageSlack: number
