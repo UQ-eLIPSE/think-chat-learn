@@ -91,6 +91,20 @@ export class MoocchatWaitPool {
         return this._questionId;
     }
 
+    public getTimeLeftBeforeForcedFormation() {
+        return this.answerQueues.getKeys().reduce((smallestWaitTime, queueKey) => {
+            const firstInQueueData = this.answerQueues.get(queueKey)![0];
+
+            if (!firstInQueueData) {
+                return smallestWaitTime;
+            }
+
+            const waitTime = Date.now() - firstInQueueData.timestamp;
+            return smallestWaitTime > MoocchatWaitPool.DesiredMaxWaitTime - waitTime ?
+                MoocchatWaitPool.DesiredMaxWaitTime - waitTime : smallestWaitTime;
+        }, MoocchatWaitPool.DesiredMaxWaitTime);
+    }
+
     // The idea is that within a pool, we attempt
     // to create queues based on question option. E.g. if a person answered option A, they will be placed
     // in the queue for option A. Selecting B will point to B... We then attempt to diversify/group up

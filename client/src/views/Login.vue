@@ -9,7 +9,8 @@ import {
 import { convertNetworkQuizIntoQuiz } from "../../../common/js/NetworkDataUtils";
 import { IUserSession } from "../../../common/interfaces/DBSchema";
 import { LTIRoles } from "../../../common/enums/DBEnums";
-import { QuizScheduleData, LoginResponse } from "../../../common/interfaces/ToClientData";
+import { QuizScheduleData, LoginResponse, IntermediateLogin,
+  LoginResponseTypes } from "../../../common/interfaces/ToClientData";
 
 @Component
 export default class Login extends Vue {
@@ -18,9 +19,8 @@ export default class Login extends Vue {
 
     // Essentially redirects to the main page assuming login is correct
     setIdToken(q as string);
-    const response = getLoginResponse() as LoginResponse;
+    const response = getLoginResponse() as LoginResponse | IntermediateLogin;
     await this.$store.dispatch("storeSessionToken", q);
-
     // If we have a response, fetch more data due to NGINX limitations
     const quizScheduleData: QuizScheduleData = decodeToken(await this.$store.dispatch("handleToken"));
     // If we have a response , set the appropiate data and so on
@@ -36,8 +36,12 @@ export default class Login extends Vue {
           course: response.courseId,
           startTime: Date.now(),
       };
-
       await this.$store.dispatch("createSession", session);
+      
+      if (response.type === LoginResponseTypes.INTERMEDIATE_LOGIN) {
+        await this.$store.dispatch("retrieveQuizSession", response.quizSessionId);
+      }
+
       this.$router.push("/");
     }
   }

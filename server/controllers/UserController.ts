@@ -44,6 +44,13 @@ export class UserController extends BaseController {
         });
     }
 
+    private registerIntermediate(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
+        this.userService.registerIntermediate(req.user, req.body).then((output) => {
+            const token = jwt.sign(output as Object, Conf.jwt.SECRET, { expiresIn: Conf.jwt.TOKEN_LIFESPAN });
+            res.json(token);
+        });
+    }
+
     private handleLoginWrapper(req: express.Request, res: express.Response, next: express.NextFunction | undefined) {
         this.userService.handleLoginWrapper(req.body as ILTIData).then((output) => {
             if(output.isAdmin) {
@@ -102,6 +109,7 @@ export class UserController extends BaseController {
         this.router.post("/admin-login", this.handleLTILogin.bind(this));
         this.router.post("/admin-intermediate-login", this.handleLTIBackupLogin.bind(this));
         this.router.post("/login", this.handleLoginWrapper.bind(this), this.handleLTILogin.bind(this));
+        this.router.post("/intermediate-register", this.registerIntermediate.bind(this));
         this.router.post("/me", this.refreshToken.bind(this));
         this.router.post("/handleToken", this.getQuizByToken.bind(this));
         this.router.post("/page", this.getPageByIds.bind(this));

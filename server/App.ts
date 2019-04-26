@@ -115,7 +115,7 @@ export default class App {
         this.marksRepository = new MarksRepository(this.database, "uq_marks");
 
         this.userService = new UserService(this.userRepository, this.quizRepository, this.questionRepository,
-            this.chatGroupRepository, this.quizSessionRepository, this.userSessionRepository);
+            this.chatGroupRepository, this.quizSessionRepository, this.userSessionRepository, this.responseRepository);
         this.quizService = new QuizService(this.quizRepository);
         this.questionService = new QuestionService(this.questionRepository);
         this.userSessionService = new UserSessionService(this.userSessionRepository);

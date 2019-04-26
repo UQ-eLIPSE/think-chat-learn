@@ -25,7 +25,8 @@ export type Response = DBSchema.Response;
 export enum LoginResponseTypes {
   GENERIC_LOGIN = 1,
   ADMIN_LOGIN = 2,
-  BACKUP_LOGIN = 3
+  BACKUP_LOGIN = 3,
+  INTERMEDIATE_LOGIN = 4
 }
 
 interface GenericLogin {
@@ -47,6 +48,16 @@ export interface BackupLoginResponse extends GenericLogin {
   user: IUser;
   courseId: string;
   quizId: string | null;
+}
+
+// Only difference is the type and the quizSessionId
+export interface IntermediateLogin extends GenericLogin {
+  type: LoginResponseTypes.INTERMEDIATE_LOGIN,
+  user: IUser;
+  courseId: string;
+  quizId: string | null;
+  quizSessionId: string | null;
+  available: boolean;
 }
 
 export interface QuizScheduleData {

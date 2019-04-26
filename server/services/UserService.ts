@@ -5,16 +5,17 @@ import { ILTIData } from "../../common/interfaces/ILTIData";
 import { LTIAuth } from "../js/auth/lti/LTIAuth";
 import { IMoocchatIdentityInfo } from "../js/auth/IMoocchatIdentityInfo";
 import { IUser, IQuiz } from "../../common/interfaces/DBSchema";
-import { LoginResponse, AdminLoginResponse, QuizScheduleData, QuizScheduleDataAdmin, TypeQuestion, Page, QuestionRequestData, QuestionReconnectData, BackupLoginResponse, LoginResponseTypes } from "../../common/interfaces/ToClientData";
+import { LoginResponse, AdminLoginResponse, QuizScheduleData, QuizScheduleDataAdmin, TypeQuestion, Page, QuestionRequestData, QuestionReconnectData, BackupLoginResponse, LoginResponseTypes, IntermediateLogin } from "../../common/interfaces/ToClientData";
 import { QuestionRepository } from "../repositories/QuestionRepository";
 import { convertQuizIntoNetworkQuiz } from "../../common/js/NetworkDataUtils";
 import { IQuizOverNetwork } from "../../common/interfaces/NetworkData";
-import { QuestionType, PageType } from "../../common/enums/DBEnums";
+import { QuestionType, PageType, LTIRoles } from "../../common/enums/DBEnums";
 import { QuizSessionRepository } from "../repositories/QuizSessionRepository";
 import { ChatGroupRepository } from "../repositories/ChatGroupRepository";
 import { UserSessionRepository } from "../repositories/UserSessionRepository";
 import { Utils } from "../../common/js/Utils";
 import { Conf } from "../config/Conf";
+import { ResponseRepository } from "../repositories/ResponseRepository";
 
 export class UserService extends BaseService {
 
@@ -24,10 +25,11 @@ export class UserService extends BaseService {
     protected readonly quizSessionRepo: QuizSessionRepository;
     protected readonly chatGroupRepo: ChatGroupRepository;
     protected readonly userSessionRepo: UserSessionRepository;
+    protected readonly responseRepo: ResponseRepository;
 
 
     constructor(_userRepo: UserRepository, _quizRepo: QuizRepository, _questionRepo: QuestionRepository, _chatGroupRepo: ChatGroupRepository,
-        _quizSessionRepo: QuizSessionRepository, _userSessionRepo: UserSessionRepository) {
+        _quizSessionRepo: QuizSessionRepository, _userSessionRepo: UserSessionRepository, _responseRepo: ResponseRepository) {
         super();
         this.userRepo = _userRepo;
         this.quizRepo = _quizRepo;
@@ -35,6 +37,7 @@ export class UserService extends BaseService {
         this.chatGroupRepo = _chatGroupRepo;
         this.quizSessionRepo = _quizSessionRepo;
         this.userSessionRepo = _userSessionRepo;
+        this.responseRepo = _responseRepo;
     }
 
     public async handleLoginWrapper(request: ILTIData) {
@@ -212,6 +215,58 @@ export class UserService extends BaseService {
         return Promise.resolve(output);
     }
 
+    // Create a quiz session id, create a response based on the payload
+    // We could use the token as a means to figure out how to make a quiz session id
+    public async registerIntermediate(token: BackupLoginResponse, responsePayload: any[]) {
+        // Assuming token and payloads are good
+        if (token.type === LoginResponseTypes.BACKUP_LOGIN && responsePayload) {
+            // Create a mock user and quiz session
+            const userSessionId = await this.userSessionRepo.create({
+                userId: token.user._id,
+                startTime: Date.now(),
+                course: token.courseId,
+                role: LTIRoles.ADMIN
+            });
+
+            const quizSessionId = await this.quizSessionRepo.create({
+                userSessionId: userSessionId,
+                quizId: token.quizId!,
+                responses: [],
+                complete: false,
+                startTime: Date.now()
+            });
+
+            // With the given quiz session, now create the responses
+            const responsePromises: Promise<any>[] = [];
+            for (let i = 0; i < responsePayload.length; i++) {
+                responsePromises.push(this.responseRepo.create({
+                    questionId: responsePayload[i].questionId as string,
+                    quizId: token.quizId!,
+                    type: QuestionType.QUALITATIVE,
+                    content: responsePayload[i].content,
+                    confidence: responsePayload[i].confidence,
+                    quizSessionId: quizSessionId
+                }));
+            }
+
+            await Promise.all(responsePromises);
+
+            // Afterwards, return an object that will be used
+            const output: IntermediateLogin = {
+                user: token.user,
+                type: LoginResponseTypes.INTERMEDIATE_LOGIN,
+                courseId: token.courseId,
+                quizId: token.quizId,
+                quizSessionId: quizSessionId,
+                available: true
+            };
+            console.log(quizSessionId);
+            return output;
+        }
+
+        throw new Error("Invalid token");
+    }
+
     // Simply returns a user if exist, null otherwise
     public async findUser(userId: string): Promise<IUser | null> {
         return UserServiceHelper.FindUser(this.userRepo, userId);
@@ -227,7 +282,8 @@ export class UserService extends BaseService {
             this.questionRepo, this.quizSessionRepo, this.chatGroupRepo);
     }
 
-    public async handleFetch(token: LoginResponse | AdminLoginResponse | BackupLoginResponse): Promise<QuizScheduleData | QuizScheduleDataAdmin | null> {
+    public async handleFetch(token: LoginResponse | AdminLoginResponse | BackupLoginResponse | IntermediateLogin):
+        Promise<QuizScheduleData | QuizScheduleDataAdmin | null> {
         if (token.type === LoginResponseTypes.ADMIN_LOGIN) {
             const quizzes = await this.quizRepo.findAll({ course: token.courseId });
             const questions = await this.questionRepo.findAll({ courseId: token.courseId });
@@ -238,7 +294,8 @@ export class UserService extends BaseService {
             }
 
             return output;
-        } else if (token.type === LoginResponseTypes.GENERIC_LOGIN || token.type === LoginResponseTypes.BACKUP_LOGIN) {
+        } else if (token.type === LoginResponseTypes.GENERIC_LOGIN || token.type === LoginResponseTypes.BACKUP_LOGIN
+                || token.type === LoginResponseTypes.INTERMEDIATE_LOGIN) {
 
             const quizSchedule = await this.quizRepo.findOne(token.quizId!);
             const questionIds: string[] = [];

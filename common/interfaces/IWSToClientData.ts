@@ -14,6 +14,10 @@ export interface ChatGroupAnswer {
 
 export interface GroupAnswerDictionary { [questionId: string]: ChatGroupAnswer[]; }
 
+export interface ChatPing {
+    size: number;
+    timeout: number;
+}
 export interface ChatGroupFormed {
     groupId: string;
     groupSize: number;

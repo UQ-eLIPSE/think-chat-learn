@@ -13,10 +13,28 @@ import { ResponseService } from "../../../services/ResponseService";
 import { ChatGroupService } from "../../../services/ChatGroupService";
 import { IChatGroup } from "../../../../common/interfaces/DBSchema";
 import { SocketSession } from "../SocketSession";
+import { UserService } from "../../../services/UserService";
 
 const CLIENT_INDEX_OFFSET = 1;
 
 export class ChatEndpoint extends WSEndpoint {
+    private static async HandleStatusRequest(socket: PacSeqSocket_Server, data: IWSToServerData.ChatGroupStatus) {
+        // Two checks, socket existence and userid allowed. Return a -1 if not allowed
+        if (!SocketSession.GetSocketSessionBySocketId(socket.id)) {
+            throw new Error(`Attempted to ping a response with an unknown socket ${socket.id}`);
+        }
+
+        // NOTE: implement socket authentication middleware
+        const waitPool = MoocchatWaitPool.GetPool(data.quizId, data.questionId);
+
+        const output: IWSToClientData.ChatPing = {
+            size: waitPool ? waitPool.getSize() : 0,
+            timeout: waitPool ? waitPool.getTimeLeftBeforeForcedFormation() : -1
+        };
+        socket.emit("chatGroupStatusRequest", output);
+
+    }
+
     private static async HandleJoinRequest(socket: PacSeqSocket_Server, data: IWSToServerData.ChatGroupJoin, responseService: ResponseService,
         chatGroupService: ChatGroupService) {
 
@@ -435,6 +453,12 @@ export class ChatEndpoint extends WSEndpoint {
         }
     }
 
+    public get onStatusRequest() {
+        return (data:IWSToServerData.ChatGroupStatus) => {
+            ChatEndpoint.HandleStatusRequest(this.getSocket(), data);
+        }
+    }
+
     public returnEndpointEventHandler(name: string): (data: any) => void {
         switch (name) {
             case "chatGroupJoinRequest": return this.onJoinRequest;
@@ -444,6 +468,7 @@ export class ChatEndpoint extends WSEndpoint {
             case "chatGroupUpdate": return this.onHandleGroupUpdate;
             case "chatGroupReconnect": return this.onChatReconnect;
             case "disconnect": return this.onChatDisconnect;
+            case "chatGroupStatusRequest": return this.onStatusRequest;
         }
 
         throw new Error(`No endpoint event handler for "${name}"`);
@@ -455,6 +480,7 @@ export class ChatEndpoint extends WSEndpoint {
             "chatGroupTypingNotification",
             "chatGroupQuitStatusChange",
             "chatGroupMessage",
+            "chatGroupStatusRequest",
             "chatGroupUpdate",
             // Note that the reason for also registering this event listener
             // is to allow disconnect messages to be sent to other users

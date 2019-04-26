@@ -247,6 +247,9 @@ async function handleReconnect(data: any) {
         } else {
             return;
         }
+    } else {
+        // Presumably the state store's version is valid
+        quizSession = state.quizSession;
     }
 
     // We have a quiz session (whether it is an on client disconnect or not)
@@ -259,57 +262,58 @@ async function handleReconnect(data: any) {
         state.socketState!.socket!.emit(WebsocketEvents.OUTBOUND.SESSION_SOCKET_RESYNC, {
             quizSessionId: state.quizSession!._id
         });
-
-        // Fetch the group based on quiz id. If we don't have one.
-        if (!state.socketState!.chatGroupFormed) {
-            const groupSession: ChatGroupResync | null =
-                await API.request(API.POST, API.CHATGROUP +
-                    "recoverSession", state.quizSession!);
-
-            const userResponses: Response[] =
-                (await API.request(API.GET, API.RESPONSE + "quizSession/" + state.quizSession!._id, {},
-                    undefined, getToken())).data;
-
-            const quizQuestionData: QuestionReconnectData = await API.request(API.POST, API.USER + "/reconnectData", {
-                quizId: state.quizSession!.quizId,
-                quizSessionId: state.quizSession!._id,
-                groupId: groupSession && groupSession.chatGroupFormed.groupId ?
-                    groupSession.chatGroupFormed.groupId : null
-            });
-
-            // Set the things as a result
-            await store.commit("Setting the pages", quizQuestionData.pages);
-            await store.commit("Setting questions", quizQuestionData.questions);
-
-            if (groupSession) {
-                await handleGroupJoin(groupSession.chatGroupFormed);
-                await store.dispatch("updatePageBasedOnTime", { time: groupSession.startTime, isGroup: true });
-                await store.dispatch("updateSocketMessages", groupSession.messages);
-            } else {
-                await store.dispatch("updatePageBasedOnTime", { time: quizSession!.startTime, isGroup: false });
-            }
-
-            if (userResponses) {
-                await store.commit(mutationKeys.ADD_RESPONSES, userResponses);
-                // Populate the missing responses based on the maxIndex
-                await store.commit(mutationKeys.POPULATE_MISSING_RESPONSES);
-            }
-        }
-
-        Vue.set(state, "resync", true);
-
-        // We then check if the quiz session has a group id and notify everyone
-        if (state.socketState!.chatGroupFormed) {
-            setTimeout(() => state.socketState!.socket!.emit(WebsocketEvents.OUTBOUND.CHAT_GROUP_RECONNECT, {
-                quizSessionId: state.quizSession!._id,
-                groupId: state.socketState!.chatGroupFormed!.groupId }
-            ), 1000);
-        }
-
     } else {
-        // No present socket session present. Don't bother with reconnection. This could possibly mean that the
-        // server has gone down or the socket session has been garbage collected
-        return;
+        // If we have a quiz session but not registered in terms of socket, most likely intermediate
+        state.socketState!.socket!.emit(WebsocketEvents.OUTBOUND.STORE_QUIZ_SESSION_SOCKET,
+        {
+          quizSessionId: state.quizSession!._id!
+        });        
+    }
+
+    // Fetch the group based on quiz id. If we don't have one.
+    if (!state.socketState!.chatGroupFormed) {
+        const groupSession: ChatGroupResync | null =
+            await API.request(API.POST, API.CHATGROUP +
+                "recoverSession", state.quizSession!);
+
+        const userResponses: Response[] =
+            (await API.request(API.GET, API.RESPONSE + "quizSession/" + state.quizSession!._id, {},
+                undefined, getToken())).data;
+
+        const quizQuestionData: QuestionReconnectData = await API.request(API.POST, API.USER + "/reconnectData", {
+            quizId: state.quizSession!.quizId,
+            quizSessionId: state.quizSession!._id,
+            groupId: groupSession && groupSession.chatGroupFormed.groupId ?
+                groupSession.chatGroupFormed.groupId : null
+        });
+
+        // Set the things as a result
+        await store.commit("Setting the pages", quizQuestionData.pages);
+        await store.commit("Setting questions", quizQuestionData.questions);
+
+        if (groupSession) {
+            await handleGroupJoin(groupSession.chatGroupFormed);
+            await store.dispatch("updatePageBasedOnTime", { time: groupSession.startTime, isGroup: true });
+            await store.dispatch("updateSocketMessages", groupSession.messages);
+        } else {
+            await store.dispatch("updatePageBasedOnTime", { time: quizSession!.startTime, isGroup: false });
+        }
+
+        if (userResponses) {
+            await store.commit(mutationKeys.ADD_RESPONSES, userResponses);
+            // Populate the missing responses based on the maxIndex
+            await store.commit(mutationKeys.POPULATE_MISSING_RESPONSES);
+        }
+    }
+
+    Vue.set(state, "resync", true);
+
+    // We then check if the quiz session has a group id and notify everyone
+    if (state.socketState!.chatGroupFormed) {
+        setTimeout(() => state.socketState!.socket!.emit(WebsocketEvents.OUTBOUND.CHAT_GROUP_RECONNECT, {
+            quizSessionId: state.quizSession!._id,
+            groupId: state.socketState!.chatGroupFormed!.groupId }
+        ), 1000);
     }
 }
 
