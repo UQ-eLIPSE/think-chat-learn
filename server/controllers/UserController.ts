@@ -4,6 +4,7 @@ import { BaseController } from "./BaseController";
 import { UserService } from "../services/UserService";
 import { ILTIData } from "../../common/interfaces/ILTIData";
 import { Conf } from "../config/Conf";
+import { isAdmin } from "../js/auth/AdminPageAuth";
 
 export class UserController extends BaseController {
 
@@ -31,6 +32,20 @@ export class UserController extends BaseController {
             res.redirect(Conf.adminPage + "?q=" + token);
         });
     }
+
+    private handleLoginWrapper(req: express.Request, res: express.Response, next: express.NextFunction | undefined) {
+        this.userService.handleLoginWrapper(req.body as ILTIData).then((output) => {
+            if(output.isAdmin) {
+                return res.send(output.html)
+            } else {
+                return next!();
+            }
+        }).catch((e: Error) => {
+            res.status(500).send(e.message);
+        });
+    }
+
+
     private refreshToken(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
         res.sendStatus(200);
     }
@@ -61,12 +76,24 @@ export class UserController extends BaseController {
         })        
     }
 
+    private getUserById(req: express.Request, res: express.Response) {
+        if(!req.params.userId) throw new Error("User id not supplied");
+        this.userService.findUser(req.params.userId).then((userResponse) => {
+            res.json(userResponse);
+        }).catch((e) => {
+            console.log(e);
+            res.sendStatus(500);
+        });
+    }
+
     public setupRoutes() {
         this.router.post("/admin", this.handleAdminLogin.bind(this));
-        this.router.post("/login", this.handleLTILogin.bind(this));
+        this.router.post("/admin-login", this.handleLTILogin.bind(this));
+        this.router.post("/login", this.handleLoginWrapper.bind(this), this.handleLTILogin.bind(this));
         this.router.post("/me", this.refreshToken.bind(this));
         this.router.post("/handleToken", this.getQuizByToken.bind(this));
         this.router.post("/page", this.getPageByIds.bind(this));
         this.router.post("/reconnectData", this.getQuizQuestionForReconnect.bind(this));
+        this.router.get("/marking/:userId", isAdmin(), this.getUserById.bind(this));
     }
 }

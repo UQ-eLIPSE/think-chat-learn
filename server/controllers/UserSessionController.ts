@@ -5,6 +5,7 @@ import { IUserSession } from "../../common/interfaces/DBSchema";
 import { UserService } from "../services/UserService";
 import { StudentAuthenticatorMiddleware } from "../js/auth/StudentPageAuth";
 import { LoginResponse } from "../../common/interfaces/ToClientData";
+import { isAdmin } from "../js/auth/AdminPageAuth";
 export class UserSessionController extends BaseController {
 
     protected userSessionService: UserSessionService;
@@ -41,11 +42,22 @@ export class UserSessionController extends BaseController {
         });
     }
 
+    private getSessionById(req: express.Request, res: express.Response, next: express.NextFunction | undefined) {
+        if(!req.params.userSessionId) throw new Error('User session ID not supplied'); 
+        this.userSessionService.getUserSession(req.params.userSessionId).then((response) => {
+            res.json(response);
+        }).catch((e) => {
+            console.log(e);
+            res.sendStatus(500);
+        });
+    }
+
     public setupRoutes() {
         // Don't need to check usersession id due to not existing just yet
         this.router.put("/create", StudentAuthenticatorMiddleware.checkUserId(),
             this.createSession.bind(this));
         this.router.post("/update", StudentAuthenticatorMiddleware.checkUserId(), StudentAuthenticatorMiddleware.checkUserSessionId(),
             this.updateSession.bind(this));
+        this.router.get("/marking/:userSessionId", isAdmin(), this.getSessionById.bind(this))
     }
 }

@@ -4,6 +4,7 @@ import { QuizSessionService } from "../services/QuizSessionService";
 import { IQuizSession, LoginResponse } from "../../common/interfaces/ToClientData";
 import { StudentAuthenticatorMiddleware } from "../js/auth/StudentPageAuth";
 import { SocketSession } from "../js/websocket/SocketSession";
+import { isAdmin } from "../js/auth/AdminPageAuth";
 
 export class QuizSessionController extends BaseController {
 
@@ -77,5 +78,6 @@ export class QuizSessionController extends BaseController {
         this.router.post("/findSession", StudentAuthenticatorMiddleware.checkUserId(), StudentAuthenticatorMiddleware.checkQuizSessionId(),
             this.findSession.bind(this));
         this.router.post("/fetchByUserQuiz", StudentAuthenticatorMiddleware.checkUserId(), this.getQuizSessionByUserIdAndQuiz.bind(this));
+        this.router.get("/quizsession-marking/:quizSessionId", isAdmin(), this.getQuizSessionById.bind(this));
     }
 }

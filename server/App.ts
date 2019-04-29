@@ -15,6 +15,7 @@ import { UserSessionRepository } from "./repositories/UserSessionRepository";
 import { QuizSessionRepository } from "./repositories/QuizSessionRepository";
 import { ChatGroupRepository } from "./repositories/ChatGroupRepository";
 import { ResponseRepository } from "./repositories/ResponseRepository";
+import { MarksRepository } from "./repositories/MarksRepository";
 
 // Services
 import { UserService } from "./services/UserService";
@@ -24,6 +25,7 @@ import { UserSessionService } from "./services/UserSessionService";
 import { QuizSessionService } from "./services/QuizSessionService";
 import { ChatGroupService } from "./services/ChatGroupService";
 import { ResponseService } from "./services/ResponseService";
+import { MarksService } from "./services/MarksService";
 
 // Controllers
 import { UserController } from "./controllers/UserController";
@@ -33,6 +35,7 @@ import { UserSessionController } from "./controllers/UserSessionController";
 import { QuizSessionController } from "./controllers/QuizSessionController";
 import { ChatGroupController } from "./controllers/ChatGroupController";
 import { ResponseController } from "./controllers/ResponseController";
+import { MarksController } from "./controllers/MarksController";
 
 // Authenticator for students
 import { StudentAuthenticatorMiddleware } from "./js/auth/StudentPageAuth";
@@ -52,6 +55,7 @@ export default class App {
     private quizSessionRepository: QuizSessionRepository;
     private chatGroupRepository: ChatGroupRepository;
     private responseRepository: ResponseRepository;
+    private marksRepository: MarksRepository;
 
     // Services
     private userService: UserService;
@@ -61,6 +65,7 @@ export default class App {
     private quizSessionService: QuizSessionService;
     private chatGroupService: ChatGroupService;
     private responseService: ResponseService;
+    private marksService: MarksService;
 
     // Controllers
     private userController: UserController;
@@ -70,6 +75,7 @@ export default class App {
     private quizSessionController: QuizSessionController
     private responseController: ResponseController;
     private chatGroupController: ChatGroupController;
+    private marksController: MarksController;
 
     // Socket io things
     private socketIO: SocketIO.Server;
@@ -106,6 +112,7 @@ export default class App {
         this.quizSessionRepository = new QuizSessionRepository(this.database, "uq_quizSession");
         this.chatGroupRepository = new ChatGroupRepository(this.database, "uq_chatGroup");
         this.responseRepository = new ResponseRepository(this.database, "uq_responses");
+        this.marksRepository = new MarksRepository(this.database, "uq_marks");
 
         this.userService = new UserService(this.userRepository, this.quizRepository, this.questionRepository,
             this.chatGroupRepository, this.quizSessionRepository, this.userSessionRepository);
@@ -116,7 +123,7 @@ export default class App {
             this.quizRepository, this.responseRepository);
         this.chatGroupService = new ChatGroupService(this.chatGroupRepository, this.responseRepository);
         this.responseService = new ResponseService(this.responseRepository, this.quizSessionRepository, this.quizRepository);
-
+        this.marksService = new MarksService(this.marksRepository, this.quizRepository, this.quizSessionRepository, this.chatGroupRepository, this.userSessionRepository, this.userRepository);
         this.userController = new UserController(this.userService);
         this.quizController = new QuizController(this.quizService);
         this.questionController = new QuestionController(this.questionService);
@@ -124,7 +131,7 @@ export default class App {
         this.quizSessionController = new QuizSessionController(this.quizSessionService);
         this.responseController = new ResponseController(this.responseService);
         this.chatGroupController = new ChatGroupController(this.chatGroupService);
-
+        this.marksController = new MarksController(this.marksService);
         StudentAuthenticatorMiddleware.instantiate(this.userService, this.userSessionService, this.quizSessionService,
                 this.responseService);
 
@@ -135,6 +142,7 @@ export default class App {
         this.quizSessionController.setupRoutes();
         this.responseController.setupRoutes();
         this.chatGroupController.setupRoutes();
+        this.marksController.setupRoutes();
 
     }
 
@@ -219,19 +227,19 @@ export default class App {
         
         
         
-        // MOOCchat standard client
-        this.express.post("/", (req, res) => {
-            res.render("index.ejs", { conf: Conf, postData: req.body });
-        });
+        // // MOOCchat standard client
+        // this.express.post("/", (req, res) => {
+        //     res.render("index.ejs", { conf: Conf, postData: req.body });
+        // });
         
-        this.express.get("/", (req, res) => {
-            res.render("index.ejs", { conf: Conf });
-        });
+        // this.express.get("/", (req, res) => {
+        //     res.render("index.ejs", { conf: Conf });
+        // });
         
-        // Admin client
-        this.express.post("/admin", function(req, res) {
-            res.render("admin.ejs", { postData: req.body });
-        });
+        // // Admin client
+        // this.express.post("/admin", function(req, res) {
+        //     res.render("admin.ejs", { postData: req.body });
+        // });
         
         this.express.use("/user", this.userController.getRouter());
         this.express.use("/quiz", this.quizController.getRouter());
@@ -240,6 +248,7 @@ export default class App {
         this.express.use("/quizsession", this.quizSessionController.getRouter());
         this.express.use("/response", this.responseController.getRouter());
         this.express.use("/chatgroup", this.chatGroupController.getRouter());
+        this.express.use("/marks", this.marksController.getRouter());
     }
 
     // Only login gets affected
