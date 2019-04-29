@@ -136,8 +136,9 @@ export default class MarkQuizMarkingSection extends Vue {
 .chat {
   background-color: #f7f8f8;
   box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.15);
-  max-height: 30vh;
+  /* max-height: 30vh; */
   width: 100%;
+  overflow: auto;
 
   .message-container {
     max-height: 100%;
@@ -149,7 +150,7 @@ export default class MarkQuizMarkingSection extends Vue {
 .row {
   display: flex;
   width: 100%;
-  height: 65vh;
+  height: 70vh;
 }
 
 .chat-messages {
@@ -157,6 +158,7 @@ export default class MarkQuizMarkingSection extends Vue {
   flex-shrink: 0;
   flex-direction: column;
   width: 50%;
+  overflow: scroll;
 }
 
 .responses-container {
@@ -164,8 +166,7 @@ export default class MarkQuizMarkingSection extends Vue {
   flex-shrink: 0;
   flex-direction: column;
   max-height: 30vh;
-  overflow: auto;
-  // width: 50%;
+  overflow: auto; // width: 50%;
 }
 
 .marking-component {

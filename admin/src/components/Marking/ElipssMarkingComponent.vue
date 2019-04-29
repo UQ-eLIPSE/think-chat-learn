@@ -1,6 +1,14 @@
 <template>
     <div class="marking-rubric">
         <h3>Rubric</h3>
+        <div class="save-controls">
+            <button type="button"
+                    class="primary"
+                    @click.prevent="saveMarks">Save Marks</button>
+            <div v-if="saveStatus.message.length > 0"
+                 :class="saveMessageClasses">{{ saveStatus.message }}</div>
+
+        </div>
         <table class="marks-table"
                v-if="marks">
             <tr>Individual Mark</tr>
@@ -43,17 +51,10 @@
             </tr>
         </table>
         <!-- <label> Feedback
-                        <textarea v-if="marks"
-                                  v-model="marks.mark.feedbackText"></textarea>
-                    </label> -->
-        <div class="save-controls">
-            <button type="button"
-                    class="primary"
-                    @click.prevent="saveMarks">Save Marks</button>
-            <div v-if="saveStatus.message.length > 0"
-                 :class="saveMessageClasses">{{ saveStatus.message }}</div>
+                                <textarea v-if="marks"
+                                          v-model="marks.mark.feedbackText"></textarea>
+                            </label> -->
 
-        </div>
     </div>
 </template>
 
@@ -341,6 +342,6 @@ export default class ElipssMarkingComponent extends Vue {
 
 .save-controls {
     display: flex;
-
+    flex-flow: row-reverse;
 }
 </style>

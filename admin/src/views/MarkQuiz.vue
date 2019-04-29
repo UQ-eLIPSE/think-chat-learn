@@ -10,7 +10,9 @@
       <span>Available End: {{ new Date(q.availableEnd).toString() }}</span>
     </div>
 
-    <div class="container group-select">
+
+    <div class="select-row">
+      <!-- <div class="group-select"> -->
       <label> Group
         <select v-model="selectedGroupId">
           <option v-for="(g, i) in chatGroups"
@@ -18,11 +20,8 @@
                   :key="g._id"> Group {{i + 1}} ({{g._id}})</option>
         </select>
       </label>
-    </div>
-
-    <div class="group-mark"
-         v-if="selectedGroup">
-      <label> Question
+      <!-- </div> -->
+      <label v-if="selectedGroup"> Question
         <select v-model="selectedQuestionId">
           <option v-for="(qid) in orderedDiscussionPageQuestionIds"
                   :value="qid"
@@ -30,19 +29,35 @@
         </select>
       </label>
       <button type="button"
+              v-if="selectedGroup && selectedQuestion"
               class="primary"
               @click="displayQuestionContent = !displayQuestionContent">{{ displayQuestionContent? 'Hide': 'Show' }} question content</button>
 
+
+      <label v-if="selectedGroup && selectedQuestion">
+        Current user
+        <select v-model="currentQuizSessionId">
+          <option v-for="s in currentGroupQuizSessionInfoObjects"
+                  :key="s.quizSession._id"
+                  :value="s.quizSession._id">{{ s.user.username }}</option>
+        </select>
+      </label>
+
+    </div>
+    <div class="step-navigation">
+      <button type="button"
+              class="button secondary"
+              @click.prevent="previous">
+        &lt; Previous</button>
+      <button type="button"
+              class="button secondary"
+              @click.prevent="next">Next &gt;</button>
+    </div>
+    <div class="group-mark"
+         v-if="selectedGroup">
+
       <div class="question-discussion"
            v-if="selectedQuestion">
-        <label>
-          Current user
-          <select v-model="currentQuizSessionId">
-            <option v-for="s in currentGroupQuizSessionInfoObjects"
-                    :key="s.quizSession._id"
-                    :value="s.quizSession._id">{{ s.user.username }}</option>
-          </select>
-        </label>
 
 
         <div class="question-box"
@@ -54,23 +69,16 @@
           </span>
         </div>
 
-
-        <MarkQuizMarkingSection class="marking-section" />
+        <span class="info" v-if="!isCurrentUserSelectedAndInGroup">Please select a user</span>
+        <MarkQuizMarkingSection v-if="selectedGroup && selectedQuestion && isCurrentUserSelectedAndInGroup"
+                                class="marking-section" />
       </div>
 
     </div>
 
     <div v-else>Select a group from the dropdown list</div>
 
-    <div class="step-navigation">
-      <button type="button"
-              class="button secondary"
-              @click.prevent="previous">
-        &lt; Previous</button>
-      <button type="button"
-              class="button secondary"
-              @click.prevent="next">Next &gt;</button>
-    </div>
+
   </div>
 
   </div>
@@ -128,7 +136,7 @@ export default class MarkQuiz extends Vue {
   }
 
   goToQuizSession(index: number) {
-    if (!this.currentGroupQuizSessionInfoObjects) return;
+    if (!this.currentGroupQuizSessionInfoObjects || this.currentGroupQuizSessionInfoObjects.length === 0) return;
     if (!this.currentGroupQuizSessionInfoObjects[index]) this.currentQuizSessionId = this.currentGroupQuizSessionInfoObjects[0].quizSession._id
     else this.currentQuizSessionId = this.currentGroupQuizSessionInfoObjects[index].quizSession._id;
   }
@@ -171,6 +179,12 @@ export default class MarkQuiz extends Vue {
     }
   }
 
+  get isCurrentUserSelectedAndInGroup() {
+    if (!this.currentQuizSessionId || !this.currentGroupQuizSessionInfoObjects) return false;
+    const existsInGroup = this.currentGroupQuizSessionInfoObjects.findIndex(o => o.quizSession._id === this.currentQuizSessionId)
+    if (existsInGroup !== -1) return true;
+    return false;
+  }
   previous() {
     // Check from lowest level to highest level
     // Check if next user/quiz session available
@@ -427,25 +441,40 @@ export default class MarkQuiz extends Vue {
 }
 
 .marking {
-  max-height: 90vh;
-  overflow: scroll;
+  // max-height: 90vh;
+  overflow: auto;
 }
 
 .marking-section {
-  max-height: 80vh;
+  // max-height: 80vh;
   overflow: scroll;
 }
 
 .step-navigation {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
 }
 
 .step-navigation>* {
   margin: 0 0.25rem;
+  width: 15%;
 }
 
 .quiz-mark-page {
   height: 100vh;
+}
+
+.select-row {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.select-row>* {
+  margin: 0.25rem 0.5rem;
+}
+.info {
+  font-size: 1.5em;
+  color: #51247a; 
+  font-weight: 400;
 }
 </style>
