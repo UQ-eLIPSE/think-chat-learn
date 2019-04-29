@@ -14,9 +14,10 @@
   // font-family: "Roboto-Light", sans-serif;
   // -webkit-font-smoothing: antialiased;
   // -moz-osx-font-smoothing: grayscale;
-  height: 100vh !important;
+  // height: 100vh !important;
   width: 100vw;
-  overflow: hidden;
+  // overflow: hidden;
+  overflow: auto;
 
   display: flex;
   flex-direction: row;
@@ -24,10 +25,11 @@
 }
 
 #routerpanel {
-  overflow-y: scroll;
+  // overflow-y: scroll;
+  // width: calc(100% - 20rem);
+  // max-height: 100%;
+  // overflow: scroll;
   width: calc(100% - 20rem);
-  max-height: 100%;
-  overflow: scroll;
 }
 
 select {
