@@ -18,13 +18,13 @@ export default class Login extends Vue {
     // Essentially redirects to the main page assuming login is correct
     setIdToken(q as string);
     const response = getAdminLoginResponse();
-
     // If we have a response, fetch more data due to NGINX limitations
     const otherToken = await this.$store.dispatch("handleToken");
     const quizScheduleData: QuizScheduleDataAdmin = decodeToken(otherToken);
     // If we have a response , set the appropiate data and so on
     if (response) {
       await this.$store.dispatch("setUser", response.user);
+      await this.$store.commit("setCourse", response.courseId);
 
       // Remember to convert network quizzes to one with dates
       await this.$store.dispatch( 

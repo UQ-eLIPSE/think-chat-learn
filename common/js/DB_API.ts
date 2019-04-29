@@ -19,6 +19,7 @@ export interface IApi {
   QUIZSESSION: string;
   RESPONSE: string;
   CHATGROUP: string;
+  MARKS: string;
 
   request(
     method: string,
@@ -67,7 +68,8 @@ export const API: IApi = {
   USERSESSION: "usersession/",
   QUIZSESSION: "quizsession/",
   RESPONSE: "response/",
-  CHATGROUP: "chatgroup/"
+  CHATGROUP: "chatgroup/",
+  MARKS: "marks/"
 };
 
 export default API;

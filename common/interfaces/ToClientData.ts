@@ -57,3 +57,5 @@ export interface QuestionReconnectData {
   pages: DBSchema.Page[];
   questions: TypeQuestion[];
 }
+
+export type QuizSessionDataObject = { quizSession: IQuizSession | null, userSession: IUserSession | null, user: IUser | null, responses: Response[] };
