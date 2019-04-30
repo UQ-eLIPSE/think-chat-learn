@@ -39,9 +39,22 @@ export class UserService extends BaseService {
 
     public async handleLoginWrapper(request: ILTIData) {
         // Get user+quiz info, check validity
-        const identity = UserServiceHelper.ProcessLtiObject(request);
 
-        if (this.isLtiAdmin(identity)) {
+        // const identity = UserServiceHelper.ProcessLtiObject(request);
+        const adminRoles = [
+            "instructor",
+            "teachingassistant",
+            "administrator",
+        ];
+        const currentUserRoles = (request.roles || "").toLowerCase().split(",");
+
+        const isAdmin = (currentUserRoles || []).some((role: any) => {
+            return adminRoles.findIndex((element) => {
+                return element === role.toLowerCase();
+            }) !== -1;
+        });
+        
+        if (isAdmin) {
             let html = `
                 <html>
                     <head>
@@ -55,7 +68,7 @@ export class UserService extends BaseService {
                     <form method="POST" action="/">`;
 
             const inputString = Object.keys(request).reduce((str, k) => str + `<input type="hidden" name="${k}" value="${request[k]}" />`, ``);
-            console.log('Endpoint: ',Conf.endpointUrl);
+
             const rest = `
                         <input type="submit" class="launch-buttons" value="Launch admin panel" formaction="${Conf.endpointUrl}/user/admin">
                         <input type="submit" class="launch-buttons" value="Launch student view" formaction="${Conf.endpointUrl}/user/admin-login">

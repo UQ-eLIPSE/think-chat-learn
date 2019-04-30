@@ -4,12 +4,12 @@ export const Conf = {
     server: {
         // Change url to localhost:[PORT_NUMBER] for runnning locally
         // Replace with the absolute address where moocchat server is deployed
-        url: "localhost:8080"
+        url: "elipse-deep-001.uqcloud.net"
     },
     taskTimer: {
         outOfTimeRemainingMs: Utils.DateTime.secToMs(60)
     },
-
+    pageFetchTime: 5000,
     combinedHTML: {
         // Relative to URL of public page (not server filesystem path)
         url: "./static/combined-html/all-pages.html"
@@ -26,6 +26,5 @@ export const Conf = {
 
     chat: {
         typingNotificationCheckMs: Utils.DateTime.secToMs(5)
-    },
-    pageFetchTime: 5000
+    }
 };

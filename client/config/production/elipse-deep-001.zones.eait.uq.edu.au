@@ -9,7 +9,7 @@ export const Conf = {
     taskTimer: {
         outOfTimeRemainingMs: Utils.DateTime.secToMs(60)
     },
-
+    pageFetchTime: 5000,
     combinedHTML: {
         // Relative to URL of public page (not server filesystem path)
         url: "./static/combined-html/all-pages.html"
