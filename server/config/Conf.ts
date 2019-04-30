@@ -1,18 +1,18 @@
 import { Utils } from "../../common/js/Utils";
-
+ 
 /**
  * MOOCchat server configuration file
  */
-
+ 
 export const Conf: IConf = {
-    endpointUrl: "http://localhost:8080",
+    endpointUrl: "https://uthink.uqcloud.net/api",
     portNum: 8080,
     database: "mongodb://localhost:27017/moocchatDB",
     http: {
         maxSockets: 65000
     },
-    adminPage: "http://localhost:8080/admin/#/login",
-    clientPage: "http://localhost:8080/client/#/login",
+    adminPage: "https://elipse-deep-001.uqcloud.net/admin/#/login",
+    clientPage: "https://elipse-deep-001.uqcloud.net/client/#/login",
     jwt: {
         SECRET: "YOUR_SECRET",
         TOKEN_LIFESPAN: "7h"
@@ -22,16 +22,16 @@ export const Conf: IConf = {
         pingTimeout: 16000
     },
     express: {
-        serveStaticContent: true
+        serveStaticContent: false
     },
     lti: {
-        testMode: true,
+        testMode: false,
         signingInfo: {
             method: "POST",
-            url: "https://mc-stg.uqcloud.net/lti.php",
+            url: "https://uthink.uqcloud.net/lti.php",
             consumer: {
                 key: "moocchat.uqcloud.net",
-                secret: "secret"
+                secret: "q3npRzgGi7yQRbcK73lw"
             }
         }
     },
@@ -52,18 +52,16 @@ export const Conf: IConf = {
         timeoutMs: Utils.DateTime.hrsToMs(1),
     },
     folders: {
-        clientFolder: "/../../client/dist/",
-        adminFolder:  "/../../admin/dist/",
-        markingFolder: "/../../admin/static"
+        clientFolder: "/../client/",
+        adminFolder:  "/../admin/"
     },
-    // Make sure this is larger than or equal to page delay for client
     pageSlack: 10000
 }
-
-
+ 
+ 
 /**
  * Explicit definition for above config file
- * 
+ *
  * @interface IConf
  */
 interface IConf {
@@ -116,8 +114,7 @@ interface IConf {
     },
     folders: {
         clientFolder: string,
-        adminFolder: string,
-        markingFolder: string
-    }
+        adminFolder: string
+    },
     pageSlack: number
 }
