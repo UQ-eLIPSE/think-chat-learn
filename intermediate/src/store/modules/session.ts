@@ -1,9 +1,6 @@
 import Vue from "vue";
 import { Commit } from "vuex";
-import { IUserSession, IQuizSession, Response, IQuiz,
-    IDiscussionPage,
-    TypeQuestion,
-    QuestionReconnectData} from "../../../../common/interfaces/ToClientData";
+import { IQuizSession, Response } from "../../../../common/interfaces/ToClientData";
 import API from "../../../../common/js/DB_API";
 import store from "..";
 // Websocket interfaces
@@ -18,7 +15,9 @@ export interface IState {
     poolSize: number;
     refreshTime: number;
     timeoutTime: number;
-    tokens: string[]
+    tokens: string[];
+    responses: Response[];
+    validSessions: {[key: string]: boolean};
 }
 
 const state: IState = {
@@ -31,9 +30,11 @@ const state: IState = {
         socket: null
     },
     poolSize: -1,
-    timeoutTime: -1, 
+    timeoutTime: -1,
     refreshTime: Date.now(),
-    tokens: []
+    tokens: [],
+    responses: [],
+    validSessions: {}
 };
 
 const mutationKeys = {
@@ -42,7 +43,12 @@ const mutationKeys = {
     // Web socket mutations
     CREATE_SOCKET: "Creating the socket",
     CLOSE_SOCKET: "Closing the socket",
-    DELETE_SOCKET: "Deleting the socket"
+    DELETE_SOCKET: "Deleting the socket",
+    SET_RESPONSES: "Setting responses",
+
+    // Manipulates the sessions
+    SET_VALID_SESSION: "Setting a quiz session for user can join",
+    UNSET_VALID_SESSION: "Unsetting a quiz session for user can join",
 };
 
 function handleTermination() {
@@ -63,6 +69,12 @@ function handlePing(data?: IWSToClientData.ChatPing) {
     }
 }
 
+function handleChatGroupFormed(data?: IWSToClientData.ChatGroupFormed) {
+    if (data) {
+        Vue.set(state.validSessions, data.quizSessionId, true);
+    }
+}
+
 // Grabs the reference from user.ts
 function getToken(): string | null {
     return store.getters.token;
@@ -80,6 +92,7 @@ function registerSocketEvents() {
 
     state.socketState.socket!.on(WebsocketEvents.INBOUND.CHAT_PING, handlePing);
 
+    state.socketState.socket!.on(WebsocketEvents.INBOUND.CHAT_GROUP_FORMED, handleChatGroupFormed);
 }
 
 const getters = {
@@ -95,6 +108,10 @@ const getters = {
         return state.quizSession;
     },
 
+    responses: (): Response[] | null => {
+        return state.responses;
+    },
+
     refreshTime: (): number => {
         return state.refreshTime;
     },
@@ -105,6 +122,10 @@ const getters = {
 
     timeoutTime: (): number => {
         return state.timeoutTime;
+    },
+
+    validSessions: (): {[key: string]: boolean} => {
+        return state.validSessions;
     }
 };
 const actions = {
@@ -145,10 +166,16 @@ const actions = {
 
     createIntermediate({ commit }: {commit: Commit}, responses: Response[]) {
         return API.request(API.POST, API.USER + "intermediate-register", responses,
-            undefined, getToken()).then((token: string) => {
-                commit(mutationKeys.APPEND_TOKEN, token);
+            undefined, getToken()).then((output: { token: string, responses: Response[]}) => {
+                commit(mutationKeys.APPEND_TOKEN, output.token);
+                commit(mutationKeys.SET_RESPONSES, output.responses);
             });
+    },
+
+    unsetValidSession({ commit }: {commit: Commit}, id: string) {
+        commit(mutationKeys.UNSET_VALID_SESSION, id);
     }
+
 };
 
 const mutations = {
@@ -181,6 +208,22 @@ const mutations = {
             Vue.set(funcState.tokens, funcState.tokens.length, token);
         }
     },
+
+    [mutationKeys.SET_RESPONSES](funcState: IState, responses: Response[]) {
+        for (let i = 0; i < responses.length; i++) {
+            if (!funcState.responses.find((response) =>  response._id === responses[i]._id)) {
+                Vue.set(funcState.responses, funcState.responses.length, responses[i]);
+            }
+        }
+    },
+
+    [mutationKeys.SET_VALID_SESSION](funcState: IState, quizSessionId: string) {
+        Vue.set(funcState.validSessions, quizSessionId, true);
+    },
+
+    [mutationKeys.UNSET_VALID_SESSION](funcState: IState, quizSessionId: string) {
+        Vue.set(funcState.validSessions, quizSessionId, false);
+    },    
 };
 
 export default {

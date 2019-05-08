@@ -139,7 +139,8 @@ export class ChatEndpoint extends WSEndpoint {
                                         }
                                         return acc;
                                     }, {}),
-                                    clientIndex
+                                    clientIndex,
+                                    quizSessionId: element.quizSessionId
                                 }
 
                                 socket.emit("chatGroupFormed", groupFormed);

@@ -25,6 +25,7 @@ export interface ChatGroupFormed {
     // i.e. a group can have multiple answers for muliple questions.
     groupAnswers: GroupAnswerDictionary;
     clientIndex: number;
+    quizSessionId: string;
 }
 export interface ChatGroupMessage {
     clientIndex: number;

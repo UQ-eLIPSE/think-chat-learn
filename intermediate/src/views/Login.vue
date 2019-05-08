@@ -21,7 +21,7 @@ export default class Login extends Vue {
     setIdToken(q as string);
     const response = getLoginResponse() as BackupLoginResponse;
     await this.$store.dispatch("storeSessionToken", q);
-  
+
     // If we have a response, fetch more data due to NGINX limitations
     const quizScheduleData: QuizScheduleData = decodeToken(await this.$store.dispatch("handleToken"));
     // If we have a response , set the appropiate data and so on

@@ -39,7 +39,7 @@ const getters = {
 
   getQuestionById: () => {
     return getQuestionById;
-  }  
+  }
 };
 const actions = {
     setQuiz({ commit }: {commit: Commit}, quiz: IQuiz | null) {

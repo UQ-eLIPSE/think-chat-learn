@@ -46,8 +46,8 @@ export class UserController extends BaseController {
 
     private registerIntermediate(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
         this.userService.registerIntermediate(req.user, req.body).then((output) => {
-            const token = jwt.sign(output as Object, Conf.jwt.SECRET, { expiresIn: Conf.jwt.TOKEN_LIFESPAN });
-            res.json(token);
+            const token = jwt.sign(output.token as Object, Conf.jwt.SECRET, { expiresIn: Conf.jwt.TOKEN_LIFESPAN });
+            res.json({ token, responses: output.responses});
         });
     }
 

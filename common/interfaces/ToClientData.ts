@@ -52,12 +52,13 @@ export interface BackupLoginResponse extends GenericLogin {
 
 // Only difference is the type and the quizSessionId
 export interface IntermediateLogin extends GenericLogin {
-  type: LoginResponseTypes.INTERMEDIATE_LOGIN,
+  type: LoginResponseTypes.INTERMEDIATE_LOGIN;
   user: IUser;
   courseId: string;
   quizId: string | null;
   quizSessionId: string | null;
   available: boolean;
+  responseId: string;
 }
 
 export interface QuizScheduleData {
@@ -72,7 +73,7 @@ export interface QuizScheduleDataAdmin {
 
 // Also handles the initial retrieval
 export interface AdminLoginResponse extends GenericLogin {
-  type: LoginResponseTypes.ADMIN_LOGIN; 
+  type: LoginResponseTypes.ADMIN_LOGIN;
   user: IUser;
   courseId: string;
   isAdmin: boolean;

@@ -25,7 +25,10 @@
     </div>
     <div>
       <div v-for="token in tokens" :key="token">
-        Redirect as <a :href="'http://localhost:8080/client/#/login?q=' + token">here</a>
+        <button type="button" @click="sendJoinRequest(token)">Send Join Request</button>
+        <span>Redirect as <a :href="'http://localhost:8080/client/#/login?q=' + token">here</a></span>
+        <span>State: {{ validSessions[decodedTokenReferences[token]] === undefined ? "Need to send a join request" :
+            (validSessions[decodedTokenReferences[token]] ? "In a group" : "Waiting for a group") }}</span>
       </div>
     </div>    
   </div>
@@ -44,13 +47,14 @@ import {
 } from "../../../common/interfaces/ToClientData";
 import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
 import * as IWSToServerData from "../../../common/interfaces/IWSToServerData";
-import { TypeQuestion, Response } from "../../../common/interfaces/ToClientData";
+import { TypeQuestion, Response, IntermediateLogin } from "../../../common/interfaces/ToClientData";
 import { SocketState, TimerSettings } from "../interfaces";
 import { EventBus } from "../EventBus";
 import { EmitterEvents } from "../emitters";
 import { PageType, QuestionType } from "../../../common/enums/DBEnums";
 import { WebsocketManager } from "../../../common/js/WebsocketManager";
 import { WebsocketEvents } from "../../../common/js/WebsocketEvents";
+import { decodeToken } from "../../../common/js/front_end_auth";
 
 @Component({})
 export default class Landing extends Vue {
@@ -76,6 +80,14 @@ export default class Landing extends Vue {
 
     get quizSession(): IQuizSession | null {
       return this.$store.getters.quizSession;
+    }
+
+    get responses(): Response[] | null {
+      if (this.quizSession) {
+        return this.$store.getters.responses;
+      } else {
+        return null;
+      }
     }
 
     get questions(): TypeQuestion[] {
@@ -108,6 +120,17 @@ export default class Landing extends Vue {
       return this.$store.getters.tokens;
     }
 
+    get decodedTokenReferences(): {[key: string]: string} {
+      return this.tokens.reduce((acc: {[key: string]: string}, token) => {
+        acc[token] = decodeToken(token).quizSessionId;
+        return acc;
+      }, {});
+    }
+
+    get validSessions(): {[key: string]: boolean} {
+      return this.$store.getters.validSessions;
+    }
+
     get relevantDiscussionQuestion(): TypeQuestion | null {
       // Based from the quiz, map the id to the relevant question
       if (this.quiz && this.quiz.pages) {
@@ -124,7 +147,11 @@ export default class Landing extends Vue {
       return null;
     }
 
-    private createIntermediate() {
+    private decodeToken(token: string) {
+      return decodeToken(token);
+    }
+
+    private async createIntermediate() {
       // Hard code confidence to 3
       const outgoingResponses: Partial<Response>[] = [];
 
@@ -138,7 +165,40 @@ export default class Landing extends Vue {
           confidence: 3
         });
       }
-      this.$store.dispatch("createIntermediate", outgoingResponses);
+      await this.$store.dispatch("createIntermediate", outgoingResponses);
+
+      // Create an association of this socket with the new id
+      // Find the associated discussion response
+      this.responses!.forEach((response) => {
+        // Redundant sends are not much of an issue
+        if (response.questionId === this.relevantDiscussionQuestion!._id) {
+          this.socket!.emitData<IWSToServerData.StoreSession>(
+            WebsocketEvents.OUTBOUND.STORE_QUIZ_SESSION_SOCKET,
+            {
+              quizSessionId: response.quizSessionId!
+            }
+          );
+        }
+      });
+    }
+
+    private sendJoinRequest(token: string) {
+      // Decode the token and then send a join request based on its content
+      // This is to grab the appropiate response
+      const loginResponse: IntermediateLogin = decodeToken(token);
+      this.socket!.emitData<IWSToServerData.ChatGroupJoin>(
+        WebsocketEvents.OUTBOUND.CHAT_GROUP_JOIN_REQUEST,
+        {
+          quizId: this.quiz!._id!,
+          questionId: this.relevantDiscussionQuestion!._id!,
+          quizSessionId: this.quizSession!._id!,
+          responseId: loginResponse.responseId,
+          userId: this.user!._id!
+        }
+      );
+
+      // Set the join state to false
+      this.$store.dispatch("unsetValidSession", loginResponse.quizSessionId);
     }
 
     private async mounted() {
@@ -161,7 +221,7 @@ export default class Landing extends Vue {
       this.pingHandle = window.setInterval(() => {
         if (this.socket) {
           const input: IWSToServerData.ChatGroupStatus = {
-            quizId: this.quiz && this.quiz._id? this.quiz._id : "",
+            quizId: this.quiz && this.quiz._id ? this.quiz._id : "",
             questionId: this.relevantDiscussionQuestion && this.relevantDiscussionQuestion._id ? this.relevantDiscussionQuestion._id : "",
             userId: this.user && this.user._id ? this.user._id : ""
           };

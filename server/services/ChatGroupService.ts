@@ -119,7 +119,8 @@ export class ChatGroupService extends BaseService{
             groupId: group._id!,
             groupSize: group.quizSessionIds!.length,
             groupAnswers,
-            clientIndex: clientIndexMap[quizSessionId] + 1
+            clientIndex: clientIndexMap[quizSessionId] + 1,
+            quizSessionId
         }
 
         return {

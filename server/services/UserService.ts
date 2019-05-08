@@ -4,8 +4,10 @@ import { QuizRepository } from "../repositories/QuizRepository";
 import { ILTIData } from "../../common/interfaces/ILTIData";
 import { LTIAuth } from "../js/auth/lti/LTIAuth";
 import { IMoocchatIdentityInfo } from "../js/auth/IMoocchatIdentityInfo";
-import { IUser, IQuiz } from "../../common/interfaces/DBSchema";
-import { LoginResponse, AdminLoginResponse, QuizScheduleData, QuizScheduleDataAdmin, TypeQuestion, Page, QuestionRequestData, QuestionReconnectData, BackupLoginResponse, LoginResponseTypes, IntermediateLogin } from "../../common/interfaces/ToClientData";
+import { IUser, IQuiz, IDiscussionPage } from "../../common/interfaces/DBSchema";
+import { LoginResponse, AdminLoginResponse, QuizScheduleData, QuizScheduleDataAdmin, TypeQuestion,
+    Page, QuestionRequestData, QuestionReconnectData, BackupLoginResponse,
+    LoginResponseTypes, IntermediateLogin, Response } from "../../common/interfaces/ToClientData";
 import { QuestionRepository } from "../repositories/QuestionRepository";
 import { convertQuizIntoNetworkQuiz } from "../../common/js/NetworkDataUtils";
 import { IQuizOverNetwork } from "../../common/interfaces/NetworkData";
@@ -217,7 +219,7 @@ export class UserService extends BaseService {
 
     // Create a quiz session id, create a response based on the payload
     // We could use the token as a means to figure out how to make a quiz session id
-    public async registerIntermediate(token: BackupLoginResponse, responsePayload: any[]) {
+    public async registerIntermediate(token: BackupLoginResponse, responsePayload: any[]): Promise<{ token: IntermediateLogin, responses: Response[] }> {
         // Assuming token and payloads are good
         if (token.type === LoginResponseTypes.BACKUP_LOGIN && responsePayload) {
             // Create a mock user and quiz session
@@ -237,7 +239,7 @@ export class UserService extends BaseService {
             });
 
             // With the given quiz session, now create the responses
-            const responsePromises: Promise<any>[] = [];
+            const responsePromises: Promise<string>[] = [];
             for (let i = 0; i < responsePayload.length; i++) {
                 responsePromises.push(this.responseRepo.create({
                     questionId: responsePayload[i].questionId as string,
@@ -249,7 +251,25 @@ export class UserService extends BaseService {
                 }));
             }
 
-            await Promise.all(responsePromises);
+            const responseIds = await Promise.all(responsePromises);
+            const responses = await this.responseRepo.findByIdArray(responseIds);
+            // Find the relevant response for joining
+            if (!token.quizId) {
+                throw Error("No quiz id for token");
+            }
+            const quiz = await this.quizRepo.findOne(token.quizId);
+            
+            if (!quiz) {
+                throw Error("Invalid quiz");
+            }
+
+            const discussionpage = quiz.pages!.find((page) => {
+                return page.type === PageType.DISCUSSION_PAGE;
+            })!;
+
+            const relevantResponse = responses.find((response) => {
+                return response.questionId === (discussionpage as IDiscussionPage).questionId;
+            })!;
 
             // Afterwards, return an object that will be used
             const output: IntermediateLogin = {
@@ -258,10 +278,10 @@ export class UserService extends BaseService {
                 courseId: token.courseId,
                 quizId: token.quizId,
                 quizSessionId: quizSessionId,
-                available: true
+                available: true,
+                responseId: relevantResponse._id!
             };
-            console.log(quizSessionId);
-            return output;
+            return { token: output, responses };
         }
 
         throw new Error("Invalid token");
