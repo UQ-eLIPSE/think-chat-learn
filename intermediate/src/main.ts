@@ -2,8 +2,8 @@ import Vue from "vue";
 import App from "./App.vue";
 import { router } from "./router";
 import store from "./store";
-import Buefy from "buefy";
-import "buefy/dist/buefy.css";
+import Vuetify from "vuetify";
+import 'vuetify/dist/vuetify.min.css'
 import { library } from "@fortawesome/fontawesome-svg-core";
 
 import {
@@ -35,7 +35,7 @@ library.add(
   faArrowLeft
 );
 
-Vue.use(Buefy);
+Vue.use(Vuetify);
 Vue.component("font-awesome-icon", FontAwesomeIcon);
 Vue.config.productionTip = false;
 

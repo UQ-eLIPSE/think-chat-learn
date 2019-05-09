@@ -83,6 +83,8 @@ export const WebsocketEvents = {
         /** IWSToServerData.ChatGroupJoin */
         CHAT_GROUP_JOIN_REQUEST: "chatGroupJoinRequest",
 
+        CHAT_GROUP_UNJOIN_REQUEST: "chatGroupUnJoinRequest",
+
         /** IWSToServerData.ChatGroupSendMessage */
         CHAT_GROUP_SEND_MESSAGE: "chatGroupMessage",
 

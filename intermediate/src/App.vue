@@ -1,9 +1,9 @@
 <template>
-  <div id="app">
+  <v-app id="app">
       <div class="content-container">
         <router-view class="router-panel" />
       </div>    
-  </div>
+  </v-app>
 </template>
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";

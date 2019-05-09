@@ -1,37 +1,34 @@
 <template>
-  <div class="landing">
+  <v-content class="landing">
     <!-- Only one piece of content required for submission -->
     <h2>Questions</h2>
-    <b-field>
-      <div v-for="question in questions" :key="question._id">
-        <template>
-          <h3>Title: {{question.title}}</h3>
-          <div v-html="relevantDiscussionQuestion.content"/>
-          <b-input
-            type="textarea"
-            minlength="1"
-            maxlength="500"
-            placeholder="Place sample response"
-            v-model="responseContent[question._id]"
-          >
-          </b-input>
-        </template>
-      </div>
-    </b-field>
-    <b-button @click="createIntermediate()">Create Intermediate Session</b-button>
+    <v-form v-for="question in questions" :key="question._id">
+      <h3>Title: {{question.title}}</h3>
+      <v-content v-html="relevantDiscussionQuestion.content"></v-content>
+      <v-textarea
+        minlength="1"
+        maxlength="500"
+        placeholder="Place sample response"
+        v-model="responseContent[question._id]"
+      ></v-textarea>
+    </v-form>
+    <v-btn @click="createIntermediate()">Create Intermediate Session</v-btn>
     <!-- Socket state content -->
-    <div v-if="socket">
+    <v-content v-if="socket">
+      <h2>Pool Details</h2>
       Pool Size: {{poolSize}} at Time {{new Date(refreshTime)}} with {{formattedTimeout}} remaining.
-    </div>
-    <div>
-      <div v-for="token in tokens" :key="token">
-        <button type="button" @click="sendJoinRequest(token)">Send Join Request</button>
-        <span>Redirect as <a :href="'http://localhost:8080/client/#/login?q=' + token">here</a></span>
-        <span>State: {{ validSessions[decodedTokenReferences[token]] === undefined ? "Need to send a join request" :
-            (validSessions[decodedTokenReferences[token]] ? "In a group" : "Waiting for a group") }}</span>
-      </div>
-    </div>    
-  </div>
+    </v-content>
+    <h2>Quiz Session List</h2>
+    <v-content v-for="token in tokens" :key="token">
+      <v-content>
+      <p>Redirect as <a :href="'http://localhost:8080/client/#/login?q=' + token">here. </a></p>
+      <p :class="validSessions[decodedTokenReferences[token]] ? 'green-accent-4' : 'red-accent-4' ">State: {{ validSessions[decodedTokenReferences[token]] === undefined ? "Need to send a join request" :
+          (validSessions[decodedTokenReferences[token]] ? "In a group" : "Waiting for a group") }}</p>
+      <v-btn v-if="validSessions[decodedTokenReferences[token]] === undefined || validSessions[decodedTokenReferences[token]]" type="button" @click="sendJoinRequest(token)">Send Join Request</v-btn>
+      <v-btn v-else @click="sendUnJoinRequest(token)">Unjoin pool</v-btn>
+      </v-content>
+    </v-content>
+  </v-content>
 </template>
 
 <style lang="scss" scoped>
@@ -182,6 +179,23 @@ export default class Landing extends Vue {
       });
     }
 
+    private sendUnJoinRequest(token: string) {
+      const loginResponse: IntermediateLogin = decodeToken(token);
+      this.socket!.emitData<IWSToServerData.ChatGroupJoin>(
+        WebsocketEvents.OUTBOUND.CHAT_GROUP_UNJOIN_REQUEST,
+        {
+          quizId: this.quiz!._id!,
+          questionId: this.relevantDiscussionQuestion!._id!,
+          quizSessionId: this.quizSession!._id!,
+          responseId: loginResponse.responseId,
+          userId: this.user!._id!
+        }
+      );
+
+      // Set the join state to false. Remember false means not in a group
+      this.$store.dispatch("removeValidSession", loginResponse.quizSessionId);
+    }
+
     private sendJoinRequest(token: string) {
       // Decode the token and then send a join request based on its content
       // This is to grab the appropiate response
@@ -197,7 +211,7 @@ export default class Landing extends Vue {
         }
       );
 
-      // Set the join state to false
+      // Set the join state to false. Remember false means not in a group
       this.$store.dispatch("unsetValidSession", loginResponse.quizSessionId);
     }
 

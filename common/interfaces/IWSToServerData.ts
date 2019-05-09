@@ -40,6 +40,12 @@ export interface ChatGroupJoin {
     quizSessionId: string;
     userId: string;
 }
+
+export interface ChatGroupUnJoin {
+    responseId: string;
+    quizId: string;
+    questionId: string;    
+}
 export interface ChatGroupSendMessage extends ChatGroupResponse {
     message: string;
     userId: string;

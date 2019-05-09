@@ -49,6 +49,7 @@ const mutationKeys = {
     // Manipulates the sessions
     SET_VALID_SESSION: "Setting a quiz session for user can join",
     UNSET_VALID_SESSION: "Unsetting a quiz session for user can join",
+    REMOVE_VALID_SESSION: "Removing a quiz session"
 };
 
 function handleTermination() {
@@ -174,6 +175,10 @@ const actions = {
 
     unsetValidSession({ commit }: {commit: Commit}, id: string) {
         commit(mutationKeys.UNSET_VALID_SESSION, id);
+    },
+
+    removeValidSession({ commit }: {commit: Commit}, id: string) {
+        commit(mutationKeys.REMOVE_VALID_SESSION, id);
     }
 
 };
@@ -223,7 +228,11 @@ const mutations = {
 
     [mutationKeys.UNSET_VALID_SESSION](funcState: IState, quizSessionId: string) {
         Vue.set(funcState.validSessions, quizSessionId, false);
-    },    
+    },
+    
+    [mutationKeys.REMOVE_VALID_SESSION](funcState:IState, quizSessionId: string) {
+        Vue.delete(funcState.validSessions, quizSessionId);
+    }
 };
 
 export default {

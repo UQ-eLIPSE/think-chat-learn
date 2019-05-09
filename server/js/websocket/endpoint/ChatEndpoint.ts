@@ -35,6 +35,26 @@ export class ChatEndpoint extends WSEndpoint {
 
     }
 
+    private static async HandleUnJoinRequest(socket: PacSeqSocket_Server, data: IWSToServerData.ChatGroupUnJoin,  responseService: ResponseService) {
+        if (!SocketSession.GetSocketSessionBySocketId(socket.id)) {
+            throw new Error(`Attempted to join a group wih an unknown socket ${socket.id}`);
+        }
+
+        // Grab waitpool and hten remove
+        const waitPool = MoocchatWaitPool.GetPool(data.quizId, data.questionId);
+
+        if (!waitPool) {
+            throw new Error(`Invalid wait pool of ${data.quizId} ${data.questionId}`);
+        }
+
+        const response = await responseService.getResponse(data.responseId);
+        if (!response) {
+            throw new Error(`No response of id ${data.responseId}`);
+        } 
+
+        waitPool.removeQuizAttempt(response);
+    }
+
     private static async HandleJoinRequest(socket: PacSeqSocket_Server, data: IWSToServerData.ChatGroupJoin, responseService: ResponseService,
         chatGroupService: ChatGroupService) {
 
@@ -401,6 +421,12 @@ export class ChatEndpoint extends WSEndpoint {
         this.chatMessageService = _chatMessageService;
     }
 
+    public get onUnJoinRequest() {
+        return (data: IWSToServerData.ChatGroupUnJoin) => {
+            ChatEndpoint.HandleUnJoinRequest(this.getSocket(), data, this.responseService);
+        }
+    }
+
     public get onJoinRequest() {
         return (data: IWSToServerData.ChatGroupJoin) => {
             ChatEndpoint.HandleJoinRequest(this.getSocket(), data, this.responseService, this.chatGroupService).then(() => {
@@ -470,6 +496,7 @@ export class ChatEndpoint extends WSEndpoint {
             case "chatGroupReconnect": return this.onChatReconnect;
             case "disconnect": return this.onChatDisconnect;
             case "chatGroupStatusRequest": return this.onStatusRequest;
+            case "chatGroupUnJoinRequest": return this.onUnJoinRequest;
         }
 
         throw new Error(`No endpoint event handler for "${name}"`);
@@ -486,7 +513,8 @@ export class ChatEndpoint extends WSEndpoint {
             // Note that the reason for also registering this event listener
             // is to allow disconnect messages to be sent to other users
             "chatGroupReconnect",
-            "disconnect"
+            "disconnect",
+            "chatGroupUnJoinRequest"
         ]);
     }
 }
