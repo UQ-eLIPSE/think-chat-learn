@@ -55,13 +55,13 @@ test-build
 !client/static/marking-tool/mousoku/*
 
 # Ignore actual configuration files
-#client/config/Conf.ts
-#common/config/Conf.ts
-#server/config/Conf.ts
+client/config/Conf.ts
+common/config/Conf.ts
+server/config/Conf.ts
 
 # Config file to set up vue endpoint
-#client/vue.config.js
-#admin/vue.config.js
+client/vue.config.js
+admin/vue.config.js
 
 # Front end dist files
 client/dist
