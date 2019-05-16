@@ -245,9 +245,14 @@ export class UserService extends BaseService {
 
 
             const questions = await UserServiceHelper.RetrieveQuestions(this.questionRepo, questionIds);
-            // The great filter
-            questions.forEach((element, index) => {
-                // Title is fine to send over, content is not until it is requested
+            
+            questions.forEach((element) => {
+                // Fetch the order(index) of the question w.r.t its order in the discussion pages
+                const index = questionIds.findIndex((id) => {
+                    return id == element._id;
+                });
+
+                // Remove the content of the question if it is not the first question page in the quiz
                 if (index !== 0) {
                     delete element.content;
                 }
