@@ -5,6 +5,7 @@ import { Utils } from "../../common/js/Utils";
  */
 
 export const Conf: IConf = {
+    endpointUrl: "http://localhost:8080",
     portNum: 8080,
     database: "mongodb://localhost:27017/moocchatDB",
     http: {
@@ -65,6 +66,7 @@ export const Conf: IConf = {
  * @interface IConf
  */
 interface IConf {
+    endpointUrl: "http://localhost:8080",
     portNum: number,
     database: string,
     http: {
