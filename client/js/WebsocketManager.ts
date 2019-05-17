@@ -2,6 +2,7 @@ import * as socket from "socket.io-client";
 import { PacSeqSocket_Client } from "../../common/js/PacSeqSocket_Client";
 
 import { Conf } from "../config/Conf";
+import store from "../src/store";
 
 /**
  * MOOCchat
@@ -21,8 +22,9 @@ export class WebsocketManager {
 
         // Permit infinite reconnects
         reconnection: true,
-        reconnectionAttempts: Conf.websockets.reconnectionAmount,
-        reconnectionDelay: 1500,
+        reconnectionAttempts: 20,
+        // reconnectionAttempts: Conf.websockets.reconnectionAmount,
+        reconnectionDelay: 500,
         reconnectionDelayMax: 2000,
 
         transports: ["websocket"]
@@ -42,6 +44,33 @@ export class WebsocketManager {
       if (reconnectFunction) {
         reconnectFunction();
       }
+    });
+
+    this.on("reconnect_failed", () => {
+      store.commit("SET_GLOBAL_MESSAGE", {
+        error: true,
+        type: "FATAL_ERROR",
+        message: "Error: Connection lost. Please close current window/tab and launch MOOCchat again from Blackboard. (Your progress will be retained)"
+      });
+    });
+
+    this.on("reconnect_attempt", () => {
+      store.commit("SET_GLOBAL_MESSAGE", {
+        error: false,
+        type: "WARNING",
+        message: "Connection lost. Attempting to reconnect" + '.'.repeat((Math.random()*10))
+      });
+    });
+
+
+    this.on("reconnect_error", () => {
+      // console.log("RECONNECTION ERROR")
+      // store.commit("SET_GLOBAL_MESSAGE", {
+      //   error: true,
+      //   type: "FATAL_ERROR",
+      //   expiry: null,
+      //   message: "Reconnection attempt failed"
+      // });
     });
 
     this.on("err", (data: { reason: string }) => {

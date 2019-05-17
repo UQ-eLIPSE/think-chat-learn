@@ -5,6 +5,8 @@
       <template v-if="renderRestart">
         <div @click="restartSocket()">Restart</div>
       </template>
+      <div class="info">If you encounter connection issues with MOOCchat, close this window/tab and relaunch MOOCchat from Blackboard. (Your progress will be saved) </div>
+      <GlobalMessage v-if="GlobalMessageExists"/>
       <Stepper steps=5 />
       <Timer />
       <div class="content-container">
@@ -19,6 +21,19 @@
 <style lang="scss">
 @import url("https://fonts.googleapis.com/css?family=Open+Sans");
 @import "../css/variables.scss";
+
+
+.info {
+  width: 100%;
+  position: relative;
+  padding: .75rem 1.25rem;
+  margin-bottom: 1rem;
+  border: 1px solid transparent;
+  border-radius: .25rem;
+  color: #0c5460;
+  background-color: #d1ecf1;
+  border-color: #bee5eb;
+}
 
 html {
   body {
@@ -189,13 +204,15 @@ import Nav from "./components/Nav.vue";
 import Stepper from "./components/Stepper.vue";
 import Footer from "./components/Footer.vue";
 import Timer from "./components/Timer/Timer.vue";
+import GlobalMessage from "./components/GlobalMessage.vue";
 
 @Component({
   components: {
     Nav,
     Stepper,
     Timer,
-    Footer
+    Footer,
+    GlobalMessage
   }
 })
 export default class App extends Vue {
@@ -203,6 +220,11 @@ export default class App extends Vue {
 
   private restartSocket() {
     this.$store.getters.socketState.socket.restart();
+  }
+
+  get GlobalMessageExists() {
+    const globalMessage = this.$store.state.systemMessage;
+    return globalMessage && globalMessage.message;
   }
 }
 </script>
