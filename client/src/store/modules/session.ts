@@ -223,7 +223,7 @@ function registerSocketEvents() {
 }
 
 async function handleReconnect(data: any) {
-    console.log('In handleReconnect ')
+    console.log('handleReconnect')
     // Even if we succesfully reconnect, we need to make sure we are still there
     let quizSession: IQuizSession | null = null;
     if (!state.quizSession) {
@@ -258,14 +258,12 @@ async function handleReconnect(data: any) {
             return;
         }
     }
-    console.log('In handleReconnect - After quiz session check')
     // We have a quiz session (whether it is an on client disconnect or not)
     // The next step is to check for our socket session
     const socketPresent: { outcome: boolean } = await API.request(API.POST, API.QUIZSESSION + "findSession",
         state.quizSession!, undefined, getToken());
 
     if (socketPresent.outcome) {
-        console.log('In handleReconnect - socket outcome === true ')
         store.commit("SET_GLOBAL_MESSAGE", {
             error: false,
             type: "SUCCESS",
@@ -279,7 +277,6 @@ async function handleReconnect(data: any) {
 
         // Fetch the group based on quiz id. If we don't have one.
         if (!state.socketState!.chatGroupFormed) {
-            console.log('In handleReconnect - chatGroupFormed === true')
             const groupSession: ChatGroupResync | null =
                 await API.request(API.POST, API.CHATGROUP +
                     "recoverSession", state.quizSession!);
@@ -334,7 +331,6 @@ async function handleReconnect(data: any) {
             // Quiz already completed
             return;
         } else {
-            console.log('In reconnect - else condition')
             // TODO: Set error message since socket reconnection failed
             const error = {
                 error: true,

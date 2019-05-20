@@ -2,7 +2,8 @@
   <div class="global-message"
        :class="globalMessageClass"
        v-if="message">
-    {{message}}</div>
+    <font-awesome-icon :icon="iconByMessageType" /> {{message}}
+  </div>
 </template>
 
 
@@ -40,6 +41,23 @@ export default class GlobalMessage extends Vue {
 
     return {};
   }
+
+  get iconByMessageType() {
+    if (this.hasMessage) {
+      switch(this.systemMessage.type) {
+        case "FATAL_ERROR":
+        return "exclamation-circle";
+        case "WARNING":
+          return "exclamation-circle";
+        case "SUCCESS":
+          return "check-circle";
+        default:
+          return '';
+      }
+    }
+
+    return '';
+  }
 }
 </script>
 
@@ -51,7 +69,6 @@ export default class GlobalMessage extends Vue {
   margin-bottom: 1rem;
   border: 1px solid transparent;
   border-radius: .25rem;
-  font-size: 1.3em;
 }
 
 .error {

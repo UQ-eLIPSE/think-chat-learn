@@ -17,7 +17,9 @@ import {
   faStar,
   faCommentDots,
   faArrowRight,
-  faArrowLeft
+  faArrowLeft,
+  faInfoCircle,
+  faCheckCircle
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
@@ -32,7 +34,9 @@ library.add(
   faStar,
   faCommentDots,
   faArrowRight,
-  faArrowLeft
+  faArrowLeft,
+  faInfoCircle,
+  faCheckCircle
 );
 
 Vue.use(Buefy);

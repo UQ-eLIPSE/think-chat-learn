@@ -1,18 +1,17 @@
 <template>
   <div class="container center">
     <h1>Searching for others to join...</h1>
-    <ProgressLoader percentLoaded="88" />
+    <ProgressLoader :percentLoaded="percentLoadedByTime" />
     <p>You’ll be teamed up with a group discussion shortly.</p>
     <br />
     <p>
-      If you do not progress to a chat within the time limit, return to
-      Blackboard and try again; if this does not resolve your issue, please
-      contact your course coordinator.
+      If you do not progress to a chat within the time limit, return to Blackboard and try again; if this does not resolve your issue, please contact your course coordinator.
     </p>
     <span class="notifyTone">
       <b-switch v-model="notifyTone"></b-switch>
-      <span>Play <b>notification tone</b> when my group is ready (keep window/tab
-        open)</span>
+      <span>Play
+        <b>notification tone</b> when my group is ready (keep window/tab open)
+      </span>
     </span>
   </div>
 </template>
@@ -38,6 +37,7 @@ import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
 import { SocketState, TimerSettings } from "../interfaces";
 import { EventBus } from "../EventBus";
 import { EmitterEvents } from "../emitters";
+import { Conf } from "../../../common/config/Conf";
 
 @Component({
   components: {
@@ -47,9 +47,14 @@ import { EmitterEvents } from "../emitters";
 export default class GroupAllocation extends Vue {
   private notifyTone: boolean | null = null;
   private notifyAudio: HTMLAudioElement | null = null;
-
+  private timeElapsed: number = 100;
   get socketState(): SocketState | null {
     return this.$store.getters.socketState;
+  }
+
+  get percentLoadedByTime() {
+    const waitTime = Conf.timings.chatGroupFormationTimeoutMs;
+    return Math.round((this.timeElapsed / waitTime) * 100)
   }
 
   get chatGroup(): IWSToClientData.ChatGroupFormed | null {
@@ -62,11 +67,24 @@ export default class GroupAllocation extends Vue {
     this.$router.push("/page");
   }
 
+  initLoaderTimeout(timeElapsedInMs: number, timerReference?: any) {
+    this.timeElapsed = timeElapsedInMs;
+    if (timeElapsedInMs < Conf.timings.chatGroupFormationTimeoutMs) {
+      let timerReference = setTimeout(() => {
+        this.initLoaderTimeout(timeElapsedInMs + 1000, timerReference);
+      }, 1000)
+    } else {
+      clearTimeout(timerReference)
+    }
+  }
   // Automatically redirect page back if somehow made it to this point
   private mounted() {
     if (this.chatGroup) {
       this.goToMoocChatPage();
     }
+
+    // Set timeout for loader
+    this.initLoaderTimeout(500);
   }
 
   // Preload the tone to slightly faster access
@@ -81,7 +99,7 @@ export default class GroupAllocation extends Vue {
   private async handleChatGroupChange(
     newVal: IWSToClientData.ChatGroupFormed | null,
     oldVal: IWSToClientData.ChatGroupFormed | null
-  ) {
+    ) {
     if (newVal) {
       // Play the tone if applicable
       if (this.notifyTone && this.notifyAudio) {

@@ -22,11 +22,9 @@ export class WebsocketManager {
 
         // Permit infinite reconnects
         reconnection: true,
-        reconnectionAttempts: 20,
-        // reconnectionAttempts: Conf.websockets.reconnectionAmount,
+        reconnectionAttempts: Conf.websockets.reconnectionAmount,
         reconnectionDelay: 500,
-        reconnectionDelayMax: 2000,
-
+        reconnectionDelayMax: 700,
         transports: ["websocket"]
       })
     );
@@ -54,28 +52,28 @@ export class WebsocketManager {
       });
     });
 
-    this.on("reconnect_attempt", () => {
+    this.on("reconnect_attempt", (attemptNumber) => {
       store.commit("SET_GLOBAL_MESSAGE", {
         error: false,
         type: "WARNING",
-        message: "Connection lost. Attempting to reconnect" + '.'.repeat((Math.random()*10))
+        message: "Connection lost. Attempting to reconnect (#"+ attemptNumber + "/" + Conf.websockets.reconnectionAmount + ')'
       });
     });
 
 
-    this.on("reconnect_error", () => {
-      // console.log("RECONNECTION ERROR")
-      // store.commit("SET_GLOBAL_MESSAGE", {
-      //   error: true,
-      //   type: "FATAL_ERROR",
-      //   expiry: null,
-      //   message: "Reconnection attempt failed"
-      // });
-    });
+    // this.on("reconnect_error", () => {
+    //   // console.log("RECONNECTION ERROR")
+    //   // store.commit("SET_GLOBAL_MESSAGE", {
+    //   //   error: true,
+    //   //   type: "FATAL_ERROR",
+    //   //   expiry: null,
+    //   //   message: "Reconnection attempt failed"
+    //   // });
+    // });
 
     this.on("err", (data: { reason: string }) => {
       // For now make it an alert message
-      alert(data.reason);
+      alert("Error detected:" + data.reason);
     });
   }
 
