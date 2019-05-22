@@ -9,7 +9,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from "vue-property-decorator";
-
+import { SystemMessageTypes } from "../store";
 @Component({})
 export default class GlobalMessage extends Vue {
 
@@ -33,9 +33,9 @@ export default class GlobalMessage extends Vue {
   get globalMessageClass() {
     if (this.hasMessage) {
       return {
-        "error": this.systemMessage.type === "FATAL_ERROR",
-        "warning": this.systemMessage.type === "WARNING",
-        "success": this.systemMessage.type === "SUCCESS",
+        "error": this.systemMessage.type === SystemMessageTypes.FATAL_ERROR,
+        "warning": this.systemMessage.type === SystemMessageTypes.WARNING,
+        "success": this.systemMessage.type === SystemMessageTypes.SUCCESS,
       }
     }
 
@@ -45,11 +45,11 @@ export default class GlobalMessage extends Vue {
   get iconByMessageType() {
     if (this.hasMessage) {
       switch(this.systemMessage.type) {
-        case "FATAL_ERROR":
+        case SystemMessageTypes.FATAL_ERROR:
         return "exclamation-circle";
-        case "WARNING":
+        case SystemMessageTypes.WARNING:
           return "exclamation-circle";
-        case "SUCCESS":
+        case SystemMessageTypes.SUCCESS:
           return "check-circle";
         default:
           return '';

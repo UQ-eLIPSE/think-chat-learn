@@ -2,7 +2,7 @@ import * as socket from "socket.io-client";
 import { PacSeqSocket_Client } from "../../common/js/PacSeqSocket_Client";
 
 import { Conf } from "../config/Conf";
-import store from "../src/store";
+import store, { SystemMessageTypes } from "../src/store";
 
 /**
  * MOOCchat
@@ -47,7 +47,7 @@ export class WebsocketManager {
     this.on("reconnect_failed", () => {
       store.commit("SET_GLOBAL_MESSAGE", {
         error: true,
-        type: "FATAL_ERROR",
+        type: SystemMessageTypes.FATAL_ERROR,
         message: "Error: Connection lost. Please close current window/tab and launch MOOCchat again from Blackboard. (Your progress will be retained)"
       });
     });
@@ -55,7 +55,7 @@ export class WebsocketManager {
     this.on("reconnect_attempt", (attemptNumber) => {
       store.commit("SET_GLOBAL_MESSAGE", {
         error: false,
-        type: "WARNING",
+        type: SystemMessageTypes.WARNING,
         message: "Connection lost. Attempting to reconnect (#"+ attemptNumber + "/" + Conf.websockets.reconnectionAmount + ')'
       });
     });

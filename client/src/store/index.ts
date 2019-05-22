@@ -10,6 +10,12 @@ export interface GlobalState {
     systemMessage: SystemMessage
 }
 
+export enum SystemMessageTypes {
+    FATAL_ERROR = "FATAL_ERROR",
+    WARNING = "WARNING",
+    SUCCESS = "SUCCESS"
+}
+
 const mutationKeys = {
     SET_GLOBAL_MESSAGE: "SET_GLOBAL_MESSAGE",
     RESET_GLOBAL_MESSAGE: "RESET_GLOBAL_MESSAGE"
@@ -17,7 +23,7 @@ const mutationKeys = {
 export interface SystemMessage {
     error: boolean,
     message: null | string
-    type: "FATAL_ERROR" | "WARNING" | "SUCCESS" | null,
+    type: SystemMessageTypes | null,
     expiry: number | null
 }
 export default new Vuex.Store<GlobalState>({

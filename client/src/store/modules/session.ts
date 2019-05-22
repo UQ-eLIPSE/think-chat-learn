@@ -13,7 +13,7 @@ import { WebsocketEvents } from "../../../js/WebsocketEvents";
 import { SocketState, MoocChatMessage, StateMessage, Dictionary } from "../../interfaces";
 import { MoocChatMessageTypes, MoocChatStateMessageTypes } from "../../enums";
 import { logout } from "../../../../common/js/front_end_auth";
-import store from "..";
+import store, { SystemMessageTypes } from "..";
 import { Utils } from "../../../../common/js/Utils";
 import { PageType, QuestionType } from "../../../../common/enums/DBEnums";
 import { ChatGroupResync } from "../../../../common/interfaces/HTTPToClientData";
@@ -249,7 +249,7 @@ async function handleReconnect(data: any) {
             if(quizSession.complete) {
                 store.commit("SET_GLOBAL_MESSAGE", {
                     error: true,
-                    type: "WARNING",
+                    type: SystemMessageTypes.WARNING,
                     expiry: null,
                     message: "You have already attempted the quiz"
                 })
@@ -266,7 +266,7 @@ async function handleReconnect(data: any) {
     if (socketPresent.outcome) {
         store.commit("SET_GLOBAL_MESSAGE", {
             error: false,
-            type: "SUCCESS",
+            type: SystemMessageTypes.SUCCESS,
             expiry: 2000,
             message: "Connected"
           });
@@ -334,7 +334,7 @@ async function handleReconnect(data: any) {
             // TODO: Set error message since socket reconnection failed
             const error = {
                 error: true,
-                type: "FATAL_ERROR",
+                type: SystemMessageTypes.FATAL_ERROR,
                 expiry: null,
                 message: "Error: Connection could not be established. Please close current window/tab and launch MOOCchat again from Blackboard. (Your progress will be retained)"
             }
