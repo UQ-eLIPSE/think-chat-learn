@@ -223,7 +223,6 @@ function registerSocketEvents() {
 }
 
 async function handleReconnect(data: any) {
-    console.log('handleReconnect')
     // Even if we succesfully reconnect, we need to make sure we are still there
     let quizSession: IQuizSession | null = null;
     if (!state.quizSession) {
