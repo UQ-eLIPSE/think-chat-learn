@@ -71,15 +71,21 @@ admin/dist
 client/public/*
 
 # Env values for client and admin
-client/envs
+client/envs/*
+!client/envs/.gitkeep
 client/.env.*
 admin/.env.*
 
-# Config values for production
-server/config/production
-common/config/production
-client/config/production
 
 # Script to handle question extaction
 server/utils/query.ts
 output.tsv
+
+# Config files for production zones
+client/config/production/*
+common/config/production/*
+server/config/production/*
+
+!server/config/production/.gitkeep
+!common/config/production/.gitkeep
+!client/config/production/.gitkeep
