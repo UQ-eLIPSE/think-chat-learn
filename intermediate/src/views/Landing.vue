@@ -6,6 +6,7 @@
       <h3>Title: {{question.title}}</h3>
       <v-content v-html="relevantDiscussionQuestion.content"></v-content>
       <v-textarea
+        outline
         minlength="1"
         maxlength="500"
         placeholder="Place sample response"
@@ -22,7 +23,7 @@
     <v-content v-for="token in tokens" :key="token">
       <v-content>
       <p>Redirect as <a :href="'http://localhost:8080/client/#/login?q=' + token">here. </a></p>
-      <p :class="validSessions[decodedTokenReferences[token]] ? 'green-accent-4' : 'red-accent-4' ">State: {{ validSessions[decodedTokenReferences[token]] === undefined ? "Need to send a join request" :
+      <p>State: {{ validSessions[decodedTokenReferences[token]] === undefined ? "Need to send a join request" :
           (validSessions[decodedTokenReferences[token]] ? "In a group" : "Waiting for a group") }}</p>
       <v-btn v-if="validSessions[decodedTokenReferences[token]] === undefined || validSessions[decodedTokenReferences[token]]" type="button" @click="sendJoinRequest(token)">Send Join Request</v-btn>
       <v-btn v-else @click="sendUnJoinRequest(token)">Unjoin pool</v-btn>

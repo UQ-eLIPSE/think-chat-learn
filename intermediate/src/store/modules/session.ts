@@ -52,16 +52,6 @@ const mutationKeys = {
     REMOVE_VALID_SESSION: "Removing a quiz session"
 };
 
-function handleTermination() {
-    alert("The connection to the server has been severed.\n" +
-    "This is most likely due to another tab/browser overriding a session");
-
-    // Cleaning up is basically stopping the timer and closing the socket
-    state.socketState.socket!.close();
-    Vue.set(state.socketState, "socket", null);
-    Vue.set(state, "stopBrowser", true);
-}
-
 function handlePing(data?: IWSToClientData.ChatPing) {
     if (data) {
         Vue.set(state, "poolSize", data.size);
@@ -87,9 +77,6 @@ function registerSocketEvents() {
     state.socketState.socket!.once(WebsocketEvents.INBOUND.STORE_SESSION_ACK, () => {
         return;
     });
-
-    // Handles the terminate of the socket
-    state.socketState.socket!.on(WebsocketEvents.INBOUND.TERMIANTE_BROWSER, handleTermination);
 
     state.socketState.socket!.on(WebsocketEvents.INBOUND.CHAT_PING, handlePing);
 
