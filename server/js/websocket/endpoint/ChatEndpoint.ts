@@ -43,7 +43,7 @@ export class ChatEndpoint extends WSEndpoint {
         }
 
         // Feed in the quiz and question id
-        const waitPool = MoocchatWaitPool.GetPoolWithQuestionresponse(userResponse);
+        const waitPool = await MoocchatWaitPool.GetPoolWithQuestionresponse(userResponse);
 
         // Can't join into pool if already in pool
         if (waitPool.hasQuizResponse(userResponse)) {

@@ -21,8 +21,8 @@ export class ChatGroupFormationLoop {
         return cgfl;
     }
 
-    public static GetChatGroupFormationLoopWithQuizScheduleFrom(userResponse: Response) {
-        const waitPool = MoocchatWaitPool.GetPoolWithQuestionresponse(userResponse);
+    public static async GetChatGroupFormationLoopWithQuizScheduleFrom(userResponse: Response) {
+        const waitPool = await MoocchatWaitPool.GetPoolWithQuestionresponse(userResponse);
         return ChatGroupFormationLoop.GetChatGroupFormationLoop(waitPool);
     }
 

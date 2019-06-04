@@ -18,7 +18,11 @@
                   placeholder="Select the End Time"
                   icon="clock"
                   hour-formart="format"></b-timepicker>
-
+    <div>
+      <span>Group Size</span>
+      <input type="number"
+             v-model.number="groupSize" />      
+    </div>
     <div v-for="(page, index) in pages"
          class="p"
          :key="index">
@@ -110,7 +114,7 @@ import { PageType } from "../../../common/enums/DBEnums";
 import * as DBSchema from "../../../common/interfaces/DBSchema";
 import { getAdminLoginResponse } from "../../../common/js/front_end_auth";
 import { IQuizOverNetwork } from "../../../common/interfaces/NetworkData";
-
+import { Conf } from "../../../common/config/Conf";
 @Component({})
 export default class QuizPage extends Vue {
   // Default values for quizzes
@@ -126,6 +130,8 @@ export default class QuizPage extends Vue {
 
   private simpleMarkConfig: DBSchema.SimpleMarkConfig = this.initSimpleMarkConfig();
   private elipssMarkConfig: DBSchema.ElipssMarkConfig = this.initElipssMarkConfig();
+
+  private groupSize: number = Conf.groups.defaultGroupSize;
 
   private markingConfiguration: DBSchema.MarkingConfiguration | undefined = this.elipssMarkConfig;
   // The pages that are wanted to be created. Use
@@ -274,7 +280,8 @@ export default class QuizPage extends Vue {
       availableEnd,
       pages: outgoingPages,
       course: this.courseId,
-      markingConfiguration: this.markingConfiguration
+      markingConfiguration: this.markingConfiguration,
+      groupSize: this.groupSize
     };
 
     if (this.isEditing) {
@@ -344,7 +351,7 @@ export default class QuizPage extends Vue {
         this.startTime = new Date(loadedQuiz.availableStart!);
         this.endDate = new Date(loadedQuiz.availableEnd!);
         this.endTime = new Date(loadedQuiz.availableEnd!);
-
+        this.groupSize = loadedQuiz.groupSize;
         this.quizTitle = loadedQuiz.title;
         this.markingConfiguration = loadedQuiz.markingConfiguration || this.elipssMarkConfig;
         const emptyDict: { [key: string]: Page } = {};

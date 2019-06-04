@@ -39,6 +39,8 @@ import { MarksController } from "./controllers/MarksController";
 
 // Authenticator for students
 import { StudentAuthenticatorMiddleware } from "./js/auth/StudentPageAuth";
+// Moocchat pool to initialize service
+import { MoocchatWaitPool } from "./js/queue/MoocchatWaitPool";
 export default class App {
 
     // Express things
@@ -143,6 +145,9 @@ export default class App {
         this.responseController.setupRoutes();
         this.chatGroupController.setupRoutes();
         this.marksController.setupRoutes();
+
+        // Set up the wait pool service
+        MoocchatWaitPool.AssignQuizService(this.quizService);
 
     }
 

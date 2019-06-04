@@ -117,7 +117,8 @@ export interface IQuiz extends Document {
   // they are stored as strings due the fact that sending a date over is not feasible
   availableStart?: Date;
   availableEnd?: Date;
-  markingConfiguration?: MarkingConfiguration
+  markingConfiguration?: MarkingConfiguration;
+  groupSize?: number;
 }
 
 export type MarkingConfiguration = SimpleMarkConfig | ElipssMarkConfig;

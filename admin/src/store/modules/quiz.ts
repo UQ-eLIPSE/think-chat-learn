@@ -1,7 +1,7 @@
 import Vue from "vue";
 import { Commit, ActionTree, GetterTree } from "vuex";
-import { IQuiz, QuizSessionDataObject, IChatGroup, IQuestion, IQuestionAnswerPage } from "../../../../common/interfaces/ToClientData";
-import { IQuizSession, IChatMessage, Page, ElipssMark, MarkMode, Mark } from "../../../../common/interfaces/DBSchema";
+import { QuizSessionDataObject, IChatGroup, IQuestionAnswerPage } from "../../../../common/interfaces/ToClientData";
+import { IQuizSession, IChatMessage, IQuiz, Page, ElipssMark, MarkMode, Mark } from "../../../../common/interfaces/DBSchema";
 import { PageType } from "../../../../common/enums/DBEnums";
 import { API } from "../../../../common/js/DB_API";
 import { IQuizOverNetwork } from "../../../../common/interfaces/NetworkData";

@@ -10,5 +10,6 @@ export interface IQuizOverNetwork extends Document {
     // they are stored as strings due the fact that sending a date over is not feasible
     availableStart?: string;
     availableEnd?: string;
-    markingConfiguration?: MarkingConfiguration
+    markingConfiguration?: MarkingConfiguration;
+    groupSize?: number;
 }
