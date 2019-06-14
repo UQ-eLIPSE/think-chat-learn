@@ -4,7 +4,7 @@ import { TypeQuestion } from "../../common/interfaces/DBSchema";
 import { QuestionType } from "../../common/enums/DBEnums";
 import { ObjectId } from "bson";
 
-export class QuestionService extends BaseService{
+export class QuestionService extends BaseService<TypeQuestion> {
 
     protected readonly questionRepo: QuestionRepository;
 
@@ -14,7 +14,7 @@ export class QuestionService extends BaseService{
 }
 
     // Creates a question based on the data input. It can distinguish between MCQ and Qualitatives
-    public async createQuestion(data: TypeQuestion): Promise<string> {
+    public async createOne(data: TypeQuestion): Promise<string> {
         // Check for the type
         if (data.type === QuestionType.MCQ) {
             if (data.options && data.options.length) {
@@ -31,7 +31,7 @@ export class QuestionService extends BaseService{
     }
 
     
-    public async updateQuestion(data: TypeQuestion): Promise<boolean> {
+    public async updateOne(data: TypeQuestion): Promise<boolean> {
         // Only MCQ require special consideration
         if (!data._id) {
             throw Error("No id to update from");
@@ -51,7 +51,7 @@ export class QuestionService extends BaseService{
     }
 
     // Deletes a question based on the incoming id
-    public async deleteQuiz(id: string) {
+    public async deleteOne(id: string) {
         return this.questionRepo.deleteOne(id);
     }
 
@@ -62,7 +62,7 @@ export class QuestionService extends BaseService{
         });
     }
 
-    public async getQuestion(id: string): Promise<TypeQuestion | null> {
+    public async findOne(id: string): Promise<TypeQuestion | null> {
         return this.questionRepo.findOne(id);
     }
 }

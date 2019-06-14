@@ -3,7 +3,7 @@ import { UserSessionRepository } from "../repositories/UserSessionRepository";
 import { IUserSession } from "../../common/interfaces/DBSchema";
 import { LoginResponse } from "../../common/interfaces/ToClientData";
 
-export class UserSessionService extends BaseService{
+export class UserSessionService extends BaseService<IUserSession> {
 
     protected readonly userSessionRepo: UserSessionRepository;
 
@@ -13,12 +13,12 @@ export class UserSessionService extends BaseService{
 }
 
     // Creates a user session assuming the body is valid
-    public async createUserSession(data: IUserSession): Promise<string> {
+    public async createOne(data: IUserSession): Promise<string> {
         return this.userSessionRepo.create(data);
     }
 
     // Simply an override. 
-    public async updateUserSession(data: IUserSession): Promise<boolean> {
+    public async updateOne(data: IUserSession): Promise<boolean> {
         // Don't update if the user id has changed also don't let admin things (which pretty much does nothing)
         // change
         const maybeUserSession = await this.userSessionRepo.findOne(data._id!);
@@ -30,7 +30,7 @@ export class UserSessionService extends BaseService{
     }
 
     // Deletes a quiz based on the incoming id
-    public async deleteUserSession(id: string) {
+    public async deleteOne(id: string) {
         return this.userSessionRepo.deleteOne(id);
     }
 
@@ -45,7 +45,7 @@ export class UserSessionService extends BaseService{
     }
 
     // Gets the user session simply based on id
-    public async getUserSession(id: string): Promise<IUserSession | null> {
+    public async findOne(id: string): Promise<IUserSession | null> {
         return this.userSessionRepo.findOne(id);
     }
 }

@@ -14,7 +14,7 @@ export class ResponseController extends BaseController {
     }
 
     private createResponse(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        this.responseService.createResponse(req.body as Response).then((outgoingId) => {
+        this.responseService.createOne(req.body as Response).then((outgoingId) => {
             if (outgoingId !== null) {
                 res.json({
                     outgoingId

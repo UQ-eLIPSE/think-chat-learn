@@ -13,7 +13,7 @@ export class QuestionController extends BaseController {
     }
 
     private createQuestion(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        this.questionService.createQuestion(req.body as TypeQuestion).then((outgoingId) => {
+        this.questionService.createOne(req.body as TypeQuestion).then((outgoingId) => {
             if (outgoingId !== null) {
                 res.json({
                     outgoingId
@@ -28,7 +28,7 @@ export class QuestionController extends BaseController {
     }
 
     private updateQuestion(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        this.questionService.updateQuestion(req.body as TypeQuestion).then((outcome) => {
+        this.questionService.updateOne(req.body as TypeQuestion).then((outcome) => {
             res.json({
                 outcome
             });
@@ -39,7 +39,7 @@ export class QuestionController extends BaseController {
     }
 
     private deleteQuestion(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        this.questionService.deleteQuiz(req.params.questionId).then((outcome) => {
+        this.questionService.deleteOne(req.params.questionId).then((outcome) => {
             res.json({
                 outcome
             });

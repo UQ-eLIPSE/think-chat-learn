@@ -16,7 +16,7 @@ import { UserSessionRepository } from "../repositories/UserSessionRepository";
 import { Utils } from "../../common/js/Utils";
 import { Conf } from "../config/Conf";
 
-export class UserService extends BaseService {
+export class UserService extends BaseService<IUser> {
 
     protected readonly userRepo: UserRepository;
     protected readonly quizRepo: QuizRepository;
@@ -202,8 +202,21 @@ export class UserService extends BaseService {
     }
 
     // Simply returns a user if exist, null otherwise
-    public async findUser(userId: string): Promise<IUser | null> {
+    public async findOne(userId: string): Promise<IUser | null> {
         return UserServiceHelper.FindUser(this.userRepo, userId);
+    }
+
+    public async updateOne() {
+        return false;
+    }
+
+    public async createOne() {
+        // Stubs
+        return "";
+    }
+
+    public async deleteOne() {
+        return false;
     }
 
     public async handlePageRequest(quizId: string, pageId: string, quizSessionId: string, groupId: string | null): Promise<QuestionRequestData | null> {
@@ -428,7 +441,7 @@ class UserServiceHelper {
         }
 
         // From this point on we grab every single question associated with the pages
-        const questionSet = new Set();
+        const questionSet = new Set<string>();
         pages.forEach((element) => {
             if ((element.type === PageType.QUESTION_ANSWER_PAGE) || (element.type === PageType.DISCUSSION_PAGE)) {
                 // Fetch the question in the set

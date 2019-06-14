@@ -5,7 +5,7 @@ import { ObjectId } from "bson";
 import { IQuizOverNetwork } from "../../common/interfaces/NetworkData";
 import { convertNetworkQuizIntoQuiz } from "../../common/js/NetworkDataUtils";
 
-export class QuizService extends BaseService{
+export class QuizService extends BaseService<IQuiz | IQuizOverNetwork> {
 
     protected readonly quizRepo: QuizRepository;
 
@@ -15,7 +15,7 @@ export class QuizService extends BaseService{
 }
 
     // Creates a quiz in the DB based on the request body. Assumes the request body is valid
-    public async createQuiz(data: IQuizOverNetwork): Promise<string> {
+    public async createOne(data: IQuizOverNetwork): Promise<string> {
         // Creates a new quiz based on the information.
 
         // Note we create ids for each page associated at the same time
@@ -34,7 +34,7 @@ export class QuizService extends BaseService{
     // You can think of it as a replacement based on the _id
     // Returns true if the operation succeed
     // Note that deleting a question can be thought as updating a question
-    public async updateQuiz(data: IQuizOverNetwork): Promise<boolean> {
+    public async updateOne(data: IQuizOverNetwork): Promise<boolean> {
         // Updating is a little bit complicated due to the fact that
         // someone could theoretically push pages in and they wouldn't have ids
 
@@ -50,7 +50,7 @@ export class QuizService extends BaseService{
     }
 
     // Deletes a quiz based on the incoming id
-    public async deleteQuiz(id: string) {
+    public async deleteOne(id: string) {
         return this.quizRepo.deleteOne(id);
     }
 
@@ -64,12 +64,7 @@ export class QuizService extends BaseService{
         });
     }
 
-    public async getQuizQuestionById(quizId: string): Promise<IQuiz | null> {
+    public async findOne(quizId: string): Promise<IQuiz | null> {
         return this.quizRepo.findOne(quizId);
     }
-}
-
-// Helper functions for the service
-class QuizServiceHelper {
-
 }

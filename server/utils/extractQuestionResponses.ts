@@ -66,6 +66,10 @@ class ExtractQuestions {
 
         // Link a response to a user
         const quizSessions = await quizSessionService.getQuizSessions(Query.quizId);
+        if (!quizSessions) {
+            throw new Error(`No quiz session based on ${Query.quizId}`);
+        }
+
         const userSessions = (await userSessionService.getUserSessions(Query.course)).filter((userSession) => {
             // Filter all user sessions that are present in the quiz
             return quizSessions.find((quizSession) => {

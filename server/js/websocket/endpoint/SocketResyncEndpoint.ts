@@ -12,7 +12,7 @@ export class SocketResyncEndpoint extends WSEndpoint {
             QuizSessionService) {
 
         // TODO replace with userSessionService
-        const session = await quizSessionService.getQuizSession(data.quizSessionId);
+        const session = await quizSessionService.findOne(data.quizSessionId);
 
         if (!session) {
             return console.error("Attempted session socket resync with invalid session ID = " + data.quizSessionId);

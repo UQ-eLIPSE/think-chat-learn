@@ -13,7 +13,7 @@ export class CriteriaController extends BaseController {
     }
 
     private createCriteria(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        this.criteriaService.createCriteria(req.body as ICriteria).then((outgoingId) => {
+        this.criteriaService.createOne(req.body as ICriteria).then((outgoingId) => {
             if (outgoingId !== null) {
                 res.json({
                     outgoingId
@@ -28,7 +28,7 @@ export class CriteriaController extends BaseController {
     }
 
     private updateCriteria(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        this.criteriaService.updateCriteria(req.body as ICriteria).then((outcome) => {
+        this.criteriaService.updateOne(req.body as ICriteria).then((outcome) => {
             res.json({
                 outcome
             });
@@ -39,7 +39,7 @@ export class CriteriaController extends BaseController {
     }
 
     private readCriteria(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        this.criteriaService.getCriteria(req.params.criteriaId).then((outcome) => {
+        this.criteriaService.findOne(req.params.criteriaId).then((outcome) => {
             res.json({
                 outcome
             });
@@ -50,7 +50,7 @@ export class CriteriaController extends BaseController {
     }
 
     private deleteCriteria(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        this.criteriaService.deleteCriteria(req.params.criteriaId).then((outcome) => {
+        this.criteriaService.deleteOne(req.params.criteriaId).then((outcome) => {
             res.json({
                 outcome
             });

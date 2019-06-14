@@ -7,14 +7,11 @@ import { UserSessionRepository } from "../repositories/UserSessionRepository";
 import { UserRepository } from "../repositories/UserRepository";
 
 
-import { IQuiz, ElipssMark, Mark } from "../../common/interfaces/DBSchema";
-import { ObjectId, ObjectID } from "bson";
-import { IQuizOverNetwork } from "../../common/interfaces/NetworkData";
-import { convertNetworkQuizIntoQuiz } from "../../common/js/NetworkDataUtils";
+import { ElipssMark, Mark } from "../../common/interfaces/DBSchema";
 import { PageType } from "../../common/enums/DBEnums";
 import { IQuestionAnswerPage, IUserSession, IUser } from "../../common/interfaces/ToClientData";
 
-export class MarksService extends BaseService {
+export class MarksService extends BaseService<Mark> {
 
     protected readonly quizRepo: QuizRepository;
     protected readonly quizSessionRepo: QuizSessionRepository;
@@ -33,6 +30,29 @@ export class MarksService extends BaseService {
         this.userRepo = userRepo;
         this.userSessionRepo = userSessionRepo;
     }
+
+    // Basic CRUD implementations
+    // Creates a criteria
+    public async createOne(data: Mark): Promise<string> {
+
+        return this.marksRepo.create(data);
+    }
+
+    // Simply an override to the existing criteria
+    public async updateOne(data: Mark): Promise<boolean> {
+        return this.marksRepo.updateOne(data);
+    }
+
+    // Deletes a criteria based on the id
+    public async deleteOne(_id: string) {
+        return this.marksRepo.deleteOne(_id);
+    }
+
+    // Gets a criteria based on id
+    public async findOne(_id: string): Promise<Mark | null> {
+        return this.marksRepo.findOne(_id);
+    }
+
 
     public async getMarksForQuizSessionQuestion(quizSessionId: string, questionId: string): Promise<Mark[]> {
 

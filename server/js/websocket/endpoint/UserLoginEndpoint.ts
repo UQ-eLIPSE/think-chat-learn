@@ -17,7 +17,7 @@ export class UserLoginEndpoint extends WSEndpoint {
 
     private static async HandleLogout(socket: PacSeqSocket_Server, data: IWSToServerData.Logout, quizSessionService: QuizSessionService) {
 
-        const session = await quizSessionService.getQuizSession(data.quizSessionId);
+        const session = await quizSessionService.findOne(data.quizSessionId);
         
         if (!session) {
             return console.error("Attempted to logout with invalid session ID = " + data.quizSessionId);
@@ -42,7 +42,7 @@ export class UserLoginEndpoint extends WSEndpoint {
     private static async StoreQuizSessionSocket(socket: PacSeqSocket_Server, 
             data: IWSToServerData.StoreSession, quizSessionService: QuizSessionService) {
         // Check if it is a valid session
-        const quizSession = await quizSessionService.getQuizSession(data.quizSessionId);
+        const quizSession = await quizSessionService.findOne(data.quizSessionId);
 
         if (!quizSession || !quizSession._id) {
             console.error(`Could not find quiz session with quiz id ${data.quizSessionId}`);

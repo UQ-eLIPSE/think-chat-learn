@@ -5,7 +5,7 @@ import { UserSessionRepository } from "../repositories/UserSessionRepository";
 import { QuizRepository } from "../repositories/QuizRepository";
 import { ResponseRepository } from "../repositories/ResponseRepository";
 
-export class QuizSessionService extends BaseService{
+export class QuizSessionService extends BaseService<IQuizSession> {
 
     protected readonly quizSessionRepo: QuizSessionRepository;
     protected readonly quizRepo: QuizRepository;
@@ -24,7 +24,7 @@ export class QuizSessionService extends BaseService{
     }
 
     // Creates a user session assuming the body is valid
-    public async createQuizSession(data: IQuizSession): Promise<string> {
+    public async createOne(data: IQuizSession): Promise<string> {
         const goodData = await this.checkQuizSession(data);
         const someQuizSession = await this.quizSessionRepo.findQuizSessionByUserId(data.userSessionId!);
 
@@ -40,7 +40,7 @@ export class QuizSessionService extends BaseService{
     }
 
     // Simply an override. 
-    public async updateQuizSession(data: IQuizSession): Promise<boolean> {
+    public async updateOne(data: IQuizSession): Promise<boolean> {
         const goodData = await this.checkQuizSession(data);
 
         const maybeQuizSession = await this.quizSessionRepo.findOne(data._id!);
@@ -54,7 +54,7 @@ export class QuizSessionService extends BaseService{
     }
 
     // Deletes a quiz based on the incoming id
-    public async deleteQuizSession(id: string) {
+    public async deleteOne(id: string) {
         return this.quizSessionRepo.deleteOne(id);
     }
 
@@ -66,7 +66,7 @@ export class QuizSessionService extends BaseService{
     }
 
     // Gets the quiz session based on the id itself
-    public async getQuizSession(sessionId: string): Promise<IQuizSession | null> {
+    public async findOne(sessionId: string): Promise<IQuizSession | null> {
         return this.quizSessionRepo.findOne(sessionId);
     }
 

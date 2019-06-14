@@ -17,7 +17,7 @@ export class UserSessionController extends BaseController {
     }
 
     private createSession(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        this.userSessionService.createUserSession(req.body as IUserSession).then((outgoingId) => {
+        this.userSessionService.createOne(req.body as IUserSession).then((outgoingId) => {
             if (outgoingId !== null) {
                 res.json({
                     outgoingId
@@ -32,7 +32,7 @@ export class UserSessionController extends BaseController {
     }
 
     private updateSession(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        this.userSessionService.updateUserSession(req.body as IUserSession).then((outcome) => {
+        this.userSessionService.updateOne(req.body as IUserSession).then((outcome) => {
             res.json({
                 outcome
             });
@@ -44,7 +44,7 @@ export class UserSessionController extends BaseController {
 
     private getSessionById(req: express.Request, res: express.Response, next: express.NextFunction | undefined) {
         if(!req.params.userSessionId) throw new Error('User session ID not supplied'); 
-        this.userSessionService.getUserSession(req.params.userSessionId).then((response) => {
+        this.userSessionService.findOne(req.params.userSessionId).then((response) => {
             res.json(response);
         }).catch((e) => {
             console.log(e);
