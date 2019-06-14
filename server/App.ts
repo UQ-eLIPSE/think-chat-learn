@@ -16,6 +16,7 @@ import { QuizSessionRepository } from "./repositories/QuizSessionRepository";
 import { ChatGroupRepository } from "./repositories/ChatGroupRepository";
 import { ResponseRepository } from "./repositories/ResponseRepository";
 import { MarksRepository } from "./repositories/MarksRepository";
+import { CriteriaRepository } from "./repositories/CriteriaRepository";
 
 // Services
 import { UserService } from "./services/UserService";
@@ -26,6 +27,7 @@ import { QuizSessionService } from "./services/QuizSessionService";
 import { ChatGroupService } from "./services/ChatGroupService";
 import { ResponseService } from "./services/ResponseService";
 import { MarksService } from "./services/MarksService";
+import { CriteriaService } from "./services/CriteriaService";
 
 // Controllers
 import { UserController } from "./controllers/UserController";
@@ -36,6 +38,7 @@ import { QuizSessionController } from "./controllers/QuizSessionController";
 import { ChatGroupController } from "./controllers/ChatGroupController";
 import { ResponseController } from "./controllers/ResponseController";
 import { MarksController } from "./controllers/MarksController";
+import { CriteriaController } from "./controllers/CriteriaController";
 
 // Authenticator for students
 import { StudentAuthenticatorMiddleware } from "./js/auth/StudentPageAuth";
@@ -56,6 +59,7 @@ export default class App {
     private chatGroupRepository: ChatGroupRepository;
     private responseRepository: ResponseRepository;
     private marksRepository: MarksRepository;
+    private criteriaRepository: CriteriaRepository;
 
     // Services
     private userService: UserService;
@@ -66,6 +70,7 @@ export default class App {
     private chatGroupService: ChatGroupService;
     private responseService: ResponseService;
     private marksService: MarksService;
+    private criteriaService: CriteriaService;
 
     // Controllers
     private userController: UserController;
@@ -76,6 +81,7 @@ export default class App {
     private responseController: ResponseController;
     private chatGroupController: ChatGroupController;
     private marksController: MarksController;
+    private criteriaController: CriteriaController;
 
     // Socket io things
     private socketIO: SocketIO.Server;
@@ -113,7 +119,9 @@ export default class App {
         this.chatGroupRepository = new ChatGroupRepository(this.database, "uq_chatGroup");
         this.responseRepository = new ResponseRepository(this.database, "uq_responses");
         this.marksRepository = new MarksRepository(this.database, "uq_marks");
+        this.criteriaRepository = new CriteriaRepository(this.database, "uq_criteria");
 
+        // Services
         this.userService = new UserService(this.userRepository, this.quizRepository, this.questionRepository,
             this.chatGroupRepository, this.quizSessionRepository, this.userSessionRepository);
         this.quizService = new QuizService(this.quizRepository);
@@ -124,6 +132,9 @@ export default class App {
         this.chatGroupService = new ChatGroupService(this.chatGroupRepository, this.responseRepository);
         this.responseService = new ResponseService(this.responseRepository, this.quizSessionRepository, this.quizRepository);
         this.marksService = new MarksService(this.marksRepository, this.quizRepository, this.quizSessionRepository, this.chatGroupRepository, this.userSessionRepository, this.userRepository);
+        this.criteriaService = new CriteriaService(this.criteriaRepository);
+
+        // Controllers
         this.userController = new UserController(this.userService);
         this.quizController = new QuizController(this.quizService);
         this.questionController = new QuestionController(this.questionService);
@@ -132,6 +143,7 @@ export default class App {
         this.responseController = new ResponseController(this.responseService);
         this.chatGroupController = new ChatGroupController(this.chatGroupService);
         this.marksController = new MarksController(this.marksService);
+        this.criteriaController = new CriteriaController(this.criteriaService);
         StudentAuthenticatorMiddleware.instantiate(this.userService, this.userSessionService, this.quizSessionService,
                 this.responseService);
 
@@ -143,7 +155,7 @@ export default class App {
         this.responseController.setupRoutes();
         this.chatGroupController.setupRoutes();
         this.marksController.setupRoutes();
-
+        this.criteriaController.setupRoutes();
     }
 
     private setupSockets(): void {

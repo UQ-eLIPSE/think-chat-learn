@@ -243,3 +243,21 @@ export interface IChatGroup extends Document {
 
 // export type MarkingMethod = "MOUSOKU";
 // export type MarkingMethod = string;
+
+export interface ICriteria {
+  _id: OID;
+  name: string;
+  description?: string;
+  course: string;
+}
+
+export interface IRubric {
+  name: string;
+  criterias: ICriteria[];
+}
+
+// Doesn't need an ID as it won't be stored as the main source of a collection
+export interface CriteriaMark {
+  criteria: ICriteria;
+  mark: number | null;
+}
