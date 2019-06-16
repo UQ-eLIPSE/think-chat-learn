@@ -245,10 +245,16 @@ export interface IChatGroup extends Document {
 // export type MarkingMethod = string;
 
 export interface ICriteria {
-  _id: OID;
+  _id?: OID;
   name: string;
   description?: string;
   course: string;
+}
+
+// Note that name refers to course code from LTI while _id is the mongoDB id
+export interface ICourse {
+  _id?: OID;
+  name: string;
 }
 
 export interface IRubric {

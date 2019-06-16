@@ -17,7 +17,7 @@ import { ChatGroupRepository } from "./repositories/ChatGroupRepository";
 import { ResponseRepository } from "./repositories/ResponseRepository";
 import { MarksRepository } from "./repositories/MarksRepository";
 import { CriteriaRepository } from "./repositories/CriteriaRepository";
-
+import { CourseRepository } from "./repositories/CourseRepository";
 // Services
 import { UserService } from "./services/UserService";
 import { QuestionService } from "./services/QuestionService";
@@ -28,7 +28,7 @@ import { ChatGroupService } from "./services/ChatGroupService";
 import { ResponseService } from "./services/ResponseService";
 import { MarksService } from "./services/MarksService";
 import { CriteriaService } from "./services/CriteriaService";
-
+import { CourseService } from "./services/CourseService";
 // Controllers
 import { UserController } from "./controllers/UserController";
 import { QuestionController } from "./controllers/QuestionController";
@@ -60,6 +60,7 @@ export default class App {
     private responseRepository: ResponseRepository;
     private marksRepository: MarksRepository;
     private criteriaRepository: CriteriaRepository;
+    private courseRepository: CourseRepository;
 
     // Services
     private userService: UserService;
@@ -71,6 +72,7 @@ export default class App {
     private responseService: ResponseService;
     private marksService: MarksService;
     private criteriaService: CriteriaService;
+    private courseService: CourseService;
 
     // Controllers
     private userController: UserController;
@@ -120,10 +122,12 @@ export default class App {
         this.responseRepository = new ResponseRepository(this.database, "uq_responses");
         this.marksRepository = new MarksRepository(this.database, "uq_marks");
         this.criteriaRepository = new CriteriaRepository(this.database, "uq_criteria");
+        this.courseRepository = new CourseRepository(this.database, "uq_course");
 
         // Services
         this.userService = new UserService(this.userRepository, this.quizRepository, this.questionRepository,
-            this.chatGroupRepository, this.quizSessionRepository, this.userSessionRepository);
+            this.chatGroupRepository, this.quizSessionRepository, this.userSessionRepository, this.courseRepository,
+            this.criteriaRepository);
         this.quizService = new QuizService(this.quizRepository);
         this.questionService = new QuestionService(this.questionRepository);
         this.userSessionService = new UserSessionService(this.userSessionRepository);
@@ -133,6 +137,7 @@ export default class App {
         this.responseService = new ResponseService(this.responseRepository, this.quizSessionRepository, this.quizRepository);
         this.marksService = new MarksService(this.marksRepository, this.quizRepository, this.quizSessionRepository, this.chatGroupRepository, this.userSessionRepository, this.userRepository);
         this.criteriaService = new CriteriaService(this.criteriaRepository);
+        this.courseService = new CourseService(this.courseRepository);
 
         // Controllers
         this.userController = new UserController(this.userService);
