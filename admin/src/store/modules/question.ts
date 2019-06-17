@@ -4,6 +4,9 @@ import { IQuestion } from "../../../../common/interfaces/ToClientData";
 import { API } from "../../../../common/js/DB_API";
 import { TypeQuestion } from "../../../../common/interfaces/DBSchema";
 
+// Event bus for snackbar purposes
+import { EventBus, EventList } from "../../EventBus";
+
 export interface IState {
     questions: TypeQuestion[];
 }
@@ -26,7 +29,11 @@ const getters = {
 };
 const actions = {
     createQuestion({ commit }: {commit: Commit}, data: IQuestion) {
-        API.request(API.PUT, API.QUESTION + "create", data);
+        API.request(API.PUT, API.QUESTION + "create", data).then((id: string) => {
+            if (id) {
+                EventBus.$emit(EventList.PUSH_SNACKBAR, "Created a question");
+            }
+        });
     },
 
     setQuestions({ commit }: {commit: Commit}, data: IQuestion[]) {
@@ -37,6 +44,7 @@ const actions = {
         API.request(API.DELETE, API.QUESTION + "delete/" + data, {}).then((outcome: boolean) => {
             if (outcome) {
                 commit(mutationKeys.DELETE_QUESTION, data);
+                EventBus.$emit(EventList.PUSH_SNACKBAR, "Deleted a question");
             }
         });
 
@@ -46,6 +54,7 @@ const actions = {
         API.request(API.POST, API.QUESTION + "update/", data).then((outcome: boolean) => {
             if (outcome) {
                 commit(mutationKeys.EDIT_QUESTION, data);
+                EventBus.$emit(EventList.PUSH_SNACKBAR, "Edited a question");
             }
         });
     }

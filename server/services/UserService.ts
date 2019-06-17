@@ -254,10 +254,11 @@ export class UserService extends BaseService<IUser> {
         if ((token as AdminLoginResponse).isAdmin) {
             const quizzes = await this.quizRepo.findAll({ course: token.courseId });
             const questions = await this.questionRepo.findAll({ courseId: token.courseId });
-
+            const criterias = await this.criteriaRepo.findAll( {course: token.courseId });
             const output: QuizScheduleDataAdmin = {
                 questions,
                 quizzes: quizzes.reduce((arr: IQuizOverNetwork[], element) => { arr.push(convertQuizIntoNetworkQuiz(element)); return arr; }, []),
+                criterias
             }
 
             return output;

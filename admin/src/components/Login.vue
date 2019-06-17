@@ -24,8 +24,7 @@ export default class Login extends Vue {
     // If we have a response , set the appropiate data and so on
     if (response) {
       await this.$store.dispatch("setUser", response.user);
-      await this.$store.commit("setCourse", response.courseId);
-
+      await this.$store.dispatch("setCourse", response.courseId);
       // Remember to convert network quizzes to one with dates
       await this.$store.dispatch( 
         "setQuizzes",
@@ -34,7 +33,7 @@ export default class Login extends Vue {
           return arr;
         }, [])
       );
-
+      await this.$store.dispatch("setCriterias", quizScheduleData.criterias);
       await this.$store.dispatch("setQuestions", quizScheduleData.questions);
       this.$router.push("/");
     }

@@ -19,6 +19,7 @@ export type IDiscussionPage = DBSchema.IDiscussionPage;
 export type IUserSession = DBSchema.IUserSession;
 export type IQuizSession = DBSchema.IQuizSession;
 export type IChatGroup = DBSchema.IChatGroup;
+export type ICriteria = DBSchema.ICriteria;
 export type Response = DBSchema.Response;
 // API specific
 
@@ -35,9 +36,11 @@ export interface QuizScheduleData {
   questions: TypeQuestion[];
 }
 
+// Handles what to send back for the admin page
 export interface QuizScheduleDataAdmin {
   quizzes: NetworkData.IQuizOverNetwork[];
   questions: TypeQuestion[];
+  criterias: ICriteria[];
 }
 
 // Also handles the initial retrieval

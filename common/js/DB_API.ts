@@ -20,6 +20,7 @@ export interface IApi {
   RESPONSE: string;
   CHATGROUP: string;
   MARKS: string;
+  CRITERIA: string;
 
   request(
     method: string,
@@ -69,7 +70,8 @@ export const API: IApi = {
   QUIZSESSION: "quizsession/",
   RESPONSE: "response/",
   CHATGROUP: "chatgroup/",
-  MARKS: "marks/"
+  MARKS: "marks/",
+  CRITERIA: "criteria/"
 };
 
 export default API;

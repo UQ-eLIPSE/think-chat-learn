@@ -266,6 +266,7 @@ export default class App {
         this.express.use("/response", this.responseController.getRouter());
         this.express.use("/chatgroup", this.chatGroupController.getRouter());
         this.express.use("/marks", this.marksController.getRouter());
+        this.express.use("/criteria", this.criteriaController.getRouter());
     }
 
     // Only login gets affected

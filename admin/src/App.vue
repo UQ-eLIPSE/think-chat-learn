@@ -201,11 +201,24 @@ html {
 
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
+import { Snackbar } from 'buefy/dist/components/snackbar'
+import { EventBus, EventList } from "./EventBus";
 import SideNav from "./components/SideNav.vue";
 @Component({
   components: {
     SideNav
   }
 })
-export default class App extends Vue { }
+export default class App extends Vue {
+  
+  // Given a string payload, push that to the snackbar
+  private handlePushSnackBar(message: string) {
+    Snackbar.open(message);
+  }
+
+  private mounted() {
+    // Set up the bus events
+    EventBus.$on(EventList.PUSH_SNACKBAR, this.handlePushSnackBar);
+  }
+}
 </script>
