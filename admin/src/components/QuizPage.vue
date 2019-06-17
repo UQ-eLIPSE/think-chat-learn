@@ -67,6 +67,16 @@
       </div>
     </div>
 
+    <div>
+      <label> Rubric Linking
+      <select v-model="rubricId">
+        <option v-for="rubric in rubrics"
+                :value="rubric._id"
+                :key="rubric._id">{{ rubric.name }}</option>
+      </select>
+      </label>
+    </div>
+
     <div class="marking-config">
       <label> Marking Configuration
       <select v-model="markingConfiguration">
@@ -124,6 +134,7 @@ export default class QuizPage extends Vue {
   private endDate: Date | null = null;
   private endTime: Date | null = null;
 
+  private rubricId: string = "";
   private simpleMarkConfig: DBSchema.SimpleMarkConfig = this.initSimpleMarkConfig();
   private elipssMarkConfig: DBSchema.ElipssMarkConfig = this.initElipssMarkConfig();
 
@@ -195,6 +206,10 @@ export default class QuizPage extends Vue {
     const loginDetails = getAdminLoginResponse();
 
     return loginDetails ? loginDetails.courseId : "";
+  }
+
+  get rubrics() {
+    return this.$store.getters.rubrics;
   }
 
   createQuiz() {
@@ -274,7 +289,8 @@ export default class QuizPage extends Vue {
       availableEnd,
       pages: outgoingPages,
       course: this.courseId,
-      markingConfiguration: this.markingConfiguration
+      markingConfiguration: this.markingConfiguration,
+      rubricId: this.rubricId
     };
 
     if (this.isEditing) {
@@ -346,6 +362,7 @@ export default class QuizPage extends Vue {
         this.endTime = new Date(loadedQuiz.availableEnd!);
 
         this.quizTitle = loadedQuiz.title;
+        this.rubricId = loadedQuiz.rubricId!;
         this.markingConfiguration = loadedQuiz.markingConfiguration || this.elipssMarkConfig;
         const emptyDict: { [key: string]: Page } = {};
 

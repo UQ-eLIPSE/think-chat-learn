@@ -117,7 +117,8 @@ export interface IQuiz extends Document {
   // they are stored as strings due the fact that sending a date over is not feasible
   availableStart?: Date;
   availableEnd?: Date;
-  markingConfiguration?: MarkingConfiguration
+  markingConfiguration?: MarkingConfiguration;
+  rubricId?: string;
 }
 
 export type MarkingConfiguration = SimpleMarkConfig | ElipssMarkConfig;
@@ -260,7 +261,8 @@ export interface ICourse {
 export interface IRubric extends Document {
   name: string;
   course: string;
-  criterias: ICriteria[];
+  // Note the string ids
+  criterias: string[];
 }
 
 // Doesn't need an ID as it won't be stored as the main source of a collection
