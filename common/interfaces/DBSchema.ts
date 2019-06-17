@@ -257,8 +257,9 @@ export interface ICourse {
   name: string;
 }
 
-export interface IRubric {
+export interface IRubric extends Document {
   name: string;
+  course: string;
   criterias: ICriteria[];
 }
 

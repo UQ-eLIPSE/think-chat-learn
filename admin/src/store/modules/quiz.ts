@@ -1,7 +1,7 @@
 import Vue from "vue";
 import { Commit, ActionTree, GetterTree } from "vuex";
 import { IQuiz, QuizSessionDataObject, IChatGroup, IQuestion,
-    IQuestionAnswerPage, ICriteria } from "../../../../common/interfaces/ToClientData";
+    IQuestionAnswerPage, ICriteria, IRubric } from "../../../../common/interfaces/ToClientData";
 import { IQuizSession, IChatMessage, Page, ElipssMark, MarkMode, Mark } from "../../../../common/interfaces/DBSchema";
 import { PageType } from "../../../../common/enums/DBEnums";
 import { API } from "../../../../common/js/DB_API";
@@ -32,6 +32,7 @@ export interface IState {
     currentMarkingContext: CurrentMarkingContext;
     marksQuestionUserMap: MarksQuestionUserMap;
     criterias: ICriteria[];
+    rubrics: IRubric[];
 }
 
 const state: IState = {
@@ -48,7 +49,8 @@ const state: IState = {
         currentMarks: null
     },
     marksQuestionUserMap: {},
-    criterias: []
+    criterias: [],
+    rubrics: [],
 };
 
 const mutationKeys = {
@@ -59,6 +61,9 @@ const mutationKeys = {
     SET_CRITERIAS: "Setting the criterias",
     SET_CRITERIA: "Setting a criteria",
     DELETE_CRITERIA: "Deleting a criteria",
+    SET_RUBRICS: "Setting the rubrics",
+    SET_RUBRIC: "Setting a rubric",
+    DELETE_RUBRIC: "Deleting a rubric",
     SET_COURSE: "setCourse",
     SET_CHATGROUPS: "setChatGroups"
 };
@@ -164,6 +169,9 @@ const getters: GetterTree<IState, undefined> = {
     },
     course: (state): string => {
         return state.course;
+    },
+    rubrics: (state): IRubric[] => {
+        return state.rubrics;
     }
 
 };
@@ -263,7 +271,8 @@ const actions: ActionTree<IState, undefined> = {
             commit(mutationKeys.SET_CRITERIA, { criteria: data, index });
             EventBus.$emit(EventList.PUSH_SNACKBAR, "Updated Criteria");
         } else {
-            await API.request(API.PUT, API.CRITERIA + "create/", data);
+            const id: {outgoingId: string } = await API.request(API.PUT, API.CRITERIA + "create/", data);
+            data._id = id.outgoingId;
             commit(mutationKeys.SET_CRITERIA, { criteria: data, index: state.criterias.length });
             EventBus.$emit(EventList.PUSH_SNACKBAR, "Created new Criteria");
         }
@@ -278,7 +287,40 @@ const actions: ActionTree<IState, undefined> = {
 
         commit(mutationKeys.DELETE_CRITERIA, index);
         EventBus.$emit(EventList.PUSH_SNACKBAR, "Delete Criteria");
-    }
+    },
+
+    setRubrics({ commit }: { commit: Commit }, data: IRubric[]) {
+        commit(mutationKeys.SET_RUBRICS, data);
+    },
+
+    async sendRubric({ commit }: { commit: Commit }, data: IRubric) {
+        if (data._id) {
+            await API.request(API.POST, API.RUBRIC + "update/", data);
+
+            const index = state.rubrics.findIndex((rubric) => {
+                return rubric._id === data._id;
+            });
+
+            commit(mutationKeys.SET_RUBRIC, { rubric: data, index });
+            EventBus.$emit(EventList.PUSH_SNACKBAR, "Updated a rubric");
+        } else {
+            const id: {outgoingId: string } = await API.request(API.PUT, API.RUBRIC + "create/", data);
+            data._id = id.outgoingId;
+            commit(mutationKeys.SET_RUBRIC, { rubric: data, index: state.rubrics.length });
+            EventBus.$emit(EventList.PUSH_SNACKBAR, "Created new a new rubric");
+        }
+    },
+
+    async deleteRubric({ commit }: { commit: Commit }, id: string) {
+        await API.request(API.DELETE, API.RUBRIC + "delete/" + id, {});
+
+        const index = state.rubrics.findIndex((rubric) => {
+            return rubric._id === id;
+        });
+
+        commit(mutationKeys.DELETE_RUBRIC, index);
+        EventBus.$emit(EventList.PUSH_SNACKBAR, "Deleted a Rubric");
+    }    
 };
 
 const mutations = {
@@ -319,6 +361,15 @@ const mutations = {
     [mutationKeys.DELETE_CRITERIA](funcState: IState, index: number) {
         Vue.delete(funcState.criterias, index);
     },
+    [mutationKeys.SET_RUBRICS](funcState: IState, rubrics: IRubric[]) {
+        Vue.set(funcState, "rubrics", rubrics);
+    },
+    [mutationKeys.SET_RUBRIC](funcState: IState, data: { rubric: IRubric, index: number }) {
+        Vue.set(funcState.rubrics, data.index, data.rubric);
+    },
+    [mutationKeys.DELETE_RUBRIC](funcState: IState, index: number) {
+        Vue.delete(funcState.rubrics, index);
+    },    
     UPDATE_CURRENT_MARKING_CONTEXT(state: IState, payload: any) {
         Vue.set(state.currentMarkingContext, payload.prop, payload.value);
     },

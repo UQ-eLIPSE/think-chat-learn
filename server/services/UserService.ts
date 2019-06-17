@@ -17,6 +17,7 @@ import { Utils } from "../../common/js/Utils";
 import { Conf } from "../config/Conf";
 import { CourseRepository } from "../repositories/CourseRepository";
 import { CriteriaRepository } from "../repositories/CriteriaRepository";
+import { RubricRepository } from "../repositories/RubricRepository";
 export class UserService extends BaseService<IUser> {
 
     protected readonly userRepo: UserRepository;
@@ -27,10 +28,11 @@ export class UserService extends BaseService<IUser> {
     protected readonly userSessionRepo: UserSessionRepository;
     protected readonly courseRepo: CourseRepository;
     protected readonly criteriaRepo: CriteriaRepository;
+    protected readonly rubricRepo: RubricRepository;
 
     constructor(_userRepo: UserRepository, _quizRepo: QuizRepository, _questionRepo: QuestionRepository, _chatGroupRepo: ChatGroupRepository,
         _quizSessionRepo: QuizSessionRepository, _userSessionRepo: UserSessionRepository,
-        _courseRepo: CourseRepository, _criteriaRepo: CriteriaRepository) {
+        _courseRepo: CourseRepository, _criteriaRepo: CriteriaRepository, _rubricRepo: RubricRepository) {
 
         super();
         this.userRepo = _userRepo;
@@ -41,6 +43,7 @@ export class UserService extends BaseService<IUser> {
         this.userSessionRepo = _userSessionRepo;
         this.courseRepo = _courseRepo;
         this.criteriaRepo = _criteriaRepo;
+        this.rubricRepo = _rubricRepo;
     }
 
     public async handleLoginWrapper(request: ILTIData) {
@@ -255,10 +258,13 @@ export class UserService extends BaseService<IUser> {
             const quizzes = await this.quizRepo.findAll({ course: token.courseId });
             const questions = await this.questionRepo.findAll({ courseId: token.courseId });
             const criterias = await this.criteriaRepo.findAll( {course: token.courseId });
+            const rubrics = await this.rubricRepo.findAll( {course: token.courseId });
+
             const output: QuizScheduleDataAdmin = {
                 questions,
                 quizzes: quizzes.reduce((arr: IQuizOverNetwork[], element) => { arr.push(convertQuizIntoNetworkQuiz(element)); return arr; }, []),
-                criterias
+                criterias,
+                rubrics
             }
 
             return output;

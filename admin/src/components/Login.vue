@@ -33,6 +33,7 @@ export default class Login extends Vue {
           return arr;
         }, [])
       );
+      await this.$store.dispatch("setRubrics", quizScheduleData.rubrics);
       await this.$store.dispatch("setCriterias", quizScheduleData.criterias);
       await this.$store.dispatch("setQuestions", quizScheduleData.questions);
       this.$router.push("/");

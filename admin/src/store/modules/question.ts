@@ -29,8 +29,10 @@ const getters = {
 };
 const actions = {
     createQuestion({ commit }: {commit: Commit}, data: IQuestion) {
-        API.request(API.PUT, API.QUESTION + "create", data).then((id: string) => {
-            if (id) {
+        API.request(API.PUT, API.QUESTION + "create", data).then((payload: { outgoingId: string }) => {
+            if (payload) {
+                data._id = payload.outgoingId;
+                commit(mutationKeys.SET_QUESTION, data);
                 EventBus.$emit(EventList.PUSH_SNACKBAR, "Created a question");
             }
         });

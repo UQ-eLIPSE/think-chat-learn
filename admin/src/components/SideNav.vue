@@ -11,6 +11,7 @@
             <!-- <router-link tag="li" to="/questionList">Question List</router-link> -->
             <li class="inactive">Question List (Coming soon)</li>
             <router-link tag="li" to="/criteria">View Criteria List</router-link>
+            <router-link tag="li" to="/rubric">View Rubric List</router-link>
         </ul>
     </div>
 </template>

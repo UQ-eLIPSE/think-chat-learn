@@ -18,6 +18,7 @@ import { ResponseRepository } from "./repositories/ResponseRepository";
 import { MarksRepository } from "./repositories/MarksRepository";
 import { CriteriaRepository } from "./repositories/CriteriaRepository";
 import { CourseRepository } from "./repositories/CourseRepository";
+import { RubricRepository } from "./repositories/RubricRepository";
 // Services
 import { UserService } from "./services/UserService";
 import { QuestionService } from "./services/QuestionService";
@@ -29,6 +30,7 @@ import { ResponseService } from "./services/ResponseService";
 import { MarksService } from "./services/MarksService";
 import { CriteriaService } from "./services/CriteriaService";
 import { CourseService } from "./services/CourseService";
+import { RubricService } from "./services/RubricService";
 // Controllers
 import { UserController } from "./controllers/UserController";
 import { QuestionController } from "./controllers/QuestionController";
@@ -39,7 +41,7 @@ import { ChatGroupController } from "./controllers/ChatGroupController";
 import { ResponseController } from "./controllers/ResponseController";
 import { MarksController } from "./controllers/MarksController";
 import { CriteriaController } from "./controllers/CriteriaController";
-
+import { RubricController } from "./controllers/RubricController";
 // Authenticator for students
 import { StudentAuthenticatorMiddleware } from "./js/auth/StudentPageAuth";
 export default class App {
@@ -61,6 +63,7 @@ export default class App {
     private marksRepository: MarksRepository;
     private criteriaRepository: CriteriaRepository;
     private courseRepository: CourseRepository;
+    private rubricRepository: RubricRepository;
 
     // Services
     private userService: UserService;
@@ -73,6 +76,7 @@ export default class App {
     private marksService: MarksService;
     private criteriaService: CriteriaService;
     private courseService: CourseService;
+    private rubricService: RubricService;
 
     // Controllers
     private userController: UserController;
@@ -84,6 +88,7 @@ export default class App {
     private chatGroupController: ChatGroupController;
     private marksController: MarksController;
     private criteriaController: CriteriaController;
+    private rubricController: RubricController;
 
     // Socket io things
     private socketIO: SocketIO.Server;
@@ -123,11 +128,12 @@ export default class App {
         this.marksRepository = new MarksRepository(this.database, "uq_marks");
         this.criteriaRepository = new CriteriaRepository(this.database, "uq_criteria");
         this.courseRepository = new CourseRepository(this.database, "uq_course");
+        this.rubricRepository = new RubricRepository(this.database, "uq_rubrics");
 
         // Services
         this.userService = new UserService(this.userRepository, this.quizRepository, this.questionRepository,
             this.chatGroupRepository, this.quizSessionRepository, this.userSessionRepository, this.courseRepository,
-            this.criteriaRepository);
+            this.criteriaRepository, this.rubricRepository);
         this.quizService = new QuizService(this.quizRepository);
         this.questionService = new QuestionService(this.questionRepository);
         this.userSessionService = new UserSessionService(this.userSessionRepository);
@@ -138,6 +144,7 @@ export default class App {
         this.marksService = new MarksService(this.marksRepository, this.quizRepository, this.quizSessionRepository, this.chatGroupRepository, this.userSessionRepository, this.userRepository);
         this.criteriaService = new CriteriaService(this.criteriaRepository);
         this.courseService = new CourseService(this.courseRepository);
+        this.rubricService = new RubricService(this.rubricRepository);
 
         // Controllers
         this.userController = new UserController(this.userService);
@@ -149,6 +156,7 @@ export default class App {
         this.chatGroupController = new ChatGroupController(this.chatGroupService);
         this.marksController = new MarksController(this.marksService);
         this.criteriaController = new CriteriaController(this.criteriaService);
+        this.rubricController = new RubricController(this.rubricService);
         StudentAuthenticatorMiddleware.instantiate(this.userService, this.userSessionService, this.quizSessionService,
                 this.responseService);
 
@@ -161,6 +169,7 @@ export default class App {
         this.chatGroupController.setupRoutes();
         this.marksController.setupRoutes();
         this.criteriaController.setupRoutes();
+        this.rubricController.setupRoutes();
     }
 
     private setupSockets(): void {
@@ -267,6 +276,7 @@ export default class App {
         this.express.use("/chatgroup", this.chatGroupController.getRouter());
         this.express.use("/marks", this.marksController.getRouter());
         this.express.use("/criteria", this.criteriaController.getRouter());
+        this.express.use("/rubric", this.rubricController.getRouter());
     }
 
     // Only login gets affected

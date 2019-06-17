@@ -21,6 +21,7 @@ export interface IApi {
   CHATGROUP: string;
   MARKS: string;
   CRITERIA: string;
+  RUBRIC: string;
 
   request(
     method: string,
@@ -71,7 +72,8 @@ export const API: IApi = {
   RESPONSE: "response/",
   CHATGROUP: "chatgroup/",
   MARKS: "marks/",
-  CRITERIA: "criteria/"
+  CRITERIA: "criteria/",
+  RUBRIC: "rubric/"
 };
 
 export default API;

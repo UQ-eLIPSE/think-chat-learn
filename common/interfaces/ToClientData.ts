@@ -20,6 +20,7 @@ export type IUserSession = DBSchema.IUserSession;
 export type IQuizSession = DBSchema.IQuizSession;
 export type IChatGroup = DBSchema.IChatGroup;
 export type ICriteria = DBSchema.ICriteria;
+export type IRubric = DBSchema.IRubric;
 export type Response = DBSchema.Response;
 // API specific
 
@@ -41,6 +42,7 @@ export interface QuizScheduleDataAdmin {
   quizzes: NetworkData.IQuizOverNetwork[];
   questions: TypeQuestion[];
   criterias: ICriteria[];
+  rubrics: IRubric[];
 }
 
 // Also handles the initial retrieval
