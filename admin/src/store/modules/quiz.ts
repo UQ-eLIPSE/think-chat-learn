@@ -2,7 +2,7 @@ import Vue from "vue";
 import { Commit, ActionTree, GetterTree } from "vuex";
 import { IQuiz, QuizSessionDataObject, IChatGroup, IQuestion,
     IQuestionAnswerPage, ICriteria, IRubric } from "../../../../common/interfaces/ToClientData";
-import { IQuizSession, IChatMessage, Page, ElipssMark, MarkMode, Mark } from "../../../../common/interfaces/DBSchema";
+import { IQuizSession, IChatMessage, Page, Mark } from "../../../../common/interfaces/DBSchema";
 import { PageType } from "../../../../common/enums/DBEnums";
 import { API } from "../../../../common/js/DB_API";
 import { IQuizOverNetwork } from "../../../../common/interfaces/NetworkData";
@@ -19,7 +19,7 @@ type CurrentMarkingContext = {
     currentChatGroupId: string | null,
     currentQuizId: string | null,
     currentQuestionId: string | null,
-    currentMarks: ElipssMark | undefined | null;
+    currentMarks: Mark | undefined | null;
 };
 
 type MarksQuestionUserMap = { [quizSessionId: string]: { [questionId: string]: { [markerId: string]: Mark } } };
@@ -160,7 +160,7 @@ const getters: GetterTree<IState, undefined> = {
         if(!currentChatGroupResponsesMap || !state.currentMarkingContext.currentQuestionId) return [];
         return currentChatGroupResponsesMap[state.currentMarkingContext.currentQuestionId] || [];
     },
-    currentMarks: (state, getters): ElipssMark | undefined | null => {
+    currentMarks: (state, getters): Mark | undefined | null => {
         if(!getters.currentQuizSessionInfoObject) return undefined;
         return getters.currentQuizSessionInfoObject.marks;
     },

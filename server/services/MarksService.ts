@@ -7,9 +7,8 @@ import { UserSessionRepository } from "../repositories/UserSessionRepository";
 import { UserRepository } from "../repositories/UserRepository";
 
 
-import { ElipssMark, Mark } from "../../common/interfaces/DBSchema";
-import { PageType } from "../../common/enums/DBEnums";
-import { IQuestionAnswerPage, IUserSession, IUser } from "../../common/interfaces/ToClientData";
+import { Mark } from "../../common/interfaces/DBSchema";
+import { IUser } from "../../common/interfaces/ToClientData";
 
 export class MarksService extends BaseService<Mark> {
 
@@ -53,15 +52,6 @@ export class MarksService extends BaseService<Mark> {
         return this.marksRepo.findOne(_id);
     }
 
-
-    public async getMarksForQuizSessionQuestion(quizSessionId: string, questionId: string): Promise<Mark[]> {
-
-        return this.marksRepo.findAll({
-            quizSessionId: quizSessionId,
-            questionId: questionId
-        })
-    }
-
     public async getMarksForQuizSession(quizSessionId: string): Promise<Mark[]> {
 
         return this.marksRepo.findAll({
@@ -69,11 +59,11 @@ export class MarksService extends BaseService<Mark> {
         })
     }
 
-    public async createOrUpdateMarks(quizSessionId: string, questionId: string, newMarks: ElipssMark): Promise<boolean> {
+    public async createOrUpdateMarks(quizSessionId: string, questionId: string, newMarks: Mark): Promise<boolean> {
         const currentMarkerMarks = await this.marksRepo.findAll({
-            quizSessionId: quizSessionId,
-            questionId: questionId
+            quizSessionId: quizSessionId
         });
+        
         if (currentMarkerMarks && Array.isArray(currentMarkerMarks)) {
             if (currentMarkerMarks.length > 1) {
                 // Delete unwanted / invalidated marks
@@ -109,11 +99,8 @@ export class MarksService extends BaseService<Mark> {
 
             const quiz = await this.quizRepo.findOne(quizId);
             if(!quiz) throw new Error("Quiz could not be found");
-            const questionPages = (quiz.pages|| []).filter((p) => p.type === PageType.QUESTION_ANSWER_PAGE);
-            const questionIds = questionPages.map((p: IQuestionAnswerPage) => p.questionId).filter((q) => q);
 
-
-            const quizSessionMarkMap: { [quizSessionId: string]: { [questionId: string]: Mark[] } } = {};
+            const quizSessionMarkMap: { [quizSessionId: string]: Mark[] } = {};
             
             const quizSessionIds: string[] = await this.getDistinctQuizSessionForQuiz(quizId);
 
@@ -130,21 +117,9 @@ export class MarksService extends BaseService<Mark> {
             }).toArray();
 
             (marksToFetch || []).forEach((mark) => {
-                if (quizSessionMarkMap[mark.quizSessionId] === undefined) quizSessionMarkMap[mark.quizSessionId] = {};
-                if(quizSessionMarkMap[mark.quizSessionId][mark.questionId] === undefined) quizSessionMarkMap[mark.quizSessionId][mark.questionId] = [];
-                quizSessionMarkMap[mark.quizSessionId][mark.questionId].push(mark);
+                if (quizSessionMarkMap[mark.quizSessionId] === undefined) quizSessionMarkMap[mark.quizSessionId] = [];
+                quizSessionMarkMap[mark.quizSessionId].push(mark);
             });
-
-
-            quizSessionsToFetch.forEach((qs) => {
-                questionIds.forEach((questionId) => {
-                    if(quizSessionMarkMap[qs] === undefined) quizSessionMarkMap[qs] = {};
-                    if(quizSessionMarkMap[qs][questionId] === undefined) {
-                        quizSessionMarkMap[qs][questionId] = [];
-                    }
-                    
-                })
-            })
             
             const quizSessionUserMap = await this.getQuizSessionUserMap(quizSessionsToFetch);
             return { totalQuizSessions: total, marksMap: quizSessionMarkMap, quizSessionUserMap: quizSessionUserMap || null };
@@ -208,13 +183,14 @@ export class MarksService extends BaseService<Mark> {
             return null;
         }
     }
-    public async createOrUpdateMarksMultiple(quizSessionId: string, questionId: string, newMarks: ElipssMark): Promise<boolean> {
+    public async createOrUpdateMarksMultiple(quizSessionId: string, questionId: string, newMarks: Mark): Promise<boolean> {
 
+        // Only need a quiz session + markerID combo to determine a mark
         const currentMarkerMarks = await this.marksRepo.findAll({
             quizSessionId: quizSessionId,
-            questionId: questionId,
             markerId: newMarks.markerId
         });
+
         if (currentMarkerMarks && Array.isArray(currentMarkerMarks)) {
             if (currentMarkerMarks.length > 1) {
                 // Error condition

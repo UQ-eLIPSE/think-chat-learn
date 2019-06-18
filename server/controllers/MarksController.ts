@@ -14,18 +14,6 @@ export class MarksController extends BaseController {
         this.marksService = _marksService;
     }
 
-
-    private getMarksByQuizSessionQuestion(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        if (!req.params.quizSessionId || !req.params.questionId) throw new Error('Parameters not supplied');
-
-        this.marksService.getMarksForQuizSessionQuestion(req.params.quizSessionId, req.params.questionId).then((result) => {
-            res.json(result).status(200);
-        }).catch((e) => {
-            console.log(e);
-            res.sendStatus(400);
-        });
-    }
-
     private getMarksByQuizSession(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
         if (!req.params.quizSessionId) throw new Error('Parameters not supplied');
 
@@ -74,7 +62,6 @@ export class MarksController extends BaseController {
     }
 
     public setupRoutes() {
-        this.router.get("/quizSessionId/:quizSessionId/questionId/:questionId", isAdmin(), this.getMarksByQuizSessionQuestion.bind(this));
         this.router.get("/bulk/quiz", isAdmin(), this.getMarksByQuizId.bind(this));
         this.router.get("/quizSessionId/:quizSessionId", isAdmin(), this.getMarksByQuizSession.bind(this));
         this.router.post("/createOrUpdate/quizSessionId/:quizSessionId/questionId/:questionId", isAdmin(), this.createOrUpdateMarks.bind(this));

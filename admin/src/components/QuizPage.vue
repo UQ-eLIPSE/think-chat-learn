@@ -135,10 +135,8 @@ export default class QuizPage extends Vue {
   private endTime: Date | null = null;
 
   private rubricId: string = "";
-  private simpleMarkConfig: DBSchema.SimpleMarkConfig = this.initSimpleMarkConfig();
-  private elipssMarkConfig: DBSchema.ElipssMarkConfig = this.initElipssMarkConfig();
 
-  private markingConfiguration: DBSchema.MarkingConfiguration | undefined = this.elipssMarkConfig;
+  private markingConfiguration: DBSchema.MarkConfig = this.initMarkConfig();
   // The pages that are wanted to be created. Use
   // a dictionary as we would like to use the temp id
   // instead of index
@@ -147,23 +145,9 @@ export default class QuizPage extends Vue {
   // The internal id of pages created. Tossed away when sending
   private mountedId: number = 0;
 
-
-  get markModes() {
-    return Object.keys(DBSchema.MarkMode);
-  }
-
-  initSimpleMarkConfig(): DBSchema.SimpleMarkConfig {
+  initMarkConfig(): DBSchema.MarkConfig {
     return {
-      type: DBSchema.MarkMode.SIMPLE_MARKING,
       allowMultipleMarkers: false,
-      maximumMarks: 5
-    }
-  }
-
-  initElipssMarkConfig(): DBSchema.ElipssMarkConfig {
-    return {
-      type: DBSchema.MarkMode.ELIPSS_MARKING,
-      allowMultipleMarkers: true,
       maximumMarks: 5
     }
   }
@@ -363,7 +347,7 @@ export default class QuizPage extends Vue {
 
         this.quizTitle = loadedQuiz.title;
         this.rubricId = loadedQuiz.rubricId!;
-        this.markingConfiguration = loadedQuiz.markingConfiguration || this.elipssMarkConfig;
+        this.markingConfiguration = loadedQuiz.markingConfiguration || this.markingConfiguration;
         const emptyDict: { [key: string]: Page } = {};
 
         // At this point, the loaded quiz and their elemenets should not have null values
