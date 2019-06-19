@@ -20,20 +20,6 @@
                   :key="g._id"> Group {{i + 1}} ({{g._id}})</option>
         </select>
       </label>
-      <!-- </div> -->
-      <label v-if="selectedGroup"> Question
-        <select v-model="selectedQuestionId">
-          <option v-for="(qid) in orderedDiscussionPageQuestionIds"
-                  :value="qid"
-                  :key="qid">{{ (getQuestionById(qid) || { title: qid }).title }}</option>
-        </select>
-      </label>
-      <button type="button"
-              v-if="selectedGroup && selectedQuestion"
-              class="primary"
-              @click="displayQuestionContent = !displayQuestionContent">{{ displayQuestionContent? 'Hide': 'Show' }} question content</button>
-
-
       <label v-if="selectedGroup && selectedQuestion">
         Current user
         <select v-model="currentQuizSessionId">

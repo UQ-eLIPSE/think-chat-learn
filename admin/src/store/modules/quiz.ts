@@ -13,7 +13,7 @@ import { EventBus, EventList } from "../../EventBus";
 
 type QuizSessionInfoMap = { [key: string]: QuizSessionDataObject };
 type ChatGroupQuestionMessagesMap = { [chatGroupId: string]: { [questionId: string]: IChatMessage[] } };
-type CurrentMarkingContext = {
+export type CurrentMarkingContext = {
     currentUserId: string | null,
     currentQuizSessionId: string | null,
     currentChatGroupId: string | null,

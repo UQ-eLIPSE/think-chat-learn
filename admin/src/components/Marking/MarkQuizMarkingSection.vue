@@ -1,44 +1,46 @@
 <template>
   <div class="marking-section">
-    <div class="row">
-      <div class="chat-messages">
-        <h3>Chat messages</h3>
-        <div class="chat"
-             v-if="chatMessages && chatMessages.length > 0">
-          <div class="message-container">
-            <div v-for="m in chatMessages"
-                 :key="m._id">
-              <ChatMessage v-if="m"
-                           :selected="messageBelongsTocurrentQuizSessionInfoObject(m.quizSessionId)"
-                           :numeral="getNumeralFromQuizSessionId(m.quizSessionId)"
-                           :content="m.content" />
-            </div>
-          </div>
+    <!-- Highly unlikely we need to re-render. Index as key is fine -->
+    <div v-for="(c, index) in content" :key="index" class="wrapper">
+      <div v-if="c.type === ContentType.PAGE" class="page-container">
+        <h3>Page Content for {{c.title}}</h3>
+        <div v-html="c.page.content"/>
+        <div class="question-wrapper" v-if="c.page.type === PageType.QUESTION_ANSWER_PAGE">
+          <h4>Question Content - {{getQuestionById(c.page.questionId).title}}</h4>
+          <div v-html="getQuestionById(c.page.questionId).content"/>
         </div>
-        <div v-if="!chatMessages || !chatMessages.length > 0">
+      </div>
+      <div v-else-if="c.type === ContentType.RESPONSE" class="responses-container">
+        <h3>Responses</h3>
+        <div class="responses message-container"
+          v-if="c.responses && c.responses.length > 0">
+          <ChatMessage v-for="r in c.responses"
+          :key="r._id"
+          :selected="responseBelongsTocurrentQuizSessionInfoObject(r.quizSessionId)"
+          :numeral="getNumeralFromQuizSessionId(r.quizSessionId)"
+          :content="r.content" />
+        </div>
+        <div v-if="!c.responses || !c.responses.length > 0">
+          <span>No responses available</span>
+        </div>        
+      </div>
+      <div v-else-if="c.type === ContentType.CHAT" class="chat-messages">
+        <h3>Chat Messages</h3>
+        <div class="message-container"
+          v-if="c.messages && c.messages.length > 0">
+          <ChatMessage v-for="m in c.messages"
+          :key="m._id"
+          :selected="responseBelongsTocurrentQuizSessionInfoObject(m.quizSessionId)"
+          :numeral="getNumeralFromQuizSessionId(m.quizSessionId)"
+          :content="m.content" />
+        </div>
+        <div v-if="!c.messages || !c.messages.length">
           <span>No chat messages available</span>
         </div>
       </div>
-
-      <div class="column">
-        <div class="responses-container">
-          <h3>Responses</h3>
-          <div class="responses message-container"
-               v-if="currentChatGroupResponses && currentChatGroupResponses.length > 0">
-            <ChatMessage v-for="r in currentChatGroupResponses"
-                         v-if="r"
-                         :key="r._id"
-                         :selected="responseBelongsTocurrentQuizSessionInfoObject(r.quizSessionId)"
-                         :numeral="getNumeralFromQuizSessionId(r.quizSessionId)"
-                         :content="r.content" />
-          </div>
-
-          <div v-if="!currentChatGroupResponses || !currentChatGroupResponses.length > 0">
-            <span>No responses available</span>
-          </div>
-        </div>
-        <MarkingComponent class="marking-component"></MarkingComponent>
-      </div>
+    </div>
+    <div class="row">
+      <MarkingComponent class="marking-component"></MarkingComponent>
     </div>
 
 
@@ -47,10 +49,42 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from "vue-property-decorator";
-import { IQuiz, QuizScheduleDataAdmin, Page, IDiscussionPage, IQuestion, IQuestionAnswerPage, IQuizSession, IUserSession, IUser, IChatGroup, Response, QuizSessionDataObject } from "../../../../common/interfaces/ToClientData";
+import { IQuiz, QuizScheduleDataAdmin, Page, IDiscussionPage, IQuestion,
+  IQuestionAnswerPage, IQuizSession, IUserSession, IUser, IChatGroup,
+  Response, QuizSessionDataObject, IPage, IChatMessage } from "../../../../common/interfaces/ToClientData";
 import { PageType } from "../../../../common/enums/DBEnums";
 import ChatMessage from './ChatMessage.vue';
 import MarkingComponent from './MarkingComponent.vue';
+import { CurrentMarkingContext } from "../../store/modules/quiz";
+
+// Since we are dumping the entire page here, we need to know what content there is to render
+enum ContentType {
+  PAGE = "PAGE",
+  RESPONSE = "RESPONSE",
+  CHAT = "CHAT"
+}
+
+interface Content {
+  type: ContentType;
+}
+
+interface PageContent extends Content {
+  type: ContentType.PAGE;
+  page: IPage;
+}
+
+interface ResponseContent extends Content {
+  type: ContentType.RESPONSE;
+  responses: Response[];
+}
+
+interface ChatContent extends Content {
+  type: ContentType.CHAT;
+  messages: IChatMessage[];
+}
+
+type GenericContent = PageContent | ResponseContent | ChatContent;
+
 
 @Component({
   components: {
@@ -60,11 +94,19 @@ import MarkingComponent from './MarkingComponent.vue';
 })
 export default class MarkQuizMarkingSection extends Vue {
 
+  get ContentType() {
+    return ContentType;
+  }
+
+  get PageType() {
+    return PageType;
+  }
+
   get currentQuizSessionInfoObject(): QuizSessionDataObject | undefined {
     return this.$store.getters.currentQuizSessionInfoObject;
   }
 
-  get currentMarkingContext() {
+  get currentMarkingContext(): CurrentMarkingContext {
     return this.$store.getters.currentMarkingContext;
   }
 
@@ -72,9 +114,14 @@ export default class MarkQuizMarkingSection extends Vue {
     if (!this.$store.getters.currentChatGroupQuestionMessages) return [];
     return this.$store.getters.currentChatGroupQuestionMessages;
   }
-  get currentChatGroupResponses() {
-    return this.$store.getters.currentChatGroupQuestionResponses || [];
+
+  get currentChatGroupResponsesMap() {
+    return this.$store.getters.currentChatGroupResponsesMap || [];
   }
+  get currentChatGroupQuestionMessageMap() {
+    return this.$store.getters.currentChatGroupQuestionMessageMap || [];
+  }
+
   messageBelongsTocurrentQuizSessionInfoObject(qid: string): boolean {
     if (!this.currentQuizSessionInfoObject || !this.currentQuizSessionInfoObject.quizSession) return false;
     return (this.currentQuizSessionInfoObject.quizSession._id === qid);
@@ -92,7 +139,60 @@ export default class MarkQuizMarkingSection extends Vue {
     const ind = this.currentChatGroup.quizSessionIds.indexOf(qid);
     if (ind === -1) return 1;
     return ind + 1;
+  }
 
+  getQuestionById(id: string): IQuestion | undefined {
+    return this.$store.getters.getQuestionById(id);
+  }
+
+  // Current quiz for marking purposes
+  get currentQuiz(): IQuiz {
+    return this.$store.getters.currentQuiz;
+  }
+
+  // This computes the order in which the quiz will be rendered.
+  get content(): GenericContent[] {
+    // Traverse the quiz to grab the page
+    const output: GenericContent[] = [];
+    this.currentQuiz.pages!.forEach((page) => {
+      // Push the page regardless
+      output.push({
+        type: ContentType.PAGE,
+        page: page
+      });
+
+      if (page.type === PageType.QUESTION_ANSWER_PAGE) {
+        // Fetch the appropiate response
+
+        if (this.currentQuizSessionInfoObject) {
+          const maybeResponses = this.currentChatGroupResponsesMap[page.questionId];
+          if (maybeResponses) {
+            output.push({
+              type: ContentType.RESPONSE,
+              responses: maybeResponses
+            });
+          }
+        }
+      } else if (page.type === PageType.DISCUSSION_PAGE) {
+        if (this.currentChatGroupQuestionMessageMap) {
+          const maybeChat = this.currentChatGroupQuestionMessageMap[page.questionId];
+          if (maybeChat) {
+            output.push({
+              type: ContentType.CHAT,
+              messages: maybeChat
+            });
+          }
+        }
+      }
+    });
+    return output;
+  }
+
+  // Basic filtered content if needed
+  private getContentByType(type: ContentType) {
+    return this.content.filter((content) => {
+      return content.type === type;
+    });
   }
 }
 </script>

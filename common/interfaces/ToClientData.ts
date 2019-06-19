@@ -19,6 +19,7 @@ export type IDiscussionPage = DBSchema.IDiscussionPage;
 export type IUserSession = DBSchema.IUserSession;
 export type IQuizSession = DBSchema.IQuizSession;
 export type IChatGroup = DBSchema.IChatGroup;
+export type IChatMessage = DBSchema.IChatMessage;
 export type ICriteria = DBSchema.ICriteria;
 export type IRubric = DBSchema.IRubric;
 export type Response = DBSchema.Response;

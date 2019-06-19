@@ -1,9 +1,10 @@
 <template>
     <!--  v-if="marksArray && q && markingConfiguration" -->
     <div
-         class="quiz-mark-viewer">
+        v-if="q && markingConfiguration"
+        class="quiz-mark-viewer">
         <h1>Quiz marks</h1>
-        <!--<h3>{{ q.title }}</h3>
+        <h3>{{ q.title }}</h3>
         <span>Timings: {{ new Date(q.availableStart).toString() }} - {{ new Date(q.availableEnd).toString() }}</span>
 
         <div class="controls">
@@ -38,27 +39,21 @@
                 <tr class="row-heading">
                     <td>#</td>
                     <td>Username</td>
-                    <td>Question ID</td>
                     <td>Marked by</td>
-                    <template v-if="isElipssMark">
+                    <template>
                         <td :key="v"
-                            v-for="v in elipssMarkHeadings">{{ v }}</td>
+                            v-for="v in criteriaHeadings">{{ v }}</td>
                     </template>
-                    <template v-if="isSimpleMark">
-                        <td>Mark</td>
-                    </template>
-
                 </tr>
             </thead>
-            <template v-if="isElipssMark">
-
-                <tbody v-for="(marksForQuizSession, y) in marksArray"
-                       :id="marksForQuizSession.quizSessionId + y.toString()"
-                       :key="marksForQuizSession.quizSessionId"
+            <template>
+                <tbody v-for="(marksForQuizSession, y, index) in marksMap"
+                       :id="y"
+                       :key="y"
                        class="question-row-group">
 
                     <tr class="question-id-row">
-                        <td>{{ ((pagination.currentPage-1) * pagination.perPage) + (y + 1) }}</td>
+                        <td>{{ ((pagination.currentPage-1) * pagination.perPage) + (index + 1) }}</td>
                         <td colspan="100%">
                             Username: {{ marksForQuizSession[0].username }}
                         </td>
@@ -68,45 +63,15 @@
                         :key="m.quizSessionId + marksForQuizSession[0].questionId + x">
                         <td></td>
                         <td>{{ (m || { username: 'NA'}).username || 'x' }}</td>
-                        <td>{{ m.questionId }}</td>
                         <td>{{ m.markerUsername }}</td>
-                        <td v-for="(v, i) in Object.keys(m.mark.value)"
-                            :key="m.quizSessionId + v + i">
-                            {{ m.mark.value[v] }}
+                        <td v-for="(mark, index) in m.marks"
+                            :key="m.quizSessionId + index">
+                            {{ mark.value }}
                         </td>
                     </tr>
                 </tbody>
             </template>
-
-            <template v-if="isSimpleMark">
-                <tbody v-for="(marksForQuizSession, y) in marksArray"
-                       :id="marksForQuizSession.quizSessionId + y.toString()"
-                       :key="marksForQuizSession.quizSessionId"
-                       class="question-row-group">
-
-                    <tr class="question-id-row">
-                        <td>{{ ((pagination.currentPage-1) * pagination.perPage) + (y + 1) }}</td>
-                        <td colspan="100%" v-show="marksForQuizSession[0].username">
-                            Username: {{ marksForQuizSession[0].username }}
-                        </td>
-                    </tr>
-                    <tr v-for="(m, x) in marksForQuizSession"
-                        :class="getMarkRowClass(m)"
-                        :key="m.quizSessionId + marksForQuizSession[0].questionId + x">
-                        <td></td>
-                        <td>{{ (m || { username: 'NA'}).username || 'x' }}</td>
-                        <td>{{ m.questionId }}</td>
-                        <td>{{ m.markerUsername }}</td>
-                        <td :key="m.quizSessionId + 'simple-mark'">{{ m.mark.value }}</td>
-                        <!-- //<td v-for="(v, i) in Object.keys(m.mark.value)"
-                                    :key="m.quizSessionId + v + i">
-                                    {{ m.mark.value[v] }}
-                                </td>
-                    </tr>
-                </tbody>
-            </template>
-        </table>
-        -->
+        </table>    
     </div>
 </template>
 
@@ -132,7 +97,7 @@ Component.registerHooks([
     }
 })
 export default class QuizMarkViewer extends Vue {
-    /*private marksMap: { [quizSessionId: string]: Schema.Mark[] } = {};
+    private marksMap: { [quizSessionId: string]: Schema.Mark[] } = {};
     private quizSessionUserMap: { [quizSessionId: string]: { userSessionId: string, user: IUser } } = {};
 
     private numberOfPaginationPerPageValues: number[] = [5, 10, 25, 50, 100];
@@ -192,7 +157,7 @@ export default class QuizMarkViewer extends Vue {
         return discussionPageQuestionIds;
     }
 
-    getEmptyMarkForUserByMarkType(quizSessionId: string, questionId: string, username: string, userId: string): Schema.Mark {
+    getEmptyMarkForUser(quizSessionId: string, username: string, userId: string): Schema.Mark {
         return {
             marks: [],
             feedback: "",
@@ -206,37 +171,48 @@ export default class QuizMarkViewer extends Vue {
         };
     }
 
-    generateMarksArrayForMap(map: { [quizSessionId: string]: { [questionId: string]: Schema.Mark[] } }, quizSessionUserMap: { [quizSessionId: string]: { userSessionId: string, user: IUser } }) {
-        let marks: Schema.Mark[][] = [];
-        if (Object.keys(quizSessionUserMap).length === 0) return marks;
-        const quizSessionIds = Object.keys(map);
-
-        quizSessionIds.forEach((quizSessionId) => {
-            let quizSessionMarks: Schema.Mark[] = []
-            const marksArrayPerQuestion = Object.keys(map[quizSessionId]);
-
-            marksArrayPerQuestion.forEach((questionId) => {
-                if (!map[quizSessionId][questionId] || map[quizSessionId][questionId].length === 0) {
-                    // Push empty mark
-                    const username = (quizSessionUserMap[quizSessionId].user || { username: 'NA' }).username || 'NA';
-                    const userId = (quizSessionUserMap[quizSessionId].user || { _id: 'NA' })._id || 'NA';
-                    const emptyMark = this.getEmptyMarkForUserByMarkType(quizSessionId, questionId, username, userId);
-                    if (emptyMark) quizSessionMarks.push(emptyMark);
-                } else {
-                    quizSessionMarks.push(...map[quizSessionId][questionId]);
-                }
-
-
-            })
-            marks.push(quizSessionMarks);
-        });
-
-        return marks;
+    get rubrics(): Schema.IRubric[] {
+        return this.$store.getters.rubrics;
     }
-    get marksArray() {
-        const map = this.marksMap;
-        const quizSessionUserMap = this.quizSessionUserMap;
-        return this.generateMarksArrayForMap(map, quizSessionUserMap);
+
+    get associatedRubric(): Schema.IRubric | undefined {
+        if (this.q && this.q != undefined) {
+            return this.rubrics.find((rubric) => {
+                return rubric._id === this.q!.rubricId;
+            });
+        } else {
+            return undefined;
+        }
+    }
+
+    get criterias(): Schema.ICriteria[] {
+        return this.$store.getters.criterias;
+    }
+
+    // The criteria associated with the quiz
+    get associatedCriterias(): Schema.ICriteria[] {
+      if (this.associatedRubric) {
+        return this.associatedRubric.criterias.reduce((arr: Schema.ICriteria[], id) => {
+          const maybeCriteria = this.criterias.find((criteria) => {
+            return criteria._id === id;
+          });
+
+          if (maybeCriteria) {
+            arr.push(maybeCriteria);
+          }
+
+          return arr;
+        }, []);
+      } else {
+        return [];
+      }
+    }
+
+    get criteriaHeadings() {
+        return this.associatedCriterias.reduce((arr: string[], value) => {
+            arr.push(value.name);
+            return arr;
+        }, []);
     }
 
     get chatGroups() {
@@ -272,42 +248,65 @@ export default class QuizMarkViewer extends Vue {
         await this.fetchAllMarksForQuiz(this);
     }
 
-    getOrderedMarkValuesArray(m: Schema.Mark) {
-        const markValues: string[] = [];
-        const valueObject = this.emptyElipssMarkValues.value;
-        this.elipssMarkHeadings.forEach((h) => {
-            const v: any = m.mark.value[h] ? (m.mark.value[h as any] as number).toString() : '-'
-            markValues.push(v)
-        });
-        return markValues;
+    getOrderedMarkValuesArray(m: Schema.Mark): string[] {
+        if (m) {
+            const markValues: string[] = [];
+
+            // TODO use the associated headings
+            // For each criteria, fetch the mark or - if there is none
+            return this.associatedCriterias.reduce((arr: string[], criteria) => {
+                const markIndex = m.marks.findIndex((mark) => {
+                    return mark.criteriaId === criteria._id;
+                });
+
+                // Acquire the mark and push it. If the index is invalid, place a - instead
+                if (markIndex !== -1) {
+                    arr.push(m.marks[markIndex].value!.toString());
+                } else {
+                    arr.push('-');
+                }
+                return arr;
+            }, []);
+        } else {
+            return [];
+        }
     }
 
+
     // TODO: Add types for maps
-    populateMarksRows(csvRowArray: string[], DELIMITER: string, marksMap: any, quizSessionUserMap: any) {
+    populateMarksRows(csvRowArray: string[], DELIMITER: string, marksMap: { [key: string]: Schema.Mark[] }) {
         // Push Header info
-        const headRow = ["Username", "Quiztion_ID", "Marked_By", ...this.elipssMarkHeadings].join(DELIMITER);
+        const headRow = ["Username", "Marked_By", ...this.criteriaHeadings].join(DELIMITER);
         csvRowArray.push(headRow);
 
-        const marksArray = this.generateMarksArrayForMap(marksMap, quizSessionUserMap)
-        marksArray.forEach((quizSessionMarksArray) => {
-            quizSessionMarksArray.forEach((m: Schema.Mark) => {
+        Object.keys(marksMap).forEach((key) => {
+            const marksArr = marksMap[key];
+            marksArr.forEach((mark) => {
                 const csvRow: string[] = [];
-                csvRow.push(m.username || 'NA', m.quizId || 'NA', m.markerUsername || 'NA', ...this.getOrderedMarkValuesArray(m as Schema.Mark))
-
+                csvRow.push(mark.username || 'NA',
+                    mark.markerUsername || 'NA',
+                    ...this.getOrderedMarkValuesArray(mark));
                 csvRowArray.push(csvRow.join(DELIMITER));
-            })
-        })
+                // For each marker, 
+            });
+
+        });
+
     }
 
     async exportToCsv() {
-        const { totalQuizSessions, marksMap, quizSessionUserMap } = await API.request(API.GET, API.MARKS + `bulk/quiz?q=${this.$route.params.id}&c=1&p=${Number.MAX_SAFE_INTEGER}`, {})
+        const { totalQuizSessions, marksMap, quizSessionUserMap } : {
+            totalQuizSessions: any,
+            marksMap: { [key: string]: Schema.Mark[] },
+            quizSessionUserMap: any
+        } = await API.request(API.GET, API.MARKS + `bulk/quiz?q=${this.$route.params.id}&c=1&p=${Number.MAX_SAFE_INTEGER}`, {})
 
         const DELIMITER = ","
 
         const csvRowArray: string[] = [];
         if (!this.markingConfiguration) return;
 
-        this.populateMarksRows(csvRowArray, DELIMITER, marksMap, quizSessionUserMap);
+        this.populateMarksRows(csvRowArray, DELIMITER, marksMap);
         const csvFileContents = "data:text/csv;charset=utf-8," + csvRowArray.join("\n");
 
         var encodedUri = encodeURI(csvFileContents);
@@ -316,7 +315,7 @@ export default class QuizMarkViewer extends Vue {
         link.setAttribute("download", `${(this.q || { title: 'marks' }).title}_${Date.now().toString()}.csv`);
         document.body.appendChild(link); // Required for FF
         link.click();
-    }*/
+    }
 }
 </script>
 <style lang="scss" scoped>

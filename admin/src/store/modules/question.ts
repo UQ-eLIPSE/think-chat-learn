@@ -25,7 +25,14 @@ const mutationKeys = {
 const getters = {
     questions: (): IQuestion[] | null => {
         return state.questions;
-    }
+    },
+    getQuestionById: () => {
+        return (id: string) => {
+            return state.questions.find((question) => {
+                return question._id === id;
+            });
+        }
+    } 
 };
 const actions = {
     createQuestion({ commit }: {commit: Commit}, data: IQuestion) {

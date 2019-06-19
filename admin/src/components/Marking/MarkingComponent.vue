@@ -77,14 +77,14 @@ export default class MarkingComponent extends Vue {
                 if (!marks) throw new Error();
                 // If there are any missing marks, add default values or negative values?
                 const missingCriterias = this.associatedCriterias.filter((criteria) => {
-                  return marks.marks.findIndex((mark) => {
+                  return marks!.marks.findIndex((mark) => {
                     return criteria._id === mark.criteriaId;
                   }) === -1;
                 });
 
                 missingCriterias.forEach((mark) => {
                   marks!.marks.push({
-                    criteriaId: mark._id,
+                    criteriaId: mark._id!,
                     value: 0
                   });
                 });
