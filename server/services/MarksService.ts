@@ -8,7 +8,9 @@ import { UserRepository } from "../repositories/UserRepository";
 
 
 import { Mark } from "../../common/interfaces/DBSchema";
-import { IUser } from "../../common/interfaces/ToClientData";
+import { IUser, IQuiz } from "../../common/interfaces/ToClientData";
+import { RubricRepository } from "../repositories/RubricRepository";
+import { CriteriaRepository } from "../repositories/CriteriaRepository";
 
 export class MarksService extends BaseService<Mark> {
 
@@ -18,9 +20,12 @@ export class MarksService extends BaseService<Mark> {
     protected readonly chatGroupRepo: ChatGroupRepository;
     protected readonly userSessionRepo: UserSessionRepository;
     protected readonly userRepo: UserRepository;
+    protected readonly rubricRepo: RubricRepository;
+    protected readonly criteriaRepo: CriteriaRepository;
 
-
-    constructor(_marksRepo: MarksRepository, quizRepo: QuizRepository, _quizSessionRepo: QuizSessionRepository, chatGroupRepository: ChatGroupRepository, userSessionRepo: UserSessionRepository, userRepo: UserRepository) {
+    constructor(_marksRepo: MarksRepository, quizRepo: QuizRepository, _quizSessionRepo: QuizSessionRepository,
+            chatGroupRepository: ChatGroupRepository, userSessionRepo: UserSessionRepository, userRepo: UserRepository,
+            _rubricRepository: RubricRepository, _criteriaRepository: CriteriaRepository) {
         super();
         this.quizRepo = quizRepo;
         this.quizSessionRepo = _quizSessionRepo;
@@ -28,6 +33,45 @@ export class MarksService extends BaseService<Mark> {
         this.chatGroupRepo = chatGroupRepository;
         this.userRepo = userRepo;
         this.userSessionRepo = userSessionRepo;
+        this.rubricRepo = _rubricRepository;
+        this.criteriaRepo = _criteriaRepository;
+    }
+
+    // Quick fetchers for the rubric and criteria information
+    private async generateEmptyMarks(quiz: IQuiz, quizSessionIds: string[],
+        quizUserDict: {[key: string]: { userSessionId: string | null, user: IUser | null }},
+        destinationDict: {[key: string]: Mark[]}) {
+        // Acquire the rubric and criterias
+        if (!quiz.rubricId) {
+            throw new Error(`Invalid rubric id of quiz ${quiz._id}`);
+        }
+
+        const referredRubric = await this.rubricRepo.findOne({
+            _id: quiz.rubricId
+        });
+
+        if (!referredRubric) {
+            throw new Error(`No rubric found of id ${quiz.rubricId}`);
+        }
+
+        const referredCriteria = await this.criteriaRepo.findByIdArray(referredRubric.criterias);
+        // Then populate the marks
+        quizSessionIds.forEach((quizSessionId) => {
+            const tempMark: Mark = {
+                marks: [],
+                feedback: "",
+                quizSessionId,
+                markerId: null,
+                userId: quizUserDict[quizSessionId].user!._id,
+                username: quizUserDict[quizSessionId].user!.username,
+                markerUsername: undefined,
+                timestamp: null,
+                quizId: null,    
+            }
+
+            destinationDict[quizSessionId] = [tempMark];
+        });
+        return destinationDict;
     }
 
     // Basic CRUD implementations
@@ -100,7 +144,7 @@ export class MarksService extends BaseService<Mark> {
             const quiz = await this.quizRepo.findOne(quizId);
             if(!quiz) throw new Error("Quiz could not be found");
 
-            const quizSessionMarkMap: { [quizSessionId: string]: Mark[] } = {};
+            let quizSessionMarkMap: { [quizSessionId: string]: Mark[] } = {};
             
             const quizSessionIds: string[] = await this.getDistinctQuizSessionForQuiz(quizId);
 
@@ -122,6 +166,14 @@ export class MarksService extends BaseService<Mark> {
             });
             
             const quizSessionUserMap = await this.getQuizSessionUserMap(quizSessionsToFetch);
+            const fetchedQuizSessionIds = Object.keys(quizSessionMarkMap);
+            const missingQuizSessionIds = quizSessionsToFetch.filter((quizSession) => {
+                return !fetchedQuizSessionIds.find((fetchedId) => {
+                    return fetchedId === quizSession;
+                });
+            });
+
+            quizSessionMarkMap = await this.generateEmptyMarks(quiz, missingQuizSessionIds, quizSessionUserMap, quizSessionMarkMap);
             return { totalQuizSessions: total, marksMap: quizSessionMarkMap, quizSessionUserMap: quizSessionUserMap || null };
     }
 
@@ -136,8 +188,6 @@ export class MarksService extends BaseService<Mark> {
             if(quizSessionMap[s._id!] === undefined) quizSessionMap[s._id!] = { userSessionId: null, user: null};
             quizSessionMap[s._id!].userSessionId = s.userSessionId!;
         });
-
-
 
         const userSessionIds = quizSessions.filter(q => q.userSessionId).map((s) => s.userSessionId!)
         const userSessions = await this.userSessionRepo.findByIdArray(userSessionIds);
@@ -154,6 +204,7 @@ export class MarksService extends BaseService<Mark> {
 
         return quizSessionMap;
     }
+
     public async getMarksForQuiz(quizId: string) {
         try {
             const quizSessionMarkMap: { [quizSessionId: string]: Mark[] } = {};
@@ -175,14 +226,13 @@ export class MarksService extends BaseService<Mark> {
                 })
             }));
 
-
-
             return quizSessionMarkMap;
 
         } catch (e) {
             return null;
         }
     }
+
     public async createOrUpdateMarksMultiple(quizSessionId: string, questionId: string, newMarks: Mark): Promise<boolean> {
 
         // Only need a quiz session + markerID combo to determine a mark

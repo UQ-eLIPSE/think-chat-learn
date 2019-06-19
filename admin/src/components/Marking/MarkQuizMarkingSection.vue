@@ -3,7 +3,7 @@
     <!-- Highly unlikely we need to re-render. Index as key is fine -->
     <div v-for="(c, index) in content" :key="index" class="wrapper">
       <div v-if="c.type === ContentType.PAGE" class="page-container">
-        <h3>Page Content for {{c.title}}</h3>
+        <h3>Page Content for {{c.page.title}}</h3>
         <div v-html="c.page.content"/>
         <div class="question-wrapper" v-if="c.page.type === PageType.QUESTION_ANSWER_PAGE">
           <h4>Question Content - {{getQuestionById(c.page.questionId).title}}</h4>
@@ -11,7 +11,7 @@
         </div>
       </div>
       <div v-else-if="c.type === ContentType.RESPONSE" class="responses-container">
-        <h3>Responses</h3>
+        <h3>Response</h3>
         <div class="responses message-container"
           v-if="c.responses && c.responses.length > 0">
           <ChatMessage v-for="r in c.responses"

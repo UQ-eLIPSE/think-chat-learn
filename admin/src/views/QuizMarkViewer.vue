@@ -62,8 +62,9 @@
                         :class="getMarkRowClass(m)"
                         :key="m.quizSessionId + marksForQuizSession[0].questionId + x">
                         <td></td>
+                        <!-- Username shouldn't be nully but markedUser could due to padding -->
                         <td>{{ (m || { username: 'NA'}).username || 'x' }}</td>
-                        <td>{{ m.markerUsername }}</td>
+                        <td v-if="m.markerUsername">{{ m.markerUsername }}</td>
                         <td v-for="(mark, index) in m.marks"
                             :key="m.quizSessionId + index">
                             {{ mark.value }}
@@ -283,8 +284,8 @@ export default class QuizMarkViewer extends Vue {
             const marksArr = marksMap[key];
             marksArr.forEach((mark) => {
                 const csvRow: string[] = [];
-                csvRow.push(mark.username || 'NA',
-                    mark.markerUsername || 'NA',
+                csvRow.push(mark.username || 'N/A',
+                    mark.markerUsername || 'N/A',
                     ...this.getOrderedMarkValuesArray(mark));
                 csvRowArray.push(csvRow.join(DELIMITER));
                 // For each marker, 
