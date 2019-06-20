@@ -1,42 +1,45 @@
 <template>
-    <div class="container">
-        <h1 class="moochat-name">Rubric Editor</h1>
-        <h2 v-if="id">Editing mode</h2>
-        <form>
-            <span>Rubric Title:</span><input v-model="currentRubric.name" type="text"/>
-            <br/>
-            <div v-for="(setCriteria, index) in mountedCriteriasId" :key="index" class="criteria">
-                <span>Settings for Criteria {{index + 1}}</span>
-                <!-- Since we can't actually set the criteria directly, we assign it key-wise instead -->
-                <!-- Also note that the name would not change, meanining re-render logic isn't affected -->
-                <select v-model="mountedCriteriasId[index]">
-                    <option v-for="criteria in criterias" :key="criteria._id" :value="criteria._id">
-                        {{criteria.name}}
-                    </option>
-                </select>
-                <button type="button" @click="deleteCriteria(index)">Remove Criteria Criteria</button>
-            </div>
-            <button type="button" @click="appendRubric()">Add Criteria</button>
-            <button type="button" @click="sendRubric()">{{id ? "Edit Rubric" : "Create Rubric"}}</button>
-        </form>
-    </div>
+    <v-container>
+        <v-form>
+            <v-container fluid grid-list-md>
+                <h1 class="moocchat-title">Rubric Editor</h1>
+                <h2 class="moocchat-title" v-if="id">Editing mode</h2>                
+                <v-layout row wrap>
+                    <v-flex xs12>
+                        <b-field label="Set the title of the rubric">
+                            <v-text-field label="Rubric Name" v-model="currentRubric.name" outline/>
+                        </b-field>
+                    </v-flex>
+                    <v-flex v-for="(setCriteria, index) in mountedCriteriasId" :key="index" class="criteria" xs12>
+                        <v-card>
+                            <v-card-title>
+                                <b-field :label="`Choose Criteria ${index + 1}`"/>
+                            </v-card-title>
+                            <!-- Since we can't actually set the criteria directly, we assign it key-wise instead -->
+                            <!-- Also note that the name would not change, meanining re-render logic isn't affected -->
+                            <v-overflow-btn :items="criteriaDropDown" v-model="mountedCriteriasId[index]" outline/>
+                            <v-btn type="button" @click="deleteCriteria(index)">Remove Criteria Criteria</v-btn>
+                        </v-card>
+                    </v-flex>
+                    <v-btn type="button" @click="appendRubric()">Add Criteria</v-btn>
+                    <v-btn type="button" @click="sendRubric()">{{id ? "Edit Rubric" : "Create Rubric"}}</v-btn>
+                </v-layout>
+            </v-container>
+        </v-form>
+    </v-container>
 </template>
 
 <style scoped>
-    .criteria {
-        box-shadow: 1px 1px 1px #888888;
-        margin-bottom: 12px;        
-    }
-
-    .container button:hover {
-        background-color: #51247a;
-        transition: background-color 1s ease-out;
-    }
 </style>
 
 <script lang="ts">
 import { Vue, Component, Prop } from "vue-property-decorator";
 import { IRubric, ICriteria } from "../../../common/interfaces/ToClientData";
+
+interface DropDownConfiguration {
+  text: string,
+  value: string,
+}
 
 @Component({})
 export default class RubricEditor extends Vue {
@@ -60,6 +63,15 @@ export default class RubricEditor extends Vue {
     
     get criterias(): ICriteria[] {
         return this.$store.getters.criterias;
+    }
+
+    get criteriaDropDown(): DropDownConfiguration[] {
+        return this.criterias.map((criteria) => {
+            return {
+                text: criteria.name ? criteria.name : "",
+                value: criteria._id ? criteria._id : ""
+            };
+        });
     }
 
     get rubrics(): IRubric[] {

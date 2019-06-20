@@ -1,16 +1,25 @@
 <template>
-    <div class="container">
-        <h1 class="moochat-name">Criteria Editor</h1>
-        <h2 v-if="currentCriteria._id">Editing mode</h2>
-        <form>
-            <span>Criteria Title:</span><input v-model="currentCriteria.name" type="text"/>
-            <br/>
-            <span>Criteria Description:</span>
-            <br/><textarea v-model="currentCriteria.description" :rows="4" :cols="30"/>
-            <br/>
-            <button type="button" @click="sendCriteria()">{{currentCriteria._id ? "Edit Criteria" : "Create Criteria"}}</button>
-        </form>
-    </div>
+    <v-container>
+        <v-form>
+            <v-container fluid grid-list-md>
+                <h1 class="moochat-name">Criteria Editor</h1>
+                <h2 v-if="currentCriteria._id">Editing mode</h2>
+                <v-layout row wrap>
+                    <v-flex xs12>
+                        <b-field label="Set the title of the criteria">
+                            <v-text-field label="Criteria Name" v-model="currentCriteria.name" outline/>
+                        </b-field>
+                    </v-flex>
+                    <v-flex xs12>
+                        <b-field label="Describe the criteria">
+                            <v-text-field label="Criteria Description" v-model="currentCriteria.description" outline/>
+                        </b-field>
+                    </v-flex>                    
+                    <v-btn type="button" @click="sendCriteria()">{{currentCriteria._id ? "Edit Criteria" : "Create Criteria"}}</v-btn>
+                </v-layout>
+            </v-container>
+        </v-form>
+    </v-container>
 </template>
 
 <style scoped>

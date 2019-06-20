@@ -4,25 +4,39 @@
         <router-link tag="button"
                      class="primary"
                      to="/quizPage">Add Quiz</router-link>
-        <div v-for="quiz in quizzes"
-             :key="quiz._id"
-             class="quiz">
-            <span>{{quiz.title}}</span>
-            <div class="controls">
-                <button type="button"
-                        class="primary"
-                        @click="editQuiz(quiz._id)">Edit</button>
-                <button type="button"
-                        class="primary"
-                        @click="deleteQuiz(quiz._id)">Delete</button>
-            </div>
-        </div>
+        <v-container fluid grid-list-md>
+            <v-layout row wrap>
+                <v-flex v-for="quiz in quizzes"
+                    :key="quiz._id"
+                    xs12>
+                    <v-card>
+                        <v-card-title><h3>Quiz Title: {{quiz.title}}</h3></v-card-title>
+                        <div class="date-text">
+                            <span><b>Start Datetime:</b> {{quiz.availableStart.toLocaleString()}} - <b>End Datetime:</b> {{quiz.availableEnd.toLocaleString()}}</span>
+                        </div>
+                        <div class="controls">
+                            <v-btn type="button"
+                                    class="primary"
+                                    @click="editQuiz(quiz._id)">Edit</v-btn>
+                            <v-btn type="button"
+                                    class="primary"
+                                    @click="deleteQuiz(quiz._id)">Delete</v-btn>
+                        </div>
+                    </v-card>
+                </v-flex>
+            </v-layout>
+        </v-container>
     </div>
 </template>
 
 <style scoped>
 .quiz {
     border-bottom: 1px solid black;
+}
+
+.date-text {
+    display: flex;
+    margin: 16px;
 }
 
 .controls {

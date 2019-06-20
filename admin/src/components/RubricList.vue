@@ -1,27 +1,30 @@
 <template>
-    <div class="container">
-        <h1 class>Rubric List</h1>
-        <router-link tag="button" to="/rubricEditor">Add Rubric</router-link>
-        <div v-for="rubric in rubrics" :key="rubric._id" class="rubric">
-            <span><b>Rubric Name</b>: {{rubric.name}}</span>
-            <br/>
-            <button type="button" @click="editRubric(rubric._id)">Edit</button>
-            <br/>
-            <button type="button" @click="deleteRubric(rubric._id)">Delete</button>            
-        </div>        
-    </div>
+    <v-container>
+        <h1 class="moocchat-name">Rubric List</h1>
+        <router-link tag="button" class="primary" to="/rubricEditor">Add Rubric</router-link>
+        <v-container fluid grid-list-md>
+            <v-layout row wrap>
+                <v-flex v-for="rubric in rubrics"
+                    :key="rubric._id"
+                    xs12>
+                    <v-card>
+                        <v-card-title><h3>Rubric Name: {{rubric.name}}</h3></v-card-title>
+                        <div class="controls">
+                            <v-btn type="button"
+                                    class="primary"
+                                    @click="editRubric(rubric._id)">Edit</v-btn>
+                            <v-btn type="button"
+                                    class="primary"
+                                    @click="deleteRubric(rubric._id)">Delete</v-btn>
+                        </div>
+                    </v-card>
+                </v-flex>
+            </v-layout>
+        </v-container>
+    </v-container>
 </template>
 
 <style scoped>
-    .rubric {
-        box-shadow: 1px 1px 1px #888888;
-        margin-bottom: 12px;
-    }
-
-    .container button:hover {
-        background-color: #51247a;
-        transition: background-color 1s ease-out;
-    }
 </style>
 
 <script lang="ts">

@@ -1,28 +1,33 @@
 <template>
-    <div class="container">
-        <h1 class>Criteria List</h1>
-        <router-link tag="button" to="/criteriaEditor">Add Criteria</router-link>
-        <div v-for="criteria in criterias" :key="criteria._id" class="criteria">
-            <span><b>Criteria Name</b>: {{criteria.name}}</span>
-            <br/>
-            <span><b>Description:</b>{{criteria.description}}</span>
-            <br/>
-            <button type="button" @click="editCriteria(criteria._id)">Edit</button>
-            <br/>
-            <button type="button" @click="deleteCriteria(criteria._id)">Delete</button>
-        </div>        
-    </div>
+    <v-container>
+        <h1 class="moocchat-name">Criteria List</h1>
+        <router-link tag="button" class="primary" to="/criteriaEditor">Add Criteria</router-link>
+        <v-container fluid grid-list-md>
+            <v-layout row wrap>
+                <v-flex v-for="criteria in criterias"
+                    :key="criteria._id"
+                    xs12>
+                    <v-card>
+                        <v-card-title><h3>Criteria Name: {{criteria.name}}</h3></v-card-title>
+                        <span class="criteria-description"><b>Description:</b>{{criteria.description}}</span>
+                        <div class="controls">
+                            <v-btn type="button"
+                                    class="primary"
+                                    @click="editCriteria(criteria._id)">Edit</v-btn>
+                            <v-btn type="button"
+                                    class="primary"
+                                    @click="deleteCriteria(criteria._id)">Delete</v-btn>
+                        </div>
+                    </v-card>
+                </v-flex>
+            </v-layout>
+        </v-container>
+    </v-container>    
 </template>
 
 <style scoped>
-    .criteria {
-        box-shadow: 1px 1px 1px #888888;
-        margin-bottom: 12px;
-    }
-
-    .container button:hover {
-        background-color: #51247a;
-        transition: background-color 1s ease-out;
+    .criteria-description {
+        margin: 16px;
     }
 </style>
 

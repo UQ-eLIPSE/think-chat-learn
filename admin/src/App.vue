@@ -1,11 +1,31 @@
 <template>
-  <div id="app">
-    <!-- TODO move this somewhere else -->
-    <link rel="stylesheet"
-          href="//cdn.materialdesignicons.com/2.5.94/css/materialdesignicons.min.css">
-    <side-nav />
-    <router-view id="routerpanel" />
-  </div>
+  <v-app>
+    <v-navigation-drawer permanent app>
+      <v-toolbar flat>
+        <v-list>
+          <v-list-tile>
+            <v-list-tile-title class="title">
+              MoocChat - {{course}}
+            </v-list-tile-title>            
+          </v-list-tile>
+        </v-list>
+      </v-toolbar>
+      <v-divider></v-divider>
+      <v-list class="pt-0">
+        <v-list-tile v-for="item in sideNavItems" :key="item.name" @click="goToRoute(item.route)">
+          <v-list-tile-action>
+            <v-icon>{{item.icon}}</v-icon>
+          </v-list-tile-action>            
+          <v-list-tile-content>
+            <v-list-tile-title>{{item.name}}</v-list-tile-title>
+          </v-list-tile-content>
+        </v-list-tile>   
+      </v-list>
+    </v-navigation-drawer>
+    <v-content>
+      <router-view/>
+    </v-content>
+  </v-app>
 </template>
 
 <style lang="scss">
@@ -29,7 +49,7 @@
   // width: calc(100% - 20rem);
   // max-height: 100%;
   // overflow: scroll;
-  width: calc(100% - 20rem);
+  //width: calc(100% - 20rem);
 }
 
 select {
@@ -204,13 +224,67 @@ import { Vue, Component } from "vue-property-decorator";
 import { Snackbar } from 'buefy/dist/components/snackbar'
 import { EventBus, EventList } from "./EventBus";
 import SideNav from "./components/SideNav.vue";
+
+// Temporary interface for the side nav
+interface SideNavItem {
+  icon: string,
+  name: string,
+  route: string
+}
+
+const SideNavItems: SideNavItem[] = [
+  {
+    icon: "home",
+    name: "Welcome",
+    route: "/"
+  }, {
+    icon: "done",
+    name: "Marking",
+    route: "/marking"
+  },
+  {
+    icon: "list",
+    name: "Quiz List",
+    route: "/quizList"
+  },
+  {
+    icon: "question_answer",
+    name: "Question List",
+    route: "/questionList"
+  },
+  {
+    icon: "",
+    name: "View Criteria List",
+    route: "/criteria"
+  },
+  {
+    icon: "view_list",
+    name: "View Rubric List",
+    route: "/rubric"
+  }
+]
+
 @Component({
   components: {
     SideNav
   }
 })
 export default class App extends Vue {
-  
+
+  get sideNavItems() {
+    return SideNavItems;
+  }
+
+  // Fetch the course for generic display
+  get course() {
+    return this.$store.state.Quiz.course || '';
+  }  
+
+  // Goes to the particular route
+  private goToRoute(path: string) {
+    this.$router.push(path);
+  }
+
   // Given a string payload, push that to the snackbar
   private handlePushSnackBar(message: string) {
     Snackbar.open(message);

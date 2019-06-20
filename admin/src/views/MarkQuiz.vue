@@ -6,8 +6,8 @@
       <h3>Title: {{ q.title }}</h3>
       <span>Quiz ID: {{q._id}}</span>
 
-      <span>Available Start: {{ new Date(q.availableStart).toString() }}</span>
-      <span>Available End: {{ new Date(q.availableEnd).toString() }}</span>
+      <span>Available Start: {{ new Date(q.availableStart).toLocaleString() }}</span>
+      <span>Available End: {{ new Date(q.availableEnd).toLocaleString() }}</span>
     </div>
 
 

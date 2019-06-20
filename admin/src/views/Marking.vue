@@ -10,8 +10,8 @@
 
                 <h3>{{ q.title }}</h3>
                 <h5>Quiz ID: {{q._id}}</h5>
-                <span>Available Start: {{ new Date(q.availableStart).toString() }}</span>
-                <span>Available End: {{ new Date(q.availableEnd).toString() }}</span>
+                <span><b>Available Start:</b> {{ new Date(q.availableStart).toLocaleString() }}</span>
+                <span><b>Available End:</b> {{ new Date(q.availableEnd).toLocaleString() }}</span>
 
                 <div class="controls">
                     <router-link tag="button"

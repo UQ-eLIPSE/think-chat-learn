@@ -1,95 +1,109 @@
 <template>
-  <div class="c">
-    <span>Quiz Title</span><input v-model="quizTitle"
-           type="text" />
-    <b-datepicker v-model="startDate"
-                  placeholder="Select the Start Date"
-                  icon="calendar-today"></b-datepicker>
-    <b-timepicker v-model="startTime"
-                  rounded
-                  placeholder="Select the Start Time"
-                  icon="clock"
-                  hour-formart="format"></b-timepicker>
-    <b-datepicker v-model="endDate"
-                  placeholder="Select the End Date"
-                  icon="calendar-today"></b-datepicker>
-    <b-timepicker v-model="endTime"
-                  rounded
-                  placeholder="Select the End Time"
-                  icon="clock"
-                  hour-formart="format"></b-timepicker>
-
-    <div v-for="(page, index) in pages"
-         class="p"
-         :key="index">
-      <span>Page Title</span><input v-model="page.title"
-             type="text"
-             placeholder="Set the Question Title" />
-      <span>Page Type</span>
-      <select v-model="page.type">
-        <option :value="PageType.QUESTION_ANSWER_PAGE">Question Answer Page</option>
-        <option :value="PageType.SURVEY_PAGE">Survey Page</option>
-        <option :value="PageType.INFO_PAGE">Information Page</option>
-        <option :value="PageType.DISCUSSION_PAGE">Discussion Page</option>
-      </select>
-      <!-- Business logic for rendering based on page type -->
-      <label v-if="(page.type === PageType.DISCUSSION_PAGE)">
-        Display responses from question?
-        <input type="checkbox"
-               v-model="page.displayResponses" /> </label>
-      <!-- TODO make this a proper select box once Questions and Answers are implemented -->
-
-      <select v-model="page.questionId"
-              v-if="(page.type === PageType.QUESTION_ANSWER_PAGE) || (page.type === PageType.DISCUSSION_PAGE)">
-        <option v-for="question in questions"
-                :key="question._id"
-                :value="question._id">{{question.title}}</option>
-      </select>
-
-      <select v-model="page.surveryId"
-              v-else-if="page.type === PageType.SURVEY_PAGE">
-        <option> Some Default survey</option>
-      </select>
-
-      <span>Page content</span>
-      <textarea v-model="page.content"
-                placeholder="Set the content of the page" />
-      <span>Timeout time</span>
-      <input type="number"
-             v-model.number="page.timeoutInMins" />
-      <div class="p-controls">
-        <button type="button"
-                @click="up(index)">Move up</button>
-        <button type="button"
-                @click="down(index)">Move down</button>
-        <button type="button"
-                @click="deletePage(index)">Delete page</button>
-      </div>
-    </div>
-
-    <div>
-      <label> Rubric Linking
-      <select v-model="rubricId">
-        <option v-for="rubric in rubrics"
-                :value="rubric._id"
-                :key="rubric._id">{{ rubric.name }}</option>
-      </select>
-      </label>
-    </div>
-
-    <div class="marking-config">
-      <label>Allow multiple markers? <input type="checkbox"
-               v-model="markingConfiguration.allowMultipleMarkers" /></label>
-      <label>Max marks: {{ markingConfiguration.maximumMarks }} </label>
-    </div>
-    <div class="controls">
-      <button type="button"
-              @click="createPage()">Create new page</button>
-      <button type="button"
-              @click="createQuiz()">Create/ update Quiz</button>
-    </div>
-
-  </div>
+    <v-container>
+      <v-form>
+        <h1 class="moocchat-title">Quiz Editor</h1>
+        <v-container fluid grid-list-md>
+          <v-layout row wrap>
+            <v-flex xs12>
+              <b-field label="Set the quiz title">
+                <v-text-field label="Title" v-model="quizTitle" outline/>
+              </b-field>
+            </v-flex>
+            <v-flex xs12>
+              <b-field label="Select a start date">
+                <b-datepicker v-model="startDate"
+                              placeholder="Select the Start Date"
+                              icon="calendar-today"></b-datepicker>
+              </b-field>
+            </v-flex>
+            <v-flex xs12>
+              <b-field label="Select a start time">
+                <b-timepicker v-model="startTime"
+                              rounded
+                              placeholder="Select the Start Time"
+                              icon="clock"
+                              hour-formart="format"></b-timepicker>
+              </b-field>
+            </v-flex>
+            <v-flex xs12>
+              <b-field label="Select an end date">
+                <b-datepicker v-model="endDate"
+                              placeholder="Select the End Date"
+                              icon="calendar-today"></b-datepicker>
+              </b-field>
+            </v-flex>
+            <v-flex xs12>
+              <b-field label="Select an end time">
+                <b-timepicker v-model="endTime"
+                              rounded
+                              placeholder="Select the End Time"
+                              icon="clock"
+                              hour-formart="format"></b-timepicker>
+              </b-field>
+            </v-flex>
+            <!-- Temporary wrapper for the page labels -->
+            <v-flex xs12>
+              <b-field label="Create and configure the pages"/>
+            </v-flex>
+            <v-flex v-for="(page, index) in pages"
+              class="p"
+              :key="index" xs12>
+              <b-field label="Set the page title">
+                <v-text-field label="Title" v-model="page.title" outline/>
+              </b-field>
+              <b-field label="Set the page type">
+                <v-overflow-btn :items="pageTypeDropDown" v-model="page.type" outline/>
+              </b-field>
+              <!-- Business logic for rendering based on page type -->
+              <v-checkbox v-if="(page.type === PageType.DISCUSSION_PAGE)" v-model="page.displayResponses" :label="'Display Responses from question?'">
+              </v-checkbox>
+              <!-- TODO make this a proper select box once Questions and Answers are implemented -->
+              <b-field v-if="(page.type === PageType.QUESTION_ANSWER_PAGE) || (page.type === PageType.DISCUSSION_PAGE)"
+                label="Set the associate question for the page">
+                <v-overflow-btn :items="questionDropDown" v-model="page.questionId" outline/>
+              </b-field>
+              <select v-model="page.surveryId"
+                      v-else-if="page.type === PageType.SURVEY_PAGE">
+                <option> Some Default survey</option>
+              </select>
+              <b-field label="Set the content of the page">
+                <v-textarea label="Content" v-model="page.content" outline hint="This is content specific to the page rather than the question associated"/>
+              </b-field>
+              <b-field label="Set the timeout in minutes">
+                <v-text-field label="Timeout" v-model="page.timeoutInMins" outline type="number"/>
+              </b-field>
+              <div class="p-controls">
+                <v-btn type="button"
+                        @click="up(index)">Move up</v-btn>
+                <v-btn type="button"
+                        @click="down(index)">Move down</v-btn>
+                <v-btn type="button"
+                        @click="deletePage(index)">Delete page</v-btn>
+              </div>
+            </v-flex>
+            <v-flex xs12>
+              <b-field label="Set the associated Rubric">
+                <v-overflow-btn :items="rubricDropDown" v-model="rubricId" outline/>
+              </b-field>
+            </v-flex>      
+            <v-flex xs12>
+              <b-field label="Set up the marking configurations"/>
+              <v-checkbox v-model="markingConfiguration.allowMultipleMarkers" :label="'Allow multiple markers?'">
+              </v-checkbox>
+              <label>Max marks: {{ markingConfiguration.maximumMarks }} </label>
+            </v-flex>
+            <v-flex xs12>
+              <v-container class="controls">
+                <v-btn type="button"
+                        @click="createPage()">Create new page</v-btn>
+                <v-btn type="button"
+                        @click="createQuiz()">Create/ update Quiz</v-btn>
+              </v-container>
+            </v-flex>
+          </v-layout>
+        </v-container>
+      </v-form>
+  </v-container>
 </template>
 
 <style scoped>
@@ -107,12 +121,18 @@ import {
   ISurveyPage,
   IQuiz,
   Page,
-  TypeQuestion
+  TypeQuestion,
+  IRubric
 } from "../../../common/interfaces/ToClientData";
 import { PageType } from "../../../common/enums/DBEnums";
 import * as DBSchema from "../../../common/interfaces/DBSchema";
 import { getAdminLoginResponse } from "../../../common/js/front_end_auth";
 import { IQuizOverNetwork } from "../../../common/interfaces/NetworkData";
+
+interface DropDownConfiguration {
+  text: string,
+  value: string,
+}
 
 @Component({})
 export default class QuizPage extends Vue {
@@ -126,7 +146,7 @@ export default class QuizPage extends Vue {
   private startTime: Date | null = null;
   private endDate: Date | null = null;
   private endTime: Date | null = null;
-
+  private test: any = {};
   private rubricId: string = "";
 
   private markingConfiguration: DBSchema.MarkConfig = this.initMarkConfig();
@@ -137,6 +157,26 @@ export default class QuizPage extends Vue {
 
   // The internal id of pages created. Tossed away when sending
   private mountedId: number = 0;
+
+  // The default configurations of the dropdown menu for interfaces
+  private pageTypeDropDown: DropDownConfiguration[] = [
+    {
+      text: 'Question Answer Page',
+      value: PageType.QUESTION_ANSWER_PAGE
+    },
+    {
+      text: 'Information Page',
+      value: PageType.INFO_PAGE
+    },
+    {
+      text: 'Survey Page',
+      value: PageType.SURVEY_PAGE
+    },
+    {
+      text: 'Discussion Page',
+      value: PageType.DISCUSSION_PAGE
+    },    
+  ]
 
   initMarkConfig(): DBSchema.MarkConfig {
     return {
@@ -178,6 +218,17 @@ export default class QuizPage extends Vue {
     return this.$store.getters.questions;
   }
 
+  // Generates the configuration of the question dropdown. Just need id as value and title as display
+  get questionDropDown(): DropDownConfiguration[] {
+    // Question should be defined at this point
+    return this.questions.map((question) => {
+      return {
+        text: question.title ? question.title : "",
+        value: question._id ? question._id : ""
+      };
+    });
+  }
+
   // Course id based on token
   get courseId() {
     const loginDetails = getAdminLoginResponse();
@@ -185,7 +236,16 @@ export default class QuizPage extends Vue {
     return loginDetails ? loginDetails.courseId : "";
   }
 
-  get rubrics() {
+  get rubricDropDown(): DropDownConfiguration[] {
+    return this.rubrics.map((rubric) => {
+      return {
+        text: rubric.name ? rubric.name : "",
+        value: rubric._id ? rubric._id : ""
+      };
+    });
+  }
+
+  get rubrics(): IRubric[] {
     return this.$store.getters.rubrics;
   }
 
@@ -399,5 +459,9 @@ export default class QuizPage extends Vue {
   flex-direction: column;
   border: 0.1rem solid rgba(1, 0, 0, 0.2);
   align-self: center;
+}
+
+.moocchat-title {
+  margin: 6px;
 }
 </style>

@@ -1,4 +1,4 @@
-import axios, { AxiosPromise } from "axios";
+import axios, { AxiosPromise, AxiosRequestConfig } from "axios";
 import { getIdToken, setIdToken } from "./front_end_auth";
 
 // TODO replace with an actual link
@@ -40,15 +40,20 @@ export const API: IApi = {
     contentType?: string | undefined,
     token?: string | null
   ): AxiosPromise {
-    return axios({
-      method,
+    // TODO, change the verbs to correct typing
+    const methodProxy: any = method;
+
+    const payload: AxiosRequestConfig = {
+      method: methodProxy,
       url: API_URL + url,
       headers: {
         Authorization: "Bearer " + (token ? token : getIdToken()),
         "Content-Type": contentType ? contentType : "application/json"
       },
       data
-    })
+    };
+
+    return axios(payload)
       .then((res: any) => {
         setIdToken(res.headers["access-token"]);
         return res;
