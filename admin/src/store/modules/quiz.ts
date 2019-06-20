@@ -55,7 +55,7 @@ const state: IState = {
 
 const mutationKeys = {
     SET_QUIZ: "Setting a quiz",
-    SET_QUIZZES: "Setting a quiz",
+    SET_QUIZZES: "Setting a collection of quizzes",
     DELETE_QUIZ: "Deleting a quiz",
     EDIT_QUIZ: "Editing a quiz",
     SET_CRITERIAS: "Setting the criterias",
@@ -93,7 +93,7 @@ const getters: GetterTree<IState, undefined> = {
         });
         return map;
     },
-    currentQuiz: (state): IQuiz | undefined => {
+    currentQuiz: (): IQuiz | undefined => {
         return state.quiz.find((q) => state.currentMarkingContext.currentQuizId === q._id);
     },
     currentMarkingContext: (): CurrentMarkingContext => {

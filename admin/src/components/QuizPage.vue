@@ -78,13 +78,6 @@
     </div>
 
     <div class="marking-config">
-      <label> Marking Configuration
-      <select v-model="markingConfiguration">
-        <option v-for="m in [elipssMarkConfig, simpleMarkConfig]"
-                :value="m"
-                :key="m.type">{{ m.type }}</option>
-      </select>
-      </label>
       <label>Allow multiple markers? <input type="checkbox"
                v-model="markingConfiguration.allowMultipleMarkers" /></label>
       <label>Max marks: {{ markingConfiguration.maximumMarks }} </label>
@@ -93,7 +86,7 @@
       <button type="button"
               @click="createPage()">Create new page</button>
       <button type="button"
-              @click="createQuiz">Create/ update Quiz</button>
+              @click="createQuiz()">Create/ update Quiz</button>
     </div>
 
   </div>
