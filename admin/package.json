@@ -11,7 +11,7 @@
     "build_dev_watch": "vue-cli-service build --mode development --watch"
   },
   "dependencies": {
-    "buefy": "^0.7.1",
+    "buefy": "^0.7.7",
     "jwt-decode": "^2.2.0",
     "luxon": "^1.8.3",
     "postcss-import": "^12.0.1",
@@ -20,6 +20,7 @@
     "vue-class-component": "^6.3.2",
     "vue-property-decorator": "^7.2.0",
     "vue-router": "^3.0.2",
+    "vuetify": "^1.5.16",
     "vuex": "^3.0.1",
     "weekstart": "^1.0.0"
   },

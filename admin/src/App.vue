@@ -222,7 +222,7 @@ html {
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
 import { Snackbar } from 'buefy/dist/components/snackbar'
-import { EventBus, EventList } from "./EventBus";
+import { EventBus, EventList, SnackEvent } from "./EventBus";
 import SideNav from "./components/SideNav.vue";
 
 // Temporary interface for the side nav
@@ -243,7 +243,7 @@ const SideNavItems: SideNavItem[] = [
     route: "/marking"
   },
   {
-    icon: "list",
+    icon: "book",
     name: "Quiz List",
     route: "/quizList"
   },
@@ -253,7 +253,7 @@ const SideNavItems: SideNavItem[] = [
     route: "/questionList"
   },
   {
-    icon: "",
+    icon: "list",
     name: "View Criteria List",
     route: "/criteria"
   },
@@ -286,8 +286,11 @@ export default class App extends Vue {
   }
 
   // Given a string payload, push that to the snackbar
-  private handlePushSnackBar(message: string) {
-    Snackbar.open(message);
+  private handlePushSnackBar(data: SnackEvent) {
+    Snackbar.open({
+      message: data.message,
+      type: data.error ? 'is-danger' : 'is-success'
+    });
   }
 
   private mounted() {

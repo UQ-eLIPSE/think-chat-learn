@@ -1,50 +1,60 @@
 <template>
-  <div class="marking-section">
+  <v-container class="marking-section" fluid grid-list-md>
     <!-- Highly unlikely we need to re-render. Index as key is fine -->
-    <div v-for="(c, index) in content" :key="index" class="wrapper">
-      <div v-if="c.type === ContentType.PAGE" class="page-container">
-        <h3>Page Content for {{c.page.title}}</h3>
-        <div v-html="c.page.content"/>
-        <div class="question-wrapper" v-if="c.page.type === PageType.QUESTION_ANSWER_PAGE">
-          <h4>Question Content - {{getQuestionById(c.page.questionId).title}}</h4>
-          <div v-html="getQuestionById(c.page.questionId).content"/>
-        </div>
-      </div>
-      <div v-else-if="c.type === ContentType.RESPONSE" class="responses-container">
-        <h3>Response</h3>
-        <div class="responses message-container"
-          v-if="c.responses && c.responses.length > 0">
-          <ChatMessage v-for="r in c.responses"
-          :key="r._id"
-          :selected="responseBelongsTocurrentQuizSessionInfoObject(r.quizSessionId)"
-          :numeral="getNumeralFromQuizSessionId(r.quizSessionId)"
-          :content="r.content" />
-        </div>
-        <div v-if="!c.responses || !c.responses.length > 0">
-          <span>No responses available</span>
-        </div>        
-      </div>
-      <div v-else-if="c.type === ContentType.CHAT" class="chat-messages">
-        <h3>Chat Messages</h3>
-        <div class="message-container"
-          v-if="c.messages && c.messages.length > 0">
-          <ChatMessage v-for="m in c.messages"
-          :key="m._id"
-          :selected="responseBelongsTocurrentQuizSessionInfoObject(m.quizSessionId)"
-          :numeral="getNumeralFromQuizSessionId(m.quizSessionId)"
-          :content="m.content" />
-        </div>
-        <div v-if="!c.messages || !c.messages.length">
-          <span>No chat messages available</span>
-        </div>
-      </div>
-    </div>
-    <div class="row">
-      <MarkingComponent class="marking-component"></MarkingComponent>
-    </div>
-
-
-  </div>
+    <v-layout row wrap>
+      <!-- Use template due to strict formatting of Vuetify's grid system of container -> layout -> flex -->
+      <template v-for="(c, index) in content">
+        <v-flex xs6 :key="`title-${index}`">
+          <h3 v-if="c.type === ContentType.PAGE" >Page Content for {{c.page.title}}</h3>
+          <h3 v-else-if="c.type === ContentType.RESPONSE" >Response for question - {{c.questionTitle}}</h3>
+          <h3 v-else-if="c.type === ContentType.CHAT" >Chat content for discussion -  {{c.questionTitle}}</h3>
+        </v-flex>
+        <v-flex xs6 :key="`button-${index}`" text-xs-right>
+          <v-btn @click="toggleVisibility(index)">
+            {{ c.visible ? "Hide " : "Show " }} <v-icon right>{{c.visible ? "visibility_off" : "visibility"}}</v-icon>
+          </v-btn>
+        </v-flex>        
+        <v-flex xs12 :key="`content-${index}`">
+          <div v-if="c.type === ContentType.PAGE && c.visible" class="page-container">
+            <div v-html="c.page.content"/>
+            <div class="question-wrapper" v-if="c.page.type === PageType.QUESTION_ANSWER_PAGE">
+              <h4>Question Content - {{getQuestionById(c.page.questionId).title}}</h4>
+              <div v-html="getQuestionById(c.page.questionId).content"/>
+            </div>
+          </div>
+          <div v-else-if="c.type === ContentType.RESPONSE && c.visible" class="responses-container">
+            <div class="responses message-container"
+              v-if="c.responses && c.responses.length > 0">
+              <ChatMessage v-for="r in c.responses"
+              :key="r._id"
+              :selected="responseBelongsTocurrentQuizSessionInfoObject(r.quizSessionId)"
+              :numeral="getNumeralFromQuizSessionId(r.quizSessionId)"
+              :content="r.content" />
+            </div>
+            <div v-if="!c.responses || !c.responses.length > 0">
+              <span>No responses available</span>
+            </div>
+          </div>
+          <div v-else-if="c.type === ContentType.CHAT && c.visible" class="chat-messages">
+            <div class="message-container"
+              v-if="c.messages && c.messages.length > 0">
+              <ChatMessage v-for="m in c.messages"
+              :key="m._id"
+              :selected="responseBelongsTocurrentQuizSessionInfoObject(m.quizSessionId)"
+              :numeral="getNumeralFromQuizSessionId(m.quizSessionId)"
+              :content="m.content" />
+            </div>
+            <div v-if="!c.messages || !c.messages.length">
+              <span>No chat messages available</span>
+            </div>
+          </div>
+        </v-flex>
+      </template>
+      <v-flex class="row" xs12>
+        <MarkingComponent class="marking-component"></MarkingComponent>
+      </v-flex>
+    </v-layout>
+  </v-container>
 </template>
 
 <script lang="ts">
@@ -66,6 +76,7 @@ enum ContentType {
 
 interface Content {
   type: ContentType;
+  visible: boolean;
 }
 
 interface PageContent extends Content {
@@ -76,11 +87,13 @@ interface PageContent extends Content {
 interface ResponseContent extends Content {
   type: ContentType.RESPONSE;
   responses: Response[];
+  questionTitle: string;
 }
 
 interface ChatContent extends Content {
   type: ContentType.CHAT;
   messages: IChatMessage[];
+  questionTitle: string;
 }
 
 type GenericContent = PageContent | ResponseContent | ChatContent;
@@ -93,6 +106,8 @@ type GenericContent = PageContent | ResponseContent | ChatContent;
   }
 })
 export default class MarkQuizMarkingSection extends Vue {
+
+  private content: GenericContent[] = [];
 
   get ContentType() {
     return ContentType;
@@ -141,7 +156,7 @@ export default class MarkQuizMarkingSection extends Vue {
     return ind + 1;
   }
 
-  getQuestionById(id: string): IQuestion | undefined {
+  private getQuestionById(id: string): IQuestion | undefined {
     return this.$store.getters.getQuestionById(id);
   }
 
@@ -150,15 +165,21 @@ export default class MarkQuizMarkingSection extends Vue {
     return this.$store.getters.currentQuiz;
   }
 
-  // This computes the order in which the quiz will be rendered.
-  get content(): GenericContent[] {
+  private mounted() {
+    this.content = this.initializeContent();
+  }
+
+  // This generates the order in which the quiz will be rendered.
+  // Don't use computed as we toggle the visibility
+  private initializeContent(): GenericContent[] {
     // Traverse the quiz to grab the page
     const output: GenericContent[] = [];
     this.currentQuiz.pages!.forEach((page) => {
       // Push the page regardless
       output.push({
         type: ContentType.PAGE,
-        page: page
+        page: page,
+        visible: true
       });
 
       if (page.type === PageType.QUESTION_ANSWER_PAGE) {
@@ -166,20 +187,26 @@ export default class MarkQuizMarkingSection extends Vue {
 
         if (this.currentQuizSessionInfoObject) {
           const maybeResponses = this.currentChatGroupResponsesMap[page.questionId];
+          const referredQuestion = this.getQuestionById(page.questionId)
           if (maybeResponses) {
             output.push({
               type: ContentType.RESPONSE,
-              responses: maybeResponses
+              responses: maybeResponses,
+              visible: true,
+              questionTitle: referredQuestion ? referredQuestion.title! : "N/A - No question"
             });
           }
         }
       } else if (page.type === PageType.DISCUSSION_PAGE) {
         if (this.currentChatGroupQuestionMessageMap) {
           const maybeChat = this.currentChatGroupQuestionMessageMap[page.questionId];
+          const referredQuestion = this.getQuestionById(page.questionId)
           if (maybeChat) {
             output.push({
               type: ContentType.CHAT,
-              messages: maybeChat
+              messages: maybeChat,
+              visible: true,
+              questionTitle: referredQuestion ? referredQuestion.title! : "N/A - No question"
             });
           }
         }
@@ -193,6 +220,11 @@ export default class MarkQuizMarkingSection extends Vue {
     return this.content.filter((content) => {
       return content.type === type;
     });
+  }
+
+  // Toggles the visibility of a content component based on the indx
+  private toggleVisibility(index: number) {
+    this.content[index].visible = !this.content[index].visible;
   }
 }
 </script>
@@ -257,7 +289,7 @@ export default class MarkQuizMarkingSection extends Vue {
   display: flex;
   flex-shrink: 0;
   flex-direction: column;
-  width: 50%;
+  max-height: 30vh;
   overflow: scroll;
 }
 

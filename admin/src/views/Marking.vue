@@ -15,11 +15,11 @@
 
                 <div class="controls">
                     <router-link tag="button"
-                                 class="button secondary"
+                                 class="primary"
                                  :to="{ name: 'mark-quiz', params: { id: q._id } }">Start marking</router-link>
                     <router-link tag="button"
                                  id="view-marks"
-                                 class="button secondary"
+                                 class="primary"
                                  :to="{ name: 'view-mark-quiz', params: { id: q._id } }">View marks</router-link>
                 </div>
             </div>
@@ -60,11 +60,6 @@
 .quiz-item:active,
 .quiz-item:focus {
     background: rgba(1, 0, 0, 0.05);
-}
-
-#view-marks {
-    background-color: $baseDark2;
-    color: $white;
 }
 </style>
 

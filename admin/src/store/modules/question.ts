@@ -5,7 +5,7 @@ import { API } from "../../../../common/js/DB_API";
 import { TypeQuestion } from "../../../../common/interfaces/DBSchema";
 
 // Event bus for snackbar purposes
-import { EventBus, EventList } from "../../EventBus";
+import { EventBus, EventList, SnackEvent } from "../../EventBus";
 
 export interface IState {
     questions: TypeQuestion[];
@@ -40,7 +40,13 @@ const actions = {
             if (payload) {
                 data._id = payload.outgoingId;
                 commit(mutationKeys.SET_QUESTION, data);
-                EventBus.$emit(EventList.PUSH_SNACKBAR, "Created a question");
+
+                const message: SnackEvent = {
+                    message: "Created a Question"
+                };
+
+                EventBus.$emit(EventList.PUSH_SNACKBAR,
+                    message);
             }
         });
     },
@@ -53,7 +59,11 @@ const actions = {
         API.request(API.DELETE, API.QUESTION + "delete/" + data, {}).then((outcome: boolean) => {
             if (outcome) {
                 commit(mutationKeys.DELETE_QUESTION, data);
-                EventBus.$emit(EventList.PUSH_SNACKBAR, "Deleted a question");
+                const message: SnackEvent = {
+                    message: "Deleted a Question"
+                };
+
+                EventBus.$emit(EventList.PUSH_SNACKBAR, message);
             }
         });
 
@@ -63,7 +73,12 @@ const actions = {
         API.request(API.POST, API.QUESTION + "update/", data).then((outcome: boolean) => {
             if (outcome) {
                 commit(mutationKeys.EDIT_QUESTION, data);
-                EventBus.$emit(EventList.PUSH_SNACKBAR, "Edited a question");
+                
+                const message: SnackEvent = {
+                    message: "Created a Question"
+                };
+
+                EventBus.$emit(EventList.PUSH_SNACKBAR, message);
             }
         });
     }

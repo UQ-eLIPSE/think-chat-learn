@@ -12,7 +12,7 @@
                     </v-flex>
                     <v-flex xs12>
                         <b-field label="Describe the criteria">
-                            <v-text-field label="Criteria Description" v-model="currentCriteria.description" outline/>
+                            <v-textarea label="Criteria Description" v-model="currentCriteria.description" outline/>
                         </b-field>
                     </v-flex>                    
                     <v-btn type="button" @click="sendCriteria()">{{currentCriteria._id ? "Edit Criteria" : "Create Criteria"}}</v-btn>

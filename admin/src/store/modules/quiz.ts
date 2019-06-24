@@ -9,7 +9,7 @@ import { IQuizOverNetwork } from "../../../../common/interfaces/NetworkData";
 import { convertNetworkQuizIntoQuiz, convertNetworkQuizzesIntoQuizzes } from "../../../../common/js/NetworkDataUtils";
 
 // Event bus for snackbar purposes
-import { EventBus, EventList } from "../../EventBus";
+import { EventBus, EventList, SnackEvent } from "../../EventBus";
 
 type QuizSessionInfoMap = { [key: string]: QuizSessionDataObject };
 type ChatGroupQuestionMessagesMap = { [chatGroupId: string]: { [questionId: string]: IChatMessage[] } };
@@ -180,7 +180,12 @@ const actions: ActionTree<IState, undefined> = {
         API.request(API.PUT, API.QUIZ + "create", data).then((outcome: string) => {
             if (outcome) {
                 commit(mutationKeys.SET_QUIZ, convertNetworkQuizIntoQuiz(data));
-                EventBus.$emit(EventList.PUSH_SNACKBAR, "Created a quiz");
+
+                const message: SnackEvent = {
+                    message: "Created a quiz"
+                };
+
+                EventBus.$emit(EventList.PUSH_SNACKBAR, message);
             }
         });
     },
@@ -189,7 +194,12 @@ const actions: ActionTree<IState, undefined> = {
         API.request(API.POST, API.QUIZ + "update", data).then((outcome: boolean) => {
             if (outcome) {
                 commit(mutationKeys.EDIT_QUIZ, convertNetworkQuizIntoQuiz(data));
-                EventBus.$emit(EventList.PUSH_SNACKBAR, "Updated a Quiz");
+
+                const message: SnackEvent = {
+                    message: "Updated a quiz"
+                };
+
+                EventBus.$emit(EventList.PUSH_SNACKBAR, message);
             }
         });
     },
@@ -211,7 +221,12 @@ const actions: ActionTree<IState, undefined> = {
         API.request(API.DELETE, API.QUIZ + "delete/" + data, {}).then((outcome: boolean) => {
             if (outcome) {
                 commit(mutationKeys.DELETE_QUIZ, data);
-                EventBus.$emit(EventList.PUSH_SNACKBAR, "Deleted a quiz");
+
+                const message: SnackEvent = {
+                    message: "Deleted a quiz"
+                };
+                
+                EventBus.$emit(EventList.PUSH_SNACKBAR, message);
             }
         });
     },
@@ -269,12 +284,22 @@ const actions: ActionTree<IState, undefined> = {
             });
 
             commit(mutationKeys.SET_CRITERIA, { criteria: data, index });
-            EventBus.$emit(EventList.PUSH_SNACKBAR, "Updated Criteria");
+
+            const message: SnackEvent = {
+                message: "Updated a criteria"
+            };
+
+            EventBus.$emit(EventList.PUSH_SNACKBAR, message);
         } else {
             const id: {outgoingId: string } = await API.request(API.PUT, API.CRITERIA + "create/", data);
             data._id = id.outgoingId;
             commit(mutationKeys.SET_CRITERIA, { criteria: data, index: state.criterias.length });
-            EventBus.$emit(EventList.PUSH_SNACKBAR, "Created new Criteria");
+
+            const message: SnackEvent = {
+                message: "Created a new criteria"
+            };
+
+            EventBus.$emit(EventList.PUSH_SNACKBAR, message);
         }
     },
 
@@ -286,7 +311,12 @@ const actions: ActionTree<IState, undefined> = {
         });
 
         commit(mutationKeys.DELETE_CRITERIA, index);
-        EventBus.$emit(EventList.PUSH_SNACKBAR, "Delete Criteria");
+
+        const message: SnackEvent = {
+            message: "Deleted a criteria"
+        };        
+
+        EventBus.$emit(EventList.PUSH_SNACKBAR, message);
     },
 
     setRubrics({ commit }: { commit: Commit }, data: IRubric[]) {
@@ -302,12 +332,22 @@ const actions: ActionTree<IState, undefined> = {
             });
 
             commit(mutationKeys.SET_RUBRIC, { rubric: data, index });
-            EventBus.$emit(EventList.PUSH_SNACKBAR, "Updated a rubric");
+
+            const message: SnackEvent = {
+                message: "Updated a rubric"
+            };
+
+            EventBus.$emit(EventList.PUSH_SNACKBAR, message);
         } else {
             const id: {outgoingId: string } = await API.request(API.PUT, API.RUBRIC + "create/", data);
             data._id = id.outgoingId;
             commit(mutationKeys.SET_RUBRIC, { rubric: data, index: state.rubrics.length });
-            EventBus.$emit(EventList.PUSH_SNACKBAR, "Created new a new rubric");
+
+            const message: SnackEvent = {
+                message: "Created a new rubric"
+            };
+
+            EventBus.$emit(EventList.PUSH_SNACKBAR, message);
         }
     },
 
@@ -319,7 +359,12 @@ const actions: ActionTree<IState, undefined> = {
         });
 
         commit(mutationKeys.DELETE_RUBRIC, index);
-        EventBus.$emit(EventList.PUSH_SNACKBAR, "Deleted a Rubric");
+
+        const message: SnackEvent = {
+            message: "Deleted a rubric"
+        };
+
+        EventBus.$emit(EventList.PUSH_SNACKBAR, message);
     }    
 };
 

@@ -5,9 +5,6 @@
             <button type="button"
                     class="primary"
                     @click.prevent="saveMarks">Save Marks</button>
-            <div v-if="saveStatus.message.length > 0"
-                 :class="saveMessageClasses">{{ saveStatus.message }}</div>
-
         </div>
         <table class="marks-table"
                v-if="marks">
@@ -42,6 +39,7 @@ import { IQuiz, QuizScheduleDataAdmin, Page, IDiscussionPage, IQuestionAnswerPag
 import { PageType } from "../../../../common/enums/DBEnums";
 import * as Schema from "../../../../common/interfaces/DBSchema";
 import { API } from "../../../../common/js/DB_API";
+import { EventBus, EventList, SnackEvent } from "../../EventBus";
 
 Component.registerHooks([
     'updated',
@@ -51,15 +49,7 @@ Component.registerHooks([
 @Component({})
 export default class MarkingComponent extends Vue {
     private marks: Schema.Mark | undefined | null = null;
-    private saveStatus: { message: string, success: boolean } = { message: '', success: true };
 
-    get saveMessageClasses() {
-        if (this.saveStatus.message.length === 0) return {};
-        return {
-            'success': this.saveStatus.success,
-            "error": !this.saveStatus.success
-        }
-    }
     get currentMarkingContext() {
         return this.$store.getters.currentMarkingContext;
     }
@@ -239,17 +229,20 @@ export default class MarkingComponent extends Vue {
         }
     }
     showSuccessMessage() {
-        this.saveStatus.message = "Saved";
-        this.saveStatus.success = true;
-        setTimeout(() => {
-            this.saveStatus.message = '';
-            this.saveStatus.success = true;
-        }, 2000);
+        const message: SnackEvent = {
+            message: "Saved a mark"
+        }
+
+        EventBus.$emit(EventList.PUSH_SNACKBAR, message);
     }
 
     showErrorMessage() {
-        this.saveStatus.message = "Error";
-        this.saveStatus.success = false;
+        const message: SnackEvent = {
+            message: "Failed to save a mark",
+            error: true
+        }
+
+        EventBus.$emit(EventList.PUSH_SNACKBAR, message);        
     }
     async created() {
         await this.fetchMarksForQuestion();
