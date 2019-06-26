@@ -1,4 +1,5 @@
 import { Utils } from "../../common/js/Utils";
+import { ICriteria } from "../../common/interfaces/DBSchema";
 
 /**
  * MOOCchat server configuration file
@@ -78,6 +79,9 @@ export const Conf: IConf = {
     }, {
         name: "depthOfReflection",
         description: "How well one reflects on learning outcomes"
+    }, {
+        name: "mark",
+        description: "Your mark"
     }]    
 }
 
