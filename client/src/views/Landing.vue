@@ -208,7 +208,7 @@ export default class Landing extends Vue {
 
   get quizSessionFetched(): boolean {
     return this.$store.getters.quizSessionFetched;
-  }  
+  }
 
   get resync(): boolean {
     return this.$store.getters.resync;

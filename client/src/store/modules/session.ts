@@ -547,7 +547,7 @@ const mutations = {
         }, [] as MoocChatMessage[]));
     },
 
-    [mutationKeys.SET_FETCH_STATE](funcState:IState, data: boolean) {
+    [mutationKeys.SET_FETCH_STATE](funcState: IState, data: boolean) {
         Vue.set(funcState, "quizSessionFetched", data);
     },
 
