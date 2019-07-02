@@ -348,7 +348,7 @@ const getters = {
 };
 const actions = {
     createQuizSession({ commit }: {commit: Commit}, quizSession: IQuizSession) {
-        return API.request(API.PUT, API.QUIZSESSION + "create", quizSession, undefined,
+        return API.request(API.POST, API.QUIZSESSION + "create", quizSession, undefined,
             getToken()).then((id: { outgoingId: string }) => {
 
             quizSession._id = id.outgoingId;
@@ -372,7 +372,7 @@ const actions = {
     },
 
     sendResponse({ commit }: {commit: Commit}, response: Response) {
-        return API.request(API.PUT, API.RESPONSE + "create", response, undefined,
+        return API.request(API.POST, API.RESPONSE + "create", response, undefined,
             getToken()).then((id: { outgoingId: string}) => {
 
             response._id = id.outgoingId;
