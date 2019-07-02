@@ -1,6 +1,6 @@
 <template>
     <v-container>
-      <v-form>
+      <v-form ref="form">
         <h1 class="moocchat-title">Quiz Editor</h1>
         <v-container fluid grid-list-md>
           <v-layout row wrap>
@@ -52,7 +52,7 @@
                 <v-text-field label="Title" v-model="page.title" outline/>
               </b-field>
               <b-field label="Set the page type">
-                <v-overflow-btn :items="pageTypeDropDown" v-model="page.type" outline/>
+                <v-overflow-btn :items="pageTypeDropDown" v-model="page.type" outline :rules="rules"/>
               </b-field>
               <!-- Business logic for rendering based on page type -->
               <v-checkbox v-if="(page.type === PageType.DISCUSSION_PAGE)" v-model="page.displayResponses" :label="'Display Responses from question?'">
@@ -128,6 +128,7 @@ import { PageType } from "../../../common/enums/DBEnums";
 import * as DBSchema from "../../../common/interfaces/DBSchema";
 import { getAdminLoginResponse } from "../../../common/js/front_end_auth";
 import { IQuizOverNetwork } from "../../../common/interfaces/NetworkData";
+import { EventBus, EventList, SnackEvent } from "../EventBus";
 
 interface DropDownConfiguration {
   text: string,
@@ -183,6 +184,20 @@ export default class QuizPage extends Vue {
       allowMultipleMarkers: false,
       maximumMarks: 5
     }
+  }
+
+  get rules() {
+    return [this.discussionPageRule];
+  }
+
+  // Determines whether or not a quiz has a discussion page
+  get discussionPageRule() {
+    return (() => { 
+      const hasDiscussion = this.pages.some((page) => {
+        return page.type === PageType.DISCUSSION_PAGE;
+      });
+      return hasDiscussion || "No dicussion page found, should have one present in the quiz";
+    });
   }
 
   // Converts the dictionary to an array based on key number
@@ -249,7 +264,19 @@ export default class QuizPage extends Vue {
     return this.$store.getters.rubrics;
   }
 
-  createQuiz() {
+  private createQuiz() {
+    // Check for the rules note that the $refs aren't defined with Vuetify
+    const valid = (this.$refs.form as any).validate();
+
+    if (!valid) {
+        const message: SnackEvent = {
+            message: "Failed generate quiz. Check the form for any errors",
+            error: true
+        }
+        EventBus.$emit(EventList.PUSH_SNACKBAR, message);
+        return;
+    }
+
     // For each quiz we have to figure out the type and assign the appropiate types
     // Output pages
     const outgoingPages: Page[] = [];

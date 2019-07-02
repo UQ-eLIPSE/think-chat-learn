@@ -4,6 +4,7 @@ import { IQuiz } from "../../common/interfaces/DBSchema";
 import { ObjectId } from "bson";
 import { IQuizOverNetwork } from "../../common/interfaces/NetworkData";
 import { convertNetworkQuizIntoQuiz } from "../../common/js/NetworkDataUtils";
+import { PageType } from "../../common/enums/DBEnums";
 
 export class QuizService extends BaseService<IQuiz | IQuizOverNetwork> {
 
@@ -14,13 +15,24 @@ export class QuizService extends BaseService<IQuiz | IQuizOverNetwork> {
         this.quizRepo = _quizRepo;
 }
 
-    // Creates a quiz in the DB based on the request body. Assumes the request body is valid
+    // Creates a quiz in the DB based on the request body. 
     public async createOne(data: IQuizOverNetwork): Promise<string> {
-        // Creates a new quiz based on the information.
+        // Creates a new quiz based on the information, check for the existence of a discussion page.
+        if (!data.pages) {
+            throw new Error("No page from sent quiz");
+        }
+
+        const hasDiscussion = data.pages.some((page) => {
+            return page.type === PageType.DISCUSSION_PAGE;
+        });
+
+        if (!hasDiscussion) {
+            throw new Error("No discussion page");
+        }        
 
         // Note we create ids for each page associated at the same time
         // The create operation returns the id as well
-        if (data.pages && data.pages.length) {
+        if (data.pages && hasDiscussion && data.pages.length) {
             data.pages.forEach((page) => {
                 page._id = (new ObjectId()).toHexString();
             });
@@ -38,7 +50,19 @@ export class QuizService extends BaseService<IQuiz | IQuizOverNetwork> {
         // Updating is a little bit complicated due to the fact that
         // someone could theoretically push pages in and they wouldn't have ids
 
-        if (data.pages && data.pages.length) {
+        if (!data.pages) {
+            throw new Error("No page from sent quiz");
+        }
+        
+        const hasDiscussion = data.pages.some((page) => {
+            return page.type === PageType.DISCUSSION_PAGE;
+        });
+
+        if (!hasDiscussion) {
+            throw new Error("No discussion page");
+        }
+
+        if (data.pages.length) {
             data.pages.forEach((page) => {
                 if (!page._id) {
                     page._id = (new ObjectId()).toHexString();
