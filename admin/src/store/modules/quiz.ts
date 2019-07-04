@@ -177,8 +177,9 @@ const getters: GetterTree<IState, undefined> = {
 };
 const actions: ActionTree<IState, undefined> = {
     createQuiz({ commit }: { commit: Commit }, data: IQuizOverNetwork) {
-        API.request(API.PUT, API.QUIZ + "create", data).then((outcome: string) => {
-            if (outcome) {
+        API.request(API.PUT, API.QUIZ + "create", data).then((output: {outgoingId: string}) => {
+            if (output.outgoingId.length) {
+                data._id = output.outgoingId;
                 commit(mutationKeys.SET_QUIZ, convertNetworkQuizIntoQuiz(data));
 
                 const message: SnackEvent = {
