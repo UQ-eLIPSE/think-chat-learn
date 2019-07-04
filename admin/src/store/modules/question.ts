@@ -26,7 +26,7 @@ const getters = {
 };
 const actions = {
     createQuestion({ commit }: {commit: Commit}, data: IQuestion) {
-        API.request(API.PUT, API.QUESTION + "create", data);
+        API.request(API.POST, API.QUESTION + "create", data);
     },
 
     setQuestions({ commit }: {commit: Commit}, data: IQuestion[]) {
@@ -43,7 +43,7 @@ const actions = {
     },
 
     editQuestion({ commit }: {commit: Commit}, data: IQuestion) {
-        API.request(API.POST, API.QUESTION + "update/", data).then((outcome: boolean) => {
+        API.request(API.PUT, API.QUESTION + "update/", data).then((outcome: boolean) => {
             if (outcome) {
                 commit(mutationKeys.EDIT_QUESTION, data);
             }

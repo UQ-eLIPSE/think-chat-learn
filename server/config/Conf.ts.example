@@ -1,4 +1,5 @@
 import { Utils } from "../../common/js/Utils";
+import { ICriteria } from "../../common/interfaces/DBSchema";
 
 /**
  * MOOCchat server configuration file
@@ -55,7 +56,33 @@ export const Conf: IConf = {
         adminFolder:  "/../../admin/dist/"
     },
     // Make sure this is larger than or equal to page delay for client
-    pageSlack: 10000
+    pageSlack: 10000,
+    endpointUrl: "http://localhost:8080",
+    defaultCriteria: [{
+        name: "evaluating",
+        description: "How well one evaluates"
+    }, {
+        name: "interpreting",
+        description: "How well one interprets"
+    }, {
+        name: "analysing",
+        description: "How well one analyses"
+    }, {
+        name: "makingArguments",
+        description: "How well one makes arguments"
+    }, {
+        name: "accuracyOfArguments",
+        description: "How accurate are one's arguments"
+    }, {
+        name: "expressingAndResponding",
+        description: "How well one expresses and responds to the prompt"
+    }, {
+        name: "depthOfReflection",
+        description: "How well one reflects on learning outcomes"
+    }, {
+        name: "mark",
+        description: "Your mark"
+    }]    
 }
 
 
@@ -115,5 +142,7 @@ interface IConf {
         clientFolder: string,
         adminFolder: string
     }
-    pageSlack: number
+    pageSlack: number,
+    endpointUrl: string,
+    defaultCriteria: Partial<ICriteria>[]
 }

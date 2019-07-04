@@ -40,7 +40,7 @@ export class ResponseController extends BaseController {
     }
 
     public setupRoutes() {
-        this.router.put("/create", StudentAuthenticatorMiddleware.checkUserId(), StudentAuthenticatorMiddleware.checkResponseBody(),
+        this.router.post("/create", StudentAuthenticatorMiddleware.checkUserId(), StudentAuthenticatorMiddleware.checkResponseBody(),
             this.createResponse.bind(this));
         this.router.get("/quizSession/:quizSessionId", this.getResponsesByQuizSession.bind(this));
     }
