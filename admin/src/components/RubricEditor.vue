@@ -1,13 +1,13 @@
 <template>
     <v-container>
-        <v-form>
+        <v-form ref="form">
             <v-container fluid grid-list-md>
                 <h1 class="moocchat-title">Rubric Editor</h1>
                 <h2 class="moocchat-title" v-if="id">Editing mode</h2>                
                 <v-layout row wrap>
                     <v-flex xs12>
                         <b-field label="Set the title of the rubric">
-                            <v-text-field label="Rubric Name" v-model="currentRubric.name" outline/>
+                            <v-text-field label="Rubric Name" v-model="currentRubric.name" outline :rules="[existenceRule]"/>
                         </b-field>
                     </v-flex>
                     <v-flex v-for="(setCriteria, index) in mountedCriteriasId" :key="index" class="criteria" xs12>
@@ -17,7 +17,7 @@
                             </v-card-title>
                             <!-- Since we can't actually set the criteria directly, we assign it key-wise instead -->
                             <!-- Also note that the name would not change, meanining re-render logic isn't affected -->
-                            <v-overflow-btn :items="criteriaDropDown" v-model="mountedCriteriasId[index]" outline/>
+                            <v-overflow-btn :items="criteriaDropDown" v-model="mountedCriteriasId[index]" :rules="[existenceRule, duplicateRule]" outline/>
                             <v-btn type="button" @click="deleteCriteria(index)">Remove Criteria Criteria</v-btn>
                         </v-card>
                     </v-flex>
@@ -35,6 +35,8 @@
 <script lang="ts">
 import { Vue, Component, Prop } from "vue-property-decorator";
 import { IRubric, ICriteria } from "../../../common/interfaces/ToClientData";
+import { Utils } from "../../../common/js/Utils";
+import { EventBus, EventList, SnackEvent } from "../EventBus";
 
 interface DropDownConfiguration {
   text: string,
@@ -97,6 +99,18 @@ export default class RubricEditor extends Vue {
 
     // We send the payload and then determine whether or not we update/create
     private sendRubric() {
+        // Perform a basic error check based on the rules
+        const valid = (this.$refs.form as any).validate();
+
+        if (!valid) {
+            const message: SnackEvent = {
+                message: "Failed generate quiz. Check the form for any errors",
+                error: true
+            }
+            EventBus.$emit(EventList.PUSH_SNACKBAR, message);
+            return;
+        }
+
         // Change the map into an array
         this.currentRubric.criterias = this.mountedCriteriasId;
         this.$store.dispatch("sendRubric", this.currentRubric);
@@ -120,6 +134,26 @@ export default class RubricEditor extends Vue {
             // Otherwise, only set the course 
             this.currentRubric.course = this.course;
         }
+    }
+
+    /**
+     * Rules here
+     */
+    get existenceRule() {
+        return Utils.Rules.existenceRule;
+    }
+
+    // Checks to see if there is a duplicate criteria id
+    get duplicateRule() {
+        return ((id: string) => {
+            const totalIds = this.mountedCriteriasId.reduce((count: number, criteriaId) => {
+                if (criteriaId === id) {
+                    count = count + 1;
+                }
+                return count;
+            }, 0);
+            return totalIds == 1 || "Duplicate criterias detected";            
+        });
     }
 }
 </script>

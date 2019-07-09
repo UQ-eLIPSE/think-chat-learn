@@ -2,13 +2,7 @@
   <v-app>
     <v-navigation-drawer permanent app>
       <v-toolbar flat>
-        <v-list>
-          <v-list-tile>
-            <v-list-tile-title class="title">
-              MoocChat - {{course}}
-            </v-list-tile-title>            
-          </v-list-tile>
-        </v-list>
+        <span class="text-truncate title">Course: {{course}}</span>
       </v-toolbar>
       <v-divider></v-divider>
       <v-list class="pt-0">

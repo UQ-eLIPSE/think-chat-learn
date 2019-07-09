@@ -1,18 +1,18 @@
 <template>
     <v-container>
-        <v-form>
+        <v-form ref="form">
             <v-container fluid grid-list-md>
                 <h1 class="moochat-name">Criteria Editor</h1>
                 <h2 v-if="currentCriteria._id">Editing mode</h2>
                 <v-layout row wrap>
                     <v-flex xs12>
                         <b-field label="Set the title of the criteria">
-                            <v-text-field label="Criteria Name" v-model="currentCriteria.name" outline/>
+                            <v-text-field label="Criteria Name" v-model="currentCriteria.name" outline :rules="[existenceRule]"/>
                         </b-field>
                     </v-flex>
                     <v-flex xs12>
                         <b-field label="Describe the criteria">
-                            <v-textarea label="Criteria Description" v-model="currentCriteria.description" outline/>
+                            <v-textarea label="Criteria Description" v-model="currentCriteria.description" outline :rules="[existenceRule]"/>
                         </b-field>
                     </v-flex>                    
                     <v-btn type="button" @click="sendCriteria()">{{currentCriteria._id ? "Edit Criteria" : "Create Criteria"}}</v-btn>
@@ -32,6 +32,9 @@
 <script lang="ts">
 import { Vue, Component, Prop } from "vue-property-decorator";
 import { ICriteria } from "../../../common/interfaces/ToClientData";
+import { EventBus, EventList, SnackEvent } from "../EventBus";
+import { Utils } from "../../../common/js/Utils";
+
 @Component({})
 export default class CriteriaEditor extends Vue {
 
@@ -58,6 +61,18 @@ export default class CriteriaEditor extends Vue {
 
     // We send the payload and then determine whether or not we update/create
     private sendCriteria() {
+        // Perform a basic error check based on the rules
+        const valid = (this.$refs.form as any).validate();
+
+        if (!valid) {
+            const message: SnackEvent = {
+                message: "Failed generate quiz. Check the form for any errors",
+                error: true
+            }
+            EventBus.$emit(EventList.PUSH_SNACKBAR, message);
+            return;
+        }
+
         this.$store.dispatch("sendCriteria", this.currentCriteria);
     }
 
@@ -78,6 +93,13 @@ export default class CriteriaEditor extends Vue {
             // Otherwise, only set the course 
             this.currentCriteria.course = this.course;
         }
+    }
+
+    /**
+     * Rules here
+     */
+    get existenceRule() {
+        return Utils.Rules.existenceRule;
     }
 }
 </script>

@@ -1,23 +1,23 @@
 <template>
     <v-container>
-        <v-form>
+        <v-form ref="form">
             <h1 class="moocchat-title">Question Editor</h1>
             <v-container fluid grid-list-md>
                 <v-layout row wrap>
                     <v-flex xs12>
                         <b-field label="Set the title of the question">
-                            <v-text-field label="Question Title" v-model="pageQuestion.title" outline/>
+                            <v-text-field label="Question Title" v-model="pageQuestion.title" :rules="[existenceRule]" outline/>
                         </b-field>
                     </v-flex>
                     <v-flex xs12>
                         <b-field label="Set the question type">
-                            <v-overflow-btn :items="questionTypeDropDown" v-model="pageQuestion.type" outline/>
+                            <v-overflow-btn :items="questionTypeDropDown" v-model="pageQuestion.type" :rules="[existenceRule]" outline/>
                         </b-field> 
                     </v-flex>           
                     <!-- All questions have some form of content -->
                     <v-flex xs12>
                         <b-field label="Set the content of the question">
-                            <v-textarea label="Content" v-model="pageQuestion.content" outline/>
+                            <v-textarea label="Content" v-model="pageQuestion.content" outline :rules="[existenceRule]"/>
                         </b-field>                
                     </v-flex>
                     <br>
@@ -70,6 +70,8 @@ import { TypeQuestion,
     IQuestionMCQ, IQuestionOption, IQuestion } from "../../../common/interfaces/ToClientData";
 import { QuestionType } from "../../../common/enums/DBEnums";
 import { getAdminLoginResponse } from "../../../common/js/front_end_auth";
+import { Utils } from "../../../common/js/Utils";
+import { EventBus, EventList, SnackEvent } from "../EventBus";
 
 interface DropDownConfiguration {
   text: string,
@@ -153,10 +155,20 @@ export default class QuestionPage extends Vue {
     }
 
     private submitQuestion() {
+        // Perform a basic error check based on the rules
+        const valid = (this.$refs.form as any).validate();
+
+        if (!valid) {
+            const message: SnackEvent = {
+                message: "Failed generate quiz. Check the form for any errors",
+                error: true
+            }
+            EventBus.$emit(EventList.PUSH_SNACKBAR, message);
+            return;
+        }
+
         // Remember to strip the data appropiately for backend purposes
-
         let outgoingQuestion: TypeQuestion;
-
         if (this.pageQuestion.type === QuestionType.MCQ) {
             // Remember to strip each option
             outgoingQuestion = {
@@ -209,5 +221,11 @@ export default class QuestionPage extends Vue {
         }
     }
 
+    /**
+     * Rules here
+     */
+    get existenceRule() {
+        return Utils.Rules.existenceRule;
+    }
 }
 </script>

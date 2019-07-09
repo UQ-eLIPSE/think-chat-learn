@@ -6,39 +6,86 @@
           <v-layout row wrap>
             <v-flex xs12>
               <b-field label="Set the quiz title">
-                <v-text-field label="Title" v-model="quizTitle" outline/>
+                <v-text-field label="Title" v-model="quizTitle" outline :rules="[existenceRule]"/>
               </b-field>
             </v-flex>
             <v-flex xs12>
-              <b-field label="Select a start date">
-                <b-datepicker v-model="startDate"
-                              placeholder="Select the Start Date"
-                              icon="calendar-today"></b-datepicker>
+              <!-- In order to create rules, we need to use Vue components instead. Menu with one item is essentially a drop down -->
+              <!-- Also v-on syntax is Vue 2.6+ -->
+              <b-field label="Select the start date">
+                <v-menu
+                  ref="startDateMenu"
+                  v-model="startDateShow"
+                  :close-on-content-click="false"
+                  :return-value.sync="startDateString"
+                >
+                  <template v-slot:activator="{ on }">
+                    <v-text-field v-model="startDateString" prepend-icon="calendar_today" readonly v-on="on" :rules="[existenceRule]"></v-text-field>
+                  </template> 
+                  <v-date-picker v-model="startDateString" no-title scrollable>
+                    <!-- Use buttons because time pickers require a 2-step process -->
+                      <v-spacer></v-spacer>
+                      <v-btn flat @click="startDateShow = false">Cancel</v-btn>
+                      <v-btn flat @click="$refs.startDateMenu.save(startDateString)">OK</v-btn>                     
+                  </v-date-picker>
+                </v-menu>
               </b-field>
             </v-flex>
             <v-flex xs12>
               <b-field label="Select a start time">
-                <b-timepicker v-model="startTime"
-                              rounded
-                              placeholder="Select the Start Time"
-                              icon="clock"
-                              hour-formart="format"></b-timepicker>
+                <v-menu
+                  ref="startTimeMenu"
+                  v-model="startTimeShow"
+                  :close-on-content-click="false"
+                  :return-value.sync="startTimeString"
+                >
+                  <template v-slot:activator="{ on }">
+                    <v-text-field v-model="startTimeString" prepend-icon= "access_time" readonly v-on="on" :rules="[existenceRule]">
+                    </v-text-field>
+                  </template>
+                  <v-time-picker v-model="startTimeString" scrollable>
+                      <v-btn flat @click="startTimeShow = false">Cancel</v-btn>
+                      <v-btn flat @click="$refs.startTimeMenu.save(startTimeString)">OK</v-btn>  
+                  </v-time-picker>
+                </v-menu>
               </b-field>
             </v-flex>
             <v-flex xs12>
-              <b-field label="Select an end date">
-                <b-datepicker v-model="endDate"
-                              placeholder="Select the End Date"
-                              icon="calendar-today"></b-datepicker>
+              <b-field label="Select the end date">
+                <v-menu
+                  ref="endDateMenu"
+                  v-model="endDateShow"
+                  :close-on-content-click="false"
+                  :return-value.sync="endDateString"
+                >
+                  <template v-slot:activator="{ on }">
+                    <v-text-field v-model="endDateString" prepend-icon="calendar_today" readonly v-on="on" required :rules="[existenceRule, validDateRule]">
+                    </v-text-field>
+                  </template> 
+                  <v-date-picker v-model="endDateString" no-title scrollable>
+                    <v-btn flat @click="endDateShow = false">Cancel</v-btn>
+                    <v-btn flat @click="$refs.endDateMenu.save(endDateString)">OK</v-btn>
+                  </v-date-picker>
+                </v-menu>
               </b-field>
             </v-flex>
             <v-flex xs12>
               <b-field label="Select an end time">
-                <b-timepicker v-model="endTime"
-                              rounded
-                              placeholder="Select the End Time"
-                              icon="clock"
-                              hour-formart="format"></b-timepicker>
+                <v-menu
+                  ref="endTimeMenu"
+                  v-model="endTimeShow"
+                  :close-on-content-click="false"
+                  :return-value.sync="endTimeString"
+                >
+                  <template v-slot:activator="{ on }">
+                    <v-text-field v-model="endTimeString" prepend-icon= "access_time" readonly v-on="on" :rules="[existenceRule, validDateRule]">
+                    </v-text-field>
+                  </template> 
+                  <v-time-picker v-model="endTimeString" scrollable>
+                    <v-btn flat @click="endTimeShow = false">Cancel</v-btn>
+                    <v-btn flat @click="$refs.endTimeMenu.save(endTimeString)">OK</v-btn>
+                  </v-time-picker>
+                </v-menu>
               </b-field>
             </v-flex>
             <!-- Temporary wrapper for the page labels -->
@@ -49,10 +96,11 @@
               class="p"
               :key="index" xs12>
               <b-field label="Set the page title">
-                <v-text-field label="Title" v-model="page.title" outline/>
+                <v-text-field label="Title" v-model="page.title" outline :rules="[existenceRule]"/>
               </b-field>
               <b-field label="Set the page type">
-                <v-overflow-btn :items="pageTypeDropDown" v-model="page.type" outline :rules="rules"/>
+                <!-- Only one rule applys to the discussion page rule -->
+                <v-overflow-btn :items="pageTypeDropDown" v-model="page.type" outline :rules="[discussionPageRule]"/>
               </b-field>
               <!-- Business logic for rendering based on page type -->
               <v-checkbox v-if="(page.type === PageType.DISCUSSION_PAGE)" v-model="page.displayResponses" :label="'Display Responses from question?'">
@@ -60,7 +108,9 @@
               <!-- TODO make this a proper select box once Questions and Answers are implemented -->
               <b-field v-if="(page.type === PageType.QUESTION_ANSWER_PAGE) || (page.type === PageType.DISCUSSION_PAGE)"
                 label="Set the associate question for the page">
-                <v-overflow-btn :items="questionDropDown" v-model="page.questionId" outline/>
+                <v-overflow-btn :items="questionDropDown"
+                  v-model="page.questionId" outline 
+                  :rules="page.type === PageType.QUESTION_ANSWER_PAGE ? [existenceRule, duplicateQuestionPageRule] : [existenceRule, duplicateDiscussionPageRule]"/>
               </b-field>
               <select v-model="page.surveryId"
                       v-else-if="page.type === PageType.SURVEY_PAGE">
@@ -83,7 +133,7 @@
             </v-flex>
             <v-flex xs12>
               <b-field label="Set the associated Rubric">
-                <v-overflow-btn :items="rubricDropDown" v-model="rubricId" outline/>
+                <v-overflow-btn :items="rubricDropDown" v-model="rubricId" outline :rules="[existenceRule]"/>
               </b-field>
             </v-flex>      
             <v-flex xs12>
@@ -112,7 +162,7 @@
 }
 </style>
 <script lang="ts">
-import { Vue, Component, Prop } from "vue-property-decorator";
+import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import {
   IPage,
   IQuestionAnswerPage,
@@ -129,7 +179,7 @@ import * as DBSchema from "../../../common/interfaces/DBSchema";
 import { getAdminLoginResponse } from "../../../common/js/front_end_auth";
 import { IQuizOverNetwork } from "../../../common/interfaces/NetworkData";
 import { EventBus, EventList, SnackEvent } from "../EventBus";
-
+import { Utils } from "../../../common/js/Utils";
 interface DropDownConfiguration {
   text: string,
   value: string,
@@ -142,11 +192,17 @@ export default class QuizPage extends Vue {
 
   @Prop({ default: "" }) private id!: string;
 
-  // The start date in ISO8601. Note that Buefy doesn't really have datetime just date and time unfortunately
+  // The dates and time in ISO8601. To compute the time we use the current date and only look at time
   private startDate: Date | null = null;
+  // The string versions are required to interact with the datepicker
+  private startDateString: string = "";
   private startTime: Date | null = null;
+  private startTimeString: string = "";
   private endDate: Date | null = null;
+  private endDateString: string = "";
   private endTime: Date | null = null;
+  private endTimeString: string = "";
+
   private test: any = {};
   private rubricId: string = "";
 
@@ -179,25 +235,18 @@ export default class QuizPage extends Vue {
     },    
   ]
 
+  // Menu booleans
+  private startDateShow: boolean = false;
+  private endDateShow: boolean = false;
+  private startTimeShow: boolean = false;
+  private endTimeShow: boolean = false;
+
+
   initMarkConfig(): DBSchema.MarkConfig {
     return {
       allowMultipleMarkers: false,
       maximumMarks: 5
     }
-  }
-
-  get rules() {
-    return [this.discussionPageRule];
-  }
-
-  // Determines whether or not a quiz has a discussion page
-  get discussionPageRule() {
-    return (() => { 
-      const hasDiscussion = this.pages.some((page) => {
-        return page.type === PageType.DISCUSSION_PAGE;
-      });
-      return hasDiscussion || "No dicussion page found, should have one present in the quiz";
-    });
   }
 
   // Converts the dictionary to an array based on key number
@@ -425,6 +474,13 @@ export default class QuizPage extends Vue {
         this.endDate = new Date(loadedQuiz.availableEnd!);
         this.endTime = new Date(loadedQuiz.availableEnd!);
 
+        // Assuming the date comes from ISO8601 we need to strip the string in this manner
+        this.startDateString = this.startDate ? this.startDate.toISOString().substr(0, 10) : "";
+        this.endDateString = this.endDate ? this.endDate.toISOString().substr(0, 10) : "";
+        // Padding isn't necessary but for visualisation purposes it is
+        this.startTimeString = this.startTime ? `${this.startTime.getHours()}`.padStart(2, "0") + ":" + `${this.startTime.getMinutes()}`.padStart(2, "0") : "";
+        this.endTimeString = this.endTime ? `${this.endTime.getHours()}`.padStart(2, "0") + ":" + `${this.endTime.getMinutes()}`.padStart(2, "0") : "";
+
         this.quizTitle = loadedQuiz.title;
         this.rubricId = loadedQuiz.rubricId!;
         this.markingConfiguration = loadedQuiz.markingConfiguration || this.markingConfiguration;
@@ -439,6 +495,104 @@ export default class QuizPage extends Vue {
         }, emptyDict);
       }
     }
+  }
+
+  @Watch("startDateString")
+  private onStartDateChange(val: string, oldVal?: string) {
+    this.startDate = new Date(val);
+  }
+
+  @Watch("endDateString")
+  private onEndDateChange(val: string, oldVal?: string) {
+    this.endDate = new Date(val);
+  }
+  
+  // Watching the start time is generally done when a user touches the Vuetify timepicker
+  @Watch("startTimeString")
+  private onStartTimeChange(val: string, oldVal?: string) {
+    this.startTime = new Date();
+    // Vuetify times are assumed to be in a HH:MM format
+    const hourMinutes = val.split(":");
+    this.startTime.setHours(parseInt(hourMinutes[0]), parseInt(hourMinutes[1]));
+  }
+  
+  // Similar logic above
+  @Watch("endTimeString")
+  private onEndTimeChange(val: string, oldVal?: string) {
+    this.endTime = new Date();
+    const hourMinutes = val.split(":");
+    this.endTime.setHours(parseInt(hourMinutes[0]), parseInt(hourMinutes[1]));    
+  }  
+
+  /**
+   * Below is a list of rules that should be validated both front and back end
+   */
+
+  // Determines whether or not a quiz has a discussion page
+  get discussionPageRule() {
+    return (() => { 
+      const hasDiscussion = this.pages.some((page) => {
+        return page.type === PageType.DISCUSSION_PAGE;
+      });
+      return hasDiscussion || "No dicussion page found, should have one present in the quiz";
+    });
+  }
+
+  // Compares the start and end date values and existence
+  get validDateRule() {
+    return (() => {
+      if (this.startDate && this.startTime && this.endDate && this.endTime) {
+        // Construct the time and check for comparisons since we have valid inputs
+        const availableStart = new Date(
+          this.startDate.getFullYear(),
+          this.startDate.getMonth(),
+          this.startDate.getDate(),
+          this.startTime.getHours(),
+          this.startTime.getMinutes(),
+          this.startTime.getSeconds()
+        );
+
+        const availableEnd = new Date(
+          this.endDate.getFullYear(),
+          this.endDate.getMonth(),
+          this.endDate.getDate(),
+          this.endTime.getHours(),
+          this.endTime.getMinutes(),
+          this.endTime.getSeconds()
+        );
+        return availableEnd.getTime() > availableStart.getTime() || "Set the end time to be greater than start time";
+      } else {
+        return "Start Date and End Date needs to be filled out"
+      }
+    });
+  }
+
+  get existenceRule() {
+    return Utils.Rules.existenceRule;
+  }
+
+  get duplicateQuestionPageRule() {
+    return ((id: string) => {
+        const totalIds = this.pages.reduce((count: number, page) => {
+            if (page.type === PageType.QUESTION_ANSWER_PAGE && page.questionId === id) {
+                count = count + 1;
+            }
+            return count;
+        }, 0);
+        return totalIds == 1 || "Duplicate questions detected";            
+    });
+  }
+
+  get duplicateDiscussionPageRule() {
+    return ((id: string) => {
+        const totalIds = this.pages.reduce((count: number, page) => {
+            if (page.type === PageType.DISCUSSION_PAGE && page.questionId === id) {
+                count = count + 1;
+            }
+            return count;
+        }, 0);
+        return totalIds == 1 || "Duplicate discussions detected";            
+    });
   }
 }
 </script>

@@ -134,4 +134,11 @@ export namespace Utils {
       return n <= 1 ? str : str + repeat(str, n - 1);
     }
   }
+
+  export namespace Rules {
+    // For Vuetify form elements, check if the value is falsy and returns whether or not exist or an error message
+    export function existenceRule(value: any) {
+      return value ? true : "Empty field"; 
+    }
+  }
 }
