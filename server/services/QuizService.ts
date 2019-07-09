@@ -22,17 +22,11 @@ export class QuizService extends BaseService<IQuiz | IQuizOverNetwork> {
             throw new Error("No page from sent quiz");
         }
 
-        const hasDiscussion = data.pages.some((page) => {
-            return page.type === PageType.DISCUSSION_PAGE;
-        });
-
-        if (!hasDiscussion) {
-            throw new Error("No discussion page");
-        }        
+        this.validateQuiz(data);
 
         // Note we create ids for each page associated at the same time
         // The create operation returns the id as well
-        if (data.pages && hasDiscussion && data.pages.length) {
+        if (data.pages && data.pages.length) {
             data.pages.forEach((page) => {
                 page._id = (new ObjectId()).toHexString();
             });
@@ -53,14 +47,8 @@ export class QuizService extends BaseService<IQuiz | IQuizOverNetwork> {
         if (!data.pages) {
             throw new Error("No page from sent quiz");
         }
-        
-        const hasDiscussion = data.pages.some((page) => {
-            return page.type === PageType.DISCUSSION_PAGE;
-        });
 
-        if (!hasDiscussion) {
-            throw new Error("No discussion page");
-        }
+        this.validateQuiz(data);
 
         if (data.pages.length) {
             data.pages.forEach((page) => {
@@ -90,5 +78,77 @@ export class QuizService extends BaseService<IQuiz | IQuizOverNetwork> {
 
     public async findOne(quizId: string): Promise<IQuiz | null> {
         return this.quizRepo.findOne(quizId);
+    }
+
+    // Duplicated behaviour from the form validation used in the front-end
+    private validateQuiz(maybeQuiz: IQuizOverNetwork) {
+        // Check for falsy values
+        if (!maybeQuiz.rubricId) {
+            throw new Error("No rubric id");
+        }
+
+        if (!maybeQuiz.title) {
+            throw new Error("No quiz title");
+        }
+
+        if (!maybeQuiz.availableEnd) {
+            throw new Error("No provided end datetime");
+        }
+
+        if (!maybeQuiz.availableStart) {
+            throw new Error("No provided start datetime");
+        }
+
+        if ((new Date(maybeQuiz.availableEnd).getTime()) < (new Date(maybeQuiz.availableStart)).getTime()) {
+            throw new Error("Start stime is greater than end time");
+        }
+
+        const hasDiscussion = maybeQuiz.pages!.some((page) => {
+            return page.type === PageType.DISCUSSION_PAGE;
+        });
+
+        if (!hasDiscussion) {
+            throw new Error("No discussion page");
+        }        
+
+        // Count the discussion questions
+        const discussionCheck = maybeQuiz.pages!.some((page) => {
+            if (page.type === PageType.DISCUSSION_PAGE) {
+                const questionTotal = maybeQuiz.pages!.reduce((count: number, otherPage) => {
+                    if (otherPage.type === PageType.DISCUSSION_PAGE && page.questionId === otherPage.questionId) {
+                        count = count + 1;
+                    }
+
+                    return count;
+                }, 0);
+
+                return questionTotal !== 1;
+            }
+            return false;
+        });
+
+        if (discussionCheck) {
+            throw Error("Duplicate discussion questions");
+        }
+
+        // Count the question answer questions
+        const questionCheck = maybeQuiz.pages!.some((page) => {
+            if (page.type === PageType.QUESTION_ANSWER_PAGE) {
+                const questionTotal = maybeQuiz.pages!.reduce((count: number, otherPage) => {
+                    if (otherPage.type === PageType.QUESTION_ANSWER_PAGE && page.questionId === otherPage.questionId) {
+                        count = count + 1;
+                    }
+
+                    return count;
+                }, 0);
+
+                return questionTotal !== 1;
+            }
+            return false;
+        });
+
+        if (questionCheck) {
+            throw Error("Duplicate questions in the question answer pages");
+        }        
     }
 }
