@@ -177,7 +177,7 @@ const getters: GetterTree<IState, undefined> = {
 };
 const actions: ActionTree<IState, undefined> = {
     createQuiz({ commit }: { commit: Commit }, data: IQuizOverNetwork) {
-        API.request(API.PUT, API.QUIZ + "create", data).then((outcome: string) => {
+        API.request(API.POST, API.QUIZ + "create", data).then((outcome: string) => {
             if (outcome) {
                 commit(mutationKeys.SET_QUIZ, convertNetworkQuizIntoQuiz(data));
                 EventBus.$emit(EventList.PUSH_SNACKBAR, "Created a quiz");
@@ -186,7 +186,7 @@ const actions: ActionTree<IState, undefined> = {
     },
 
     updateQuiz({ commit }: { commit: Commit }, data: IQuizOverNetwork) {
-        API.request(API.POST, API.QUIZ + "update", data).then((outcome: boolean) => {
+        API.request(API.PUT, API.QUIZ + "update", data).then((outcome: boolean) => {
             if (outcome) {
                 commit(mutationKeys.EDIT_QUIZ, convertNetworkQuizIntoQuiz(data));
                 EventBus.$emit(EventList.PUSH_SNACKBAR, "Updated a Quiz");
