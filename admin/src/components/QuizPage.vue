@@ -226,10 +226,6 @@ export default class QuizPage extends Vue {
       value: PageType.INFO_PAGE
     },
     {
-      text: 'Survey Page',
-      value: PageType.SURVEY_PAGE
-    },
-    {
       text: 'Discussion Page',
       value: PageType.DISCUSSION_PAGE
     },    

@@ -72,6 +72,7 @@ import { QuestionType } from "../../../common/enums/DBEnums";
 import { getAdminLoginResponse } from "../../../common/js/front_end_auth";
 import { Utils } from "../../../common/js/Utils";
 import { EventBus, EventList, SnackEvent, ModalEvent } from "../EventBus";
+import { IQuestionQualitative } from "../../../common/interfaces/DBSchema";
 
 interface DropDownConfiguration {
   text: string,
@@ -89,9 +90,8 @@ const defaultOption: FrontEndQuestionOption = {
     mountedId: 0
 };
 
-const defaultQuestion: IQuestionMCQ = {
-    type: QuestionType.MCQ,
-    options: [defaultOption],
+const defaultQuestion: IQuestionQualitative = {
+    type: QuestionType.QUALITATIVE,
     title: "",
     content: ""
 };
@@ -115,10 +115,6 @@ export default class QuestionPage extends Vue {
         {
             text: QuestionType.QUALITATIVE,
             value: QuestionType.QUALITATIVE
-        },
-        {
-            text: QuestionType.MCQ,
-            value: QuestionType.MCQ
         }
     ]
 
