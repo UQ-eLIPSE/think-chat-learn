@@ -75,7 +75,7 @@ const actions = {
                 commit(mutationKeys.EDIT_QUESTION, data);
                 
                 const message: SnackEvent = {
-                    message: "Created a Question"
+                    message: "Edited a Question"
                 };
 
                 EventBus.$emit(EventList.PUSH_SNACKBAR, message);

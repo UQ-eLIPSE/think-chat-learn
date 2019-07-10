@@ -47,6 +47,7 @@
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
 import { IQuiz } from "../../../common/interfaces/DBSchema";
+import { EventBus, EventList, ModalEvent } from "../EventBus";
 @Component({})
 export default class QuizList extends Vue {
     private editQuiz(id: string) {
@@ -54,7 +55,13 @@ export default class QuizList extends Vue {
     }
 
     private deleteQuiz(id: string) {
-        this.$store.dispatch("deleteQuiz", id);
+        const payload: ModalEvent = {
+            message: `Are you sure to delete quiz with ID: ${id}`,
+            title: "Deleting a quiz",
+            fn: this.$store.dispatch,
+            data: ["deleteQuiz", id]
+        };
+        EventBus.$emit(EventList.OPEN_MODAL, payload);
     }
 
     get quizzes(): IQuiz[] {

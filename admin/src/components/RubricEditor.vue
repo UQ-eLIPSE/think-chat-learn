@@ -36,7 +36,7 @@
 import { Vue, Component, Prop } from "vue-property-decorator";
 import { IRubric, ICriteria } from "../../../common/interfaces/ToClientData";
 import { Utils } from "../../../common/js/Utils";
-import { EventBus, EventList, SnackEvent } from "../EventBus";
+import { EventBus, EventList, SnackEvent, ModalEvent } from "../EventBus";
 
 interface DropDownConfiguration {
   text: string,
@@ -54,7 +54,7 @@ export default class RubricEditor extends Vue {
     private currentRubric: IRubric = {
         name: "Default Name",
         course: "Sample course",
-        criterias: []
+        criterias: [],
     };
 
     private failedFetch: boolean = false;
@@ -109,11 +109,18 @@ export default class RubricEditor extends Vue {
             }
             EventBus.$emit(EventList.PUSH_SNACKBAR, message);
             return;
-        }
+        } else {
+            // Change the map into an array and send it over
+            this.currentRubric.criterias = this.mountedCriteriasId;
 
-        // Change the map into an array
-        this.currentRubric.criterias = this.mountedCriteriasId;
-        this.$store.dispatch("sendRubric", this.currentRubric);
+            const message: ModalEvent = {
+                message: `Are you sure to create/modify the rubric?`,
+                title: `Creating/modifying a rubric`,
+                fn: this.$store.dispatch,
+                data: ["sendRubric", this.currentRubric]
+            }
+            EventBus.$emit(EventList.OPEN_MODAL, message);            
+        }
     }
 
     // Mounting is a matter of figuring out whether or not we have a Rubric

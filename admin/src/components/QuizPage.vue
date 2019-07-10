@@ -178,7 +178,7 @@ import { PageType } from "../../../common/enums/DBEnums";
 import * as DBSchema from "../../../common/interfaces/DBSchema";
 import { getAdminLoginResponse } from "../../../common/js/front_end_auth";
 import { IQuizOverNetwork } from "../../../common/interfaces/NetworkData";
-import { EventBus, EventList, SnackEvent } from "../EventBus";
+import { EventBus, EventList, SnackEvent, ModalEvent } from "../EventBus";
 import { Utils } from "../../../common/js/Utils";
 interface DropDownConfiguration {
   text: string,
@@ -408,9 +408,22 @@ export default class QuizPage extends Vue {
 
     if (this.isEditing) {
       outgoingQuiz._id = this.id;
-      this.$store.dispatch("updateQuiz", outgoingQuiz);
+      
+      const message: ModalEvent = {
+          title: `Editing quiz`,
+          message: `Are you sure to edit quiz of ID ${this.id}?`,
+          fn: this.$store.dispatch,
+          data: ["updateQuiz", outgoingQuiz]
+      }
+      EventBus.$emit(EventList.OPEN_MODAL, message);
     } else {
-      this.$store.dispatch("createQuiz", outgoingQuiz);
+      const message: ModalEvent = {
+          title: `Creating quiz`,
+          message: `Are you sure to create a quiz?`,
+          fn: this.$store.dispatch,
+          data: ["createQuiz", outgoingQuiz]
+      }
+      EventBus.$emit(EventList.OPEN_MODAL, message);         
     }
   }
 

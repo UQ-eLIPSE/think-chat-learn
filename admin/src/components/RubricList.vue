@@ -30,6 +30,8 @@
 <script lang="ts">
 import {Vue, Component} from "vue-property-decorator";
 import { IRubric } from "../../../common/interfaces/ToClientData";
+import { EventBus, EventList, ModalEvent } from "../EventBus";
+
 @Component({})
 export default class RubricList extends Vue {
 
@@ -38,7 +40,13 @@ export default class RubricList extends Vue {
     }
 
     private async deleteRubric(id: string) {
-        await this.$store.dispatch("deleteRubric", id);
+        const payload: ModalEvent = {
+            message: `Are you sure to delete rubric with ID: ${id}`,
+            title: "Deleting a rubric",
+            fn: this.$store.dispatch,
+            data: ["deleteRubric", id]
+        };
+        EventBus.$emit(EventList.OPEN_MODAL, payload);          
     }
 
     get rubrics(): IRubric[] {

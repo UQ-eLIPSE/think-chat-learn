@@ -34,6 +34,8 @@
 <script lang="ts">
 import {Vue, Component} from "vue-property-decorator";
 import { ICriteria } from "../../../common/interfaces/ToClientData";
+import { EventBus, EventList, ModalEvent } from "../EventBus";
+
 @Component({})
 export default class CriteriaList extends Vue {
     private async editCriteria(id: string) {
@@ -41,7 +43,13 @@ export default class CriteriaList extends Vue {
     }
 
     private async deleteCriteria(id: string) {
-        await this.$store.dispatch("deleteCriteria", id);
+        const payload: ModalEvent = {
+            message: `Are you sure to delete criteria with ID: ${id}`,
+            title: "Deleting a criteria",
+            fn: this.$store.dispatch,
+            data: ["deleteCriteria", id]
+        };
+        EventBus.$emit(EventList.OPEN_MODAL, payload);          
     }
 
     get criterias(): ICriteria[] {

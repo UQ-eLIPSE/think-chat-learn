@@ -33,6 +33,8 @@
 <script lang="ts">
 import {Vue, Component} from "vue-property-decorator";
 import { IQuestion } from "../../../common/interfaces/DBSchema";
+import { EventBus, EventList, ModalEvent } from "../EventBus";
+
 @Component({})
 export default class QuestionList extends Vue {
     private editQuestion(id: string) {
@@ -40,7 +42,13 @@ export default class QuestionList extends Vue {
     }
 
     private deleteQuestion(id: string) {
-        this.$store.dispatch("deleteQuestion", id);
+        const payload: ModalEvent = {
+            message: `Are you sure to delete question with ID: ${id}`,
+            title: "Deleting a question",
+            fn: this.$store.dispatch,
+            data: ["deleteQuestion", id]
+        };
+        EventBus.$emit(EventList.OPEN_MODAL, payload);        
     }
 
     get questions(): IQuestion[] {

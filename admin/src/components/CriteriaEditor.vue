@@ -32,7 +32,7 @@
 <script lang="ts">
 import { Vue, Component, Prop } from "vue-property-decorator";
 import { ICriteria } from "../../../common/interfaces/ToClientData";
-import { EventBus, EventList, SnackEvent } from "../EventBus";
+import { EventBus, EventList, SnackEvent, ModalEvent } from "../EventBus";
 import { Utils } from "../../../common/js/Utils";
 
 @Component({})
@@ -71,9 +71,15 @@ export default class CriteriaEditor extends Vue {
             }
             EventBus.$emit(EventList.PUSH_SNACKBAR, message);
             return;
+        } else {
+            const message: ModalEvent = {
+                message: `Are you sure to create/modify the criteria?`,
+                title: `Creating/modifying a criteria`,
+                fn: this.$store.dispatch,
+                data: ["sendCriteria", this.currentCriteria]
+            }
+            EventBus.$emit(EventList.OPEN_MODAL, message);
         }
-
-        this.$store.dispatch("sendCriteria", this.currentCriteria);
     }
 
     // Mounting is a matter of figuring out whether or not we have a criteria

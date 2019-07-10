@@ -71,7 +71,7 @@ import { TypeQuestion,
 import { QuestionType } from "../../../common/enums/DBEnums";
 import { getAdminLoginResponse } from "../../../common/js/front_end_auth";
 import { Utils } from "../../../common/js/Utils";
-import { EventBus, EventList, SnackEvent } from "../EventBus";
+import { EventBus, EventList, SnackEvent, ModalEvent } from "../EventBus";
 
 interface DropDownConfiguration {
   text: string,
@@ -199,9 +199,24 @@ export default class QuestionPage extends Vue {
         if (this.isEditing) {
             outgoingQuestion._id = this.id;
 
-            this.$store.dispatch("editQuestion", outgoingQuestion);
+            const message: ModalEvent = {
+                message: `Editing question`,
+                title: `Are you sure to edit the question of id ${this.id}?`,
+                fn: this.$store.dispatch,
+                data: ["editQuestion", outgoingQuestion]
+            }
+            EventBus.$emit(EventList.OPEN_MODAL, message);
+            //this.$store.dispatch("editQuestion", outgoingQuestion);
         } else {
-            this.$store.dispatch("createQuestion", outgoingQuestion);
+            const message: ModalEvent = {
+                message: `Creating question`,
+                title: `Are you sure to create a question?`,
+                fn: this.$store.dispatch,
+                data: ["createQuestion", outgoingQuestion]
+            }
+            EventBus.$emit(EventList.OPEN_MODAL, message);
+
+            //this.$store.dispatch("createQuestion", outgoingQuestion);
         }
 
     }

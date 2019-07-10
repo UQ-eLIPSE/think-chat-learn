@@ -19,6 +19,41 @@
     <v-content>
       <router-view/>
     </v-content>
+    <v-dialog v-model="openDialog">
+      <v-card>
+        <v-card-title
+          class="headline"
+          primary-title
+        >
+          {{loadedDialogEvent.title}}
+        </v-card-title>
+
+        <v-card-text>
+          {{loadedDialogEvent.message}}
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="primary"
+            flat
+            @click="openDialog = false"
+          >
+            No
+          </v-btn>
+          <!-- Hacky way to take in a function with variable lengths -->
+          <v-btn
+            color="primary"
+            flat
+            @click="(() => { openDialog= false; handledLoadedFunction();}) "
+          >
+            Yes
+          </v-btn>
+        </v-card-actions>
+      </v-card>      
+    </v-dialog>
   </v-app>
 </template>
 
@@ -216,7 +251,7 @@ html {
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
 import { Snackbar } from 'buefy/dist/components/snackbar'
-import { EventBus, EventList, SnackEvent } from "./EventBus";
+import { EventBus, EventList, SnackEvent, ModalEvent } from "./EventBus";
 import SideNav from "./components/SideNav.vue";
 
 // Temporary interface for the side nav
@@ -265,6 +300,12 @@ const SideNavItems: SideNavItem[] = [
 })
 export default class App extends Vue {
 
+  private openDialog: boolean = false;
+  private loadedDialogEvent: ModalEvent = {
+    message: "",
+    title: ""
+  }
+
   get sideNavItems() {
     return SideNavItems;
   }
@@ -287,9 +328,22 @@ export default class App extends Vue {
     });
   }
 
+  private handleOpenModal(data: ModalEvent) {
+    this.openDialog = true;
+    this.loadedDialogEvent = data;
+  }
+
+  private handledLoadedFunction() {
+    if (this.loadedDialogEvent.fn && this.loadedDialogEvent.data) {
+      // Remember, apply takes in an array of data and fills out the function signature
+      this.loadedDialogEvent.fn.apply(null, this.loadedDialogEvent.data);
+    }
+  }
+
   private mounted() {
     // Set up the bus events
     EventBus.$on(EventList.PUSH_SNACKBAR, this.handlePushSnackBar);
+    EventBus.$on(EventList.OPEN_MODAL, this.handleOpenModal);
   }
 }
 </script>
