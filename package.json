@@ -16,11 +16,13 @@
     "build_admin_dev": "cd ./admin && npm run build_dev",
     "build_client": "cd ./client && npm run build",
     "build_client_dev": "cd ./client && npm run build_dev",
+    "build_intermediate": "cd ./intermediate && npm run build",
+    "build_intermediate_dev": "cd ./intermediate && npm run build_dev",    
     "build_server_main": "tsc --project ./server/tsconfig.json",
     "build_server_copy_static": "copyfiles \"./server/static/**\" ./build",
     "build_server": "npm run build_server_main && npm run build_server_copy_static",
-    "build": "npm run clean && npm run build_client && npm run build_server && npm run build_admin",
-    "build_dev": "npm run clean && npm run build_client_dev && npm run build_server && npm run build_admin_dev"
+    "build": "npm run clean && npm run build_client && npm run build_server && npm run build_admin && npm run build_intermediate",
+    "build_dev": "npm run clean && npm run build_client_dev && npm run build_server && npm run build_admin_dev &&  npm run build_intermediate_dev"
   },
   "author": "eLIPSE",
   "license": "MIT",

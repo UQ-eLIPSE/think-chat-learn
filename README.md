@@ -17,7 +17,10 @@
 1. Go to root directory
 2. Run `npm run build` for production or `npm run build_dev` for dev
 3. Run `npm run start`
-4. If watchers are needed for client. `cd ./client` and then `npm run build_dev_watch`
+4. If watchers are needed for client. `cd /client` and then `npm run build_dev_watch`
+3. If watchers are needed for admin. `cd /admin` and then `npm run build_dev_watch`
+3. If watchers are needed for intermediate. `cd /intermediate` and then `npm run build_dev_watch`
+
 
 ## Deploying
 

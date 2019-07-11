@@ -59,9 +59,6 @@ import {
 import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
 import * as IWSToServerData from "../../../common/interfaces/IWSToServerData";
 import { TypeQuestion, Response, IntermediateLogin } from "../../../common/interfaces/ToClientData";
-import { SocketState, TimerSettings } from "../interfaces";
-import { EventBus } from "../EventBus";
-import { EmitterEvents } from "../emitters";
 import { PageType, QuestionType } from "../../../common/enums/DBEnums";
 import { WebsocketManager } from "../../../common/js/WebsocketManager";
 import { WebsocketEvents } from "../../../common/js/WebsocketEvents";

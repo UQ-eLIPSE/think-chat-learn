@@ -1,9 +1,6 @@
 import Vue from "vue";
 import { Commit } from "vuex";
-import { IQuiz, TypeQuestion, IDiscussionPage,
-    QuestionRequestData, Page } from "../../../../common/interfaces/ToClientData";
-import { PageType } from "../../../../common/enums/DBEnums";
-import API from "../../../../common/js/DB_API";
+import { IQuiz, TypeQuestion } from "../../../../common/interfaces/ToClientData";
 
 export interface IState {
   quiz: IQuiz | null;
