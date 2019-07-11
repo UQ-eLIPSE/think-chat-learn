@@ -89,7 +89,8 @@ export class UserService extends BaseService {
             type: LoginResponseTypes.BACKUP_LOGIN,
             user: tempLogin.user,
             quizId: tempLogin.quizId,
-            courseId: tempLogin.courseId
+            courseId: tempLogin.courseId,
+            isAdmin: true
         }
 
         return output;
@@ -514,7 +515,7 @@ class UserServiceHelper {
         }
 
         // From this point on we grab every single question associated with the pages
-        const questionSet = new Set();
+        const questionSet = new Set<string>();
         pages.forEach((element) => {
             if ((element.type === PageType.QUESTION_ANSWER_PAGE) || (element.type === PageType.DISCUSSION_PAGE)) {
                 // Fetch the question in the set

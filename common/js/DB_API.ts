@@ -42,17 +42,17 @@ export const API: IApi = {
       method,
       url: API_URL + url,
       headers: {
-        Authorization: "Bearer " + (token ? token : getIdToken()),
+        "Authorization": "Bearer " + (token ? token : getIdToken()),
         "Content-Type": contentType ? contentType : "application/json"
       },
       data
-    })
+    } as any)
       .then((res: any) => {
         setIdToken(res.headers["access-token"]);
         return res;
       })
       .then((res: any) => res.data)
-      .catch(e => {
+      .catch((e) => {
         alert(e);
       });
   },

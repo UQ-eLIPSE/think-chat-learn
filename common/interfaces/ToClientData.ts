@@ -48,6 +48,7 @@ export interface BackupLoginResponse extends GenericLogin {
   user: IUser;
   courseId: string;
   quizId: string | null;
+  isAdmin: boolean;
 }
 
 // Only difference is the type and the quizSessionId
@@ -90,4 +91,5 @@ export interface QuestionReconnectData {
   questions: TypeQuestion[];
 }
 
-export type QuizSessionDataObject = { quizSession: IQuizSession | null, userSession: IUserSession | null, user: IUser | null, responses: Response[] };
+export type QuizSessionDataObject = { quizSession: IQuizSession | null,
+  userSession: IUserSession | null, user: IUser | null, responses: Response[] };

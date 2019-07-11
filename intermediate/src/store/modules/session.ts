@@ -17,6 +17,7 @@ export interface IState {
     timeoutTime: number;
     tokens: string[];
     responses: Response[];
+    // A dictionary in the case that multiple sessions are required.
     validSessions: {[key: string]: boolean};
 }
 
@@ -160,6 +161,15 @@ const actions = {
             });
     },
 
+    updateResponses({ commit }: {commit: Commit}, responses: Response[]) {
+        return API.request(API.PUT, API.RESPONSE + "bulkUpdate", responses,
+            undefined, getToken()).then((output: { outcome: boolean }) => {
+                if (output.outcome) {
+                    commit(mutationKeys.SET_RESPONSES, responses);
+                }
+            });
+    },
+
     unsetValidSession({ commit }: {commit: Commit}, id: string) {
         commit(mutationKeys.UNSET_VALID_SESSION, id);
     },
@@ -202,9 +212,9 @@ const mutations = {
     },
 
     [mutationKeys.SET_RESPONSES](funcState: IState, responses: Response[]) {
-        for (let i = 0; i < responses.length; i++) {
-            if (!funcState.responses.find((response) =>  response._id === responses[i]._id)) {
-                Vue.set(funcState.responses, funcState.responses.length, responses[i]);
+        for (const respone of responses) {
+            if (!funcState.responses.find((otherResponse) =>  respone._id === otherResponse._id)) {
+                Vue.set(funcState.responses, funcState.responses.length, respone);
             }
         }
     },
@@ -216,8 +226,8 @@ const mutations = {
     [mutationKeys.UNSET_VALID_SESSION](funcState: IState, quizSessionId: string) {
         Vue.set(funcState.validSessions, quizSessionId, false);
     },
-    
-    [mutationKeys.REMOVE_VALID_SESSION](funcState:IState, quizSessionId: string) {
+
+    [mutationKeys.REMOVE_VALID_SESSION](funcState: IState, quizSessionId: string) {
         Vue.delete(funcState.validSessions, quizSessionId);
     }
 };

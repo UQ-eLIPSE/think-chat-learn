@@ -65,6 +65,20 @@ export class ResponseService extends BaseService{
         return this.responseRepo.updateOne(data);
     }
 
+    public async updateResponses(data: Response[]): Promise<boolean> {
+        const updates: Promise<boolean>[] = [];
+        for (let i = 0; i < data.length; i++) {
+            updates.push(this.updateResponse(data[i]));
+        }
+
+        const outcomes = await Promise.all(updates);
+        // If there is at least one false, return false?
+        // TODO document this behaviour
+        return !outcomes.some((outcome) => {
+            return !outcome;
+        });
+    }    
+
     // Deletes a response based on the id
     public async deleteResponse(id: string) {
         return this.responseRepo.deleteOne(id);

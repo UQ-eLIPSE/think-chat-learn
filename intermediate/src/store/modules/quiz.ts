@@ -58,16 +58,16 @@ const mutations = {
 
   [mutationKeys.SET_QUESTIONS](funcState: IState, data: TypeQuestion[]) {
       if (funcState.questions) {
-          for (let i = 0 ; i < data.length; i++) {
+          for (const question of data) {
               const index = funcState.questions.findIndex((element) => {
-                  return element._id === data[i]._id;
+                  return element._id === question._id;
               });
 
               // Don't bother with assignment of pages if it does not exist
               if (index !== -1) {
-                  Vue.set(funcState.questions, index, data[i]);
+                  Vue.set(funcState.questions, index, question);
               } else {
-                  Vue.set(funcState.questions, funcState.questions.length, data[i]);
+                  Vue.set(funcState.questions, funcState.questions.length, question);
               }
 
           }

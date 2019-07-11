@@ -117,7 +117,7 @@ export interface IQuiz extends Document {
   // they are stored as strings due the fact that sending a date over is not feasible
   availableStart?: Date;
   availableEnd?: Date;
-  markingConfiguration?: MarkingConfiguration
+  markingConfiguration?: MarkingConfiguration;
 }
 
 export type MarkingConfiguration = SimpleMarkConfig | ElipssMarkConfig;
@@ -175,8 +175,8 @@ export interface SimpleMark extends Mark  {
 
 
 export enum MarkMode {
-  SIMPLE_MARKING = 'SIMPLE_MARKING',
-  ELIPSS_MARKING = 'ELIPSS_MARKING'
+  SIMPLE_MARKING = "SIMPLE_MARKING",
+  ELIPSS_MARKING = "ELIPSS_MARKING"
 }
 // A page to be rendered. All pages contain at the very
 // least a type (to indicate how to be rendered),

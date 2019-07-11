@@ -208,7 +208,7 @@ export class PacSeqSocket<SocketType> {
         // callback
         const callbackArrayCopy = callbacks.slice();
 
-        callbackArrayCopy.forEach(wrappedCallback => {
+        callbackArrayCopy.forEach((wrappedCallback) => {
           const originalCallback:
             | Function
             | undefined = (wrappedCallback as any)["__originalCallback"];
@@ -299,7 +299,7 @@ export class PacSeqSocket<SocketType> {
       "pong"
     ];
 
-    nativeEvents.forEach(eventName => {
+    nativeEvents.forEach((eventName) => {
       this.nativeSocket.on(eventName, (...args: any[]) => {
         this.eventManager.dispatch(eventName, args[0]);
       });
