@@ -60,8 +60,8 @@ export class CriteriaController extends BaseController {
     }
 
     public setupRoutes() {
-        this.router.put("/create", isAdmin(), this.createCriteria.bind(this));
-        this.router.post("/update", isAdmin(), this.updateCriteria.bind(this));
+        this.router.post("/create", isAdmin(), this.createCriteria.bind(this));
+        this.router.put("/update", isAdmin(), this.updateCriteria.bind(this));
         this.router.get("/:criteriaId", isAdmin(), this.readCriteria.bind(this));
         this.router.delete("/delete/:criteriaId", isAdmin(), this.deleteCriteria.bind(this));
     }

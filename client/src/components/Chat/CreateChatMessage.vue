@@ -145,7 +145,7 @@ export default class CreateChatMessage extends Vue {
       return "";
     }
   }
-  
+
   private resetTimer() {
     // Have not assigned a timer yet. Reduce the number of messages sent by only sending if the timer is out
     if (this.typingStateHandle !== -1) {

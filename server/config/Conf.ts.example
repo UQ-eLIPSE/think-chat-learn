@@ -79,6 +79,9 @@ export const Conf: IConf = {
     }, {
         name: "depthOfReflection",
         description: "How well one reflects on learning outcomes"
+    }, {
+        name: "mark",
+        description: "Your mark"
     }]    
 }
 

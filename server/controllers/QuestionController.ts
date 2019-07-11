@@ -59,8 +59,8 @@ export class QuestionController extends BaseController {
     }
 
     public setupRoutes() {
-        this.router.put("/create", isAdmin(), this.createQuestion.bind(this));
-        this.router.post("/update", isAdmin(), this.updateQuestion.bind(this));
+        this.router.post("/create", isAdmin(), this.createQuestion.bind(this));
+        this.router.put("/update", isAdmin(), this.updateQuestion.bind(this));
         this.router.delete("/delete/:questionId", isAdmin(), this.deleteQuestion.bind(this));
         this.router.get("/all", isAdmin(), this.getAllQuestions.bind(this));
     }

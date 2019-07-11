@@ -54,9 +54,9 @@ export class UserSessionController extends BaseController {
 
     public setupRoutes() {
         // Don't need to check usersession id due to not existing just yet
-        this.router.put("/create", StudentAuthenticatorMiddleware.checkUserId(),
+        this.router.post("/create", StudentAuthenticatorMiddleware.checkUserId(),
             this.createSession.bind(this));
-        this.router.post("/update", StudentAuthenticatorMiddleware.checkUserId(), StudentAuthenticatorMiddleware.checkUserSessionId(),
+        this.router.put("/update", StudentAuthenticatorMiddleware.checkUserId(), StudentAuthenticatorMiddleware.checkUserSessionId(),
             this.updateSession.bind(this));
         this.router.get("/marking/:userSessionId", isAdmin(), this.getSessionById.bind(this))
     }

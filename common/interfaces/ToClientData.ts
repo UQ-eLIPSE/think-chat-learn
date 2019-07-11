@@ -64,4 +64,6 @@ export interface QuestionReconnectData {
   questions: TypeQuestion[];
 }
 
-export type QuizSessionDataObject = { quizSession: IQuizSession | null, userSession: IUserSession | null, user: IUser | null, responses: Response[] };
+export type QuizSessionDataObject = { quizSession: IQuizSession | null,
+  userSession: IUserSession | null, user: IUser | null,
+  responses: Response[] };

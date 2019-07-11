@@ -108,7 +108,7 @@ import { WebsocketEvents } from "../../js/WebsocketEvents";
 import { WebsocketManager } from "../../js/WebsocketManager";
 import { EventBus } from "../EventBus";
 import { EmitterEvents } from "../emitters";
-import ChatMessage from '../components/Chat/ChatMessage.vue';
+import ChatMessage from "../components/Chat/ChatMessage.vue";
 
 @Component({
   components: {
@@ -366,7 +366,7 @@ export default class MoocChatPage extends Vue {
   }
 
   get displayResponsesEnabled() {
-    if(this.page && this.page.type === PageType.DISCUSSION_PAGE) {
+    if (this.page && this.page.type === PageType.DISCUSSION_PAGE) {
       return this.page.displayResponses;
     }
 
