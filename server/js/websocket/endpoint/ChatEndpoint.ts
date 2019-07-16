@@ -26,7 +26,7 @@ export class ChatEndpoint extends WSEndpoint {
         }
 
         // Grabs the response 
-        const userResponse = await responseService.getResponse(data.responseId);
+        const userResponse = await responseService.findOne(data.responseId);
 
         if (!userResponse || !userResponse._id) {
             throw new Error("Attempted chat group join request with invalid quiz attempt ID = " + data.responseId);
@@ -85,7 +85,7 @@ export class ChatEndpoint extends WSEndpoint {
                     return acc;
                 }, {});
 
-                return chatGroupService.createChatGroup(chatGroup).then((groupId) => {
+                return chatGroupService.createOne(chatGroup).then((groupId) => {
                     // Instantiate the group
                     SocketSession.CreateGroup(groupId)
 
@@ -169,7 +169,7 @@ export class ChatEndpoint extends WSEndpoint {
 
         const group = SocketSession.GetAutoCreateGroup(data.groupId);
 
-        const chatGroup = await chatGroupService.getChatGroup(data.groupId);
+        const chatGroup = await chatGroupService.findOne(data.groupId);
 
         if (!chatGroup) {
             throw Error(`Invalid chat group of id ${data.groupId}`);
@@ -217,7 +217,7 @@ export class ChatEndpoint extends WSEndpoint {
             chatGroupService: ChatGroupService) {
         const group = SocketSession.GetAutoCreateGroup(data.groupId);
 
-        const chatGroup = await chatGroupService.getChatGroup(data.groupId);
+        const chatGroup = await chatGroupService.findOne(data.groupId);
 
         if (!chatGroup) {
             throw Error(`Invalid chat group of id ${data.groupId}`);
@@ -253,7 +253,7 @@ export class ChatEndpoint extends WSEndpoint {
         chatGroupService: ChatGroupService) {
         const group = SocketSession.GetAutoCreateGroup(data.groupId);
 
-        const chatGroup = await chatGroupService.getChatGroup(data.groupId);
+        const chatGroup = await chatGroupService.findOne(data.groupId);
 
         if (!chatGroup) {
             throw Error(`Invalid chat group of id ${data.groupId}`);
@@ -329,14 +329,14 @@ export class ChatEndpoint extends WSEndpoint {
         responseService: ResponseService, chatGroupService: ChatGroupService) {
         const group = SocketSession.GetAutoCreateGroup(data.groupId);
 
-        const chatGroup = await chatGroupService.getChatGroup(data.groupId);
+        const chatGroup = await chatGroupService.findOne(data.groupId);
 
         if (!chatGroup) {
             throw Error(`Invalid chat group of id ${data.groupId}`);
         }
 
         // Grab the response 
-        const response = await responseService.getResponse(data.responseId);
+        const response = await responseService.findOne(data.responseId);
 
         
         if (!response) {

@@ -4,17 +4,19 @@ import { TypeQuestion } from "../../common/interfaces/DBSchema";
 import { QuestionType } from "../../common/enums/DBEnums";
 import { ObjectId } from "bson";
 
-export class QuestionService extends BaseService{
+export class QuestionService extends BaseService<TypeQuestion> {
 
     protected readonly questionRepo: QuestionRepository;
 
-    constructor(_questionRepo: QuestionRepository){
+    constructor(_questionRepo: QuestionRepository) {
         super();
         this.questionRepo = _questionRepo;
-}
+    }
 
     // Creates a question based on the data input. It can distinguish between MCQ and Qualitatives
-    public async createQuestion(data: TypeQuestion): Promise<string> {
+    public async createOne(data: TypeQuestion): Promise<string> {
+        this.validateQuestion(data);
+
         // Check for the type
         if (data.type === QuestionType.MCQ) {
             if (data.options && data.options.length) {
@@ -31,12 +33,13 @@ export class QuestionService extends BaseService{
     }
 
     
-    public async updateQuestion(data: TypeQuestion): Promise<boolean> {
+    public async updateOne(data: TypeQuestion): Promise<boolean> {
         // Only MCQ require special consideration
         if (!data._id) {
             throw Error("No id to update from");
         }
 
+        this.validateQuestion(data);
 
         if (data.type === QuestionType.MCQ) {
             if (data.options && data.options.length) {
@@ -51,7 +54,7 @@ export class QuestionService extends BaseService{
     }
 
     // Deletes a question based on the incoming id
-    public async deleteQuiz(id: string) {
+    public async deleteOne(id: string) {
         return this.questionRepo.deleteOne(id);
     }
 
@@ -62,7 +65,27 @@ export class QuestionService extends BaseService{
         });
     }
 
-    public async getQuestion(id: string): Promise<TypeQuestion | null> {
+    public async findOne(id: string): Promise<TypeQuestion | null> {
         return this.questionRepo.findOne(id);
+    }
+
+    private validateQuestion(maybeQuestion: TypeQuestion) {
+        if (maybeQuestion.type === QuestionType.MCQ) {
+            // Not implemented for now
+        } else if (maybeQuestion.type === QuestionType.QUALITATIVE) {
+            if (!maybeQuestion.content) {
+                throw new Error("Empty content in the question");
+            }
+
+            if (!maybeQuestion.courseId) {
+                throw new Error("No course provided");
+            }
+
+            if (!maybeQuestion.title) {
+                throw new Error("No title provided");
+            }
+        } else {
+            throw new Error("Invalid question type");
+        }
     }
 }

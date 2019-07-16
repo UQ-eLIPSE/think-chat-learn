@@ -19,6 +19,9 @@ export type IDiscussionPage = DBSchema.IDiscussionPage;
 export type IUserSession = DBSchema.IUserSession;
 export type IQuizSession = DBSchema.IQuizSession;
 export type IChatGroup = DBSchema.IChatGroup;
+export type IChatMessage = DBSchema.IChatMessage;
+export type ICriteria = DBSchema.ICriteria;
+export type IRubric = DBSchema.IRubric;
 export type Response = DBSchema.Response;
 // API specific
 
@@ -35,9 +38,12 @@ export interface QuizScheduleData {
   questions: TypeQuestion[];
 }
 
+// Handles what to send back for the admin page
 export interface QuizScheduleDataAdmin {
   quizzes: NetworkData.IQuizOverNetwork[];
   questions: TypeQuestion[];
+  criterias: ICriteria[];
+  rubrics: IRubric[];
 }
 
 // Also handles the initial retrieval
@@ -58,4 +64,6 @@ export interface QuestionReconnectData {
   questions: TypeQuestion[];
 }
 
-export type QuizSessionDataObject = { quizSession: IQuizSession | null, userSession: IUserSession | null, user: IUser | null, responses: Response[] };
+export type QuizSessionDataObject = { quizSession: IQuizSession | null,
+  userSession: IUserSession | null, user: IUser | null,
+  responses: Response[] };

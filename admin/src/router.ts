@@ -5,6 +5,10 @@ import Login from "./components/Login.vue";
 import QuizPage from "./components/QuizPage.vue";
 import QuestionPage from "./components/QuestionPage.vue";
 import QuestionList from "./components/QuestionList.vue";
+import RubricList from "./components/RubricList.vue";
+import RubricEditor from "./components/RubricEditor.vue";
+import CriteriaList from "./components/CriteriaList.vue";
+import CriteriaEditor from "./components/CriteriaEditor.vue";
 import QuizList from "./components/QuizList.vue";
 import MarkQuiz from "./views/MarkQuiz.vue";
 import QuizMarkViewer from "./views/QuizMarkViewer.vue";
@@ -44,6 +48,28 @@ export default new Router({
     name: "Quiz List",
     component: QuizList
   },
+  {
+    path: "/criteria",
+    name: "Criteria",
+    component: CriteriaList
+  },
+  {
+    path: "/criteriaEditor",
+    name: "Criteria Editor",
+    component: CriteriaEditor,
+    props: (route) => ({ id: route.query.c })
+  },
+  {
+    path: "/rubric",
+    name: "Rubric",
+    component: RubricList
+  },
+  {
+    path: "/rubricEditor",
+    name: "Rubric Editor",
+    component: RubricEditor,
+    props: (route) => ({ id: route.query.r })
+  },  
   {
     path: "/marking",
     name: "marking",

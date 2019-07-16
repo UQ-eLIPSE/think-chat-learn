@@ -15,8 +15,10 @@ import { ChatGroupRepository } from "../repositories/ChatGroupRepository";
 import { UserSessionRepository } from "../repositories/UserSessionRepository";
 import { Utils } from "../../common/js/Utils";
 import { Conf } from "../config/Conf";
-
-export class UserService extends BaseService {
+import { CourseRepository } from "../repositories/CourseRepository";
+import { CriteriaRepository } from "../repositories/CriteriaRepository";
+import { RubricRepository } from "../repositories/RubricRepository";
+export class UserService extends BaseService<IUser> {
 
     protected readonly userRepo: UserRepository;
     protected readonly quizRepo: QuizRepository;
@@ -24,10 +26,14 @@ export class UserService extends BaseService {
     protected readonly quizSessionRepo: QuizSessionRepository;
     protected readonly chatGroupRepo: ChatGroupRepository;
     protected readonly userSessionRepo: UserSessionRepository;
-
+    protected readonly courseRepo: CourseRepository;
+    protected readonly criteriaRepo: CriteriaRepository;
+    protected readonly rubricRepo: RubricRepository;
 
     constructor(_userRepo: UserRepository, _quizRepo: QuizRepository, _questionRepo: QuestionRepository, _chatGroupRepo: ChatGroupRepository,
-        _quizSessionRepo: QuizSessionRepository, _userSessionRepo: UserSessionRepository) {
+        _quizSessionRepo: QuizSessionRepository, _userSessionRepo: UserSessionRepository,
+        _courseRepo: CourseRepository, _criteriaRepo: CriteriaRepository, _rubricRepo: RubricRepository) {
+
         super();
         this.userRepo = _userRepo;
         this.quizRepo = _quizRepo;
@@ -35,6 +41,9 @@ export class UserService extends BaseService {
         this.chatGroupRepo = _chatGroupRepo;
         this.quizSessionRepo = _quizSessionRepo;
         this.userSessionRepo = _userSessionRepo;
+        this.courseRepo = _courseRepo;
+        this.criteriaRepo = _criteriaRepo;
+        this.rubricRepo = _rubricRepo;
     }
 
     public async handleLoginWrapper(request: ILTIData) {
@@ -152,7 +161,9 @@ export class UserService extends BaseService {
             return false;
         }
     }
-    // Returns just the user details for now
+
+    // Returns user details and checks the existence of the course associated with the LTI data
+    // if no course, then create one
     public async handleAdminLogin(request: ILTIData): Promise<AdminLoginResponse> {
         // Get user+quiz info, check validity
         const identity = await UserServiceHelper.ProcessLtiObject(request);
@@ -182,16 +193,29 @@ export class UserService extends BaseService {
             throw new Error("Not an admin");
         }
 
+        // Check if a course exist
+        const maybeCourse = await this.courseRepo.findAll({name: identity.course });
+
+        if (!maybeCourse.length && identity.course) {
+            // Create a course then
+            await this.courseRepo.create({ name: identity.course });
+            const criteriaPromises: Promise<string>[] = [];
+            for (let i = 0 ; i < Conf.defaultCriteria.length; i++) {
+                criteriaPromises.push(this.criteriaRepo.create({
+                    name: Conf.defaultCriteria[i].name!,
+                    description: Conf.defaultCriteria[i].description!,
+                    course: identity.course
+                }));
+            }
+            await Promise.all(criteriaPromises);
+        }
+
         // TODO check for previous attempts and retrieve the questions associated with the selected quiz
-        const quizzes = await this.quizRepo.findAll({ course: identity.course });
-        const questions = await this.questionRepo.findAll({ courseId: identity.course });
 
         // The main distinguisher is that the token cannot be changed easily so by checking the isAdmin is
         // true should be good enough
         const output: AdminLoginResponse = {
             user,
-            //quizzes: quizzes.reduce((arr: IQuizOverNetwork[], element) => 
-            //    { arr.push(convertQuizIntoNetworkQuiz(element)); return arr; }, []),
             courseId: identity.course,
             //questions,
             isAdmin: true
@@ -202,8 +226,21 @@ export class UserService extends BaseService {
     }
 
     // Simply returns a user if exist, null otherwise
-    public async findUser(userId: string): Promise<IUser | null> {
+    public async findOne(userId: string): Promise<IUser | null> {
         return UserServiceHelper.FindUser(this.userRepo, userId);
+    }
+
+    public async updateOne() {
+        return false;
+    }
+
+    public async createOne() {
+        // Stubs
+        return "";
+    }
+
+    public async deleteOne() {
+        return false;
     }
 
     public async handlePageRequest(quizId: string, pageId: string, quizSessionId: string, groupId: string | null): Promise<QuestionRequestData | null> {
@@ -220,10 +257,14 @@ export class UserService extends BaseService {
         if ((token as AdminLoginResponse).isAdmin) {
             const quizzes = await this.quizRepo.findAll({ course: token.courseId });
             const questions = await this.questionRepo.findAll({ courseId: token.courseId });
+            const criterias = await this.criteriaRepo.findAll( {course: token.courseId });
+            const rubrics = await this.rubricRepo.findAll( {course: token.courseId });
 
             const output: QuizScheduleDataAdmin = {
                 questions,
                 quizzes: quizzes.reduce((arr: IQuizOverNetwork[], element) => { arr.push(convertQuizIntoNetworkQuiz(element)); return arr; }, []),
+                criterias,
+                rubrics
             }
 
             return output;
@@ -428,7 +469,7 @@ class UserServiceHelper {
         }
 
         // From this point on we grab every single question associated with the pages
-        const questionSet = new Set();
+        const questionSet = new Set<string>();
         pages.forEach((element) => {
             if ((element.type === PageType.QUESTION_ANSWER_PAGE) || (element.type === PageType.DISCUSSION_PAGE)) {
                 // Fetch the question in the set

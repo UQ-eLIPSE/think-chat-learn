@@ -74,8 +74,9 @@ client/public/*
 client/envs/*
 !client/envs/.gitkeep
 client/.env.*
+!client/.env.*.example
 admin/.env.*
-
+!admin/.env.*.example
 
 # Script to handle question extaction
 server/utils/query.ts

@@ -13,7 +13,7 @@ export class QuizController extends BaseController {
     }
 
     private createQuiz(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        this.quizService.createQuiz(req.body as IQuizOverNetwork).then((outgoingId) => {
+        this.quizService.createOne(req.body as IQuizOverNetwork).then((outgoingId) => {
             if (outgoingId !== null) {
                 res.json({
                     outgoingId
@@ -28,7 +28,7 @@ export class QuizController extends BaseController {
     }
 
     private updateQuiz(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        this.quizService.updateQuiz(req.body).then((outcome) => {
+        this.quizService.updateOne(req.body).then((outcome) => {
             res.json({
                 outcome
             });
@@ -39,7 +39,7 @@ export class QuizController extends BaseController {
     }
 
     private deleteQuiz(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        this.quizService.deleteQuiz(req.params.questionId).then((outcome) => {
+        this.quizService.deleteOne(req.params.questionId).then((outcome) => {
             res.json({
                 outcome
             });
@@ -59,8 +59,8 @@ export class QuizController extends BaseController {
     }
 
     public setupRoutes() {
-        this.router.put("/create", isAdmin(), this.createQuiz.bind(this));
-        this.router.post("/update", isAdmin(), this.updateQuiz.bind(this));
+        this.router.post("/create", isAdmin(), this.createQuiz.bind(this));
+        this.router.put("/update", isAdmin(), this.updateQuiz.bind(this));
         this.router.delete("/delete/:questionId", isAdmin(), this.deleteQuiz.bind(this));
         this.router.get("/course/:courseId", isAdmin(), this.getQuizByCourse.bind(this));
     }

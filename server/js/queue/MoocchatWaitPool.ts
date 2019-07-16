@@ -50,7 +50,7 @@ export class MoocchatWaitPool {
         if (waitPool === undefined) {
             if (MoocchatWaitPool.QuizService) {
                 // Create new wait pool
-                const quiz = await MoocchatWaitPool.QuizService.getQuizQuestionById(quizId);
+                const quiz = await MoocchatWaitPool.QuizService.findOne(quizId);
                 if (quiz && quiz.groupSize) {
                     return new MoocchatWaitPool(quizId, questionId, quiz.groupSize);
                 }

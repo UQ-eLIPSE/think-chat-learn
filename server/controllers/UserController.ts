@@ -78,7 +78,7 @@ export class UserController extends BaseController {
 
     private getUserById(req: express.Request, res: express.Response) {
         if(!req.params.userId) throw new Error("User id not supplied");
-        this.userService.findUser(req.params.userId).then((userResponse) => {
+        this.userService.findOne(req.params.userId).then((userResponse) => {
             res.json(userResponse);
         }).catch((e) => {
             console.log(e);

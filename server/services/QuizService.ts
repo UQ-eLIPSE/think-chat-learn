@@ -4,8 +4,9 @@ import { IQuiz } from "../../common/interfaces/DBSchema";
 import { ObjectId } from "bson";
 import { IQuizOverNetwork } from "../../common/interfaces/NetworkData";
 import { convertNetworkQuizIntoQuiz } from "../../common/js/NetworkDataUtils";
+import { PageType } from "../../common/enums/DBEnums";
 
-export class QuizService extends BaseService{
+export class QuizService extends BaseService<IQuiz | IQuizOverNetwork> {
 
     protected readonly quizRepo: QuizRepository;
 
@@ -14,9 +15,14 @@ export class QuizService extends BaseService{
         this.quizRepo = _quizRepo;
 }
 
-    // Creates a quiz in the DB based on the request body. Assumes the request body is valid
-    public async createQuiz(data: IQuizOverNetwork): Promise<string> {
-        // Creates a new quiz based on the information.
+    // Creates a quiz in the DB based on the request body. 
+    public async createOne(data: IQuizOverNetwork): Promise<string> {
+        // Creates a new quiz based on the information, check for the existence of a discussion page.
+        if (!data.pages) {
+            throw new Error("No page from sent quiz");
+        }
+
+        this.validateQuiz(data);
 
         // Note we create ids for each page associated at the same time
         // The create operation returns the id as well
@@ -34,11 +40,17 @@ export class QuizService extends BaseService{
     // You can think of it as a replacement based on the _id
     // Returns true if the operation succeed
     // Note that deleting a question can be thought as updating a question
-    public async updateQuiz(data: IQuizOverNetwork): Promise<boolean> {
+    public async updateOne(data: IQuizOverNetwork): Promise<boolean> {
         // Updating is a little bit complicated due to the fact that
         // someone could theoretically push pages in and they wouldn't have ids
 
-        if (data.pages && data.pages.length) {
+        if (!data.pages) {
+            throw new Error("No page from sent quiz");
+        }
+
+        this.validateQuiz(data);
+
+        if (data.pages.length) {
             data.pages.forEach((page) => {
                 if (!page._id) {
                     page._id = (new ObjectId()).toHexString();
@@ -50,7 +62,7 @@ export class QuizService extends BaseService{
     }
 
     // Deletes a quiz based on the incoming id
-    public async deleteQuiz(id: string) {
+    public async deleteOne(id: string) {
         return this.quizRepo.deleteOne(id);
     }
 
@@ -64,12 +76,79 @@ export class QuizService extends BaseService{
         });
     }
 
-    public async getQuizQuestionById(quizId: string): Promise<IQuiz | null> {
+    public async findOne(quizId: string): Promise<IQuiz | null> {
         return this.quizRepo.findOne(quizId);
     }
-}
 
-// Helper functions for the service
-class QuizServiceHelper {
+    // Duplicated behaviour from the form validation used in the front-end
+    private validateQuiz(maybeQuiz: IQuizOverNetwork) {
+        // Check for falsy values
+        if (!maybeQuiz.rubricId) {
+            throw new Error("No rubric id");
+        }
 
+        if (!maybeQuiz.title) {
+            throw new Error("No quiz title");
+        }
+
+        if (!maybeQuiz.availableEnd) {
+            throw new Error("No provided end datetime");
+        }
+
+        if (!maybeQuiz.availableStart) {
+            throw new Error("No provided start datetime");
+        }
+
+        if ((new Date(maybeQuiz.availableEnd).getTime()) < (new Date(maybeQuiz.availableStart)).getTime()) {
+            throw new Error("Start stime is greater than end time");
+        }
+
+        const hasDiscussion = maybeQuiz.pages!.some((page) => {
+            return page.type === PageType.DISCUSSION_PAGE;
+        });
+
+        if (!hasDiscussion) {
+            throw new Error("No discussion page");
+        }        
+
+        // Count the discussion questions
+        const discussionCheck = maybeQuiz.pages!.some((page) => {
+            if (page.type === PageType.DISCUSSION_PAGE) {
+                const questionTotal = maybeQuiz.pages!.reduce((count: number, otherPage) => {
+                    if (otherPage.type === PageType.DISCUSSION_PAGE && page.questionId === otherPage.questionId) {
+                        count = count + 1;
+                    }
+
+                    return count;
+                }, 0);
+
+                return questionTotal !== 1;
+            }
+            return false;
+        });
+
+        if (discussionCheck) {
+            throw Error("Duplicate discussion questions");
+        }
+
+        // Count the question answer questions
+        const questionCheck = maybeQuiz.pages!.some((page) => {
+            if (page.type === PageType.QUESTION_ANSWER_PAGE) {
+                const questionTotal = maybeQuiz.pages!.reduce((count: number, otherPage) => {
+                    if (otherPage.type === PageType.QUESTION_ANSWER_PAGE && page.questionId === otherPage.questionId) {
+                        count = count + 1;
+                    }
+
+                    return count;
+                }, 0);
+
+                return questionTotal !== 1;
+            }
+            return false;
+        });
+
+        if (questionCheck) {
+            throw Error("Duplicate questions in the question answer pages");
+        }        
+    }
 }

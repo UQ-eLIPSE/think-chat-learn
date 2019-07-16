@@ -117,21 +117,12 @@ export interface IQuiz extends Document {
   // they are stored as strings due the fact that sending a date over is not feasible
   availableStart?: Date;
   availableEnd?: Date;
-  markingConfiguration?: MarkingConfiguration;
   groupSize?: number;
+  markingConfiguration?: MarkConfig;
+  rubricId?: string;
 }
 
-export type MarkingConfiguration = SimpleMarkConfig | ElipssMarkConfig;
-
-
-export interface SimpleMarkConfig {
-  type: MarkMode.SIMPLE_MARKING;
-  allowMultipleMarkers: boolean;
-  maximumMarks: number;
-}
-
-export interface ElipssMarkConfig {
-  type: MarkMode.ELIPSS_MARKING;
+export interface MarkConfig {
   allowMultipleMarkers: boolean;
   maximumMarks: number;
 }
@@ -149,36 +140,24 @@ export interface ElipssMarkValue {
     };
     feedbackText: string;
 }
-interface SimpleMarkValue {
+
+export interface MarkCriteria {
   value: number | null;
-  feedbackText: string;
+  criteriaId: string;
 }
+// Depending on what needs to be done, we could theoretically just remove the enum from existence
 export interface Mark extends Document {
-  type: MarkMode;
+  marks: MarkCriteria[];
+  feedback: string;
   quizSessionId: string;
   userId: IUser["_id"];
   username: IUser["username"];
-  questionId: string;
   timestamp: Date | null;
   markerId: string | null;
   markerUsername: IUser["username"];
   quizId: string | null;
 }
-export interface ElipssMark extends Mark  {
-  type: MarkMode.ELIPSS_MARKING;
-  mark: ElipssMarkValue;
-}
 
-export interface SimpleMark extends Mark  {
-  type: MarkMode.SIMPLE_MARKING;
-  mark: SimpleMarkValue;
-}
-
-
-export enum MarkMode {
-  SIMPLE_MARKING = 'SIMPLE_MARKING',
-  ELIPSS_MARKING = 'ELIPSS_MARKING'
-}
 // A page to be rendered. All pages contain at the very
 // least a type (to indicate how to be rendered),
 // a title and some content
@@ -244,3 +223,23 @@ export interface IChatGroup extends Document {
 
 // export type MarkingMethod = "MOUSOKU";
 // export type MarkingMethod = string;
+
+export interface ICriteria {
+  _id?: OID;
+  name: string;
+  description?: string;
+  course: string;
+}
+
+// Note that name refers to course code from LTI while _id is the mongoDB id
+export interface ICourse {
+  _id?: OID;
+  name: string;
+}
+
+export interface IRubric extends Document {
+  name: string;
+  course: string;
+  // Note the string ids
+  criterias: string[];
+}
