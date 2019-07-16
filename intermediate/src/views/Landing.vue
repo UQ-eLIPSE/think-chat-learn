@@ -10,9 +10,9 @@
       <v-stepper-content step="1">
         <!-- We only need one copy of the responses to generate the sessions -->
         <h2>Questions</h2>
-        <v-form v-for="question in questions" :key="question._id">
+        <v-form v-for="question in questionsBeforeDiscussion" :key="question._id">
           <h3>Title: {{question.title}}</h3>
-          <v-content v-html="relevantDiscussionQuestion.content"></v-content>
+          <v-content v-html="question.content"></v-content>
           <v-textarea
             outline
             minlength="1"
@@ -63,6 +63,7 @@ import { PageType, QuestionType } from "../../../common/enums/DBEnums";
 import { WebsocketManager } from "../../../common/js/WebsocketManager";
 import { WebsocketEvents } from "../../../common/js/WebsocketEvents";
 import { decodeToken } from "../../../common/js/front_end_auth";
+import { IQuestionAnswerPage } from "../../../common/interfaces/DBSchema";
 
 // Number of steps that the system can handle
 const MAX_STEP = 2;
@@ -109,6 +110,32 @@ export default class Landing extends Vue {
       } else {
         return null;
       }
+    }
+
+    // Note we filter questions before a discussion takes place
+    get questionsBeforeDiscussion(): TypeQuestion[] {
+      const output = [];
+
+      if (this.quiz && this.quiz.pages) {
+        for (const page of this.quiz.pages) {
+          if (page.type === PageType.QUESTION_ANSWER_PAGE) {
+            // Find the relevant question
+            const question = this.questions.find((q) => {
+              return q._id === (page as IQuestionAnswerPage).questionId;
+            });
+
+            if (question) {
+              output.push(question);
+            }
+
+          } else if (page.type === PageType.DISCUSSION_PAGE) {
+            // Terminate the loop if we reach a discussion page
+            break;
+          }
+        }
+      }
+
+      return output;
     }
 
     get questions(): TypeQuestion[] {

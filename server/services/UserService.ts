@@ -315,8 +315,29 @@ export class UserService extends BaseService {
             }
 
             return output;
-        } else if (token.type === LoginResponseTypes.GENERIC_LOGIN || token.type === LoginResponseTypes.BACKUP_LOGIN
-                || token.type === LoginResponseTypes.INTERMEDIATE_LOGIN) {
+        } else if (token.type === LoginResponseTypes.BACKUP_LOGIN) {
+            const quizSchedule = await this.quizRepo.findOne(token.quizId!);
+            const questionIds: string[] = [];
+
+            if (!quizSchedule) {
+                throw Error("Invalid quiz");
+            }
+
+            quizSchedule.pages!.forEach((element) => {
+                if (((element.type === PageType.QUESTION_ANSWER_PAGE) || (element.type === PageType.DISCUSSION_PAGE))
+                    && questionIds.findIndex((id) => { return id === element.questionId; }) === -1) {
+                    questionIds.push(element.questionId);
+                }
+            });
+
+            const questions = await UserServiceHelper.RetrieveQuestions(this.questionRepo, questionIds);
+
+            const output: QuizScheduleData = {
+                questions,
+                quiz: quizSchedule ? convertQuizIntoNetworkQuiz(quizSchedule) : null,
+            }
+            return output;            
+        } else if (token.type === LoginResponseTypes.GENERIC_LOGIN || token.type === LoginResponseTypes.INTERMEDIATE_LOGIN) {
 
             const quizSchedule = await this.quizRepo.findOne(token.quizId!);
             const questionIds: string[] = [];
