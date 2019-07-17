@@ -43,7 +43,7 @@ const actions = {
     },
 
     createSession({ commit }: { commit: Commit }, session: IUserSession) {
-        return API.request(API.PUT, API.USERSESSION + "create", session, undefined,
+        return API.request(API.POST, API.USERSESSION + "create", session, undefined,
             state.token).then((id: { outgoingId: string }) => {
             session._id = id.outgoingId;
             commit(mutationKeys.SET_SESSION, session);
@@ -54,7 +54,7 @@ const actions = {
         const session = state.session!;
         session.endTime = Date.now();
 
-        return API.request(API.POST, API.USERSESSION + "update", session, undefined,
+        return API.request(API.PUT, API.USERSESSION + "update", session, undefined,
             state.token).then((outcome: boolean) => {
             commit(mutationKeys.SET_SESSION, session);
         });

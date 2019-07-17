@@ -12,18 +12,11 @@
         {{ `${user ? user.username : "No User"} - Session Id: ${quizSession ? quizSession._id : "N/A"}` }}
       </div>
       <div class="nav-item">
-        <span>{{
-          user ? `${user.firstName}` : "Please login via Blackboard"
-          }}
+        <span class="toggleChat">
+          <span class="title">Show chat</span>
+          <b-switch v-model="toggleChat"></b-switch>
         </span>
-        <span>
-          <a @click="changeChatState()">
-            <font-awesome-icon
-              class="is-dark"
-              :class="!newMessage || !groupFormed ? 'disabled' : 'active'"
-              icon="comment-dots"
-            />
-          </a>
+        <span class="userAvatar">{{user ? `${user.firstName}` : "Please login via Blackboard"}}
         </span>
       </div>
     </header>
@@ -67,6 +60,29 @@ header {
   .nav-item {
     font-size: 20px;
     font-weight: 600;
+
+    .toggleChat {
+      font-size: 14px;
+      margin-right: 10px;
+
+      .title {
+        font-size: 14px;
+        margin-right: 5px;
+      }
+
+      .switch {
+        font-size: 12px;
+        vertical-align: middle;
+      }
+    }
+
+    .userAvatar {
+      background-color: $mainBg;
+      border: 1px solid #eff2f4;
+      border-radius: 20px;
+      color: $text;
+      padding: 4px 12px;
+    }
 
     a > svg.fa-comment {
       color: $tertiaryBg;

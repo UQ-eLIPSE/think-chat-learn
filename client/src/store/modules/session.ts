@@ -28,10 +28,12 @@ export interface IState {
     resyncAmount: number;
     // Stops the browser
     stopBrowser: boolean;
-    // Tells a resync
+    // Tells a resync to a moocchat page
     resync: boolean;
     // Tells if the quiz session is available
     quizAvailable: boolean;
+    // Tells if a quizSession has been feteched (attempted)
+    quizSessionFetched: boolean;
 }
 
 const state: IState = {
@@ -48,7 +50,8 @@ const state: IState = {
     resyncAmount: 0,
     stopBrowser: false,
     resync: false,
-    quizAvailable: false
+    quizAvailable: false,
+    quizSessionFetched: false
 };
 
 const mutationKeys = {
@@ -64,7 +67,9 @@ const mutationKeys = {
     APPEND_STATE_MESSAGE: "Appending a state message",
     SET_GROUP: "Setting the chat group",
     SET_SOCKET_MESSAGES: "Setting the socket messages",
-    SET_QUIZ_AVAILABILITY: "Setting quiz availability"
+    SET_QUIZ_AVAILABILITY: "Setting quiz availability",
+    // Sets a feteched message state
+    SET_FETCH_STATE: "Setting fetch state"
 };
 
 
@@ -238,6 +243,9 @@ async function handleReconnect(data: any) {
                 quizId: quiz._id
             }, undefined, getToken())).data;
 
+            // A fetch was attempted regardless
+            store.commit(mutationKeys.SET_FETCH_STATE, true);
+
             // If we have a quiz session assign it else, do nothing
             if (!quizSession) {
                 return;
@@ -348,11 +356,15 @@ const getters = {
 
     quizAvailable: (): boolean => {
         return state.quizAvailable;
+    },
+
+    quizSessionFetched: (): boolean => {
+        return state.quizSessionFetched;
     }
 };
 const actions = {
     createQuizSession({ commit }: {commit: Commit}, quizSession: IQuizSession) {
-        return API.request(API.PUT, API.QUIZSESSION + "create", quizSession, undefined,
+        return API.request(API.POST, API.QUIZSESSION + "create", quizSession, undefined,
             getToken()).then((id: { outgoingId: string }) => {
 
             quizSession._id = id.outgoingId;
@@ -376,7 +388,7 @@ const actions = {
     },
 
     sendResponse({ commit }: {commit: Commit}, response: Response) {
-        return API.request(API.PUT, API.RESPONSE + "create", response, undefined,
+        return API.request(API.POST, API.RESPONSE + "create", response, undefined,
             getToken()).then((id: { outgoingId: string}) => {
 
             response._id = id.outgoingId;
@@ -537,6 +549,10 @@ const mutations = {
 
             return output;
         }, [] as MoocChatMessage[]));
+    },
+
+    [mutationKeys.SET_FETCH_STATE](funcState: IState, data: boolean) {
+        Vue.set(funcState, "quizSessionFetched", data);
     },
 
     [mutationKeys.POPULATE_MISSING_RESPONSES](funcState: IState) {

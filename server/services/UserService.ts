@@ -18,8 +18,10 @@ import { UserSessionRepository } from "../repositories/UserSessionRepository";
 import { Utils } from "../../common/js/Utils";
 import { Conf } from "../config/Conf";
 import { ResponseRepository } from "../repositories/ResponseRepository";
-
-export class UserService extends BaseService {
+import { CourseRepository } from "../repositories/CourseRepository";
+import { CriteriaRepository } from "../repositories/CriteriaRepository";
+import { RubricRepository } from "../repositories/RubricRepository";
+export class UserService extends BaseService<IUser> {
 
     protected readonly userRepo: UserRepository;
     protected readonly quizRepo: QuizRepository;
@@ -28,10 +30,14 @@ export class UserService extends BaseService {
     protected readonly chatGroupRepo: ChatGroupRepository;
     protected readonly userSessionRepo: UserSessionRepository;
     protected readonly responseRepo: ResponseRepository;
-
+    protected readonly courseRepo: CourseRepository;
+    protected readonly criteriaRepo: CriteriaRepository;
+    protected readonly rubricRepo: RubricRepository;
 
     constructor(_userRepo: UserRepository, _quizRepo: QuizRepository, _questionRepo: QuestionRepository, _chatGroupRepo: ChatGroupRepository,
-        _quizSessionRepo: QuizSessionRepository, _userSessionRepo: UserSessionRepository, _responseRepo: ResponseRepository) {
+        _quizSessionRepo: QuizSessionRepository, _userSessionRepo: UserSessionRepository, _responseRepo: ResponseRepository,
+        _courseRepo: CourseRepository, _criteriaRepo: CriteriaRepository, _rubricRepo: RubricRepository) {
+
         super();
         this.userRepo = _userRepo;
         this.quizRepo = _quizRepo;
@@ -40,13 +46,29 @@ export class UserService extends BaseService {
         this.quizSessionRepo = _quizSessionRepo;
         this.userSessionRepo = _userSessionRepo;
         this.responseRepo = _responseRepo;
+        this.courseRepo = _courseRepo;
+        this.criteriaRepo = _criteriaRepo;
+        this.rubricRepo = _rubricRepo;
     }
 
     public async handleLoginWrapper(request: ILTIData) {
         // Get user+quiz info, check validity
-        const identity = UserServiceHelper.ProcessLtiObject(request);
 
-        if (this.isLtiAdmin(identity)) {
+        // const identity = UserServiceHelper.ProcessLtiObject(request);
+        const adminRoles = [
+            "instructor",
+            "teachingassistant",
+            "administrator",
+        ];
+        const currentUserRoles = (request.roles || "").toLowerCase().split(",");
+
+        const isAdmin = (currentUserRoles || []).some((role: any) => {
+            return adminRoles.findIndex((element) => {
+                return element === role.toLowerCase();
+            }) !== -1;
+        });
+        
+        if (isAdmin) {
             let html = `
                 <html>
                     <head>
@@ -60,7 +82,7 @@ export class UserService extends BaseService {
                     <form method="POST" action="/">`;
 
             const inputString = Object.keys(request).reduce((str, k) => str + `<input type="hidden" name="${k}" value="${request[k]}" />`, ``);
-            console.log('Endpoint: ',Conf.endpointUrl);
+
             const rest = `
                         <input type="submit" class="launch-buttons" value="Launch admin panel" formaction="${Conf.endpointUrl}/user/admin">
                         <input type="submit" class="launch-buttons" value="Launch backup-queue panel" formaction="${Conf.endpointUrl}/user/admin-intermediate-login">
@@ -168,7 +190,9 @@ export class UserService extends BaseService {
             return false;
         }
     }
-    // Returns just the user details for now
+
+    // Returns user details and checks the existence of the course associated with the LTI data
+    // if no course, then create one
     public async handleAdminLogin(request: ILTIData): Promise<AdminLoginResponse> {
         // Get user+quiz info, check validity
         const identity = await UserServiceHelper.ProcessLtiObject(request);
@@ -198,17 +222,30 @@ export class UserService extends BaseService {
             throw new Error("Not an admin");
         }
 
+        // Check if a course exist
+        const maybeCourse = await this.courseRepo.findAll({name: identity.course });
+
+        if (!maybeCourse.length && identity.course) {
+            // Create a course then
+            await this.courseRepo.create({ name: identity.course });
+            const criteriaPromises: Promise<string>[] = [];
+            for (let i = 0 ; i < Conf.defaultCriteria.length; i++) {
+                criteriaPromises.push(this.criteriaRepo.create({
+                    name: Conf.defaultCriteria[i].name!,
+                    description: Conf.defaultCriteria[i].description!,
+                    course: identity.course
+                }));
+            }
+            await Promise.all(criteriaPromises);
+        }
+
         // TODO check for previous attempts and retrieve the questions associated with the selected quiz
-        const quizzes = await this.quizRepo.findAll({ course: identity.course });
-        const questions = await this.questionRepo.findAll({ courseId: identity.course });
 
         // The main distinguisher is that the token cannot be changed easily so by checking the isAdmin is
         // true should be good enough
         const output: AdminLoginResponse = {
             type: LoginResponseTypes.ADMIN_LOGIN,
             user,
-            //quizzes: quizzes.reduce((arr: IQuizOverNetwork[], element) => 
-            //    { arr.push(convertQuizIntoNetworkQuiz(element)); return arr; }, []),
             courseId: identity.course,
             //questions,
             isAdmin: true
@@ -289,8 +326,21 @@ export class UserService extends BaseService {
     }
 
     // Simply returns a user if exist, null otherwise
-    public async findUser(userId: string): Promise<IUser | null> {
+    public async findOne(userId: string): Promise<IUser | null> {
         return UserServiceHelper.FindUser(this.userRepo, userId);
+    }
+
+    public async updateOne() {
+        return false;
+    }
+
+    public async createOne() {
+        // Stubs
+        return "";
+    }
+
+    public async deleteOne() {
+        return false;
     }
 
     public async handlePageRequest(quizId: string, pageId: string, quizSessionId: string, groupId: string | null): Promise<QuestionRequestData | null> {
@@ -308,10 +358,14 @@ export class UserService extends BaseService {
         if (token.type === LoginResponseTypes.ADMIN_LOGIN) {
             const quizzes = await this.quizRepo.findAll({ course: token.courseId });
             const questions = await this.questionRepo.findAll({ courseId: token.courseId });
+            const criterias = await this.criteriaRepo.findAll( {course: token.courseId });
+            const rubrics = await this.rubricRepo.findAll( {course: token.courseId });
 
             const output: QuizScheduleDataAdmin = {
                 questions,
                 quizzes: quizzes.reduce((arr: IQuizOverNetwork[], element) => { arr.push(convertQuizIntoNetworkQuiz(element)); return arr; }, []),
+                criterias,
+                rubrics
             }
 
             return output;
@@ -331,6 +385,18 @@ export class UserService extends BaseService {
             });
 
             const questions = await UserServiceHelper.RetrieveQuestions(this.questionRepo, questionIds);
+            
+            questions.forEach((element) => {
+                // Fetch the order(index) of the question w.r.t its order in the discussion pages
+                const index = questionIds.findIndex((id) => {
+                    return id == element._id;
+                });
+
+                // Remove the content of the question if it is not the first question page in the quiz
+                if (index !== 0) {
+                    delete element.content;
+                }
+            });
 
             const output: QuizScheduleData = {
                 questions,
@@ -357,9 +423,13 @@ export class UserService extends BaseService {
             const questions = await UserServiceHelper.RetrieveQuestions(this.questionRepo, questionIds);
 
             if (token.type === LoginResponseTypes.GENERIC_LOGIN) {
-                // The great filter
-                questions.forEach((element, index) => {
-                    // Title is fine to send over, content is not until it is requested
+                questions.forEach((element) => {
+                    // Fetch the order(index) of the question w.r.t its order in the discussion pages
+                    const index = questionIds.findIndex((id) => {
+                        return id == element._id;
+                    });
+    
+                    // Remove the content of the question if it is not the first question page in the quiz
                     if (index !== 0) {
                         delete element.content;
                     }

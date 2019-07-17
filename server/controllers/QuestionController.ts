@@ -13,7 +13,7 @@ export class QuestionController extends BaseController {
     }
 
     private createQuestion(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        this.questionService.createQuestion(req.body as TypeQuestion).then((outgoingId) => {
+        this.questionService.createOne(req.body as TypeQuestion).then((outgoingId) => {
             if (outgoingId !== null) {
                 res.json({
                     outgoingId
@@ -28,7 +28,7 @@ export class QuestionController extends BaseController {
     }
 
     private updateQuestion(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        this.questionService.updateQuestion(req.body as TypeQuestion).then((outcome) => {
+        this.questionService.updateOne(req.body as TypeQuestion).then((outcome) => {
             res.json({
                 outcome
             });
@@ -39,7 +39,7 @@ export class QuestionController extends BaseController {
     }
 
     private deleteQuestion(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        this.questionService.deleteQuiz(req.params.questionId).then((outcome) => {
+        this.questionService.deleteOne(req.params.questionId).then((outcome) => {
             res.json({
                 outcome
             });
@@ -59,8 +59,8 @@ export class QuestionController extends BaseController {
     }
 
     public setupRoutes() {
-        this.router.put("/create", isAdmin(), this.createQuestion.bind(this));
-        this.router.post("/update", isAdmin(), this.updateQuestion.bind(this));
+        this.router.post("/create", isAdmin(), this.createQuestion.bind(this));
+        this.router.put("/update", isAdmin(), this.updateQuestion.bind(this));
         this.router.delete("/delete/:questionId", isAdmin(), this.deleteQuestion.bind(this));
         this.router.get("/all", isAdmin(), this.getAllQuestions.bind(this));
     }

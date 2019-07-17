@@ -21,7 +21,6 @@
 @import "../css/variables.scss";
 
 html {
-  background-color: #f9fbfc;
   body {
     font-family: "Open Sans", sans-serif !important;
     margin: 0;
@@ -30,6 +29,7 @@ html {
     -moz-osx-font-smoothing: grayscale;
 
     #app {
+      background-color: $mainBg;
       height: 100%;
     }
 
@@ -96,13 +96,9 @@ html {
       }
     }
     section {
-      background-color: $mainBg;
-      height: 100%;
+      margin-bottom: 150px;
+      min-height: calc(100vh - 321px);
       padding-top: 25px;
-
-      @media (min-width: 1685px) {
-        height: calc(100vh - 171px);
-      }
 
       .content-container {
         background-color: $white;

@@ -87,7 +87,7 @@
     </div>
     <div class="center margin-top">
       <button
-        v-if="quiz && quizAvailable && !quizSession"
+        v-if="quiz && quizAvailable && !quizSession && quizSessionFetched"
         class="primary"
         tag="button"
         @click="startQuizSession()"
@@ -204,6 +204,10 @@ export default class Landing extends Vue {
 
   get quizAvailable(): boolean {
     return this.$store.getters.quizAvailable;
+  }
+
+  get quizSessionFetched(): boolean {
+    return this.$store.getters.quizSessionFetched;
   }
 
   get resync(): boolean {

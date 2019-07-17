@@ -55,14 +55,15 @@ test-build
 !client/static/marking-tool/mousoku/*
 
 # Ignore actual configuration files
-#client/config/Conf.ts
-#common/config/Conf.ts
-#server/config/Conf.ts
+client/config/Conf.ts
+common/config/Conf.ts
+server/config/Conf.ts
 
 # Config file to set up vue endpoint
-#client/vue.config.js
-#admin/vue.config.js
 intermediate/vue.config.js
+client/vue.config.js
+admin/vue.config.js
+
 # Front end dist files
 client/dist
 admin/dist
@@ -72,12 +73,23 @@ intermediate/dist
 client/public/*
 
 # Env values for client and admin
-client/envs
+client/envs/*
+!client/envs/.gitkeep
 client/.env.*
+!client/.env.*.example
 admin/.env.*
 intermediate/.env.*
+!intermediate/.env.*.example
 
-# Config values for production
-server/config/production
-common/config/production
-client/config/production
+# Script to handle question extaction
+server/utils/query.ts
+output.tsv
+
+# Config files for production zones
+client/config/production/*
+common/config/production/*
+server/config/production/*
+
+!server/config/production/.gitkeep
+!common/config/production/.gitkeep
+!client/config/production/.gitkeep

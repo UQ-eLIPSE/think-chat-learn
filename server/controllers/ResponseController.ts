@@ -15,7 +15,7 @@ export class ResponseController extends BaseController {
     }
 
     private createResponse(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        this.responseService.createResponse(req.body as Response).then((outgoingId) => {
+        this.responseService.createOne(req.body as Response).then((outgoingId) => {
             if (outgoingId !== null) {
                 res.json({
                     outgoingId
@@ -52,7 +52,7 @@ export class ResponseController extends BaseController {
     }
 
     public setupRoutes() {
-        this.router.put("/create", StudentAuthenticatorMiddleware.checkUserId(), StudentAuthenticatorMiddleware.checkResponseBody(),
+        this.router.post("/create", StudentAuthenticatorMiddleware.checkUserId(), StudentAuthenticatorMiddleware.checkResponseBody(),
             this.createResponse.bind(this));
         this.router.put("/bulkUpdate", isAdmin(),
             this.updateResponses.bind(this));            
