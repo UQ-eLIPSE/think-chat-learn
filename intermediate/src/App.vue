@@ -1,14 +1,14 @@
 <template>
-  <v-app id="app">
-    <h1>MoocChat Intermediate Page</h1>
-    <template v-if="quiz">
-      <h2>Quiz Title: {{quiz.title}}</h2>
-      <h3>Available Start: {{startDateString}} -
-        Available End: {{endDateString}}</h3>
-    </template>
+  <v-app class="pa-3" id="app">
+    <h1 class="display-1">MOOCchat Backup Client</h1>
+    <div v-if="quiz" class="text-xs-center py-3">
+      <h2 class="title py-2">Quiz details</h2>
+      <h3 class="subheading">Title: {{quiz.title}}</h3>
+      <h4 class="subheading">Session: {{startDateString}} - {{endDateString}}</h4>
+    </div>
     <v-content class="content-container">
       <router-view class="router-panel" />
-    </v-content>    
+    </v-content>
   </v-app>
 </template>
 <script lang="ts">
@@ -25,7 +25,7 @@ export default class App extends Vue {
   get startDateString(): string {
     if (this.quiz && this.quiz.availableStart) {
       // Set seconds mutates
-      const tempDate = (new Date(this.quiz.availableStart));
+      const tempDate = new Date(this.quiz.availableStart);
       tempDate.setSeconds(0, 0);
       return tempDate.toLocaleString();
     }
@@ -36,7 +36,7 @@ export default class App extends Vue {
   get endDateString(): string {
     if (this.quiz && this.quiz.availableEnd) {
       // Set seconds mutates
-      const tempDate = (new Date(this.quiz.availableEnd));
+      const tempDate = new Date(this.quiz.availableEnd);
       tempDate.setSeconds(0, 0);
       return tempDate.toLocaleString();
     }
