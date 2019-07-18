@@ -105,8 +105,52 @@ export class UserService extends BaseService<IUser> {
         }
 
         // Extract most of the data here
-        const tempLogin = await this.handleLogin(request);
+        const user = await UserServiceHelper.RetrieveUser(this.userRepo, identity);
 
+        // TODO fix for active sesssions
+        //             UserLoginFunc.CheckNoActiveSession(user);
+        if (!identity.course) {
+            throw new Error(`No course associated with identity`);
+        }
+
+        if (!request.custom_quizid) {
+            throw new Error(`No quiz provided`);
+        }
+
+        // Fetching the quiz is done regardless. Whether or not they can create a quiz session is a different story
+        const quizSchedule = await this.quizRepo.findOne(request.custom_quizid);
+
+        if (!quizSchedule) {
+            throw new Error(`No scheduled quiz available`)
+        }
+
+
+        // TODO check for previous attempts and retrieve the questions associated with the selected quiz
+        //await UserLoginFunc.CheckQuizNotPreviouslyAttempted(db, user, quizSchedule);
+        // Creating the list of ids requires a set
+        const questionIds: string[] = [];
+
+        quizSchedule.pages!.forEach((element) => {
+            if (((element.type === PageType.QUESTION_ANSWER_PAGE) || (element.type === PageType.DISCUSSION_PAGE))
+                && questionIds.findIndex((id) => { return id === element.questionId; }) === -1) {
+                questionIds.push(element.questionId);
+            }
+        });
+
+        const available = Date.now() >= quizSchedule!.availableStart!.getTime() &&
+            quizSchedule.availableEnd!.getTime() >= Date.now() ? true : false;
+
+        const tempLogin: LoginResponse = {
+            type: LoginResponseTypes.GENERIC_LOGIN,
+            user,
+            // quiz: quizSchedule ? convertQuizIntoNetworkQuiz(quizSchedule) : null,
+            courseId: identity.course,
+            // questions,
+            quizId: quizSchedule && quizSchedule._id ? quizSchedule._id : null,
+            available
+        };
+
+        //const tempLogin = await this.handleLogin(request);
         const output: BackupLoginResponse = {
             type: LoginResponseTypes.BACKUP_LOGIN,
             user: tempLogin.user,
