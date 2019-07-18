@@ -5,7 +5,7 @@ export const Conf = {
         // Change url to localhost:[PORT_NUMBER] for runnning locally
         // Replace with the absolute address where moocchat server is deployed
         url: "localhost:8080"
-    },    
+    },
     pacSeqSocket: {
         resendIntervalMs: 2000
     },

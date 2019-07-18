@@ -101,6 +101,8 @@ import { IQuestionAnswerPage } from "../../../common/interfaces/DBSchema";
 // Number of steps that the system can handle
 const MAX_STEP = 2;
 const DEFAULT_GROUP_SIZE = 3;
+// When to refresh for information in ms
+const SERVER_TICK = 1000;
 
 @Component({})
 export default class Landing extends Vue {
@@ -115,33 +117,7 @@ export default class Landing extends Vue {
   }
 
   get clientURL() {
-    return process.env.VUE_APP_CLIENT_URL || '';
-  }
-
-  joinRequestButtonText(token: string) {
-    return (
-      `Send Join Request` +
-      (!this.isSendJoinRequestEnabled(token)
-        ? ""
-        : ` (${this.formattedTimeout} remaining)`)
-    );
-  }
-
-  isSendJoinRequestEnabled(token: string) {
-    return (
-      (this.validSessions[this.decodedTokenReferences[token]] === undefined ||
-        this.validSessions[this.decodedTokenReferences[token]]) &&
-      this.timeoutTime > 0 &&
-      this.poolSize > 0 &&
-      this.poolSize <= this.poolFlagLimit
-    );
-  }
-
-  isSendUnJoinRequestEnabled(token: string) {
-    return !(
-      this.validSessions[this.decodedTokenReferences[token]] === undefined ||
-      this.validSessions[this.decodedTokenReferences[token]]
-    );
+    return process.env.VUE_APP_CLIENT_URL || "";
   }
 
   get MAX_STEP() {
@@ -206,7 +182,7 @@ export default class Landing extends Vue {
       for (const page of this.quiz.pages) {
         if (page.type === PageType.QUESTION_ANSWER_PAGE) {
           // Find the relevant question
-          const question = this.questions.find(q => {
+          const question = this.questions.find((q) => {
             return q._id === (page as IQuestionAnswerPage).questionId;
           });
 
@@ -281,12 +257,37 @@ export default class Landing extends Vue {
     return null;
   }
 
+  get commonConf() {
+    return CommonConf;
+  }
+
   private decodeToken(token: string) {
     return decodeToken(token);
   }
+  private joinRequestButtonText(token: string) {
+    return (
+      `Send Join Request` +
+      (!this.isSendJoinRequestEnabled(token)
+        ? ""
+        : ` (${this.formattedTimeout} remaining)`)
+    );
+  }
 
-  get commonConf() {
-    return CommonConf;
+  private isSendJoinRequestEnabled(token: string) {
+    return (
+      (this.validSessions[this.decodedTokenReferences[token]] === undefined ||
+        this.validSessions[this.decodedTokenReferences[token]]) &&
+      this.timeoutTime >= SERVER_TICK &&
+      this.poolSize > 0 &&
+      this.poolSize <= this.poolFlagLimit
+    );
+  }
+
+  private isSendUnJoinRequestEnabled(token: string) {
+    return !(
+      this.validSessions[this.decodedTokenReferences[token]] === undefined ||
+      this.validSessions[this.decodedTokenReferences[token]]
+    );
   }
 
   private async upsertIntermediate() {
@@ -306,7 +307,7 @@ export default class Landing extends Vue {
         maybeQuizSessionId = this.responses[0].quizSessionId;
 
         // Note that the questionId and quizSessionId makes a unique resposne
-        const maybeResponse = this.responses.find(response => {
+        const maybeResponse = this.responses.find((response) => {
           return response.questionId === key;
         });
         maybeResponseId = maybeResponse ? maybeResponse._id || "" : "";
@@ -335,7 +336,7 @@ export default class Landing extends Vue {
 
     // Create an association of this socket with the new id
     // Find the associated discussion response
-    this.responses!.forEach(response => {
+    this.responses!.forEach((response) => {
       // Redundant sends are not much of an issue
       if (response.questionId === this.relevantDiscussionQuestion!._id) {
         this.socket!.emitData<IWSToServerData.StoreSession>(
@@ -393,7 +394,7 @@ export default class Landing extends Vue {
     };
 
     // Populate the responses with empty strings
-    this.questionsBeforeDiscussion.forEach(question => {
+    this.questionsBeforeDiscussion.forEach((question) => {
       this.responseContent[question._id!] = "";
     });
 
@@ -422,7 +423,7 @@ export default class Landing extends Vue {
           input
         );
       }
-    }, 5000);
+    }, SERVER_TICK);
   }
 }
 </script>
