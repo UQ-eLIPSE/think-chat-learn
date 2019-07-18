@@ -12,6 +12,9 @@
                     <v-card>
                         <v-card-title><h3>Quiz Title: {{quiz.title}}</h3></v-card-title>
                         <div class="date-text">
+                            <span><b>ID: {{quiz._id}}</b></span>
+                        </div>
+                        <div class="date-text">
                             <span><b>Start Datetime:</b> {{quiz.availableStart.toLocaleString()}} - <b>End Datetime:</b> {{quiz.availableEnd.toLocaleString()}}</span>
                         </div>
                         <div class="controls">
