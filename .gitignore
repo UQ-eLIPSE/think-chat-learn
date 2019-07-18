@@ -71,6 +71,7 @@ intermediate/dist
 
 # Images in public dist for dev purposes
 client/public/*
+!client/public/index.html
 
 # Env values for client and admin
 client/envs/*
