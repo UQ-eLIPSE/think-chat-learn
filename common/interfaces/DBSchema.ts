@@ -1,5 +1,4 @@
 import { PageType, QuestionType, LTIRoles } from "../enums/DBEnums";
-
 // Determines what the type should be. Can be changed based on DB needs
 type OID = string;
 // A page of 4 types, note that IPage itself cannot be used as a viable page
@@ -9,7 +8,6 @@ export type Page =
   | IDiscussionPage
   | ISurveyPage;
 // A question associated with an IQuestioNAnswerPage. Can either be an MCQ or Qualitative one
-// TODO remove the old Question interface in favour of the new one
 export type TypeQuestion = IQuestionMCQ | IQuestionQualitative;
 
 // We either answer an MCQ or a qualitative

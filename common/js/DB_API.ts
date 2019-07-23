@@ -30,6 +30,8 @@ export interface IApi {
     contentType?: string | undefined,
     token?: string | null
   ): Promise<any>;
+
+  uploadForm(url: string, data: FormData): Promise<any>;
 }
 
 export const API: IApi = {
@@ -62,6 +64,19 @@ export const API: IApi = {
       .catch((e: Error) => {
         alert(e);
       });
+  },
+
+  uploadForm(url: string, data: FormData): any {
+    const config: AxiosRequestConfig = {
+      url: API_URL + url,
+      headers: {
+        "Authorization": "Bearer " + getIdToken(),
+        "Content-Type" : "multipart/form-data"
+      }
+    }
+    return axios.post(API_URL + url, data, config).then((res) => {
+      return res.data;
+    });
   },
 
   POST: "post",

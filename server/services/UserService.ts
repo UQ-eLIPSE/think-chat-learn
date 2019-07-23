@@ -108,7 +108,6 @@ export class UserService extends BaseService<IUser> {
         const user = await UserServiceHelper.RetrieveUser(this.userRepo, identity);
 
         // TODO fix for active sesssions
-        //             UserLoginFunc.CheckNoActiveSession(user);
         if (!identity.course) {
             throw new Error(`No course associated with identity`);
         }
@@ -169,8 +168,6 @@ export class UserService extends BaseService<IUser> {
 
         const user = await UserServiceHelper.RetrieveUser(this.userRepo, identity);
 
-        // TODO fix for active sesssions
-        //             UserLoginFunc.CheckNoActiveSession(user);
         if (!identity.course) {
             throw new Error(`No course associated with identity`);
         }
@@ -244,8 +241,6 @@ export class UserService extends BaseService<IUser> {
 
         const user = await UserServiceHelper.RetrieveUser(this.userRepo, identity);
 
-        // TODO fix for active sesssions
-        //             UserLoginFunc.CheckNoActiveSession(user);
         if (!identity.course) {
             throw new Error(`No course associated with identity`);
         }

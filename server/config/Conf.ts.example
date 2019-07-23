@@ -84,7 +84,12 @@ export const Conf: IConf = {
     }, {
         name: "mark",
         description: "Your mark"
-    }]    
+    }],
+    storage: {
+        useExternal: false,
+        externalLocation: "",
+        internalLocation: "Some_Address_on_a_local_machine"
+    }
 }
 
 
@@ -148,5 +153,11 @@ interface IConf {
     }
     pageSlack: number,
     endpointUrl: string,
-    defaultCriteria: Partial<ICriteria>[]
+    defaultCriteria: Partial<ICriteria>[],
+    storage: {
+        // If set to true, expects external location to be valid
+        useExternal: boolean,
+        externalLocation: string,
+        internalLocation: string
+    }
 }

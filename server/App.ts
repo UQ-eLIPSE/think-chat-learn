@@ -42,6 +42,7 @@ import { ResponseController } from "./controllers/ResponseController";
 import { MarksController } from "./controllers/MarksController";
 import { CriteriaController } from "./controllers/CriteriaController";
 import { RubricController } from "./controllers/RubricController";
+import { ImageController } from "./controllers/ImageController";
 // Authenticator for students
 import { StudentAuthenticatorMiddleware } from "./js/auth/StudentPageAuth";
 // Moocchat pool to initialize service
@@ -91,6 +92,7 @@ export default class App {
     private marksController: MarksController;
     private criteriaController: CriteriaController;
     private rubricController: RubricController;
+    private imageController: ImageController;
 
     // Socket io things
     private socketIO: SocketIO.Server;
@@ -162,7 +164,7 @@ export default class App {
         this.rubricController = new RubricController(this.rubricService);
         StudentAuthenticatorMiddleware.instantiate(this.userService, this.userSessionService, this.quizSessionService,
                 this.responseService);
-
+        this.imageController =  new ImageController();
         this.userController.setupRoutes();
         this.quizController.setupRoutes();
         this.questionController.setupRoutes();
@@ -171,7 +173,7 @@ export default class App {
         this.responseController.setupRoutes();
         this.chatGroupController.setupRoutes();
         this.marksController.setupRoutes();
-
+        this.imageController.setupRoutes();
         // Set up the wait pool service
         MoocchatWaitPool.AssignQuizService(this.quizService);
 
@@ -285,6 +287,7 @@ export default class App {
         this.express.use("/marks", this.marksController.getRouter());
         this.express.use("/criteria", this.criteriaController.getRouter());
         this.express.use("/rubric", this.rubricController.getRouter());
+        this.express.use("/image", this.imageController.getRouter());
     }
 
     // Only login gets affected

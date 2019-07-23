@@ -117,7 +117,7 @@
                 <option> Some Default survey</option>
               </select>
               <b-field label="Set the content of the page">
-                <v-textarea label="Content" v-model="page.content" outline hint="This is content specific to the page rather than the question associated"/>
+                <QuillEditor :id="`quiz-quill-${index}`" v-model="page.content"></QuillEditor>
               </b-field>
               <b-field label="Set the timeout in minutes">
                 <v-text-field label="Timeout" v-model="page.timeoutInMins" outline type="number"/>
@@ -151,7 +151,7 @@
                 <v-btn type="button"
                         @click="createPage()">Create new page</v-btn>
                 <v-btn type="button"
-                        @click="createQuiz()">Create/ update Quiz</v-btn>
+                        @click="submitQuiz()">Create/ update Quiz</v-btn>
               </v-container>
             </v-flex>
           </v-layout>
@@ -167,6 +167,7 @@
 </style>
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from "vue-property-decorator";
+import QuillEditor from "./QuillEditor.vue";
 import {
   IPage,
   IQuestionAnswerPage,
@@ -183,14 +184,21 @@ import * as DBSchema from "../../../common/interfaces/DBSchema";
 import { getAdminLoginResponse } from "../../../common/js/front_end_auth";
 import { IQuizOverNetwork } from "../../../common/interfaces/NetworkData";
 import { Conf } from "../../../common/config/Conf";
-import { EventBus, EventList, SnackEvent, ModalEvent } from "../EventBus";
+import { EventBus, EventList, SnackEvent, ModalEvent, BlobUpload } from "../EventBus";
 import { Utils } from "../../../common/js/Utils";
+import API from "../../../common/js/DB_API";
 interface DropDownConfiguration {
   text: string,
   value: string,
 }
 
-@Component({})
+const IMAGE_LOCATION = process.env.VUE_APP_IMAGE_LOCATION;
+
+@Component({
+  components: {
+    QuillEditor
+  }
+})
 export default class QuizPage extends Vue {
   // Default values for quizzes
   private quizTitle: string = "";
@@ -242,7 +250,11 @@ export default class QuizPage extends Vue {
   private endDateShow: boolean = false;
   private startTimeShow: boolean = false;
   private endTimeShow: boolean = false;
-
+  
+  // Quill Upload information
+  private uploadCount: number = 0;
+  private uploads: BlobUpload[] = [];
+  private changeCount: number = 0;
 
   initMarkConfig(): DBSchema.MarkConfig {
     return {
@@ -315,7 +327,11 @@ export default class QuizPage extends Vue {
     return this.$store.getters.rubrics;
   }
 
-  private createQuiz() {
+  get numPages(): number {
+    return Object.keys(this.pageDict).length;
+  }
+
+  private submitQuiz() {
     // Check for the rules note that the $refs aren't defined with Vuetify
     const valid = (this.$refs.form as any).validate();
 
@@ -327,6 +343,58 @@ export default class QuizPage extends Vue {
         EventBus.$emit(EventList.PUSH_SNACKBAR, message);
         return;
     }
+
+    // Set one is to upload quill which then follows creating the quiz
+    const message: ModalEvent = {
+      title: this.isEditing ? `Editing quiz` : `Creating quiz`,
+      message: this.isEditing ? `Are you sure to edit quiz of ID ${this.id}?` : `Are you sure to create the quiz`,
+      fn: EventBus.$emit,
+      data: [EventList.CONSOLIDATE_UPLOADS],
+      selfRef: EventBus
+    }
+
+    EventBus.$emit(EventList.OPEN_MODAL, message);
+  }
+
+  private handleQuillUpload(blobs: BlobUpload[]) {
+    // Since we are concating rather than appending, we have to count each transaction
+    // rather than checking total array length
+    this.uploadCount++;
+    this.uploads = this.uploads.concat(blobs);
+
+    // We should start uploading in a form, do nothing elsewise
+    if (this.uploadCount >= this.numPages) {
+
+      const tempForm = new FormData();
+      this.uploads.forEach((upload) => {
+        tempForm.append(upload.id, upload.blob);
+      });
+      API.uploadForm("image/imageUpload", tempForm).then((files: { fieldName: string, fileName: string}[]) => {
+          const payload: SnackEvent = {
+              message: "Finished uploading associated images"
+          }
+          EventBus.$emit(EventList.PUSH_SNACKBAR, payload);
+
+          // The assumption here is that we can explicitly change the content of each page
+          for (let key of Object.keys(this.pageDict)) {
+            const page = this.pageDict[key];
+            for (let file of files) {
+              page.content = page.content.replace(file.fieldName, IMAGE_LOCATION + file.fileName);
+            }
+
+            this.pageDict[key] = page;
+          }
+
+          // Reset the upload counters and then create the quiz
+          this.uploads = [];
+          this.uploadCount = 0;
+
+          this.createQuiz();
+      });
+    }
+  }
+
+  private createQuiz() {
 
     // For each quiz we have to figure out the type and assign the appropiate types
     // Output pages
@@ -411,22 +479,9 @@ export default class QuizPage extends Vue {
 
     if (this.isEditing) {
       outgoingQuiz._id = this.id;
-      
-      const message: ModalEvent = {
-          title: `Editing quiz`,
-          message: `Are you sure to edit quiz of ID ${this.id}?`,
-          fn: this.$store.dispatch,
-          data: ["updateQuiz", outgoingQuiz]
-      }
-      EventBus.$emit(EventList.OPEN_MODAL, message);
+      this.$store.dispatch("updateQuiz", outgoingQuiz);
     } else {
-      const message: ModalEvent = {
-          title: `Creating quiz`,
-          message: `Are you sure to create a quiz?`,
-          fn: this.$store.dispatch,
-          data: ["createQuiz", outgoingQuiz]
-      }
-      EventBus.$emit(EventList.OPEN_MODAL, message);         
+      this.$store.dispatch("createQuiz", outgoingQuiz);
     }
   }
 
@@ -512,6 +567,13 @@ export default class QuizPage extends Vue {
         }, emptyDict);
       }
     }
+
+    // Set quill handlers
+    EventBus.$on(EventList.QUILL_UPLOAD, this.handleQuillUpload);
+  }
+
+  private destroyed() {
+    EventBus.$off(EventList.QUILL_UPLOAD);
   }
 
   @Watch("startDateString")

@@ -8,8 +8,6 @@ import Vuetify from "vuetify";
 // CSS imports
 import "buefy/dist/buefy.css";
 import 'vuetify/dist/vuetify.min.css'
-
-// TODO just use the components for quick loading
 Vue.use(Vuetify);
 Vue.use(Buefy);
 Vue.config.productionTip = false;

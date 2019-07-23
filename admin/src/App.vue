@@ -336,7 +336,7 @@ export default class App extends Vue {
   private handledLoadedFunction() {
     if (this.loadedDialogEvent.fn && this.loadedDialogEvent.data) {
       // Remember, apply takes in an array of data and fills out the function signature
-      this.loadedDialogEvent.fn.apply(null, this.loadedDialogEvent.data);
+      this.loadedDialogEvent.fn.apply(this.loadedDialogEvent.selfRef ? this.loadedDialogEvent.selfRef : null, this.loadedDialogEvent.data);
     }
   }
 

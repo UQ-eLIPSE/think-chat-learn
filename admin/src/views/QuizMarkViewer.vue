@@ -253,7 +253,6 @@ export default class QuizMarkViewer extends Vue {
         if (m) {
             const markValues: string[] = [];
 
-            // TODO use the associated headings
             // For each criteria, fetch the mark or - if there is none
             return this.associatedCriterias.reduce((arr: string[], criteria) => {
                 const markIndex = m.marks.findIndex((mark) => {
