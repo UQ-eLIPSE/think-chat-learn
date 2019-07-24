@@ -16,6 +16,7 @@
     "@fortawesome/vue-fontawesome": "^0.1.4",
     "buefy": "^0.7.1",
     "bulma-extensions": "^4.0.0",
+    "katex": "^0.10.2",
     "postcss-import": "^12.0.1",
     "postcss-url": "^8.0.0",
     "socket.io-client": "^2.2.0",
@@ -26,6 +27,7 @@
     "vuex": "^3.0.1"
   },
   "devDependencies": {
+    "@types/katex": "^0.10.1",
     "@types/socket.io-client": "^1.4.32",
     "@types/vue-router": "^2.0.0",
     "@vue/cli-plugin-typescript": "^3.0.5",

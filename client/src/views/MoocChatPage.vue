@@ -109,7 +109,7 @@ import { WebsocketManager } from "../../../common/js/WebsocketManager";
 import { EventBus } from "../EventBus";
 import { EmitterEvents } from "../emitters";
 import ChatMessage from "../components/Chat/ChatMessage.vue";
-
+import katex from "katex";
 @Component({
   components: {
     Confidence,
@@ -459,6 +459,22 @@ export default class MoocChatPage extends Vue {
 
     // Handle the timeout
     EventBus.$on(EmitterEvents.PAGE_TIMEOUT, this.handleTimeOut);
+    const formulae = document.getElementsByClassName("ql-formula");
+
+    for (let i = 0; i < formulae.length; i++) {
+
+      const maybeElement = formulae.item(i);
+
+      // Grab all quill formula and then render the appropiate HTML string
+      // Using the render function could be done but its more appropiate to override the existing HTML
+
+      if (maybeElement) {
+        const html = katex.renderToString(String.raw`${maybeElement.getAttribute("data-value")!}`, {
+          throwOnError: true
+        });
+        maybeElement.innerHTML = html;
+      }
+    }
   }
 
   private destroyed() {
