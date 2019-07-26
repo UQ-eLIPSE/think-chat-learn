@@ -87,7 +87,7 @@ export default class QuillEditor extends Vue {
             }
             const image = tempInput.files[0];
             // If then else army for specific searches
-            if (image.type === "image/png" || image.type === "image/jpg" || image.type === "image/gif") {
+            if (image.type === "image/png" || image.type === "image/jpg" || image.type === "image/jpeg" || image.type === "image/gif") {
                 this.localStoreImage(image);
                 // Propogate the input explicitly
                 this.fetchHTML();

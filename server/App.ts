@@ -47,6 +47,7 @@ import { ImageController } from "./controllers/ImageController";
 import { StudentAuthenticatorMiddleware } from "./js/auth/StudentPageAuth";
 // Moocchat pool to initialize service
 import { MoocchatWaitPool } from "./js/queue/MoocchatWaitPool";
+import { MantaInterface } from "./manta/MantaInterface";
 export default class App {
 
     // Express things
@@ -122,6 +123,9 @@ export default class App {
 
     // Initialises the db connections
     private bootstrap(): void {
+        // Sets up manta connection
+        MantaInterface.createMantaInstance();
+
         this.userRepository = new UserRepository(this.database, "uq_user");
         this.quizRepository = new QuizRepository(this.database, "uq_quizSchedule");
         this.questionRepository = new QuestionRepository(this.database, "uq_question");

@@ -86,9 +86,17 @@ export const Conf: IConf = {
         description: "Your mark"
     }],
     storage: {
-        useExternal: false,
-        externalLocation: "",
-        internalLocation: "Some_Address_on_a_local_machine"
+        useManta: true,
+        mantaDetails: {
+            mantaKeyLocation: "some_location_on_machine",
+            mantaLocation: "some_https_location",
+            mantaKeyId: "some_key",
+            mantaSubUser: "some_sub_user",
+            mantaRoles: [],
+            mantaUser: "some_user",
+            mantaFolderName: "public/iamges"
+        },
+        internalLocation: "some_location"
     }
 }
 
@@ -156,8 +164,16 @@ interface IConf {
     defaultCriteria: Partial<ICriteria>[],
     storage: {
         // If set to true, expects external location to be valid
-        useExternal: boolean,
-        externalLocation: string,
+        useManta: boolean,
+        mantaDetails: {
+            mantaLocation: string,
+            mantaKeyLocation: string,
+            mantaKeyId: string,
+            mantaUser: string,
+            mantaSubUser: string,
+            mantaRoles: string[],
+            mantaFolderName: string
+        }
         internalLocation: string
     }
 }
