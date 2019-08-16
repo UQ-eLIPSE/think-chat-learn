@@ -93,7 +93,6 @@
               <b-field label="Create and configure the pages"/>
             </v-flex>
             <v-flex v-for="(page, index) in pages"
-              class="p"
               :key="index" xs12>
               <b-field label="Set the page title">
                 <v-text-field label="Title" v-model="page.title" outline :rules="[existenceRule]"/>

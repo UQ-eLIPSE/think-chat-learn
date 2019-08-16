@@ -7,7 +7,6 @@
             <button type="button" class="ql-strike"></button>
             <button type="button" class="ql-code-block"></button>
             <button type="button" class="ql-formula"></button>
-            <!-- <button type="button" class="ql-image"></button>-->
             <button type="button" class="ql-image"><v-icon>add_a_photo</v-icon></button>
         </div>
         <!-- It's better to bind to the quill instance than use a getter as VueJS cannot listen to it -->
@@ -19,8 +18,7 @@
 <script lang="ts">
 import { Vue, Component, Prop } from "vue-property-decorator";
 import Quill from "quill";
-// Pseudo quasi import
-import katex from "katex";
+import ImageResize from "quill-image-resize";
 import { getIdToken } from "../../../common/js/front_end_auth";
 import { EventBus, EventList, SnackEvent, BlobUpload } from "../EventBus";
 import API from "../../../common/js/DB_API";
@@ -44,7 +42,10 @@ class ImageBlot extends BlockEmbed {
 }
 ImageBlot.blotName = 'image';
 ImageBlot.tagName = 'img';
+
+// Register the modules
 Quill.register(ImageBlot);
+Quill.register('modules/imageResize', ImageResize);
 
 @Component({})
 export default class QuillEditor extends Vue {
@@ -73,7 +74,7 @@ export default class QuillEditor extends Vue {
         const tempInput = document.createElement("input");
         tempInput.setAttribute("type", "file");
         // Note we can never stop users from submitting bad things
-        tempInput.setAttribute("accept", ".png, .jpg, .jpeg, .gif");
+        tempInput.setAttribute("accept", ".png, .jpg, .jpeg, .gif, svg");
         tempInput.click();
 
         tempInput.onchange = ((event: Event) => {
@@ -87,10 +88,8 @@ export default class QuillEditor extends Vue {
             }
             const image = tempInput.files[0];
             // If then else army for specific searches
-            if (image.type === "image/png" || image.type === "image/jpg" || image.type === "image/jpeg" || image.type === "image/gif") {
+            if (image.type === "image/png" || image.type === "image/jpg" || image.type === "image/jpeg" || image.type === "image/gif" || image.type === "image/svg") {
                 this.localStoreImage(image);
-                // Propogate the input explicitly
-                this.fetchHTML();
             } else {
                 const message: SnackEvent = {
                     message: "Invalid file added",
@@ -149,6 +148,9 @@ export default class QuillEditor extends Vue {
                 }
             });
             this.blobReference = filteredReferences;
+
+            // Then we forcibly go through the html
+            this.fetchHTML();
         }
 
         EventBus.$emit(EventList.QUILL_UPLOAD, this.blobReference);
@@ -162,12 +164,14 @@ export default class QuillEditor extends Vue {
         EventBus.$off(EventList.CONSOLIDATE_UPLOADS);
     }
 
-    private mounted() {
+    private async mounted() {
+        await Vue.nextTick();
         EventBus.$on(EventList.CONSOLIDATE_UPLOADS, this.handleUpload);
         this.quillInstance = new Quill(`#${this.id}`, {
             modules: {
                 toolbar: `#toolbar-${this.id}`,
-                'formula': true
+                'formula': true,
+                imageResize : {}
             },
             theme: 'snow'
         });
@@ -177,14 +181,13 @@ export default class QuillEditor extends Vue {
             this.quillInstance.getModule("toolbar").addHandler('image', () => {
                 this.fetchImage();
             });
-
             // See https://quilljs.com/docs/modules/clipboard/#dangerouslypastehtml
             // Worst case scenario would be to remove the editor outright or only use deltas
             // to represent the information
             if (this.value) {
                 this.quillInstance.root.innerHTML= this.value;
             }
-        }
+        }     
     }
 }
 </script>

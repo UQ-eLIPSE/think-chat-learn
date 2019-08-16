@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-navigation-drawer permanent app>
+    <v-navigation-drawer permanent app class="z-index-zero">
       <v-toolbar flat>
         <span class="text-truncate title">Course: {{course}}</span>
       </v-toolbar>
@@ -71,6 +71,10 @@
   display: flex;
   flex-direction: row;
   // flex-wrap: nowrap;
+}
+
+.z-index-zero {
+  z-index: 0 !important;
 }
 
 #routerpanel {

@@ -21,23 +21,31 @@ export class MantaInterface implements multer.StorageEngine {
         this.foldername = foldername;
     }
 
+    public setFolder(foldername: string) {
+        this.foldername = foldername;
+    }
+
     public static createMantaInstance() {
-        if (Conf.storage.useManta) {
-            this.manta = manta.createClient({
-                sign: manta.privateKeySigner({
-                    key: fs.readFileSync(Conf.storage.mantaDetails.mantaKeyLocation, "utf-8"),
-                    keyId: Conf.storage.mantaDetails.mantaKeyId,
+        try {
+            if (Conf.storage.useManta) {
+                this.manta = manta.createClient({
+                    sign: manta.privateKeySigner({
+                        key: fs.readFileSync(Conf.storage.mantaDetails.mantaKeyLocation, "utf-8"),
+                        keyId: Conf.storage.mantaDetails.mantaKeyId,
+                        user: Conf.storage.mantaDetails.mantaUser,
+                        subuser: Conf.storage.mantaDetails.mantaSubUser,
+                        role: Conf.storage.mantaDetails.mantaRoles
+                    }),
                     user: Conf.storage.mantaDetails.mantaUser,
                     subuser: Conf.storage.mantaDetails.mantaSubUser,
+                    url: Conf.storage.mantaDetails.mantaLocation,
                     role: Conf.storage.mantaDetails.mantaRoles
-                }),
-                user: Conf.storage.mantaDetails.mantaUser,
-                subuser: Conf.storage.mantaDetails.mantaSubUser,
-                url: Conf.storage.mantaDetails.mantaLocation,
-                role: Conf.storage.mantaDetails.mantaRoles
-            });
-        } else {
-            throw new Error("Manta interface creation not allowed");
+                });
+            } else {
+                throw new Error("Manta interface creation not allowed");
+            }
+        } catch(e) {
+            console.log(e);
         }
     }
 

@@ -17,7 +17,7 @@
                     <!-- All questions have some form of content -->
                     <v-flex xs12>
                         <b-field label="Set the content of the question">
-                            <v-textarea label="Content" v-model="pageQuestion.content" outline :rules="[existenceRule]"/>
+                            <QuillEditor :id="`question-quill`" v-model="pageQuestion.content"></QuillEditor>
                         </b-field>                
                     </v-flex>
                     <br>
@@ -66,13 +66,15 @@
 </style>
 <script lang="ts">
 import { Vue, Component, Prop } from "vue-property-decorator";
+import QuillEditor from "./QuillEditor.vue";
 import { TypeQuestion,
     IQuestionMCQ, IQuestionOption, IQuestion } from "../../../common/interfaces/ToClientData";
 import { QuestionType } from "../../../common/enums/DBEnums";
 import { getAdminLoginResponse } from "../../../common/js/front_end_auth";
 import { Utils } from "../../../common/js/Utils";
-import { EventBus, EventList, SnackEvent, ModalEvent } from "../EventBus";
+import { EventBus, EventList, SnackEvent, ModalEvent, BlobUpload } from "../EventBus";
 import { IQuestionQualitative } from "../../../common/interfaces/DBSchema";
+import API from "../../../common/js/DB_API";
 
 interface DropDownConfiguration {
   text: string,
@@ -96,7 +98,12 @@ const defaultQuestion: IQuestionQualitative = {
     content: ""
 };
 
+const IMAGE_LOCATION = process.env.VUE_APP_IMAGE_LOCATION;
+
 @Component({
+  components: {
+    QuillEditor
+  }    
 })
 export default class QuestionPage extends Vue {
 
@@ -105,7 +112,7 @@ export default class QuestionPage extends Vue {
 
 
     // Setting default question
-    private pageQuestion: TypeQuestion = Object.assign({}, defaultQuestion);
+    private pageQuestion: TypeQuestion = defaultQuestion;
 
     // Stored for rendering purposes
     private mountedId: number = 0;
@@ -117,6 +124,11 @@ export default class QuestionPage extends Vue {
             value: QuestionType.QUALITATIVE
         }
     ]
+
+    // Quill Upload information
+    private uploadCount: number = 0;
+    private uploads: BlobUpload[] = [];
+    private changeCount: number = 0;
 
     // Import the types as well
     get QuestionType() {
@@ -150,19 +162,40 @@ export default class QuestionPage extends Vue {
 
     }
 
-    private submitQuestion() {
-        // Perform a basic error check based on the rules
-        const valid = (this.$refs.form as any).validate();
+    // Duplication from before
+    private handleQuillUpload(blobs: BlobUpload[]) {
+        // Since we are concating rather than appending, we have to count each transaction
+        // rather than checking total array length
+        this.uploads = this.uploads.concat(blobs);
 
-        if (!valid) {
-            const message: SnackEvent = {
-                message: "Failed generate quiz. Check the form for any errors",
-                error: true
+        // We should start uploading in a form, do nothing elsewise
+
+        const tempForm = new FormData();
+        this.uploads.forEach((upload) => {
+            tempForm.append(upload.id, upload.blob);
+        });
+        API.uploadForm("image/imageUpload", tempForm).then((files: { fieldName: string, fileName: string}[]) => {
+            const payload: SnackEvent = {
+                message: "Finished uploading associated images"
             }
-            EventBus.$emit(EventList.PUSH_SNACKBAR, message);
-            return;
-        }
+            EventBus.$emit(EventList.PUSH_SNACKBAR, payload);
 
+            for (let file of files) {
+                // For the sake of TypeScript
+                if (this.pageQuestion && this.pageQuestion.content) {
+                    this.pageQuestion.content = this.pageQuestion.content.replace(file.fieldName, IMAGE_LOCATION + file.fileName);
+                }
+            }
+
+            // Reset the upload counters and then create the quiz
+            this.uploads = [];
+            this.uploadCount = 0;
+
+            this.createQuestion();
+        });
+    }    
+
+    private createQuestion() {
         // Remember to strip the data appropiately for backend purposes
         let outgoingQuestion: TypeQuestion;
         if (this.pageQuestion.type === QuestionType.MCQ) {
@@ -194,27 +227,39 @@ export default class QuestionPage extends Vue {
 
         if (this.isEditing) {
             outgoingQuestion._id = this.id;
-
-            const message: ModalEvent = {
-                message: `Editing question`,
-                title: `Are you sure to edit the question of id ${this.id}?`,
-                fn: this.$store.dispatch,
-                data: ["editQuestion", outgoingQuestion]
-            }
-            EventBus.$emit(EventList.OPEN_MODAL, message);
-            //this.$store.dispatch("editQuestion", outgoingQuestion);
+            this.$store.dispatch("editQuestion", outgoingQuestion);
         } else {
-            const message: ModalEvent = {
-                message: `Creating question`,
-                title: `Are you sure to create a question?`,
-                fn: this.$store.dispatch,
-                data: ["createQuestion", outgoingQuestion]
-            }
-            EventBus.$emit(EventList.OPEN_MODAL, message);
+            this.$store.dispatch("createQuestion", outgoingQuestion);
+        }
+    }
 
-            //this.$store.dispatch("createQuestion", outgoingQuestion);
+    private submitQuestion() {
+        // Perform a basic error check based on the rules
+        const valid = (this.$refs.form as any).validate();
+
+        if (!valid) {
+            const message: SnackEvent = {
+                message: "Failed to generate question. Check the form for any errors",
+                error: true
+            }
+            EventBus.$emit(EventList.PUSH_SNACKBAR, message);
+            return;
         }
 
+        // Set one is to upload quill which then follows creating the quiz
+        const message: ModalEvent = {
+            title: this.isEditing ? `Editing question` : `Creating question`,
+            message: this.isEditing ? `Are you sure to edit question of ID ${this.id}?` : `Are you sure to create the question`,
+            fn: EventBus.$emit,
+            data: [EventList.CONSOLIDATE_UPLOADS],
+            selfRef: EventBus
+        }
+
+        EventBus.$emit(EventList.OPEN_MODAL, message);
+    }
+
+    private destroyed() {
+        EventBus.$off(EventList.QUILL_UPLOAD);
     }
 
     private mounted() {
@@ -227,9 +272,11 @@ export default class QuestionPage extends Vue {
             if (!maybeQuestion) {
                 throw Error("Retrieved question does not exist");
             } else {
-                this.pageQuestion = Object.assign({}, maybeQuestion);
+                this.pageQuestion = maybeQuestion;
             }
         }
+
+        EventBus.$on(EventList.QUILL_UPLOAD, this.handleQuillUpload);
     }
 
     /**
