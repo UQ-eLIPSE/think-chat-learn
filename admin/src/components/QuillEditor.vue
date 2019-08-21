@@ -74,7 +74,7 @@ export default class QuillEditor extends Vue {
         const tempInput = document.createElement("input");
         tempInput.setAttribute("type", "file");
         // Note we can never stop users from submitting bad things
-        tempInput.setAttribute("accept", ".png, .jpg, .jpeg, .gif, svg");
+        tempInput.setAttribute("accept", ".png, .jpg, .jpeg, .gif, .svg");
         tempInput.click();
 
         tempInput.onchange = ((event: Event) => {
@@ -88,7 +88,7 @@ export default class QuillEditor extends Vue {
             }
             const image = tempInput.files[0];
             // If then else army for specific searches
-            if (image.type === "image/png" || image.type === "image/jpg" || image.type === "image/jpeg" || image.type === "image/gif" || image.type === "image/svg") {
+            if (image.type === "image/png" || image.type === "image/jpg" || image.type === "image/jpeg" || image.type === "image/gif" || image.type === "image/svg+xml") {
                 this.localStoreImage(image);
             } else {
                 const message: SnackEvent = {
