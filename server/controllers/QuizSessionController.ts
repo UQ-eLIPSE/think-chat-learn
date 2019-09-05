@@ -16,7 +16,7 @@ export class QuizSessionController extends BaseController {
     }
 
     private createQuizSession(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        this.quizSessionService.createQuizSession(req.body as IQuizSession).then((outgoingId) => {
+        this.quizSessionService.createOne(req.body as IQuizSession).then((outgoingId) => {
             if (outgoingId !== null) {
                 res.json({
                     outgoingId
@@ -31,7 +31,7 @@ export class QuizSessionController extends BaseController {
     }
 
     private getQuizSessionById(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        this.quizSessionService.getQuizSession(req.params.quizSessionId).then((quizSession) => {
+        this.quizSessionService.findOne(req.params.quizSessionId).then((quizSession) => {
             if (quizSession) {
                 res.json({
                     session: quizSession
@@ -73,7 +73,7 @@ export class QuizSessionController extends BaseController {
     }
 
     public setupRoutes() {
-        this.router.put("/create", StudentAuthenticatorMiddleware.checkUserId(), StudentAuthenticatorMiddleware.checkQuizSessionId(), this.createQuizSession.bind(this));
+        this.router.post("/create", StudentAuthenticatorMiddleware.checkUserId(), StudentAuthenticatorMiddleware.checkQuizSessionId(), this.createQuizSession.bind(this));
         this.router.get("/quizsession/:quizSessionId", StudentAuthenticatorMiddleware.checkUserId(), this.getQuizSessionById.bind(this));
         this.router.post("/findSession", StudentAuthenticatorMiddleware.checkUserId(), StudentAuthenticatorMiddleware.checkQuizSessionId(),
             this.findSession.bind(this));

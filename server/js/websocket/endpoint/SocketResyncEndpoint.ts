@@ -12,7 +12,7 @@ export class SocketResyncEndpoint extends WSEndpoint {
             QuizSessionService) {
 
         // TODO replace with userSessionService
-        const session = await quizSessionService.getQuizSession(data.quizSessionId);
+        const session = await quizSessionService.findOne(data.quizSessionId);
 
         if (!session) {
             return console.error("Attempted session socket resync with invalid session ID = " + data.quizSessionId);
@@ -21,6 +21,9 @@ export class SocketResyncEndpoint extends WSEndpoint {
         const socketSession = SocketSession.GetAutoCreate(data.quizSessionId);
 
         // Before we set the socket, we need to check the previous socket and terminate it nicely
+        // Note that this does not remove the socket from memory. This is to provide the backup queue the ability to
+        // listen to multiple sockets. Of course one could remove the event but they would also have to mock quizSession
+        // ids
         if (socketSession.getSocket() && socketSession.getSocket()!.getSocket().conn.readyState === "open") {
             socketSession.getSocket()!.emit("terminateBrowser");
         }

@@ -116,34 +116,34 @@ const actions = {
     return commit(mutationKeys.DECREMENTING_CURRENT_INDEX);
   },
 
-    incrementMaxIndex({ commit }: {commit: Commit}) {
-        return commit(mutationKeys.INCREMENTING_MAX_INDEX);
-    },
+  incrementMaxIndex({ commit }: {commit: Commit}) {
+      return commit(mutationKeys.INCREMENTING_MAX_INDEX);
+  },
 
-    getPage({ commit }: {commit: Commit}, data: any) {
-        return API.request(API.POST, API.USER + "page/", data).then((output: QuestionRequestData | null) => {
-            if (!output) {
-                return false;
-            }
+  getPage({ commit }: {commit: Commit}, data: any) {
+      return API.request(API.POST, API.USER + "page/", data).then((output: QuestionRequestData | null) => {
+          if (!output) {
+              return false;
+          }
 
-            // Store the pages and possibly the question
-            state.quiz!.pages![state.maxIndex + 1] = output.page;
-            commit(mutationKeys.SET_QUIZ, state.quiz);
-            const question = output.question;
-            if (question) {
-                // Find the reference
-                state.questions.forEach((element, index) => {
-                    if (element._id === question._id) {
-                        state.questions[index] = question;
-                    }
-                });
+          // Store the pages and possibly the question
+          state.quiz!.pages![state.maxIndex + 1] = output.page;
+          commit(mutationKeys.SET_QUIZ, state.quiz);
+          const question = output.question;
+          if (question) {
+              // Find the reference
+              state.questions.forEach((element, index) => {
+                  if (element._id === question._id) {
+                      state.questions[index] = question;
+                  }
+              });
 
-                commit(mutationKeys.SET_QUESTIONS, state.questions);
-            }
+              commit(mutationKeys.SET_QUESTIONS, state.questions);
+          }
 
-            return true;
-        });
-    }
+          return true;
+      });
+  }
 };
 
 const mutations = {

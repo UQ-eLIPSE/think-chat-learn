@@ -1,5 +1,5 @@
 import * as IWSToClientData from "../../common/interfaces/IWSToClientData";
-import { WebsocketManager } from "js/WebsocketManager";
+import { WebsocketManager } from "../../common/js/WebsocketManager";
 import { MoocChatMessageTypes, MoocChatStateMessageTypes } from "./enums";
 
 export type MoocChatMessage = ChatMessage | SystemMessage | StateMessage;

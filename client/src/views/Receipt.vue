@@ -60,8 +60,8 @@ import {
 } from "../../../common/interfaces/ToClientData";
 import { logout } from "../../../common/js/front_end_auth";
 import { SocketState } from "../interfaces";
-import { WebsocketManager } from "../../js/WebsocketManager";
-import { WebsocketEvents } from "../../js/WebsocketEvents";
+import { WebsocketManager } from "../../../common/js/WebsocketManager";
+import { WebsocketEvents } from "../../../common/js/WebsocketEvents";
 import * as IWSToServerData from "../../../common/interfaces/IWSToServerData";
 import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
 

@@ -6,6 +6,7 @@ import { KVStore } from "../../../common/js/KVStore";
 import { Utils } from "../../../common/js/Utils";
 import { Response, IResponseMCQ, IResponseQualitative } from "../../../common/interfaces/DBSchema";
 import { QuestionType } from "../../../common/enums/DBEnums";
+import { QuizService } from "../../services/QuizService";
 /**
  * The idea is that for each quiz-question combination we set up a pool. Each pool
  * has a queue linked to each question.
@@ -16,10 +17,15 @@ import { QuestionType } from "../../../common/enums/DBEnums";
  * unique id as well
  */
 export class MoocchatWaitPool {
-    private static DesiredGroupSize: number = Conf.chat.groups.desiredSize;
+    //private static DesiredGroupSize: number = Conf.chat.groups.desiredSize;
     private static DesiredMaxWaitTime: number = CommonConf.timings.chatGroupFormationTimeoutMs;
     // A singleton of a pool dictionary where each key is the quiz id
     private static readonly WaitPools = new KVStore<MoocchatWaitPool>();
+
+    private static QuizService: QuizService | null = null;
+
+    // Group size based on the quiz, defaults to desired group size if non-existent
+    private _desiredGroupSize: number = Conf.chat.groups.desiredSize;
 
     // The id of the quiz in which we are interested in
     private _quizId: string;
@@ -31,16 +37,30 @@ export class MoocchatWaitPool {
     private readonly answerQueues = new KVStore<MoocchatWaitPoolAnswerQueueData[]>();
 
 
+    public static AssignQuizService(quizService: QuizService) {
+        if (!MoocchatWaitPool.QuizService) {
+            MoocchatWaitPool.QuizService = quizService;
+        }
+    }
+
     // Creates or gets a pool. Instantiates based on the quiz id
-    public static GetPoolAutoCreate(quizId: string, questionId: string) {
+    public static async GetPoolAutoCreate(quizId: string, questionId: string) {
         const waitPool = MoocchatWaitPool.GetPool(quizId, questionId);
 
-        if (!waitPool) {
-            // Create new wait pool
-            return new MoocchatWaitPool(quizId, questionId);
+        if (waitPool === undefined) {
+            if (MoocchatWaitPool.QuizService) {
+                // Create new wait pool
+                const quiz = await MoocchatWaitPool.QuizService.findOne(quizId);
+                if (quiz && quiz.groupSize) {
+                    return new MoocchatWaitPool(quizId, questionId, quiz.groupSize);
+                }
+                return new MoocchatWaitPool(quizId, questionId, CommonConf.groups.defaultGroupSize);
+            } else {
+                throw new Error(`No quiz service available`);
+            }
+        } else {
+            return waitPool;
         }
-
-        return waitPool;
     }
 
     // Gets the pool of a particular quiz question combiation
@@ -70,10 +90,13 @@ export class MoocchatWaitPool {
 
     // Construction of a pools is essentially the creation of an empty answer queue
     // dictionary and obviously a reference to the id
-    constructor(quizId: string, questionId: string) {
+    constructor(quizId: string, questionId: string, groupSize: number) {
         this._quizId = quizId;
-        this._questionId = questionId
+        this._questionId = questionId;
 
+        if (groupSize > 0) {
+            this._desiredGroupSize = Math.ceil(groupSize);
+        }
         this.answerQueues.empty();
 
         // Put into singleton map
@@ -89,6 +112,20 @@ export class MoocchatWaitPool {
 
     public getQuestionId() {
         return this._questionId;
+    }
+
+    public getTimeLeftBeforeForcedFormation() {
+        return this.answerQueues.getKeys().reduce((smallestWaitTime, queueKey) => {
+            const firstInQueueData = this.answerQueues.get(queueKey)![0];
+
+            if (!firstInQueueData) {
+                return smallestWaitTime;
+            }
+
+            const waitTime = Date.now() - firstInQueueData.timestamp;
+            return smallestWaitTime > MoocchatWaitPool.DesiredMaxWaitTime - waitTime ?
+                MoocchatWaitPool.DesiredMaxWaitTime - waitTime : smallestWaitTime;
+        }, MoocchatWaitPool.DesiredMaxWaitTime);
     }
 
     // The idea is that within a pool, we attempt
@@ -229,9 +266,9 @@ export class MoocchatWaitPool {
         // Below pool size checks:
         //  n       prevents premature creation of groups now when (n+1) size groups may need to be considered in the future
         //  n+1     prevents loner groups from appearing (when groups: {n, 1} may form)
-        if (this.answerQueueKeysWithQuizAttempts().length >= MoocchatWaitPool.DesiredGroupSize &&
-            totalPoolSize !== MoocchatWaitPool.DesiredGroupSize &&
-            totalPoolSize !== (MoocchatWaitPool.DesiredGroupSize + 1)) {
+        if (this.answerQueueKeysWithQuizAttempts().length >= this._desiredGroupSize &&
+            totalPoolSize !== this._desiredGroupSize &&
+            totalPoolSize !== (this._desiredGroupSize + 1)) {
             return this.popGroup();
         }
 
@@ -239,11 +276,11 @@ export class MoocchatWaitPool {
         if (this.waitTimeoutReached()) {
             // If pool size = desiredGroupSize + 1, attempt to create a group of size 2
             // now to attempt to prevent loners from appearing?
-            if (totalPoolSize === (MoocchatWaitPool.DesiredGroupSize + 1)) {
+            if (totalPoolSize === (this._desiredGroupSize + 1)) {
                 return this.popGroup(2);
             }
 
-            if (totalPoolSize < MoocchatWaitPool.DesiredGroupSize) {
+            if (totalPoolSize < this._desiredGroupSize) {
                 // TODO handle backup queue
 
                 /*const backupClientQueue = MoocchatBackupClientQueue.GetQueue(this.getQuizSessionId());
@@ -265,7 +302,7 @@ export class MoocchatWaitPool {
         return [];
     }
 
-    private popGroup(size: number = MoocchatWaitPool.DesiredGroupSize) {
+    private popGroup(size: number = this._desiredGroupSize) {
         const totalPoolSize = this.getSize();
 
         // Clamp size to be no larger than total pool size

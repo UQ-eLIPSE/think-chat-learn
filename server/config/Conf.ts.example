@@ -1,11 +1,11 @@
 import { Utils } from "../../common/js/Utils";
+import { ICriteria } from "../../common/interfaces/DBSchema";
 
 /**
  * MOOCchat server configuration file
  */
 
 export const Conf: IConf = {
-    endpointUrl: "http://localhost:8080",
     portNum: 8080,
     database: "mongodb://localhost:27017/moocchatDB",
     http: {
@@ -13,6 +13,7 @@ export const Conf: IConf = {
     },
     adminPage: "http://localhost:8080/admin/#/login",
     clientPage: "http://localhost:8080/client/#/login",
+    intermediatePage: "http://localhost:8080/intermediate/#/login",
     jwt: {
         SECRET: "YOUR_SECRET",
         TOKEN_LIFESPAN: "7h"
@@ -53,10 +54,50 @@ export const Conf: IConf = {
     },
     folders: {
         clientFolder: "/../../client/dist/",
-        adminFolder:  "/../../admin/dist/"
+        adminFolder:  "/../../admin/dist/",
+        intermediateFolder:  "/../../intermediate/dist/"
     },
     // Make sure this is larger than or equal to page delay for client
-    pageSlack: 10000
+    pageSlack: 10000,
+    endpointUrl: "http://localhost:8080",
+    defaultCriteria: [{
+        name: "evaluating",
+        description: "How well one evaluates"
+    }, {
+        name: "interpreting",
+        description: "How well one interprets"
+    }, {
+        name: "analysing",
+        description: "How well one analyses"
+    }, {
+        name: "makingArguments",
+        description: "How well one makes arguments"
+    }, {
+        name: "accuracyOfArguments",
+        description: "How accurate are one's arguments"
+    }, {
+        name: "expressingAndResponding",
+        description: "How well one expresses and responds to the prompt"
+    }, {
+        name: "depthOfReflection",
+        description: "How well one reflects on learning outcomes"
+    }, {
+        name: "mark",
+        description: "Your mark"
+    }],
+    storage: {
+        useManta: true,
+        mantaDetails: {
+            mantaKeyLocation: "some_location_on_machine",
+            mantaLocation: "some_https_location",
+            mantaKeyId: "some_key",
+            mantaSubUser: "some_sub_user",
+            mantaRoles: [],
+            mantaUser: "some_user",
+            mantaFolderName: "public/iamges"
+        },
+        internalLocation: "some_location"
+    }
 }
 
 
@@ -66,7 +107,6 @@ export const Conf: IConf = {
  * @interface IConf
  */
 interface IConf {
-    endpointUrl: "http://localhost:8080",
     portNum: number,
     database: string,
     http: {
@@ -79,6 +119,7 @@ interface IConf {
     },
     clientPage: string,
     adminPage: string,
+    intermediatePage: string,
     socketIo: {
         pingInterval: number,
         pingTimeout: number
@@ -115,7 +156,24 @@ interface IConf {
     },
     folders: {
         clientFolder: string,
-        adminFolder: string
+        adminFolder: string,
+        intermediateFolder: string
     }
-    pageSlack: number
+    pageSlack: number,
+    endpointUrl: string,
+    defaultCriteria: Partial<ICriteria>[],
+    storage: {
+        // If set to true, expects external location to be valid
+        useManta: boolean,
+        mantaDetails: {
+            mantaLocation: string,
+            mantaKeyLocation: string,
+            mantaKeyId: string,
+            mantaUser: string,
+            mantaSubUser: string,
+            mantaRoles: string[],
+            mantaFolderName: string
+        }
+        internalLocation: string
+    }
 }

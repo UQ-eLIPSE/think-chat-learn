@@ -19,15 +19,50 @@ export type IDiscussionPage = DBSchema.IDiscussionPage;
 export type IUserSession = DBSchema.IUserSession;
 export type IQuizSession = DBSchema.IQuizSession;
 export type IChatGroup = DBSchema.IChatGroup;
+export type IChatMessage = DBSchema.IChatMessage;
+export type ICriteria = DBSchema.ICriteria;
+export type IRubric = DBSchema.IRubric;
 export type Response = DBSchema.Response;
 // API specific
 
+export enum LoginResponseTypes {
+  GENERIC_LOGIN = 1,
+  ADMIN_LOGIN = 2,
+  BACKUP_LOGIN = 3,
+  INTERMEDIATE_LOGIN = 4
+}
+
+interface GenericLogin {
+  type: LoginResponseTypes;
+}
+
 // Essentially the user should only have one page
-export interface LoginResponse {
+export interface LoginResponse extends GenericLogin {
+  type: LoginResponseTypes.GENERIC_LOGIN;
   user: IUser;
   courseId: string;
   quizId: string | null;
   available: boolean;
+}
+
+// Is also an admin
+export interface BackupLoginResponse extends GenericLogin {
+  type: LoginResponseTypes.BACKUP_LOGIN;
+  user: IUser;
+  courseId: string;
+  quizId: string | null;
+  isAdmin: boolean;
+}
+
+// Only difference is the type and the quizSessionId
+export interface IntermediateLogin extends GenericLogin {
+  type: LoginResponseTypes.INTERMEDIATE_LOGIN;
+  user: IUser;
+  courseId: string;
+  quizId: string | null;
+  quizSessionId: string | null;
+  available: boolean;
+  responseId: string;
 }
 
 export interface QuizScheduleData {
@@ -35,13 +70,17 @@ export interface QuizScheduleData {
   questions: TypeQuestion[];
 }
 
+// Handles what to send back for the admin page
 export interface QuizScheduleDataAdmin {
   quizzes: NetworkData.IQuizOverNetwork[];
   questions: TypeQuestion[];
+  criterias: ICriteria[];
+  rubrics: IRubric[];
 }
 
 // Also handles the initial retrieval
-export interface AdminLoginResponse {
+export interface AdminLoginResponse extends GenericLogin {
+  type: LoginResponseTypes.ADMIN_LOGIN;
   user: IUser;
   courseId: string;
   isAdmin: boolean;
@@ -58,4 +97,7 @@ export interface QuestionReconnectData {
   questions: TypeQuestion[];
 }
 
-export type QuizSessionDataObject = { quizSession: IQuizSession | null, userSession: IUserSession | null, user: IUser | null, responses: Response[] };
+export type QuizSessionDataObject = { quizSession: IQuizSession | null,
+  userSession: IUserSession | null, user: IUser | null,
+  responses: Response[]
+};

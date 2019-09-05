@@ -4,6 +4,9 @@ import { IQuestion } from "../../../../common/interfaces/ToClientData";
 import { API } from "../../../../common/js/DB_API";
 import { TypeQuestion } from "../../../../common/interfaces/DBSchema";
 
+// Event bus for snackbar purposes
+import { EventBus, EventList, SnackEvent } from "../../EventBus";
+
 export interface IState {
     questions: TypeQuestion[];
 }
@@ -22,11 +25,30 @@ const mutationKeys = {
 const getters = {
     questions: (): IQuestion[] | null => {
         return state.questions;
-    }
+    },
+    getQuestionById: () => {
+        return (id: string) => {
+            return state.questions.find((question) => {
+                return question._id === id;
+            });
+        }
+    } 
 };
 const actions = {
     createQuestion({ commit }: {commit: Commit}, data: IQuestion) {
-        API.request(API.PUT, API.QUESTION + "create", data);
+        API.request(API.POST, API.QUESTION + "create", data).then((payload: { outgoingId: string }) => {
+            if (payload) {
+                data._id = payload.outgoingId;
+                commit(mutationKeys.SET_QUESTION, data);
+
+                const message: SnackEvent = {
+                    message: "Created a Question"
+                };
+
+                EventBus.$emit(EventList.PUSH_SNACKBAR,
+                    message);
+            }
+        });
     },
 
     setQuestions({ commit }: {commit: Commit}, data: IQuestion[]) {
@@ -37,15 +59,26 @@ const actions = {
         API.request(API.DELETE, API.QUESTION + "delete/" + data, {}).then((outcome: boolean) => {
             if (outcome) {
                 commit(mutationKeys.DELETE_QUESTION, data);
+                const message: SnackEvent = {
+                    message: "Deleted a Question"
+                };
+
+                EventBus.$emit(EventList.PUSH_SNACKBAR, message);
             }
         });
 
     },
 
     editQuestion({ commit }: {commit: Commit}, data: IQuestion) {
-        API.request(API.POST, API.QUESTION + "update/", data).then((outcome: boolean) => {
+        API.request(API.PUT, API.QUESTION + "update/", data).then((outcome: boolean) => {
             if (outcome) {
                 commit(mutationKeys.EDIT_QUESTION, data);
+                
+                const message: SnackEvent = {
+                    message: "Edited a Question"
+                };
+
+                EventBus.$emit(EventList.PUSH_SNACKBAR, message);
             }
         });
     }

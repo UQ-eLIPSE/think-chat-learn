@@ -5,7 +5,7 @@ import { Response } from "../../common/interfaces/DBSchema";
 import { QuizRepository } from "../repositories/QuizRepository";
 import { PageType } from "../../common/enums/DBEnums";
 
-export class ResponseService extends BaseService{
+export class ResponseService extends BaseService<Response> {
 
     protected readonly responseRepo: ResponseRepository;
     protected readonly quizSessionRepo: QuizSessionRepository;
@@ -20,7 +20,7 @@ export class ResponseService extends BaseService{
 
     // Creates a user session assuming the body is valid. Additionally if
     // the response is already present, throw an error
-    public async createResponse(data: Response): Promise<string> {
+    public async createOne(data: Response): Promise<string> {
 
         const existingQuizSession = await this.quizSessionRepo.findOne(data.quizSessionId);
         const existingQuiz = await this.quizRepo.findOne(data.quizId);
@@ -61,12 +61,26 @@ export class ResponseService extends BaseService{
     }
 
     // Simply an override. 
-    public async updateResponse(data: Response): Promise<boolean> {
+    public async updateOne(data: Response): Promise<boolean> {
         return this.responseRepo.updateOne(data);
     }
 
+    public async updateResponses(data: Response[]): Promise<boolean> {
+        const updates: Promise<boolean>[] = [];
+        for (let i = 0; i < data.length; i++) {
+            updates.push(this.updateOne(data[i]));
+        }
+
+        const outcomes = await Promise.all(updates);
+        // If there is at least one false, return false?
+        // TODO document this behaviour
+        return !outcomes.some((outcome) => {
+            return !outcome;
+        });
+    }    
+
     // Deletes a response based on the id
-    public async deleteResponse(id: string) {
+    public async deleteOne(id: string) {
         return this.responseRepo.deleteOne(id);
     }
 
@@ -79,7 +93,7 @@ export class ResponseService extends BaseService{
     }
 
     // Gets the response based on the id itself
-    public async getResponse(responseId: string): Promise<Response | null> {
+    public async findOne(responseId: string): Promise<Response | null> {
         return this.responseRepo.findOne(responseId);
     }
 

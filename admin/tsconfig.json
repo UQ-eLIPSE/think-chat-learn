@@ -26,5 +26,5 @@
     "tests/**/*.tsx"
   ],
   "exclude": ["node_modules"],
-  "files": ["./src/main.ts"]
+  "files": ["/src/main.ts"]
 }

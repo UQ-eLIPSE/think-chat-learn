@@ -65,7 +65,9 @@ export const WebsocketEvents = {
         CHAT_GROUP_RECONNECT: "chatGroupReconnect",
 
         /** IWStoClientData.TerminateBrowser */
-        TERMIANTE_BROWSER: "terminateBrowser"
+        TERMIANTE_BROWSER: "terminateBrowser",
+
+        CHAT_PING: "chatGroupStatusRequest"
     },
 
     OUTBOUND: {
@@ -80,6 +82,8 @@ export const WebsocketEvents = {
 
         /** IWSToServerData.ChatGroupJoin */
         CHAT_GROUP_JOIN_REQUEST: "chatGroupJoinRequest",
+
+        CHAT_GROUP_UNJOIN_REQUEST: "chatGroupUnJoinRequest",
 
         /** IWSToServerData.ChatGroupSendMessage */
         CHAT_GROUP_SEND_MESSAGE: "chatGroupMessage",
@@ -121,6 +125,8 @@ export const WebsocketEvents = {
         STORE_QUIZ_SESSION_SOCKET: "storeQuizSessionSocket",
 
         /** IWSToServerData */
-        CHAT_GROUP_RECONNECT: "chatGroupReconnect"
+        CHAT_GROUP_RECONNECT: "chatGroupReconnect",
+
+        CHAT_PING: "chatGroupStatusRequest"
     }
 };

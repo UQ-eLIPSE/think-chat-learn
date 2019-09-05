@@ -1,4 +1,4 @@
-import axios, { AxiosPromise } from "axios";
+import axios, { AxiosPromise, AxiosRequestConfig } from "axios";
 import { getIdToken, setIdToken } from "./front_end_auth";
 
 // TODO replace with an actual link
@@ -20,6 +20,8 @@ export interface IApi {
   RESPONSE: string;
   CHATGROUP: string;
   MARKS: string;
+  CRITERIA: string;
+  RUBRIC: string;
 
   request(
     method: string,
@@ -28,6 +30,8 @@ export interface IApi {
     contentType?: string | undefined,
     token?: string | null
   ): Promise<any>;
+
+  uploadForm(url: string, data: FormData): Promise<any>;
 }
 
 export const API: IApi = {
@@ -38,23 +42,42 @@ export const API: IApi = {
     contentType?: string | undefined,
     token?: string | null
   ): AxiosPromise {
-    return axios({
-      method,
+    // TODO, change the verbs to correct typing
+    const methodProxy: any = method;
+
+    const payload: AxiosRequestConfig = {
+      method: methodProxy,
       url: API_URL + url,
       headers: {
-        Authorization: "Bearer " + (token ? token : getIdToken()),
+        "Authorization": "Bearer " + (token ? token : getIdToken()),
         "Content-Type": contentType ? contentType : "application/json"
       },
       data
-    })
+    };
+
+    return axios(payload)
       .then((res: any) => {
         setIdToken(res.headers["access-token"]);
         return res;
       })
       .then((res: any) => res.data)
-      .catch(e => {
+      .catch((e: Error) => {
         alert(e);
       });
+  },
+
+  uploadForm(url: string, data: FormData): any {
+    const config: AxiosRequestConfig = {
+      url: API_URL + url,
+      headers: {
+        "Authorization": "Bearer " + getIdToken(),
+        "Content-Type" : "multipart/form-data"
+      }
+    };
+
+    return axios.post(API_URL + url, data, config).then((res) => {
+      return res.data;
+    });
   },
 
   POST: "post",
@@ -69,7 +92,9 @@ export const API: IApi = {
   QUIZSESSION: "quizsession/",
   RESPONSE: "response/",
   CHATGROUP: "chatgroup/",
-  MARKS: "marks/"
+  MARKS: "marks/",
+  CRITERIA: "criteria/",
+  RUBRIC: "rubric/"
 };
 
 export default API;

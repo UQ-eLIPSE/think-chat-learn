@@ -13,10 +13,48 @@ import { ResponseService } from "../../../services/ResponseService";
 import { ChatGroupService } from "../../../services/ChatGroupService";
 import { IChatGroup } from "../../../../common/interfaces/DBSchema";
 import { SocketSession } from "../SocketSession";
+import { UserService } from "../../../services/UserService";
 
 const CLIENT_INDEX_OFFSET = 1;
 
 export class ChatEndpoint extends WSEndpoint {
+    private static async HandleStatusRequest(socket: PacSeqSocket_Server, data: IWSToServerData.ChatGroupStatus) {
+        // Two checks, socket existence and userid allowed. Return a -1 if not allowed
+        if (!SocketSession.GetSocketSessionBySocketId(socket.id)) {
+            throw new Error(`Attempted to ping a response with an unknown socket ${socket.id}`);
+        }
+
+        // NOTE: implement socket authentication middleware
+        const waitPool = MoocchatWaitPool.GetPool(data.quizId, data.questionId);
+
+        const output: IWSToClientData.ChatPing = {
+            size: waitPool ? waitPool.getSize() : 0,
+            timeout: waitPool ? waitPool.getTimeLeftBeforeForcedFormation() : -1
+        };
+        socket.emit("chatGroupStatusRequest", output);
+
+    }
+
+    private static async HandleUnJoinRequest(socket: PacSeqSocket_Server, data: IWSToServerData.ChatGroupUnJoin,  responseService: ResponseService) {
+        if (!SocketSession.GetSocketSessionBySocketId(socket.id)) {
+            throw new Error(`Attempted to join a group wih an unknown socket ${socket.id}`);
+        }
+
+        // Grab waitpool and hten remove
+        const waitPool = MoocchatWaitPool.GetPool(data.quizId, data.questionId);
+
+        if (!waitPool) {
+            throw new Error(`Invalid wait pool of ${data.quizId} ${data.questionId}`);
+        }
+
+        const response = await responseService.findOne(data.responseId);
+        if (!response) {
+            throw new Error(`No response of id ${data.responseId}`);
+        } 
+
+        waitPool.removeQuizAttempt(response);
+    }
+
     private static async HandleJoinRequest(socket: PacSeqSocket_Server, data: IWSToServerData.ChatGroupJoin, responseService: ResponseService,
         chatGroupService: ChatGroupService) {
 
@@ -26,7 +64,7 @@ export class ChatEndpoint extends WSEndpoint {
         }
 
         // Grabs the response 
-        const userResponse = await responseService.getResponse(data.responseId);
+        const userResponse = await responseService.findOne(data.responseId);
 
         if (!userResponse || !userResponse._id) {
             throw new Error("Attempted chat group join request with invalid quiz attempt ID = " + data.responseId);
@@ -43,7 +81,7 @@ export class ChatEndpoint extends WSEndpoint {
         }
 
         // Feed in the quiz and question id
-        const waitPool = MoocchatWaitPool.GetPoolWithQuestionresponse(userResponse);
+        const waitPool = await MoocchatWaitPool.GetPoolWithQuestionresponse(userResponse);
 
         // Can't join into pool if already in pool
         if (waitPool.hasQuizResponse(userResponse)) {
@@ -85,7 +123,7 @@ export class ChatEndpoint extends WSEndpoint {
                     return acc;
                 }, {});
 
-                return chatGroupService.createChatGroup(chatGroup).then((groupId) => {
+                return chatGroupService.createOne(chatGroup).then((groupId) => {
                     // Instantiate the group
                     SocketSession.CreateGroup(groupId)
 
@@ -121,7 +159,8 @@ export class ChatEndpoint extends WSEndpoint {
                                         }
                                         return acc;
                                     }, {}),
-                                    clientIndex
+                                    clientIndex,
+                                    quizSessionId: element.quizSessionId
                                 }
 
                                 socket.emit("chatGroupFormed", groupFormed);
@@ -169,7 +208,7 @@ export class ChatEndpoint extends WSEndpoint {
 
         const group = SocketSession.GetAutoCreateGroup(data.groupId);
 
-        const chatGroup = await chatGroupService.getChatGroup(data.groupId);
+        const chatGroup = await chatGroupService.findOne(data.groupId);
 
         if (!chatGroup) {
             throw Error(`Invalid chat group of id ${data.groupId}`);
@@ -217,7 +256,7 @@ export class ChatEndpoint extends WSEndpoint {
             chatGroupService: ChatGroupService) {
         const group = SocketSession.GetAutoCreateGroup(data.groupId);
 
-        const chatGroup = await chatGroupService.getChatGroup(data.groupId);
+        const chatGroup = await chatGroupService.findOne(data.groupId);
 
         if (!chatGroup) {
             throw Error(`Invalid chat group of id ${data.groupId}`);
@@ -253,7 +292,7 @@ export class ChatEndpoint extends WSEndpoint {
         chatGroupService: ChatGroupService) {
         const group = SocketSession.GetAutoCreateGroup(data.groupId);
 
-        const chatGroup = await chatGroupService.getChatGroup(data.groupId);
+        const chatGroup = await chatGroupService.findOne(data.groupId);
 
         if (!chatGroup) {
             throw Error(`Invalid chat group of id ${data.groupId}`);
@@ -329,14 +368,14 @@ export class ChatEndpoint extends WSEndpoint {
         responseService: ResponseService, chatGroupService: ChatGroupService) {
         const group = SocketSession.GetAutoCreateGroup(data.groupId);
 
-        const chatGroup = await chatGroupService.getChatGroup(data.groupId);
+        const chatGroup = await chatGroupService.findOne(data.groupId);
 
         if (!chatGroup) {
             throw Error(`Invalid chat group of id ${data.groupId}`);
         }
 
         // Grab the response 
-        const response = await responseService.getResponse(data.responseId);
+        const response = await responseService.findOne(data.responseId);
 
         
         if (!response) {
@@ -380,6 +419,12 @@ export class ChatEndpoint extends WSEndpoint {
         this.responseService = _responseService;
         this.chatGroupService = _chatGroupService;
         this.chatMessageService = _chatMessageService;
+    }
+
+    public get onUnJoinRequest() {
+        return (data: IWSToServerData.ChatGroupUnJoin) => {
+            ChatEndpoint.HandleUnJoinRequest(this.getSocket(), data, this.responseService);
+        }
     }
 
     public get onJoinRequest() {
@@ -435,6 +480,12 @@ export class ChatEndpoint extends WSEndpoint {
         }
     }
 
+    public get onStatusRequest() {
+        return (data:IWSToServerData.ChatGroupStatus) => {
+            ChatEndpoint.HandleStatusRequest(this.getSocket(), data);
+        }
+    }
+
     public returnEndpointEventHandler(name: string): (data: any) => void {
         switch (name) {
             case "chatGroupJoinRequest": return this.onJoinRequest;
@@ -444,6 +495,8 @@ export class ChatEndpoint extends WSEndpoint {
             case "chatGroupUpdate": return this.onHandleGroupUpdate;
             case "chatGroupReconnect": return this.onChatReconnect;
             case "disconnect": return this.onChatDisconnect;
+            case "chatGroupStatusRequest": return this.onStatusRequest;
+            case "chatGroupUnJoinRequest": return this.onUnJoinRequest;
         }
 
         throw new Error(`No endpoint event handler for "${name}"`);
@@ -455,11 +508,13 @@ export class ChatEndpoint extends WSEndpoint {
             "chatGroupTypingNotification",
             "chatGroupQuitStatusChange",
             "chatGroupMessage",
+            "chatGroupStatusRequest",
             "chatGroupUpdate",
             // Note that the reason for also registering this event listener
             // is to allow disconnect messages to be sent to other users
             "chatGroupReconnect",
-            "disconnect"
+            "disconnect",
+            "chatGroupUnJoinRequest"
         ]);
     }
 }

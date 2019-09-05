@@ -1,5 +1,5 @@
 import decode from "jwt-decode";
-import { LoginResponse, AdminLoginResponse } from "../interfaces/ToClientData";
+import { LoginResponse, AdminLoginResponse, BackupLoginResponse } from "../interfaces/ToClientData";
 const ID_TOKEN_KEY = "id_token";
 
 export function logout(): void {
@@ -25,12 +25,13 @@ export function isLoggedIn(): boolean {
     return !!idToken && !isTokenExpired(idToken);
 }
 
-export function getLoginResponse(): LoginResponse | null {
+export function getLoginResponse(): LoginResponse | BackupLoginResponse | null {
     const idToken = getIdToken();
     if (!idToken) {
         return null;
     }
-    const token = decode(idToken) as LoginResponse;
+    const token = decode(idToken) as any;
+
     return token;
 }
 

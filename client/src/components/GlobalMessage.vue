@@ -33,10 +33,11 @@ export default class GlobalMessage extends Vue {
   get globalMessageClass() {
     if (this.hasMessage) {
       return {
-        "error": this.systemMessage.type === SystemMessageTypes.FATAL_ERROR,
-        "warning": this.systemMessage.type === SystemMessageTypes.WARNING,
-        "success": this.systemMessage.type === SystemMessageTypes.SUCCESS,
-      }
+        error: this.systemMessage.type === SystemMessageTypes.FATAL_ERROR,
+        warning: this.systemMessage.type === SystemMessageTypes.WARNING,
+        success: this.systemMessage.type === SystemMessageTypes.SUCCESS,
+      };
+
     }
 
     return {};
@@ -44,7 +45,7 @@ export default class GlobalMessage extends Vue {
 
   get iconByMessageType() {
     if (this.hasMessage) {
-      switch(this.systemMessage.type) {
+      switch (this.systemMessage.type) {
         case SystemMessageTypes.FATAL_ERROR:
         return "exclamation-circle";
         case SystemMessageTypes.WARNING:
@@ -52,11 +53,11 @@ export default class GlobalMessage extends Vue {
         case SystemMessageTypes.SUCCESS:
           return "check-circle";
         default:
-          return '';
+          return "";
       }
     }
 
-    return '';
+    return "";
   }
 }
 </script>

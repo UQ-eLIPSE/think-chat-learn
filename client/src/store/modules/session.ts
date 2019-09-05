@@ -3,22 +3,24 @@ import { Commit } from "vuex";
 import { IUserSession, IQuizSession, Response, IQuiz,
     IDiscussionPage,
     TypeQuestion,
-    QuestionReconnectData} from "../../../../common/interfaces/ToClientData";
+    QuestionReconnectData,
+    LoginResponseTypes} from "../../../../common/interfaces/ToClientData";
 import API from "../../../../common/js/DB_API";
 
 // Websocket interfaces
 import * as IWSToClientData from "../../../../common/interfaces/IWSToClientData";
-import { WebsocketManager } from "../../../js/WebsocketManager";
-import { WebsocketEvents } from "../../../js/WebsocketEvents";
+import { WebsocketManager } from "../../../../common/js/WebsocketManager";
+import { WebsocketEvents } from "../../../../common/js/WebsocketEvents";
+// Common typings/utils
 import { SocketState, MoocChatMessage, StateMessage, Dictionary } from "../../interfaces";
 import { MoocChatMessageTypes, MoocChatStateMessageTypes } from "../../enums";
-import { logout } from "../../../../common/js/front_end_auth";
+import { logout, getLoginResponse } from "../../../../common/js/front_end_auth";
 import store, { SystemMessageTypes } from "..";
 import { Utils } from "../../../../common/js/Utils";
 import { PageType, QuestionType } from "../../../../common/enums/DBEnums";
 import { ChatGroupResync } from "../../../../common/interfaces/HTTPToClientData";
 import { IResponseMCQ, IResponseQualitative } from "../../../../common/interfaces/DBSchema";
-
+import * as CommonConf from "../../../../common/config/Conf";
 export interface IState {
     quizSession: IQuizSession | null;
     // Note the key of this dictionary would be the questionid as we simply respond to one question
@@ -28,10 +30,12 @@ export interface IState {
     resyncAmount: number;
     // Stops the browser
     stopBrowser: boolean;
-    // Tells a resync
+    // Tells a resync to a moocchat page
     resync: boolean;
     // Tells if the quiz session is available
     quizAvailable: boolean;
+    // Tells if a quizSession has been feteched (attempted)
+    quizSessionFetched: boolean;
 }
 
 const state: IState = {
@@ -48,7 +52,8 @@ const state: IState = {
     resyncAmount: 0,
     stopBrowser: false,
     resync: false,
-    quizAvailable: false
+    quizAvailable: false,
+    quizSessionFetched: false
 };
 
 const mutationKeys = {
@@ -64,9 +69,32 @@ const mutationKeys = {
     APPEND_STATE_MESSAGE: "Appending a state message",
     SET_GROUP: "Setting the chat group",
     SET_SOCKET_MESSAGES: "Setting the socket messages",
-    SET_QUIZ_AVAILABILITY: "Setting quiz availability"
+    SET_QUIZ_AVAILABILITY: "Setting quiz availability",
+    // Sets a feteched message state
+    SET_FETCH_STATE: "Setting fetch state"
 };
 
+// Handles reconnect message fail messages by noting this on the store
+function reconnectFail() {
+    store.commit("SET_GLOBAL_MESSAGE", {
+        error: true,
+        type: SystemMessageTypes.FATAL_ERROR,
+        message:
+            "Error: Connection lost. Please close current window/tab and launch MOOCchat again from Blackboard. " +
+                "(Your progress will be retained)"
+      });
+}
+
+// To be displayed when socket.io cannot reconnect.
+// Attemptnumber is passed by socket.io
+function reconnectAttempt(attemptNumber: number) {
+    store.commit("SET_GLOBAL_MESSAGE", {
+        error: false,
+        type: SystemMessageTypes.WARNING,
+        message: `Connection lost.
+            Attempting to reconnect (#${attemptNumber}/${CommonConf.Conf.websockets.reconnectionAmount})`
+      });
+}
 
 // Grabs the reference from user.ts
 function getToken(): string | null {
@@ -238,6 +266,9 @@ async function handleReconnect(data: any) {
                 quizId: quiz._id
             }, undefined, getToken())).data;
 
+            // A fetch was attempted regardless
+            store.commit(mutationKeys.SET_FETCH_STATE, true);
+
             // If we have a quiz session assign it else, do nothing
             if (!quizSession) {
                 return;
@@ -245,17 +276,20 @@ async function handleReconnect(data: any) {
 
             store.dispatch("updateQuizSession", quizSession);
 
-            if(quizSession.complete) {
+            if (quizSession.complete) {
                 store.commit("SET_GLOBAL_MESSAGE", {
                     error: true,
                     type: SystemMessageTypes.WARNING,
                     expiry: null,
                     message: "You have already attempted the quiz"
-                })
+                });
             }
         } else {
             return;
         }
+    } else {
+        // Presumably the state store's version is valid
+        quizSession = state.quizSession;
     }
     // We have a quiz session (whether it is an on client disconnect or not)
     // The next step is to check for our socket session
@@ -273,74 +307,86 @@ async function handleReconnect(data: any) {
         state.socketState!.socket!.emit(WebsocketEvents.OUTBOUND.SESSION_SOCKET_RESYNC, {
             quizSessionId: state.quizSession!._id
         });
-
-        // Fetch the group based on quiz id. If we don't have one.
-        if (!state.socketState!.chatGroupFormed) {
-            const groupSession: ChatGroupResync | null =
-                await API.request(API.POST, API.CHATGROUP +
-                    "recoverSession", state.quizSession!);
-
-            const userResponses: Response[] =
-                (await API.request(API.GET, API.RESPONSE + "quizSession/" + state.quizSession!._id, {},
-                    undefined, getToken())).data;
-
-            const quizQuestionData: QuestionReconnectData = await API.request(API.POST, API.USER + "/reconnectData", {
-                quizId: state.quizSession!.quizId,
-                quizSessionId: state.quizSession!._id,
-                groupId: groupSession && groupSession.chatGroupFormed.groupId ?
-                    groupSession.chatGroupFormed.groupId : null
-            });
-
-            // Set the things as a result
-            await store.commit("Setting the pages", quizQuestionData.pages);
-            await store.commit("Setting questions", quizQuestionData.questions);
-
-            if (groupSession) {
-                await handleGroupJoin(groupSession.chatGroupFormed);
-                await store.dispatch("updatePageBasedOnTime", { time: groupSession.startTime, isGroup: true });
-                await store.dispatch("updateSocketMessages", groupSession.messages);
-            } else {
-                await store.dispatch("updatePageBasedOnTime", { time: quizSession!.startTime, isGroup: false });
-            }
-
-            if (userResponses) {
-                await store.commit(mutationKeys.ADD_RESPONSES, userResponses);
-                // Populate the missing responses based on the maxIndex
-                await store.commit(mutationKeys.POPULATE_MISSING_RESPONSES);
-            }
-        }
-
-        Vue.set(state, "resync", true);
-
-        // We then check if the quiz session has a group id and notify everyone
-        if (state.socketState!.chatGroupFormed) {
-            setTimeout(() => state.socketState!.socket!.emit(WebsocketEvents.OUTBOUND.CHAT_GROUP_RECONNECT, {
-                quizSessionId: state.quizSession!._id,
-                groupId: state.socketState!.chatGroupFormed!.groupId }
-            ), 1000);
-        }
-
     } else {
-        // No present socket session present. Don't bother with reconnection. This could possibly mean that the
-        // server has gone down or the socket session has been garbage collected
+        // If we have a quiz session but not registered in terms of socket, need to check if intermediate
+        const token = getLoginResponse();
 
-        
-        // TODO: Check if quiz completed
-        if(quizSession !== null && quizSession.complete) {
-            // Quiz already completed
-            return;
+        if (token && token.type === LoginResponseTypes.BACKUP_LOGIN) {
+            state.socketState!.socket!.emit(WebsocketEvents.OUTBOUND.STORE_QUIZ_SESSION_SOCKET,
+                {
+                  quizSessionId: state.quizSession!._id!
+                });
+
         } else {
-            // TODO: Set error message since socket reconnection failed
-            const error = {
-                error: true,
-                type: SystemMessageTypes.FATAL_ERROR,
-                expiry: null,
-                message: "Error: Connection could not be established. Please close current window/tab and launch MOOCchat again from Blackboard. (Your progress will be retained)"
+            // No present socket session present. Don't bother with reconnection. This could possibly mean that the
+            // server has gone down or the socket session has been garbage collected
+
+
+            // TODO: Check if quiz completed
+            if (quizSession !== null && quizSession.complete) {
+                // Quiz already completed
+                return;
+            } else {
+                // TODO: Set error message since socket reconnection failed
+                const error = {
+                    error: true,
+                    type: SystemMessageTypes.FATAL_ERROR,
+                    expiry: null,
+                    message:
+                        "Error: Connection could not be established. " +
+                        "Please close current window/tab and launch MOOCchat again from Blackboard. " +
+                        "(Your progress will be retained)"
+                };
+
+                store.commit("SET_GLOBAL_MESSAGE", error);
+                return;
             }
-            store.commit("SET_GLOBAL_MESSAGE", error);
-            return;
+        }
+    }
+    // Fetch the group based on quiz id. If we don't have one.
+    if (!state.socketState!.chatGroupFormed) {
+        const groupSession: ChatGroupResync | null =
+            await API.request(API.POST, API.CHATGROUP +
+                "recoverSession", state.quizSession!);
+
+        const userResponses: Response[] =
+            (await API.request(API.GET, API.RESPONSE + "quizSession/" + state.quizSession!._id, {},
+                undefined, getToken())).data;
+
+        const quizQuestionData: QuestionReconnectData = await API.request(API.POST, API.USER + "/reconnectData", {
+            quizId: state.quizSession!.quizId,
+            quizSessionId: state.quizSession!._id,
+            groupId: groupSession && groupSession.chatGroupFormed.groupId ?
+                groupSession.chatGroupFormed.groupId : null
+        });
+
+        // Set the things as a result
+        await store.commit("Setting the pages", quizQuestionData.pages);
+        await store.commit("Setting questions", quizQuestionData.questions);
+
+        if (groupSession) {
+            await handleGroupJoin(groupSession.chatGroupFormed);
+            await store.dispatch("updatePageBasedOnTime", { time: groupSession.startTime, isGroup: true });
+            await store.dispatch("updateSocketMessages", groupSession.messages);
+        } else {
+            await store.dispatch("updatePageBasedOnTime", { time: quizSession!.startTime, isGroup: false });
         }
 
+        if (userResponses) {
+            await store.commit(mutationKeys.ADD_RESPONSES, userResponses);
+            // Populate the missing responses based on the maxIndex
+            await store.commit(mutationKeys.POPULATE_MISSING_RESPONSES);
+        }
+    }
+
+    Vue.set(state, "resync", true);
+
+    // We then check if the quiz session has a group id and notify everyone
+    if (state.socketState!.chatGroupFormed) {
+        setTimeout(() => state.socketState!.socket!.emit(WebsocketEvents.OUTBOUND.CHAT_GROUP_RECONNECT, {
+            quizSessionId: state.quizSession!._id,
+            groupId: state.socketState!.chatGroupFormed!.groupId }
+        ), 1000);
     }
 }
 
@@ -375,11 +421,15 @@ const getters = {
 
     quizAvailable: (): boolean => {
         return state.quizAvailable;
+    },
+
+    quizSessionFetched: (): boolean => {
+        return state.quizSessionFetched;
     }
 };
 const actions = {
     createQuizSession({ commit }: {commit: Commit}, quizSession: IQuizSession) {
-        return API.request(API.PUT, API.QUIZSESSION + "create", quizSession, undefined,
+        return API.request(API.POST, API.QUIZSESSION + "create", quizSession, undefined,
             getToken()).then((id: { outgoingId: string }) => {
 
             quizSession._id = id.outgoingId;
@@ -403,7 +453,7 @@ const actions = {
     },
 
     sendResponse({ commit }: {commit: Commit}, response: Response) {
-        return API.request(API.PUT, API.RESPONSE + "create", response, undefined,
+        return API.request(API.POST, API.RESPONSE + "create", response, undefined,
             getToken()).then((id: { outgoingId: string}) => {
 
             response._id = id.outgoingId;
@@ -521,7 +571,8 @@ const mutations = {
 
     [mutationKeys.CREATE_SOCKET](funcState: IState) {
         if (!funcState.socketState.socket) {
-            Vue.set(funcState.socketState, "socket", new WebsocketManager(handleReconnect));
+            Vue.set(funcState.socketState, "socket",
+                    new WebsocketManager(handleReconnect, reconnectFail, reconnectAttempt));
             registerSocketEvents();
         }
     },
@@ -564,6 +615,10 @@ const mutations = {
 
             return output;
         }, [] as MoocChatMessage[]));
+    },
+
+    [mutationKeys.SET_FETCH_STATE](funcState: IState, data: boolean) {
+        Vue.set(funcState, "quizSessionFetched", data);
     },
 
     [mutationKeys.POPULATE_MISSING_RESPONSES](funcState: IState) {

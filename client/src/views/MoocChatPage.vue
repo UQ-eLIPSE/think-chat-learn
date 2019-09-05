@@ -104,12 +104,12 @@ import { PageType, QuestionType } from "../../../common/enums/DBEnums";
 import { SocketState, TimerSettings, Dictionary } from "../interfaces";
 import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
 import * as IWSToServerData from "../../../common/interfaces/IWSToServerData";
-import { WebsocketEvents } from "../../js/WebsocketEvents";
-import { WebsocketManager } from "../../js/WebsocketManager";
+import { WebsocketEvents } from "../../../common/js/WebsocketEvents";
+import { WebsocketManager } from "../../../common/js/WebsocketManager";
 import { EventBus } from "../EventBus";
 import { EmitterEvents } from "../emitters";
-import ChatMessage from '../components/Chat/ChatMessage.vue';
-
+import ChatMessage from "../components/Chat/ChatMessage.vue";
+import katex from "katex";
 @Component({
   components: {
     Confidence,
@@ -296,7 +296,7 @@ export default class MoocChatPage extends Vue {
       // TODO, snackbar for errors?
       return this.$store
         .dispatch("sendResponse", response)
-        .then(responseId => {
+        .then((responseId) => {
           this.responseContent = "";
         })
         .catch((e: Error) => {
@@ -366,7 +366,7 @@ export default class MoocChatPage extends Vue {
   }
 
   get displayResponsesEnabled() {
-    if(this.page && this.page.type === PageType.DISCUSSION_PAGE) {
+    if (this.page && this.page.type === PageType.DISCUSSION_PAGE) {
       return this.page.displayResponses;
     }
 
@@ -459,6 +459,22 @@ export default class MoocChatPage extends Vue {
 
     // Handle the timeout
     EventBus.$on(EmitterEvents.PAGE_TIMEOUT, this.handleTimeOut);
+    const formulae = document.getElementsByClassName("ql-formula");
+
+    for (let i = 0; i < formulae.length; i++) {
+
+      const maybeElement = formulae.item(i);
+
+      // Grab all quill formula and then render the appropiate HTML string
+      // Using the render function could be done but its more appropiate to override the existing HTML
+
+      if (maybeElement) {
+        const html = katex.renderToString(String.raw`${maybeElement.getAttribute("data-value")!}`, {
+          throwOnError: true
+        });
+        maybeElement.innerHTML = html;
+      }
+    }
   }
 
   private destroyed() {

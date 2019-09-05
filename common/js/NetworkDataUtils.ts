@@ -9,7 +9,9 @@ export function convertNetworkQuizIntoQuiz(quiz: IQuizOverNetwork): IQuiz {
         title: quiz.title,
         course: quiz.course,
         pages: quiz.pages,
-        markingConfiguration: quiz.markingConfiguration
+        markingConfiguration: quiz.markingConfiguration,
+        groupSize: quiz.groupSize,
+        rubricId: quiz.rubricId
     };
 
     return output;
@@ -28,7 +30,9 @@ export function convertQuizIntoNetworkQuiz(quiz: IQuiz): IQuizOverNetwork {
         title: quiz.title,
         course: quiz.course,
         pages: quiz.pages,
-        markingConfiguration: quiz.markingConfiguration
+        markingConfiguration: quiz.markingConfiguration,
+        groupSize: quiz.groupSize,
+        rubricId: quiz.rubricId
     };
 
     return output;

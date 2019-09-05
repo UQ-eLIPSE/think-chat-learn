@@ -18,6 +18,12 @@ export interface AnswerResponse extends QuizAttemptResponse {
     justification: string;
 }
 
+export interface ChatGroupStatus {
+    quizId: string;
+    questionId: string;
+    userId: string;
+}
+
 interface ChatGroupResponse extends QuizAttemptResponse {
     groupId: string;
 }
@@ -33,6 +39,12 @@ export interface ChatGroupJoin {
     questionId: string;
     quizSessionId: string;
     userId: string;
+}
+
+export interface ChatGroupUnJoin {
+    responseId: string;
+    quizId: string;
+    questionId: string;
 }
 export interface ChatGroupSendMessage extends ChatGroupResponse {
     message: string;

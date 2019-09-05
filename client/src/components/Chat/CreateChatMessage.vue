@@ -49,8 +49,8 @@ import {
   TypeQuestion,
   Page
 } from "../../../../common/interfaces/ToClientData";
-import { WebsocketManager } from "../../../js/WebsocketManager";
-import { WebsocketEvents } from "../../../js/WebsocketEvents";
+import { WebsocketManager } from "../../../../common/js/WebsocketManager";
+import { WebsocketEvents } from "../../../../common/js/WebsocketEvents";
 import { SocketState, Dictionary } from "../../interfaces";
 import { PageType } from "../../../../common/enums/DBEnums";
 
@@ -145,7 +145,7 @@ export default class CreateChatMessage extends Vue {
       return "";
     }
   }
-  
+
   private resetTimer() {
     // Have not assigned a timer yet. Reduce the number of messages sent by only sending if the timer is out
     if (this.typingStateHandle !== -1) {

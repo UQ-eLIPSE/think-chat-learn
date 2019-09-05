@@ -21,7 +21,7 @@ export class StudentAuthenticatorMiddleware {
         return async function(req: express.Request, res: express.Response, next: express.NextFunction) {
             const token = req.user as LoginResponse;
             if (token && token.user._id) {
-                const maybeUser = await StudentAuthenticatorMiddleware.instance!.userService.findUser(token.user._id);
+                const maybeUser = await StudentAuthenticatorMiddleware.instance!.userService.findOne(token.user._id);
                 if (maybeUser) {
                     next();
                 } else {
@@ -43,8 +43,8 @@ export class StudentAuthenticatorMiddleware {
             const body = req.body as IUserSession;
 
             if (token && token.user._id && body.userId && body._id) {
-                const maybeUser = await StudentAuthenticatorMiddleware.instance!.userService.findUser(token.user._id);
-                const maybeUsersession = await StudentAuthenticatorMiddleware.instance!.userSessionService.getUserSession(body._id);
+                const maybeUser = await StudentAuthenticatorMiddleware.instance!.userService.findOne(token.user._id);
+                const maybeUsersession = await StudentAuthenticatorMiddleware.instance!.userSessionService.findOne(body._id);
 
                 if (maybeUser && maybeUsersession && maybeUsersession.userId === maybeUser._id) {
                     next();
@@ -67,16 +67,16 @@ export class StudentAuthenticatorMiddleware {
             const body = req.body as IQuizSession;
 
             if (token && token.user._id && body && body.userSessionId) {
-                const maybeUser = await StudentAuthenticatorMiddleware.instance!.userService.findUser(token.user._id);
-                const maybeUsersession = await StudentAuthenticatorMiddleware.instance!.userSessionService.getUserSession(body.userSessionId);
+                const maybeUser = await StudentAuthenticatorMiddleware.instance!.userService.findOne(token.user._id);
+                const maybeUsersession = await StudentAuthenticatorMiddleware.instance!.userSessionService.findOne(body.userSessionId);
 
                 let maybeQuizSession;
                 let otherUserSession;
                 if (body._id) {
-                    maybeQuizSession = await StudentAuthenticatorMiddleware.instance!.quizSessionService.getQuizSession(body._id);
+                    maybeQuizSession = await StudentAuthenticatorMiddleware.instance!.quizSessionService.findOne(body._id);
 
                     if (maybeQuizSession && maybeQuizSession.userSessionId) {
-                        otherUserSession = await StudentAuthenticatorMiddleware.instance!.userSessionService.getUserSession(maybeQuizSession!.userSessionId!);
+                        otherUserSession = await StudentAuthenticatorMiddleware.instance!.userSessionService.findOne(maybeQuizSession!.userSessionId!);
                     }
 
                 }
@@ -104,19 +104,19 @@ export class StudentAuthenticatorMiddleware {
             const body = req.body as Response;
 
             if (token && token.user._id && body && body.quizSessionId) {
-                const maybeUser = await StudentAuthenticatorMiddleware.instance!.userService.findUser(token.user._id);
-                const maybeQuizSession = await StudentAuthenticatorMiddleware.instance!.quizSessionService.getQuizSession(body.quizSessionId);
+                const maybeUser = await StudentAuthenticatorMiddleware.instance!.userService.findOne(token.user._id);
+                const maybeQuizSession = await StudentAuthenticatorMiddleware.instance!.quizSessionService.findOne(body.quizSessionId);
 
                 let maybeUsersession;
 
                 if (maybeQuizSession && maybeQuizSession.userSessionId) {
-                    maybeUsersession = await StudentAuthenticatorMiddleware.instance!.userSessionService.getUserSession(maybeQuizSession.userSessionId);
+                    maybeUsersession = await StudentAuthenticatorMiddleware.instance!.userSessionService.findOne(maybeQuizSession.userSessionId);
                 }
 
                 let maybeResponse;
 
                 if (body._id) {
-                    maybeResponse = await StudentAuthenticatorMiddleware.instance!.responseService.getResponse(body._id);
+                    maybeResponse = await StudentAuthenticatorMiddleware.instance!.responseService.findOne(body._id);
                 }
 
                 if (maybeUser && maybeUsersession && maybeQuizSession && maybeUsersession.userId === maybeUser._id &&

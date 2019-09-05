@@ -1,92 +1,162 @@
 <template>
-  <div class="c">
-    <span>Quiz Title</span><input v-model="quizTitle"
-           type="text" />
-    <b-datepicker v-model="startDate"
-                  placeholder="Select the Start Date"
-                  icon="calendar-today"></b-datepicker>
-    <b-timepicker v-model="startTime"
-                  rounded
-                  placeholder="Select the Start Time"
-                  icon="clock"
-                  hour-formart="format"></b-timepicker>
-    <b-datepicker v-model="endDate"
-                  placeholder="Select the End Date"
-                  icon="calendar-today"></b-datepicker>
-    <b-timepicker v-model="endTime"
-                  rounded
-                  placeholder="Select the End Time"
-                  icon="clock"
-                  hour-formart="format"></b-timepicker>
-
-    <div v-for="(page, index) in pages"
-         class="p"
-         :key="index">
-      <span>Page Title</span><input v-model="page.title"
-             type="text"
-             placeholder="Set the Question Title" />
-      <span>Page Type</span>
-      <select v-model="page.type">
-        <option :value="PageType.QUESTION_ANSWER_PAGE">Question Answer Page</option>
-        <option :value="PageType.SURVEY_PAGE">Survey Page</option>
-        <option :value="PageType.INFO_PAGE">Information Page</option>
-        <option :value="PageType.DISCUSSION_PAGE">Discussion Page</option>
-      </select>
-      <!-- Business logic for rendering based on page type -->
-      <label v-if="(page.type === PageType.DISCUSSION_PAGE)">
-        Display responses from question?
-        <input type="checkbox"
-               v-model="page.displayResponses" /> </label>
-      <!-- TODO make this a proper select box once Questions and Answers are implemented -->
-
-      <select v-model="page.questionId"
-              v-if="(page.type === PageType.QUESTION_ANSWER_PAGE) || (page.type === PageType.DISCUSSION_PAGE)">
-        <option v-for="question in questions"
-                :key="question._id"
-                :value="question._id">{{question.title}}</option>
-      </select>
-
-      <select v-model="page.surveryId"
-              v-else-if="page.type === PageType.SURVEY_PAGE">
-        <option> Some Default survey</option>
-      </select>
-
-      <span>Page content</span>
-      <textarea v-model="page.content"
-                placeholder="Set the content of the page" />
-      <span>Timeout time</span>
-      <input type="number"
-             v-model.number="page.timeoutInMins" />
-      <div class="p-controls">
-        <button type="button"
-                @click="up(index)">Move up</button>
-        <button type="button"
-                @click="down(index)">Move down</button>
-        <button type="button"
-                @click="deletePage(index)">Delete page</button>
-      </div>
-    </div>
-
-    <div class="marking-config">
-      <label> Marking Configuration
-      <select v-model="markingConfiguration">
-        <option v-for="m in [elipssMarkConfig, simpleMarkConfig]"
-                :value="m"
-                :key="m.type">{{ m.type }}</option>
-      </select>
-      </label>
-      <label>Allow multiple markers? <input type="checkbox"
-               v-model="markingConfiguration.allowMultipleMarkers" /></label>
-      <label>Max marks: {{ markingConfiguration.maximumMarks }} </label>
-    </div>
-    <div class="controls">
-      <button type="button"
-              @click="createPage()">Create new page</button>
-      <button type="button"
-              @click="createQuiz">Create/ update Quiz</button>
-    </div>
-
-  </div>
+    <v-container>
+      <v-form ref="form">
+        <h1 class="moocchat-title">Quiz Editor</h1>
+        <v-container fluid grid-list-md>
+          <v-layout row wrap>
+            <v-flex xs12>
+              <b-field label="Set the quiz title">
+                <v-text-field label="Title" v-model="quizTitle" outline :rules="[existenceRule]"/>
+              </b-field>
+            </v-flex>
+            <v-flex xs12>
+              <!-- In order to create rules, we need to use Vue components instead. Menu with one item is essentially a drop down -->
+              <!-- Also v-on syntax is Vue 2.6+ -->
+              <b-field label="Select the start date">
+                <v-menu
+                  ref="startDateMenu"
+                  v-model="startDateShow"
+                  :close-on-content-click="false"
+                  :return-value.sync="startDateString"
+                >
+                  <template v-slot:activator="{ on }">
+                    <v-text-field v-model="startDateString" prepend-icon="calendar_today" readonly v-on="on" :rules="[existenceRule]"></v-text-field>
+                  </template> 
+                  <v-date-picker v-model="startDateString" no-title scrollable>
+                    <!-- Use buttons because time pickers require a 2-step process -->
+                      <v-spacer></v-spacer>
+                      <v-btn flat @click="startDateShow = false">Cancel</v-btn>
+                      <v-btn flat @click="$refs.startDateMenu.save(startDateString)">OK</v-btn>                     
+                  </v-date-picker>
+                </v-menu>
+              </b-field>
+            </v-flex>
+            <v-flex xs12>
+              <b-field label="Select a start time">
+                <v-menu
+                  ref="startTimeMenu"
+                  v-model="startTimeShow"
+                  :close-on-content-click="false"
+                  :return-value.sync="startTimeString"
+                >
+                  <template v-slot:activator="{ on }">
+                    <v-text-field v-model="startTimeString" prepend-icon= "access_time" readonly v-on="on" :rules="[existenceRule]">
+                    </v-text-field>
+                  </template>
+                  <v-time-picker v-model="startTimeString" scrollable>
+                      <v-btn flat @click="startTimeShow = false">Cancel</v-btn>
+                      <v-btn flat @click="$refs.startTimeMenu.save(startTimeString)">OK</v-btn>  
+                  </v-time-picker>
+                </v-menu>
+              </b-field>
+            </v-flex>
+            <v-flex xs12>
+              <b-field label="Select the end date">
+                <v-menu
+                  ref="endDateMenu"
+                  v-model="endDateShow"
+                  :close-on-content-click="false"
+                  :return-value.sync="endDateString"
+                >
+                  <template v-slot:activator="{ on }">
+                    <v-text-field v-model="endDateString" prepend-icon="calendar_today" readonly v-on="on" required :rules="[existenceRule, validDateRule]">
+                    </v-text-field>
+                  </template> 
+                  <v-date-picker v-model="endDateString" no-title scrollable>
+                    <v-btn flat @click="endDateShow = false">Cancel</v-btn>
+                    <v-btn flat @click="$refs.endDateMenu.save(endDateString)">OK</v-btn>
+                  </v-date-picker>
+                </v-menu>
+              </b-field>
+            </v-flex>
+            <v-flex xs12>
+              <b-field label="Select an end time">
+                <v-menu
+                  ref="endTimeMenu"
+                  v-model="endTimeShow"
+                  :close-on-content-click="false"
+                  :return-value.sync="endTimeString"
+                >
+                  <template v-slot:activator="{ on }">
+                    <v-text-field v-model="endTimeString" prepend-icon= "access_time" readonly v-on="on" :rules="[existenceRule, validDateRule]">
+                    </v-text-field>
+                  </template> 
+                  <v-time-picker v-model="endTimeString" scrollable>
+                    <v-btn flat @click="endTimeShow = false">Cancel</v-btn>
+                    <v-btn flat @click="$refs.endTimeMenu.save(endTimeString)">OK</v-btn>
+                  </v-time-picker>
+                </v-menu>
+              </b-field>
+            </v-flex>
+            <!-- Temporary wrapper for the page labels -->
+            <v-flex xs12>
+              <b-field label="Create and configure the pages"/>
+            </v-flex>
+            <v-flex v-for="(page, index) in pages"
+              :key="index" xs12>
+              <b-field label="Set the page title">
+                <v-text-field label="Title" v-model="page.title" outline :rules="[existenceRule]"/>
+              </b-field>
+              <b-field label="Set the page type">
+                <!-- Only one rule applys to the discussion page rule -->
+                <v-overflow-btn :items="pageTypeDropDown" v-model="page.type" outline :rules="[discussionPageRule]"/>
+              </b-field>
+              <!-- Business logic for rendering based on page type -->
+              <v-checkbox v-if="(page.type === PageType.DISCUSSION_PAGE)" v-model="page.displayResponses" :label="'Display Responses from question?'">
+              </v-checkbox>
+              <!-- TODO make this a proper select box once Questions and Answers are implemented -->
+              <b-field v-if="(page.type === PageType.QUESTION_ANSWER_PAGE) || (page.type === PageType.DISCUSSION_PAGE)"
+                label="Set the associate question for the page">
+                <v-overflow-btn :items="questionDropDown"
+                  v-model="page.questionId" outline 
+                  :rules="page.type === PageType.QUESTION_ANSWER_PAGE ? [existenceRule, duplicateQuestionPageRule] : [existenceRule, duplicateDiscussionPageRule]"/>
+              </b-field>
+              <select v-model="page.surveryId"
+                      v-else-if="page.type === PageType.SURVEY_PAGE">
+                <option> Some Default survey</option>
+              </select>
+              <b-field label="Set the content of the page">
+                <QuillEditor :id="`quiz-quill-${index}`" v-model="page.content"></QuillEditor>
+              </b-field>
+              <b-field label="Set the timeout in minutes">
+                <v-text-field label="Timeout" v-model="page.timeoutInMins" outline type="number"/>
+              </b-field>
+              <div class="p-controls">
+                <v-btn type="button"
+                        @click="up(index)">Move up</v-btn>
+                <v-btn type="button"
+                        @click="down(index)">Move down</v-btn>
+                <v-btn type="button"
+                        @click="deletePage(index)">Delete page</v-btn>
+              </div>
+            </v-flex>
+            <v-flex xs12>
+              <b-field label="Set the associated Rubric">
+                <v-overflow-btn :items="rubricDropDown" v-model="rubricId" outline :rules="[existenceRule]"/>
+              </b-field>
+            </v-flex>
+            <v-flex xs12>
+              <b-field label="Set up group size"/>
+              <v-text-field placeholder="##" mask="##" v-model.number="groupSize" :rules="[existenceRule]"></v-text-field>
+            </v-flex>
+            <v-flex xs12>
+              <b-field label="Set up the marking configurations"/>
+              <v-checkbox v-model="markingConfiguration.allowMultipleMarkers" :label="'Allow multiple markers?'">
+              </v-checkbox>
+              <label>Max marks: {{ markingConfiguration.maximumMarks }} </label>
+            </v-flex>
+            <v-flex xs12>
+              <v-container class="controls">
+                <v-btn type="button"
+                        @click="createPage()">Create new page</v-btn>
+                <v-btn type="button"
+                        @click="submitQuiz()">Create/ update Quiz</v-btn>
+              </v-container>
+            </v-flex>
+          </v-layout>
+        </v-container>
+      </v-form>
+  </v-container>
 </template>
 
 <style scoped>
@@ -95,7 +165,8 @@
 }
 </style>
 <script lang="ts">
-import { Vue, Component, Prop } from "vue-property-decorator";
+import { Vue, Component, Prop, Watch } from "vue-property-decorator";
+import QuillEditor from "./QuillEditor.vue";
 import {
   IPage,
   IQuestionAnswerPage,
@@ -104,30 +175,51 @@ import {
   ISurveyPage,
   IQuiz,
   Page,
-  TypeQuestion
+  TypeQuestion,
+  IRubric
 } from "../../../common/interfaces/ToClientData";
 import { PageType } from "../../../common/enums/DBEnums";
 import * as DBSchema from "../../../common/interfaces/DBSchema";
 import { getAdminLoginResponse } from "../../../common/js/front_end_auth";
 import { IQuizOverNetwork } from "../../../common/interfaces/NetworkData";
+import { Conf } from "../../../common/config/Conf";
+import { EventBus, EventList, SnackEvent, ModalEvent, BlobUpload } from "../EventBus";
+import { Utils } from "../../../common/js/Utils";
+import API from "../../../common/js/DB_API";
+interface DropDownConfiguration {
+  text: string,
+  value: string,
+}
 
-@Component({})
+const IMAGE_LOCATION = process.env.VUE_APP_IMAGE_LOCATION;
+
+@Component({
+  components: {
+    QuillEditor
+  }
+})
 export default class QuizPage extends Vue {
   // Default values for quizzes
   private quizTitle: string = "";
 
   @Prop({ default: "" }) private id!: string;
 
-  // The start date in ISO8601. Note that Buefy doesn't really have datetime just date and time unfortunately
+  // The dates and time in ISO8601. To compute the time we use the current date and only look at time
   private startDate: Date | null = null;
+  // The string versions are required to interact with the datepicker
+  private startDateString: string = "";
   private startTime: Date | null = null;
+  private startTimeString: string = "";
   private endDate: Date | null = null;
+  private endDateString: string = "";
   private endTime: Date | null = null;
+  private endTimeString: string = "";
 
-  private simpleMarkConfig: DBSchema.SimpleMarkConfig = this.initSimpleMarkConfig();
-  private elipssMarkConfig: DBSchema.ElipssMarkConfig = this.initElipssMarkConfig();
+  private test: any = {};
+  private rubricId: string = "";
 
-  private markingConfiguration: DBSchema.MarkingConfiguration | undefined = this.elipssMarkConfig;
+  private groupSize: number = Conf.groups.defaultGroupSize;
+  private markingConfiguration: DBSchema.MarkConfig = this.initMarkConfig();
   // The pages that are wanted to be created. Use
   // a dictionary as we would like to use the temp id
   // instead of index
@@ -136,23 +228,36 @@ export default class QuizPage extends Vue {
   // The internal id of pages created. Tossed away when sending
   private mountedId: number = 0;
 
+  // The default configurations of the dropdown menu for interfaces
+  private pageTypeDropDown: DropDownConfiguration[] = [
+    {
+      text: 'Question Answer Page',
+      value: PageType.QUESTION_ANSWER_PAGE
+    },
+    {
+      text: 'Information Page',
+      value: PageType.INFO_PAGE
+    },
+    {
+      text: 'Discussion Page',
+      value: PageType.DISCUSSION_PAGE
+    },    
+  ]
 
-  get markModes() {
-    return Object.keys(DBSchema.MarkMode);
-  }
+  // Menu booleans
+  private startDateShow: boolean = false;
+  private endDateShow: boolean = false;
+  private startTimeShow: boolean = false;
+  private endTimeShow: boolean = false;
+  
+  // Quill Upload information
+  private uploadCount: number = 0;
+  private uploads: BlobUpload[] = [];
+  private changeCount: number = 0;
 
-  initSimpleMarkConfig(): DBSchema.SimpleMarkConfig {
+  initMarkConfig(): DBSchema.MarkConfig {
     return {
-      type: DBSchema.MarkMode.SIMPLE_MARKING,
       allowMultipleMarkers: false,
-      maximumMarks: 5
-    }
-  }
-
-  initElipssMarkConfig(): DBSchema.ElipssMarkConfig {
-    return {
-      type: DBSchema.MarkMode.ELIPSS_MARKING,
-      allowMultipleMarkers: true,
       maximumMarks: 5
     }
   }
@@ -190,6 +295,17 @@ export default class QuizPage extends Vue {
     return this.$store.getters.questions;
   }
 
+  // Generates the configuration of the question dropdown. Just need id as value and title as display
+  get questionDropDown(): DropDownConfiguration[] {
+    // Question should be defined at this point
+    return this.questions.map((question) => {
+      return {
+        text: question.title ? question.title : "",
+        value: question._id ? question._id : ""
+      };
+    });
+  }
+
   // Course id based on token
   get courseId() {
     const loginDetails = getAdminLoginResponse();
@@ -197,7 +313,88 @@ export default class QuizPage extends Vue {
     return loginDetails ? loginDetails.courseId : "";
   }
 
-  createQuiz() {
+  get rubricDropDown(): DropDownConfiguration[] {
+    return this.rubrics.map((rubric) => {
+      return {
+        text: rubric.name ? rubric.name : "",
+        value: rubric._id ? rubric._id : ""
+      };
+    });
+  }
+
+  get rubrics(): IRubric[] {
+    return this.$store.getters.rubrics;
+  }
+
+  get numPages(): number {
+    return Object.keys(this.pageDict).length;
+  }
+
+  private submitQuiz() {
+    // Check for the rules note that the $refs aren't defined with Vuetify
+    const valid = (this.$refs.form as any).validate();
+
+    if (!valid) {
+        const message: SnackEvent = {
+            message: "Failed generate quiz. Check the form for any errors",
+            error: true
+        }
+        EventBus.$emit(EventList.PUSH_SNACKBAR, message);
+        return;
+    }
+
+    // Set one is to upload quill which then follows creating the quiz
+    const message: ModalEvent = {
+      title: this.isEditing ? `Editing quiz` : `Creating quiz`,
+      message: this.isEditing ? `Are you sure to edit quiz of ID ${this.id}?` : `Are you sure to create the quiz`,
+      fn: EventBus.$emit,
+      data: [EventList.CONSOLIDATE_UPLOADS],
+      selfRef: EventBus
+    }
+
+    EventBus.$emit(EventList.OPEN_MODAL, message);
+  }
+
+  private handleQuillUpload(blobs: BlobUpload[]) {
+    // Since we are concating rather than appending, we have to count each transaction
+    // rather than checking total array length
+    this.uploadCount++;
+    this.uploads = this.uploads.concat(blobs);
+
+    // We should start uploading in a form, do nothing elsewise
+    if (this.uploadCount >= this.numPages) {
+
+      const tempForm = new FormData();
+      this.uploads.forEach((upload) => {
+        tempForm.append(upload.id, upload.blob);
+      });
+      API.uploadForm("image/imageUpload", tempForm).then((files: { fieldName: string, fileName: string}[]) => {
+          const payload: SnackEvent = {
+              message: "Finished uploading associated images"
+          }
+          EventBus.$emit(EventList.PUSH_SNACKBAR, payload);
+
+          // The assumption here is that we can explicitly change the content of each page
+          for (let key of Object.keys(this.pageDict)) {
+            const page = this.pageDict[key];
+            for (let file of files) {
+              page.content = page.content.replace(file.fieldName, IMAGE_LOCATION + file.fileName);
+            }
+
+            this.pageDict[key] = page;
+          }
+
+          // Reset the upload counters and then create the quiz
+          this.uploads = [];
+          this.uploadCount = 0;
+
+          this.createQuiz();
+      });
+    }
+  }
+
+  private createQuiz() {
+
     // For each quiz we have to figure out the type and assign the appropiate types
     // Output pages
     const outgoingPages: Page[] = [];
@@ -274,7 +471,9 @@ export default class QuizPage extends Vue {
       availableEnd,
       pages: outgoingPages,
       course: this.courseId,
-      markingConfiguration: this.markingConfiguration
+      markingConfiguration: this.markingConfiguration,
+      groupSize: this.groupSize,
+      rubricId: this.rubricId
     };
 
     if (this.isEditing) {
@@ -344,9 +543,18 @@ export default class QuizPage extends Vue {
         this.startTime = new Date(loadedQuiz.availableStart!);
         this.endDate = new Date(loadedQuiz.availableEnd!);
         this.endTime = new Date(loadedQuiz.availableEnd!);
+        this.groupSize = loadedQuiz.groupSize!;
+
+        // Assuming the date comes from ISO8601 we need to strip the string in this manner
+        this.startDateString = this.startDate ? this.startDate.toISOString().substr(0, 10) : "";
+        this.endDateString = this.endDate ? this.endDate.toISOString().substr(0, 10) : "";
+        // Padding isn't necessary but for visualisation purposes it is
+        this.startTimeString = this.startTime ? `${this.startTime.getHours()}`.padStart(2, "0") + ":" + `${this.startTime.getMinutes()}`.padStart(2, "0") : "";
+        this.endTimeString = this.endTime ? `${this.endTime.getHours()}`.padStart(2, "0") + ":" + `${this.endTime.getMinutes()}`.padStart(2, "0") : "";
 
         this.quizTitle = loadedQuiz.title;
-        this.markingConfiguration = loadedQuiz.markingConfiguration || this.elipssMarkConfig;
+        this.rubricId = loadedQuiz.rubricId!;
+        this.markingConfiguration = loadedQuiz.markingConfiguration || this.markingConfiguration;
         const emptyDict: { [key: string]: Page } = {};
 
         // At this point, the loaded quiz and their elemenets should not have null values
@@ -358,6 +566,111 @@ export default class QuizPage extends Vue {
         }, emptyDict);
       }
     }
+
+    // Set quill handlers
+    EventBus.$on(EventList.QUILL_UPLOAD, this.handleQuillUpload);
+  }
+
+  private destroyed() {
+    EventBus.$off(EventList.QUILL_UPLOAD);
+  }
+
+  @Watch("startDateString")
+  private onStartDateChange(val: string, oldVal?: string) {
+    this.startDate = new Date(val);
+  }
+
+  @Watch("endDateString")
+  private onEndDateChange(val: string, oldVal?: string) {
+    this.endDate = new Date(val);
+  }
+  
+  // Watching the start time is generally done when a user touches the Vuetify timepicker
+  @Watch("startTimeString")
+  private onStartTimeChange(val: string, oldVal?: string) {
+    this.startTime = new Date();
+    // Vuetify times are assumed to be in a HH:MM format
+    const hourMinutes = val.split(":");
+    this.startTime.setHours(parseInt(hourMinutes[0]), parseInt(hourMinutes[1]));
+  }
+  
+  // Similar logic above
+  @Watch("endTimeString")
+  private onEndTimeChange(val: string, oldVal?: string) {
+    this.endTime = new Date();
+    const hourMinutes = val.split(":");
+    this.endTime.setHours(parseInt(hourMinutes[0]), parseInt(hourMinutes[1]));    
+  }  
+
+  /**
+   * Below is a list of rules that should be validated both front and back end
+   */
+
+  // Determines whether or not a quiz has a discussion page
+  get discussionPageRule() {
+    return (() => { 
+      const hasDiscussion = this.pages.some((page) => {
+        return page.type === PageType.DISCUSSION_PAGE;
+      });
+      return hasDiscussion || "No dicussion page found, should have one present in the quiz";
+    });
+  }
+
+  // Compares the start and end date values and existence
+  get validDateRule() {
+    return (() => {
+      if (this.startDate && this.startTime && this.endDate && this.endTime) {
+        // Construct the time and check for comparisons since we have valid inputs
+        const availableStart = new Date(
+          this.startDate.getFullYear(),
+          this.startDate.getMonth(),
+          this.startDate.getDate(),
+          this.startTime.getHours(),
+          this.startTime.getMinutes(),
+          this.startTime.getSeconds()
+        );
+
+        const availableEnd = new Date(
+          this.endDate.getFullYear(),
+          this.endDate.getMonth(),
+          this.endDate.getDate(),
+          this.endTime.getHours(),
+          this.endTime.getMinutes(),
+          this.endTime.getSeconds()
+        );
+        return availableEnd.getTime() > availableStart.getTime() || "Set the end time to be greater than start time";
+      } else {
+        return "Start Date and End Date needs to be filled out"
+      }
+    });
+  }
+
+  get existenceRule() {
+    return Utils.Rules.existenceRule;
+  }
+
+  get duplicateQuestionPageRule() {
+    return ((id: string) => {
+        const totalIds = this.pages.reduce((count: number, page) => {
+            if (page.type === PageType.QUESTION_ANSWER_PAGE && page.questionId === id) {
+                count = count + 1;
+            }
+            return count;
+        }, 0);
+        return totalIds == 1 || "Duplicate questions detected";            
+    });
+  }
+
+  get duplicateDiscussionPageRule() {
+    return ((id: string) => {
+        const totalIds = this.pages.reduce((count: number, page) => {
+            if (page.type === PageType.DISCUSSION_PAGE && page.questionId === id) {
+                count = count + 1;
+            }
+            return count;
+        }, 0);
+        return totalIds == 1 || "Duplicate discussions detected";            
+    });
   }
 }
 </script>
@@ -405,5 +718,9 @@ export default class QuizPage extends Vue {
   flex-direction: column;
   border: 0.1rem solid rgba(1, 0, 0, 0.2);
   align-self: center;
+}
+
+.moocchat-title {
+  margin: 6px;
 }
 </style>

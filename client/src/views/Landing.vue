@@ -87,7 +87,7 @@
     </div>
     <div class="center margin-top">
       <button
-        v-if="quiz && quizAvailable && !quizSession"
+        v-if="quiz && quizAvailable && !quizSession && quizSessionFetched"
         class="primary"
         tag="button"
         @click="startQuizSession()"
@@ -165,8 +165,8 @@ import OverviewContainer from "../components/OverviewContainer.vue";
 import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
 import * as IWSToServerData from "../../../common/interfaces/IWSToServerData";
 import { SocketState, TimerSettings } from "../interfaces";
-import { WebsocketManager } from "../../js/WebsocketManager";
-import { WebsocketEvents } from "../../js/WebsocketEvents";
+import { WebsocketManager } from "../../../common/js/WebsocketManager";
+import { WebsocketEvents } from "../../../common/js/WebsocketEvents";
 import { EventBus } from "../EventBus";
 import { EmitterEvents } from "../emitters";
 
@@ -204,6 +204,10 @@ export default class Landing extends Vue {
 
   get quizAvailable(): boolean {
     return this.$store.getters.quizAvailable;
+  }
+
+  get quizSessionFetched(): boolean {
+    return this.$store.getters.quizSessionFetched;
   }
 
   get resync(): boolean {

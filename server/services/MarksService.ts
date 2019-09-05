@@ -7,14 +7,12 @@ import { UserSessionRepository } from "../repositories/UserSessionRepository";
 import { UserRepository } from "../repositories/UserRepository";
 
 
-import { IQuiz, ElipssMark, Mark } from "../../common/interfaces/DBSchema";
-import { ObjectId, ObjectID } from "bson";
-import { IQuizOverNetwork } from "../../common/interfaces/NetworkData";
-import { convertNetworkQuizIntoQuiz } from "../../common/js/NetworkDataUtils";
-import { PageType } from "../../common/enums/DBEnums";
-import { IQuestionAnswerPage, IUserSession, IUser } from "../../common/interfaces/ToClientData";
+import { Mark } from "../../common/interfaces/DBSchema";
+import { IUser, IQuiz } from "../../common/interfaces/ToClientData";
+import { RubricRepository } from "../repositories/RubricRepository";
+import { CriteriaRepository } from "../repositories/CriteriaRepository";
 
-export class MarksService extends BaseService {
+export class MarksService extends BaseService<Mark> {
 
     protected readonly quizRepo: QuizRepository;
     protected readonly quizSessionRepo: QuizSessionRepository;
@@ -22,9 +20,12 @@ export class MarksService extends BaseService {
     protected readonly chatGroupRepo: ChatGroupRepository;
     protected readonly userSessionRepo: UserSessionRepository;
     protected readonly userRepo: UserRepository;
+    protected readonly rubricRepo: RubricRepository;
+    protected readonly criteriaRepo: CriteriaRepository;
 
-
-    constructor(_marksRepo: MarksRepository, quizRepo: QuizRepository, _quizSessionRepo: QuizSessionRepository, chatGroupRepository: ChatGroupRepository, userSessionRepo: UserSessionRepository, userRepo: UserRepository) {
+    constructor(_marksRepo: MarksRepository, quizRepo: QuizRepository, _quizSessionRepo: QuizSessionRepository,
+            chatGroupRepository: ChatGroupRepository, userSessionRepo: UserSessionRepository, userRepo: UserRepository,
+            _rubricRepository: RubricRepository, _criteriaRepository: CriteriaRepository) {
         super();
         this.quizRepo = quizRepo;
         this.quizSessionRepo = _quizSessionRepo;
@@ -32,14 +33,67 @@ export class MarksService extends BaseService {
         this.chatGroupRepo = chatGroupRepository;
         this.userRepo = userRepo;
         this.userSessionRepo = userSessionRepo;
+        this.rubricRepo = _rubricRepository;
+        this.criteriaRepo = _criteriaRepository;
     }
 
-    public async getMarksForQuizSessionQuestion(quizSessionId: string, questionId: string): Promise<Mark[]> {
+    // Quick fetchers for the rubric and criteria information
+    private async generateEmptyMarks(quiz: IQuiz, quizSessionIds: string[],
+        quizUserDict: {[key: string]: { userSessionId: string | null, user: IUser | null }},
+        destinationDict: {[key: string]: Mark[]}) {
+        // Acquire the rubric and criterias
+        if (!quiz.rubricId) {
+            throw new Error(`Invalid rubric id of quiz ${quiz._id}`);
+        }
 
-        return this.marksRepo.findAll({
-            quizSessionId: quizSessionId,
-            questionId: questionId
-        })
+        const referredRubric = await this.rubricRepo.findOne({
+            _id: quiz.rubricId
+        });
+
+        if (!referredRubric) {
+            throw new Error(`No rubric found of id ${quiz.rubricId}`);
+        }
+
+        const referredCriteria = await this.criteriaRepo.findByIdArray(referredRubric.criterias);
+        // Then populate the marks
+        quizSessionIds.forEach((quizSessionId) => {
+            const tempMark: Mark = {
+                marks: [],
+                feedback: "",
+                quizSessionId,
+                markerId: null,
+                userId: quizUserDict[quizSessionId].user!._id,
+                username: quizUserDict[quizSessionId].user!.username,
+                markerUsername: undefined,
+                timestamp: null,
+                quizId: null,    
+            }
+
+            destinationDict[quizSessionId] = [tempMark];
+        });
+        return destinationDict;
+    }
+
+    // Basic CRUD implementations
+    // Creates a criteria
+    public async createOne(data: Mark): Promise<string> {
+
+        return this.marksRepo.create(data);
+    }
+
+    // Simply an override to the existing criteria
+    public async updateOne(data: Mark): Promise<boolean> {
+        return this.marksRepo.updateOne(data);
+    }
+
+    // Deletes a criteria based on the id
+    public async deleteOne(_id: string) {
+        return this.marksRepo.deleteOne(_id);
+    }
+
+    // Gets a criteria based on id
+    public async findOne(_id: string): Promise<Mark | null> {
+        return this.marksRepo.findOne(_id);
     }
 
     public async getMarksForQuizSession(quizSessionId: string): Promise<Mark[]> {
@@ -49,11 +103,11 @@ export class MarksService extends BaseService {
         })
     }
 
-    public async createOrUpdateMarks(quizSessionId: string, questionId: string, newMarks: ElipssMark): Promise<boolean> {
+    public async createOrUpdateMarks(quizSessionId: string, questionId: string, newMarks: Mark): Promise<boolean> {
         const currentMarkerMarks = await this.marksRepo.findAll({
-            quizSessionId: quizSessionId,
-            questionId: questionId
+            quizSessionId: quizSessionId
         });
+        
         if (currentMarkerMarks && Array.isArray(currentMarkerMarks)) {
             if (currentMarkerMarks.length > 1) {
                 // Delete unwanted / invalidated marks
@@ -89,11 +143,8 @@ export class MarksService extends BaseService {
 
             const quiz = await this.quizRepo.findOne(quizId);
             if(!quiz) throw new Error("Quiz could not be found");
-            const questionPages = (quiz.pages|| []).filter((p) => p.type === PageType.QUESTION_ANSWER_PAGE);
-            const questionIds = questionPages.map((p: IQuestionAnswerPage) => p.questionId).filter((q) => q);
 
-
-            const quizSessionMarkMap: { [quizSessionId: string]: { [questionId: string]: Mark[] } } = {};
+            let quizSessionMarkMap: { [quizSessionId: string]: Mark[] } = {};
             
             const quizSessionIds: string[] = await this.getDistinctQuizSessionForQuiz(quizId);
 
@@ -110,23 +161,19 @@ export class MarksService extends BaseService {
             }).toArray();
 
             (marksToFetch || []).forEach((mark) => {
-                if (quizSessionMarkMap[mark.quizSessionId] === undefined) quizSessionMarkMap[mark.quizSessionId] = {};
-                if(quizSessionMarkMap[mark.quizSessionId][mark.questionId] === undefined) quizSessionMarkMap[mark.quizSessionId][mark.questionId] = [];
-                quizSessionMarkMap[mark.quizSessionId][mark.questionId].push(mark);
+                if (quizSessionMarkMap[mark.quizSessionId] === undefined) quizSessionMarkMap[mark.quizSessionId] = [];
+                quizSessionMarkMap[mark.quizSessionId].push(mark);
             });
-
-
-            quizSessionsToFetch.forEach((qs) => {
-                questionIds.forEach((questionId) => {
-                    if(quizSessionMarkMap[qs] === undefined) quizSessionMarkMap[qs] = {};
-                    if(quizSessionMarkMap[qs][questionId] === undefined) {
-                        quizSessionMarkMap[qs][questionId] = [];
-                    }
-                    
-                })
-            })
             
             const quizSessionUserMap = await this.getQuizSessionUserMap(quizSessionsToFetch);
+            const fetchedQuizSessionIds = Object.keys(quizSessionMarkMap);
+            const missingQuizSessionIds = quizSessionsToFetch.filter((quizSession) => {
+                return !fetchedQuizSessionIds.find((fetchedId) => {
+                    return fetchedId === quizSession;
+                });
+            });
+
+            quizSessionMarkMap = await this.generateEmptyMarks(quiz, missingQuizSessionIds, quizSessionUserMap, quizSessionMarkMap);
             return { totalQuizSessions: total, marksMap: quizSessionMarkMap, quizSessionUserMap: quizSessionUserMap || null };
     }
 
@@ -141,8 +188,6 @@ export class MarksService extends BaseService {
             if(quizSessionMap[s._id!] === undefined) quizSessionMap[s._id!] = { userSessionId: null, user: null};
             quizSessionMap[s._id!].userSessionId = s.userSessionId!;
         });
-
-
 
         const userSessionIds = quizSessions.filter(q => q.userSessionId).map((s) => s.userSessionId!)
         const userSessions = await this.userSessionRepo.findByIdArray(userSessionIds);
@@ -159,6 +204,7 @@ export class MarksService extends BaseService {
 
         return quizSessionMap;
     }
+
     public async getMarksForQuiz(quizId: string) {
         try {
             const quizSessionMarkMap: { [quizSessionId: string]: Mark[] } = {};
@@ -180,21 +226,21 @@ export class MarksService extends BaseService {
                 })
             }));
 
-
-
             return quizSessionMarkMap;
 
         } catch (e) {
             return null;
         }
     }
-    public async createOrUpdateMarksMultiple(quizSessionId: string, questionId: string, newMarks: ElipssMark): Promise<boolean> {
 
+    public async createOrUpdateMarksMultiple(quizSessionId: string, questionId: string, newMarks: Mark): Promise<boolean> {
+
+        // Only need a quiz session + markerID combo to determine a mark
         const currentMarkerMarks = await this.marksRepo.findAll({
             quizSessionId: quizSessionId,
-            questionId: questionId,
             markerId: newMarks.markerId
         });
+
         if (currentMarkerMarks && Array.isArray(currentMarkerMarks)) {
             if (currentMarkerMarks.length > 1) {
                 // Error condition

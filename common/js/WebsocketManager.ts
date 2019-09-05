@@ -2,7 +2,6 @@ import * as socket from "socket.io-client";
 import { PacSeqSocket_Client } from "../../common/js/PacSeqSocket_Client";
 
 import { Conf } from "../config/Conf";
-import store, { SystemMessageTypes } from "../src/store";
 
 /**
  * MOOCchat
@@ -15,7 +14,8 @@ export class WebsocketManager {
   protected setReconnectFunctions: (() => void) | null = null;
 
   // Note that the constructor is essentially calling open although TS wants the socket to expliclty be instantiated.
-  constructor(reconnectFunction?: (data?: {}) => void) {
+  constructor(reconnectFunction?: (data?: {}) => void, reconnectFailFunction?: () => void,
+              reconnectAttemptFunction?: (attemptNumber: number) => void) {
     this.socketProxy = new PacSeqSocket_Client(
       socket.connect("//" + Conf.server.url, {
         path: "/socket.io",
@@ -44,21 +44,13 @@ export class WebsocketManager {
       }
     });
 
-    this.on("reconnect_failed", () => {
-      store.commit("SET_GLOBAL_MESSAGE", {
-        error: true,
-        type: SystemMessageTypes.FATAL_ERROR,
-        message: "Error: Connection lost. Please close current window/tab and launch MOOCchat again from Blackboard. (Your progress will be retained)"
-      });
-    });
+    if (reconnectFailFunction) {
+      this.on("reconnect_failed", reconnectFailFunction);
+    }
 
-    this.on("reconnect_attempt", (attemptNumber) => {
-      store.commit("SET_GLOBAL_MESSAGE", {
-        error: false,
-        type: SystemMessageTypes.WARNING,
-        message: "Connection lost. Attempting to reconnect (#"+ attemptNumber + "/" + Conf.websockets.reconnectionAmount + ')'
-      });
-    });
+    if (reconnectAttemptFunction) {
+      this.on("reconnect_attempt", reconnectAttemptFunction);
+    }
 
 
     // this.on("reconnect_error", () => {

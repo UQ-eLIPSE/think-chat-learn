@@ -54,7 +54,7 @@ export default class GroupAllocation extends Vue {
 
   get percentLoadedByTime() {
     const waitTime = Conf.timings.chatGroupFormationTimeoutMs;
-    return Math.round((this.timeElapsed / waitTime) * 100)
+    return Math.round((this.timeElapsed / waitTime) * 100);
   }
 
   get chatGroup(): IWSToClientData.ChatGroupFormed | null {
@@ -72,9 +72,9 @@ export default class GroupAllocation extends Vue {
     if (timeElapsedInMs < Conf.timings.chatGroupFormationTimeoutMs) {
       let timerReference = setTimeout(() => {
         this.initLoaderTimeout(timeElapsedInMs + 1000, timerReference);
-      }, 1000)
+      }, 1000);
     } else {
-      clearTimeout(timerReference)
+      clearTimeout(timerReference);
     }
   }
   // Automatically redirect page back if somehow made it to this point

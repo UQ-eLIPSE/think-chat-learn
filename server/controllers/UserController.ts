@@ -25,11 +25,29 @@ export class UserController extends BaseController {
 
     }
 
+    // Essentially the same as LTI login except we write the token differently
+    private handleLTIBackupLogin(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
+        this.userService.handleBackupLogin(req.body as ILTIData).then((output) => {
+            const token = jwt.sign(output as Object, Conf.jwt.SECRET, { expiresIn: Conf.jwt.TOKEN_LIFESPAN });
+            res.redirect(Conf.intermediatePage + "?q=" + token);
+        }).catch((e: Error) => {
+            res.status(500).send(e.message);
+        });
+
+    }    
+
     // The reason for the second end point is if the admin wants to pretend to be a student
     private handleAdminLogin(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
         this.userService.handleAdminLogin(req.body as ILTIData).then((output) => {
             const token = jwt.sign(output as Object, Conf.jwt.SECRET, { expiresIn: Conf.jwt.TOKEN_LIFESPAN });
             res.redirect(Conf.adminPage + "?q=" + token);
+        });
+    }
+
+    private registerIntermediate(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
+        this.userService.registerIntermediate(req.user, req.body).then((output) => {
+            const token = jwt.sign(output.token as Object, Conf.jwt.SECRET, { expiresIn: Conf.jwt.TOKEN_LIFESPAN });
+            res.json({ token, responses: output.responses});
         });
     }
 
@@ -78,7 +96,7 @@ export class UserController extends BaseController {
 
     private getUserById(req: express.Request, res: express.Response) {
         if(!req.params.userId) throw new Error("User id not supplied");
-        this.userService.findUser(req.params.userId).then((userResponse) => {
+        this.userService.findOne(req.params.userId).then((userResponse) => {
             res.json(userResponse);
         }).catch((e) => {
             console.log(e);
@@ -89,7 +107,9 @@ export class UserController extends BaseController {
     public setupRoutes() {
         this.router.post("/admin", this.handleAdminLogin.bind(this));
         this.router.post("/admin-login", this.handleLTILogin.bind(this));
+        this.router.post("/admin-intermediate-login", this.handleLTIBackupLogin.bind(this));
         this.router.post("/login", this.handleLoginWrapper.bind(this), this.handleLTILogin.bind(this));
+        this.router.post("/intermediate-register", this.registerIntermediate.bind(this));
         this.router.post("/me", this.refreshToken.bind(this));
         this.router.post("/handleToken", this.getQuizByToken.bind(this));
         this.router.post("/page", this.getPageByIds.bind(this));

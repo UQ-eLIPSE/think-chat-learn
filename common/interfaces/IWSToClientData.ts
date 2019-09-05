@@ -14,6 +14,10 @@ export interface ChatGroupAnswer {
 
 export interface GroupAnswerDictionary { [questionId: string]: ChatGroupAnswer[]; }
 
+export interface ChatPing {
+    size: number;
+    timeout: number;
+}
 export interface ChatGroupFormed {
     groupId: string;
     groupSize: number;
@@ -21,6 +25,7 @@ export interface ChatGroupFormed {
     // i.e. a group can have multiple answers for muliple questions.
     groupAnswers: GroupAnswerDictionary;
     clientIndex: number;
+    quizSessionId: string;
 }
 export interface ChatGroupMessage {
     clientIndex: number;

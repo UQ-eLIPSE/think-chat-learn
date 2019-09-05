@@ -5,7 +5,7 @@ import { ObjectId } from "bson";
 import * as IWStoClientData from "../../common/interfaces/IWSToClientData";
 import { ResponseRepository } from "../repositories/ResponseRepository";
 import { ChatGroupResync } from "../../common/interfaces/HTTPToClientData";
-export class ChatGroupService extends BaseService{
+export class ChatGroupService extends BaseService<IChatGroup> {
 
     protected readonly chatGroupRepo: ChatGroupRepository;
     protected readonly responseRepo: ResponseRepository;
@@ -17,13 +17,12 @@ export class ChatGroupService extends BaseService{
 }
 
     // Creates a chat group (only ran/endpoint is from the server)
-    public async createChatGroup(data: IChatGroup): Promise<string> {
-
+    public async createOne(data: IChatGroup): Promise<string> {
         return this.chatGroupRepo.create(data);
     }
 
     // Simply an override to the existing chat group
-    public async updateChatGroup(data: IChatGroup): Promise<boolean> {
+    public async updateOne(data: IChatGroup): Promise<boolean> {
         return this.chatGroupRepo.updateOne(data);
     }
 
@@ -45,11 +44,11 @@ export class ChatGroupService extends BaseService{
 
         data.messages!.push(message);
 
-        return this.updateChatGroup(data);
+        return this.updateOne(data);
     }
 
     // Deletes a chat group based on the id
-    public async deleteChatGroup(id: string) {
+    public async deleteOne(id: string) {
         return this.chatGroupRepo.deleteOne(id);
     }
 
@@ -61,7 +60,7 @@ export class ChatGroupService extends BaseService{
     }
 
     // Gets the chat group session based on the id itself
-    public async getChatGroup(sessionId: string): Promise<IChatGroup | null> {
+    public async findOne(sessionId: string): Promise<IChatGroup | null> {
         return this.chatGroupRepo.findOne(sessionId);
     }
 
@@ -119,7 +118,8 @@ export class ChatGroupService extends BaseService{
             groupId: group._id!,
             groupSize: group.quizSessionIds!.length,
             groupAnswers,
-            clientIndex: clientIndexMap[quizSessionId] + 1
+            clientIndex: clientIndexMap[quizSessionId] + 1,
+            quizSessionId
         }
 
         return {
