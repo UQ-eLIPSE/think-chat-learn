@@ -23,8 +23,7 @@
                 v-if="currentResponse"
                 :disabled="true"
                 type="textarea"
-                minlength="10"
-                maxlength="500"
+                :maxlength="maxAnswerLength"
                 placeholder="Explain your response..."
                 v-model="currentResponse.content"
               >
@@ -32,8 +31,7 @@
               <b-input
                 v-else
                 type="textarea"
-                minlength="10"
-                maxlength="500"
+                :maxlength="maxAnswerLength"
                 placeholder="Explain your response..."
                 v-model="responseContent"
               >
@@ -110,6 +108,8 @@ import { EventBus } from "../EventBus";
 import { EmitterEvents } from "../emitters";
 import ChatMessage from "../components/Chat/ChatMessage.vue";
 import katex from "katex";
+import { Conf } from "../../../common/config/Conf";
+
 @Component({
   components: {
     Confidence,
@@ -260,6 +260,14 @@ export default class MoocChatPage extends Vue {
       default:
         return null;
     }
+  }
+
+  get maxAnswerLength() {
+    if(Conf && Conf.answers && Conf.answers.justification && Conf.answers.justification.maxLength) {
+      return Conf.answers.justification.maxLength;
+    }
+
+    return 1000;
   }
 
   private handleConfidenceChange(confidenceValue: number) {
