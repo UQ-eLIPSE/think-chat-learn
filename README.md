@@ -25,5 +25,7 @@
 ## Deploying
 
 1. Go to server `cd server`
+2. See relevant production/test configuration values from `Confluence`.
 2. Run deploy script `./deploy.sh $some_user $some_server`
-3. If watchers are needed for admin. `cd ./admin` and then `npm run build_dev_watch`
+
+Note: If watchers are needed for admin. `cd ./admin` and then `npm run build_dev_watch`

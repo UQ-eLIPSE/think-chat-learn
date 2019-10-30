@@ -11,15 +11,15 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
+########################
+# SET UP VARIABLES
+########################
+
 # The server to deploy to
 USER=$1
 SERVER=$2
 
-# Current revision information
-CURRENT_COMMIT="\nBranch: $(git rev-parse --abbrev-ref HEAD) \n\
-Commit SHA: $(git rev-parse HEAD)\n\
-Deployed by: $USER \n\
-On: $(date)\n"
+NODE_VERSION="$(node -v)"
 
 # Deployment mode
 # `production` or `development`
@@ -39,56 +39,72 @@ INTERMEDIATE_FOLDER=intermediate
 # Temporary local deploy folder name
 TEMP=__deploy
 
+########################
+
+# Current revision information
+CURRENT_COMMIT="\nBranch: $(git rev-parse --abbrev-ref HEAD) \n\
+Commit SHA: $(git rev-parse HEAD)\n\
+Deployed by: $USER \n\
+On: $(date)\n"
+
+echo -e "Building and deploying MOOCchat using node $NODE_VERSION"
+
+# Remove previously built files
 rm -rf ./$TEMP
 
 # Create local directory for deployment
 mkdir "$TEMP" "$TEMP/$STATIC_FOLDER" "$TEMP/$ADMIN_FOLDER" "$TEMP/$INTERMEDIATE_FOLDER"
 
 # Copy config before building
-cp "config/production/$2" config/Conf.ts
-cp "../common/config/production/$2" ../common/config/Conf.ts
-cp "../client/config/production/$2" ../client/config/Conf.ts
+cp "config/production/$SERVER" config/Conf.ts
+cp "../common/config/production/$SERVER" ../common/config/Conf.ts
+cp "../client/config/production/$SERVER" ../client/config/Conf.ts
 
 # Set environment files based on deployment address
-cp "../client/envs/$2" "../client/.env.$MODE"
-cp "../admin/envs/$2" "../admin/.env.$MODE"
-cp "../intermediate/envs/$2" "../intermediate/.env.$MODE"
+cp "../client/envs/$SERVER" "../client/.env.$MODE"
+cp "../admin/envs/$SERVER" "../admin/.env.$MODE"
+cp "../intermediate/envs/$SERVER" "../intermediate/.env.$MODE"
 
 # Server
-echo -e "\nBuilding server ...\n"
+echo -e "Building server"
+
 npm run build_server
 cp -r ../build/* "$TEMP"
 cp ../package.json "$TEMP/server/package.json"
 
 # Client
-echo -e "\nBuilding client SPA ...\n"
+echo -e "Building client SPA"
+
 npm run build_client
 cp -r ../client/dist/* "$TEMP/$STATIC_FOLDER"
 
 # Admin
-echo -e "\nBuilding admin panel SPA ...\n"
+echo -e "Building admin SPA"
 npm run build_admin
 cp -r ../admin/dist/* "$TEMP/$ADMIN_FOLDER"
 
 
 # Intermediate
-echo -e "\n\nBuilding backup queue intermediate SPA ...\n"
+echo -e "Building backup queue intermediate SPA"
+
 npm run build_intermediate
 cp -r ../intermediate/dist/* "$TEMP/$INTERMEDIATE_FOLDER"
 
-
-echo -e "\n\nLogging deployment information ..."
+echo -e "Logging deployment information"
 echo -e "$CURRENT_COMMIT" > $TEMP/README.txt
 
 # Remove existing directories on the server
-echo -e "\n\nRemoving existing directories ...\n"
+echo -e "Removing existing directories"
+
 ssh $USER@$SERVER "mkdir -p $APP_ROOT && rm -rfv $APP_ROOT/*"
 
-echo -e "\n\nCopying built files to server ...\n"
+echo -e "Copying built files to server"
+
 # Copy built files to server
 scp -r $TEMP/* $USER@$SERVER:$APP_ROOT/
 
 # Unfortunately due to a dependency of the common folder
 # We need to put in the name of the folder
-echo -e "Installing server dependencies ..."
-ssh $USER@$SERVER "cd $APP_ROOT/server && npm install --production && chmod 775 -R $APP_ROOT"
+echo -e "Installing server dependencies"
+
+ssh $USER@$SERVER "cd $APP_ROOT/server && npm install --production && sudo chmod 775 -R $APP_ROOT"
