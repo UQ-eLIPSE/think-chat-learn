@@ -20,7 +20,7 @@ Quick command for installing everything:
 8. Change the config files for the common, admin, client and server. The configuration seems tedious but given the fact that there are actually three different SPAs 
 
 #### Development configuration
-Set up environment variables (Examples files included in repository.)
+Set up environment and configuration files (Examples files included in repository.)
     /server/config/Conf.ts
     /common/config/Conf.ts
 
@@ -50,10 +50,6 @@ Production configuration on `Confluence`.
 1. Go to https://ltilib.uqcloud.net/connector/ and set the URL as `http://localhost:<PORT_NUMBER>/user/login`
 2. If you need to access a specific quiz, another parameter with key `custom_quizid` and value `<quiz_id>` needs to be added to the LTI form.
 
-## Deploying
+## Deploying on production / test zone
 
-1. Go to server `cd server`
-2. See relevant production/test configuration values from `Confluence`.
-2. Run deploy script `./deploy.sh $some_user $some_server`
-
-Note: If watchers are needed for admin. `cd ./admin` and then `npm run build_dev_watch`
+Deployment steps and configurations on `Confluence`.
