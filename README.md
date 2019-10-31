@@ -1,8 +1,21 @@
 # MOOCchat (DeepConcepts project)
 
+## Project components
+
+### Client-side
+* `client` - Vue SPA
+* `admin` - Vue SPA
+* `intermediate` - Vue SPA
+
+### Server
+* node.js
+
+### Database
+* mongodb
+
 ## Requirements
-Node version 10.x
-MongoDB v 4.x
+Node v10.x
+MongoDB v4.x
 
 ## Setting up
 
@@ -17,15 +30,15 @@ MongoDB v 4.x
 Quick command for installing everything:
 `cd <project_root> && cd client && npm i && cd ../intermediate && npm i && cd ../admin && npm i && cd .. && npm i`
 
-8. Change the config files for the common, admin, client and server. The configuration seems tedious but given the fact that there are actually three different SPAs 
+8. Change the config files for the common, admin, client, intermediate and server.
 
 #### Development configuration
 Set up environment and configuration files (Examples files included in repository.)
-    /server/config/Conf.ts
+    /server/config/Conf.ts (make a copy of /server/config/Conf.ts.example)
     /common/config/Conf.ts
 
     /client/config/Conf.ts
-    /client/.env.development
+    /client/.env.development (make a copy of /client/.env.development.example) 
     /client/vue.config.js
 
     /admin/.env.development
@@ -37,9 +50,9 @@ Set up environment and configuration files (Examples files included in repositor
 #### Production configuration
 Production configuration on `Confluence`.
 
-## Building and Running (DeepConcepts)
+## Building and Running locally
 
-1. Go to root directory
+1. Go to project root
 2. Run `npm run build` for production or `npm run build_dev` for dev
 3. Run `npm run start`
 4. If watchers are needed for client. `cd /client` and then `npm run build_dev_watch`
