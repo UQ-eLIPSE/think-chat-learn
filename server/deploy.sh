@@ -56,13 +56,24 @@ rm -rf ./$TEMP
 mkdir "$TEMP" "$TEMP/$STATIC_FOLDER" "$TEMP/$ADMIN_FOLDER" "$TEMP/$INTERMEDIATE_FOLDER"
 
 # Copy config before building
+cp config/Conf.ts config/temp.Conf.ts
 cp "config/production/$SERVER" config/Conf.ts
+
+cp ../common/config/Conf.ts ../common/config/temp.Conf.ts
 cp "../common/config/production/$SERVER" ../common/config/Conf.ts
+
+cp ../client/config/Conf.ts ../client/config/temp.Conf.ts
 cp "../client/config/production/$SERVER" ../client/config/Conf.ts
 
 # Set environment files based on deployment address
+cp "../client/.env.$MODE" "../client/temp.env.$MODE"
 cp "../client/envs/$SERVER" "../client/.env.$MODE"
+
+cp "../admin/.env.$MODE" "../admin/temp.env.$MODE"
 cp "../admin/envs/$SERVER" "../admin/.env.$MODE"
+
+
+cp "../intermediate/.env.$MODE" "../intermediate/temp.env.$MODE"
 cp "../intermediate/envs/$SERVER" "../intermediate/.env.$MODE"
 
 # Server
@@ -102,6 +113,19 @@ echo -e "Copying built files to server"
 
 # Copy built files to server
 scp -r $TEMP/* $USER@$SERVER:$APP_ROOT/
+
+
+# Restore all original local config
+echo -e "\nRestore all original local config ...\n"
+
+mv config/temp.Conf.ts config/Conf.ts
+mv ../client/config/temp.Conf.ts ../client/config/Conf.ts
+mv ../common/config/temp.Conf.ts ../common/config/Conf.ts
+
+mv "../client/temp.env.$MODE" "../client/.env.$MODE"
+mv "../admin/temp.env.$MODE" "../admin/.env.$MODE"
+mv "../intermediate/temp.env.$MODE" "../intermediate/.env.$MODE"
+
 
 # Unfortunately due to a dependency of the common folder
 # We need to put in the name of the folder

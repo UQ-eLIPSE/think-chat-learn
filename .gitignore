@@ -106,3 +106,4 @@ server/config/production/*
 
 # Temporary deploy folder
 __deploy
+*.Conf.ts
