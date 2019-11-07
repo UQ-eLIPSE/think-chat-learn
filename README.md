@@ -22,6 +22,12 @@ MongoDB v4.x
 1. Clone repo
 2. Install Nodejs 10.x LTS and MongoDB
 3. Start MongoDB, usually the command to run is `mongod`
+
+### Install components
+Quick command for installing everything (Steps 4-7):
+`cd <project_root> && cd client && npm i && cd ../intermediate && npm i && cd ../admin && npm i && cd .. && npm i`
+
+OR 
 4. Install the root-level/common packages `npm install`
 5. Go to client `cd client` and install packages `npm install`
 6. Go to admin `cd ../admin` and install the admin packages `npm install`
