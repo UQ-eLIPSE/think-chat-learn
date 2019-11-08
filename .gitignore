@@ -75,12 +75,19 @@ client/public/*
 admin/public/*
 !admin/public/index.html
 
-# Env values for client and admin
+# Env values for client, admin and intermediate
 client/envs/*
 !client/envs/.gitkeep
 client/.env.*
 !client/.env.*.example
+
+admin/envs/*
+!admin/envs/.gitkeep
 admin/.env.*
+!admin/.env.*.example
+
+intermediate/envs/*
+!intermediate/envs/.gitkeep
 intermediate/.env.*
 !intermediate/.env.*.example
 
@@ -96,3 +103,8 @@ server/config/production/*
 !server/config/production/.gitkeep
 !common/config/production/.gitkeep
 !client/config/production/.gitkeep
+
+# Temporary deploy folder
+__deploy
+*.Conf.ts
+temp.*
