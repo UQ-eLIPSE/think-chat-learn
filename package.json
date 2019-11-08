@@ -3,6 +3,9 @@
   "version": "2.3.8",
   "description": "",
   "main": "build/server/main.js",
+  "engines": {
+    "node": "^10"
+  },
   "scripts": {
     "start": "node build/server/main.js",
     "start_dev": "node --inspect build/server/main.js",

@@ -1,19 +1,22 @@
 import { Utils } from "../../common/js/Utils";
 import { ICriteria } from "../../common/interfaces/DBSchema";
-
+  
 /**
  * MOOCchat server configuration file
  */
-
+  
+const SERVER_URL = "http://localhost:8080";
+const ENDPOINT_URL = `${SERVER_URL}`;
+ 
 export const Conf: IConf = {
     portNum: 8080,
     database: "mongodb://localhost:27017/moocchatDB",
     http: {
         maxSockets: 65000
     },
-    adminPage: "http://localhost:8080/admin/#/login",
-    clientPage: "http://localhost:8080/client/#/login",
-    intermediatePage: "http://localhost:8080/intermediate/#/login",
+    adminPage: `${SERVER_URL}/admin/#/login`,
+    clientPage: `${SERVER_URL}/client/#/login`,
+    intermediatePage: `${SERVER_URL}/intermediate/#/login`,
     jwt: {
         SECRET: "YOUR_SECRET",
         TOKEN_LIFESPAN: "7h"
@@ -29,7 +32,7 @@ export const Conf: IConf = {
         testMode: true,
         signingInfo: {
             method: "POST",
-            url: "https://mc-stg.uqcloud.net/lti.php",
+            url: "https://uthink.uqcloud.net/lti.php",
             consumer: {
                 key: "moocchat.uqcloud.net",
                 secret: "lti_secret_key_here"
@@ -59,7 +62,7 @@ export const Conf: IConf = {
     },
     // Make sure this is larger than or equal to page delay for client
     pageSlack: 10000,
-    endpointUrl: "http://localhost:8080",
+    endpointUrl: ENDPOINT_URL,
     defaultCriteria: [{
         name: "evaluating",
         description: "How well one evaluates"
@@ -86,24 +89,24 @@ export const Conf: IConf = {
         description: "Your mark"
     }],
     storage: {
-        useManta: true,
+        useManta: false,
         mantaDetails: {
-            mantaKeyLocation: "some_location_on_machine",
-            mantaLocation: "some_https_location",
-            mantaKeyId: "some_key",
-            mantaSubUser: "some_sub_user",
+            mantaKeyLocation: "",
+            mantaLocation: "",
+            mantaKeyId: "",
+            mantaSubUser: "",
             mantaRoles: [],
-            mantaUser: "some_user",
-            mantaFolderName: "public/iamges"
+            mantaUser: "",
+            mantaFolderName: ""
         },
         internalLocation: "some_location"
     }
 }
-
-
+  
+  
 /**
  * Explicit definition for above config file
- * 
+ *
  * @interface IConf
  */
 interface IConf {
