@@ -1,4 +1,4 @@
-# MOOCchat (DeepConcepts project)
+# Think.Chat.Learn
 
 ## Project components
 
@@ -28,7 +28,7 @@ Quick command for installing everything (Steps 4-7):
 `cd <project_root> && cd client && npm i && cd ../intermediate && npm i && cd ../admin && npm i && cd .. && npm i`
 
 OR 
-4. Install the root-level/common packages `npm install`
+4. Install the root-level packages `npm install`
 5. Go to client `cd client` and install packages `npm install`
 6. Go to admin `cd ../admin` and install the admin packages `npm install`
 7. Go to admin `cd ../intermediate` and install the admin packages `npm install`
