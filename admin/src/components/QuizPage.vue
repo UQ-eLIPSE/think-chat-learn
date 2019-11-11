@@ -1,7 +1,7 @@
 <template>
     <v-container>
       <v-form ref="form">
-        <h1 class="moocchat-title">Quiz Editor</h1>
+        <h1 class="moocchat-title">{{ pageTitle }}</h1>
         <v-container fluid grid-list-md>
           <v-layout row wrap>
             <v-flex xs12>
@@ -130,6 +130,14 @@
                         @click="deletePage(index)">Delete page</v-btn>
               </div>
             </v-flex>
+            
+            <v-flex xs12>
+              <v-container class="controls">
+                <v-btn type="button"
+                        @click="createPage()">Create new page</v-btn>
+              </v-container>
+            </v-flex>
+
             <v-flex xs12>
               <b-field label="Set the associated Rubric">
                 <v-overflow-btn :items="rubricDropDown" v-model="rubricId" outline :rules="[existenceRule]"/>
@@ -148,9 +156,7 @@
             <v-flex xs12>
               <v-container class="controls">
                 <v-btn type="button"
-                        @click="createPage()">Create new page</v-btn>
-                <v-btn type="button"
-                        @click="submitQuiz()">Create/ update Quiz</v-btn>
+                        class="primary" @click="submitQuiz()">{{ pageAction }}</v-btn>
               </v-container>
             </v-flex>
           </v-layout>
@@ -345,8 +351,8 @@ export default class QuizPage extends Vue {
 
     // Set one is to upload quill which then follows creating the quiz
     const message: ModalEvent = {
-      title: this.isEditing ? `Editing quiz` : `Creating quiz`,
-      message: this.isEditing ? `Are you sure to edit quiz of ID ${this.id}?` : `Are you sure to create the quiz`,
+      title: this.pageAction,
+      message: ``,
       fn: EventBus.$emit,
       data: [EventList.CONSOLIDATE_UPLOADS],
       selfRef: EventBus
@@ -390,6 +396,34 @@ export default class QuizPage extends Vue {
 
           this.createQuiz();
       });
+    }
+  }
+
+  /**
+   * Check if `clone` parameter was passed.
+   * If `true`, that means that a quiz clone is being created
+   */
+  get isCloning(): boolean {
+    return !!this.$route.query.clone;
+  }
+
+  get pageTitle() {
+    if(this.isEditing && !this.isCloning) {
+      return "Editing quiz session"
+    } else if(this.isCloning) {
+      return "Creating copy of quiz session"
+    } else {
+      return "Create new quiz session"
+    }
+  }
+
+  get pageAction() {
+    if(this.isEditing && !this.isCloning) {
+      return "Edit quiz session"
+    } else if(this.isCloning) {
+      return "Clone quiz session"
+    } else {
+      return "Create quiz session"
     }
   }
 
@@ -476,10 +510,11 @@ export default class QuizPage extends Vue {
       rubricId: this.rubricId
     };
 
-    if (this.isEditing) {
+    if (this.isEditing && !this.isCloning) {
       outgoingQuiz._id = this.id;
       this.$store.dispatch("updateQuiz", outgoingQuiz);
     } else {
+      delete outgoingQuiz._id;
       this.$store.dispatch("createQuiz", outgoingQuiz);
     }
   }
@@ -699,6 +734,7 @@ export default class QuizPage extends Vue {
 
 .controls {
   padding: 1rem;
+  justify-content: center;
 }
 
 .p-controls {

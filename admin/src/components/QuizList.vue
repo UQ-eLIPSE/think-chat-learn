@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-        <h1 class="moochat-name">Quiz List</h1>
+        <h1 class="moochat-name">Quiz Sessions List</h1>
         <router-link tag="button"
                      class="primary"
                      to="/quizPage">Add Quiz</router-link>
@@ -24,6 +24,9 @@
                             <v-btn type="button"
                                     class="primary"
                                     @click="deleteQuiz(quiz._id)">Delete</v-btn>
+                            <v-btn type="button"
+                                    class="primary"
+                                    @click="cloneQuiz(quiz._id)">Create copy</v-btn>
                         </div>
                     </v-card>
                 </v-flex>
@@ -65,6 +68,10 @@ export default class QuizList extends Vue {
             data: ["deleteQuiz", id]
         };
         EventBus.$emit(EventList.OPEN_MODAL, payload);
+    }
+
+    private cloneQuiz(id: string) {
+        this.$router.push(`/quizPage?q=${id}&clone=1`);
     }
 
     get quizzes(): IQuiz[] {
