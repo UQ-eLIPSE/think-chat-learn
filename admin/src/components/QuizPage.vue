@@ -2,6 +2,10 @@
     <v-container>
       <v-form ref="form">
         <h1 class="moocchat-title">{{ pageTitle }}</h1>
+        <h3 v-if="isCloning">
+          Values have been pre-filled using the data from quiz session "{{ clonedQuizName }}".
+          You can change these values as desired for the new quiz session (E.g. Start and end time, quiz title)
+        </h3>
         <v-container fluid grid-list-md>
           <v-layout row wrap>
             <v-flex xs12>
@@ -261,6 +265,8 @@ export default class QuizPage extends Vue {
   private uploads: BlobUpload[] = [];
   private changeCount: number = 0;
 
+  private quizToBeCloned: null | DBSchema.IQuiz = null;
+
   initMarkConfig(): DBSchema.MarkConfig {
     return {
       allowMultipleMarkers: false,
@@ -407,11 +413,18 @@ export default class QuizPage extends Vue {
     return !!this.$route.query.clone;
   }
 
+  get clonedQuizName() {
+    if(this.isCloning && this.quizToBeCloned && this.quizToBeCloned.title) {
+      return this.quizToBeCloned.title;
+    }
+
+    return `-NA-`
+  }
   get pageTitle() {
     if(this.isEditing && !this.isCloning) {
       return "Editing quiz session"
     } else if(this.isCloning) {
-      return "Creating copy of quiz session"
+      return `Creating a copy of quiz session "${this.clonedQuizName}"`;
     } else {
       return "Create new quiz session"
     }
@@ -421,7 +434,7 @@ export default class QuizPage extends Vue {
     if(this.isEditing && !this.isCloning) {
       return "Edit quiz session"
     } else if(this.isCloning) {
-      return "Clone quiz session"
+      return "Save new copy"
     } else {
       return "Create quiz session"
     }
@@ -514,6 +527,8 @@ export default class QuizPage extends Vue {
       outgoingQuiz._id = this.id;
       this.$store.dispatch("updateQuiz", outgoingQuiz);
     } else {
+      // If quiz is not being `edited` (i.e. being created or cloned)
+      // Remove the `id` associated with the old quiz
       delete outgoingQuiz._id;
       this.$store.dispatch("createQuiz", outgoingQuiz);
     }
@@ -599,6 +614,10 @@ export default class QuizPage extends Vue {
           dict[(this.mountedId++).toString()] = element;
           return dict;
         }, emptyDict);
+
+        if(this.isCloning) {
+          this.quizToBeCloned = Object.assign({}, loadedQuiz);
+        }
       }
     }
 
