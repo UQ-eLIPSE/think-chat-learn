@@ -20,97 +20,114 @@ import * as Schema from '../../common/interfaces/DBSchema';
 Vue.use(Router);
 
 // Note that the router config is done in the vue.config.js file
-export default new Router({
-  routes: [{
-    path: "/",
-    name: "landing",
-    component: Landing
-  }, {
-    path: "/login",
-    name: "Login",
-    component: Login
-  }, {
-    path: "/quizPage",
-    name: "Quiz Page",
-    component: QuizPage,
-    props: (route) => ({ id: route.query.q })
-  }, {
-    path: "/questionPage",
-    name: "Question Page",
-    component: QuestionPage,
-    props: (route) => ({ id: route.query.q })
-  }, {
-    path: "/questionList",
-    name: "Question List",
-    component: QuestionList
-  }, {
-    path: "/quizList",
-    name: "Quiz List",
-    component: QuizList
-  },
-  {
-    path: "/criteria",
-    name: "Criteria",
-    component: CriteriaList
-  },
-  {
-    path: "/criteriaEditor",
-    name: "Criteria Editor",
-    component: CriteriaEditor,
-    props: (route) => ({ id: route.query.c })
-  },
-  {
-    path: "/rubric",
-    name: "Rubric",
-    component: RubricList
-  },
-  {
-    path: "/rubricEditor",
-    name: "Rubric Editor",
-    component: RubricEditor,
-    props: (route) => ({ id: route.query.r })
-  },  
-  {
-    path: "/marking",
-    name: "marking",
-    component: Marking
-  },
-  {
-    path: '/mark-quiz/:id',
-    name: 'mark-quiz-main',
-    component: MarkPlaceholder,
-    children: [
-      {
-        path: 'mark',
-        name: 'mark-quiz',
-        component: MarkQuiz
-      },
-      {
-        path: 'view-marks',
-        name: 'view-mark-quiz',
-        component: QuizMarkViewer
-      }
-    ],
-    beforeEnter: async(to: any, from: any, next: any) => {
-      try {
-        if (!to.params.id) {
-          // Error
-          console.log('Quiz ID not present')
+const router = new Router({
+  routes: [
+    {
+      path: "/",
+      name: "landing",
+      component: Landing
+    }, {
+      path: "/login",
+      name: "Login",
+      component: Login
+    }, {
+      path: "/quizPage",
+      name: "Quiz Page",
+      component: QuizPage,
+      props: (route) => ({ id: route.query.q })
+    }, {
+      path: "/questionPage",
+      name: "Question Page",
+      component: QuestionPage,
+      props: (route) => ({ id: route.query.q })
+    }, {
+      path: "/questionList",
+      name: "Question List",
+      component: QuestionList
+    }, {
+      path: "/quizList",
+      name: "Quiz List",
+      component: QuizList
+    },
+    {
+      path: "/criteria",
+      name: "Criteria",
+      component: CriteriaList
+    },
+    {
+      path: "/criteriaEditor",
+      name: "Criteria Editor",
+      component: CriteriaEditor,
+      props: (route) => ({ id: route.query.c })
+    },
+    {
+      path: "/rubric",
+      name: "Rubric",
+      component: RubricList
+    },
+    {
+      path: "/rubricEditor",
+      name: "Rubric Editor",
+      component: RubricEditor,
+      props: (route) => ({ id: route.query.r })
+    },  
+    {
+      path: "/marking",
+      name: "marking",
+      component: Marking
+    },
+    {
+      path: '/mark-quiz/:id',
+      name: 'mark-quiz-main',
+      component: MarkPlaceholder,
+      children: [
+        {
+          path: 'mark',
+          name: 'mark-quiz',
+          component: MarkQuiz
+        },
+        {
+          path: 'view-marks',
+          name: 'view-mark-quiz',
+          component: QuizMarkViewer
         }
+      ],
+      beforeEnter: async(to: any, from: any, next: any) => {
+        try {
+          if (!to.params.id) {
+            // Error
+            console.log('Quiz ID not present')
+          }
 
-        const quizId = to.params.id;
-        store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuizId', value: quizId });
-        store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuizSessionId', value: null });
-        store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuestionId', value: null });
-        store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentMarks', value: null });
-        store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentChatGroupId', value: null });
-        await store.dispatch("getChatGroups", quizId);
-        
-        next();
-      } catch (e) {
-        // TODO: Handle Errors
+          const quizId = to.params.id;
+          store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuizId', value: quizId });
+          store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuizSessionId', value: null });
+          store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuestionId', value: null });
+          store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentMarks', value: null });
+          store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentChatGroupId', value: null });
+          await store.dispatch("getChatGroups", quizId);
+          
+          next();
+        } catch (e) {
+          // TODO: Handle Errors
+        }
       }
     }
-  }
   ]
 });
+
+// Navigation guard to check for `login`
+router.beforeEach((to, _from, next) => {
+  const course = store.getters.course;
+  const user = store.getters.user;
+
+  // Check if `course` and `user` exist in store
+  if ((!course || !user) && !(to.name === "Login")) {
+    // If user/course does not exist, use jwt to fetch and re-instantiate user and course details
+    next({ name: 'Login', query: { q: to.query.q } });
+  } else {
+    next();
+  }
+});
+
+export default router;
