@@ -124,7 +124,7 @@ router.beforeEach((to, _from, next) => {
   // Check if `course` and `user` exist in store
   if ((!course || !user) && !(to.name === "Login")) {
     // If user/course does not exist, use jwt to fetch and re-instantiate user and course details
-    next({ name: 'Login', query: { q: to.query.q } });
+    next({ name: 'Login' });
   } else {
     next();
   }
