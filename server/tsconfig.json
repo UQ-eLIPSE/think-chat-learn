@@ -2,24 +2,22 @@
   "compilerOptions": {
     "target": "es2015",
     "module": "commonjs",
-
     "noImplicitAny": true,
     "noImplicitThis": true,
     "noImplicitReturns": true,
     "strictNullChecks": true,
-
     "noUnusedLocals": false,
-
     "removeComments": true,
     "preserveConstEnums": true,
     "forceConsistentCasingInFileNames": true,
-
     "experimentalDecorators": true,
-
     "sourceMap": true,
-
     "outDir": "../build",
     "rootDir": "../"
   },
-  "files": ["./index.d.ts", "./main.ts", "./utils/extractQuestionResponses.ts"]
+  "files": [
+    "./index.d.ts",
+    "./main.ts",
+    "./utils/extractQuestionResponses.ts"
+  ]
 }
