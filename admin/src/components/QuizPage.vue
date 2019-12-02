@@ -1,7 +1,11 @@
 <template>
     <v-container>
       <v-form ref="form">
-        <h1 class="moocchat-title">Quiz Editor</h1>
+        <h1 class="moocchat-title">{{ pageTitle }}</h1>
+        <h3 v-if="isCloning">
+          Values have been pre-filled using the data from quiz session "{{ clonedQuizName }}".
+          You can change these values as desired for the new quiz session (E.g. Start and end time, quiz title)
+        </h3>
         <v-container fluid grid-list-md>
           <v-layout row wrap>
             <v-flex xs12>
@@ -130,6 +134,14 @@
                         @click="deletePage(index)">Delete page</v-btn>
               </div>
             </v-flex>
+            
+            <v-flex xs12>
+              <v-container class="controls">
+                <v-btn type="button"
+                        @click="createPage()">Create new page</v-btn>
+              </v-container>
+            </v-flex>
+
             <v-flex xs12>
               <b-field label="Set the associated Rubric">
                 <v-overflow-btn :items="rubricDropDown" v-model="rubricId" outline :rules="[existenceRule]"/>
@@ -148,9 +160,7 @@
             <v-flex xs12>
               <v-container class="controls">
                 <v-btn type="button"
-                        @click="createPage()">Create new page</v-btn>
-                <v-btn type="button"
-                        @click="submitQuiz()">Create/ update Quiz</v-btn>
+                        class="primary" @click="submitQuiz()">{{ pageAction }}</v-btn>
               </v-container>
             </v-flex>
           </v-layout>
@@ -255,6 +265,8 @@ export default class QuizPage extends Vue {
   private uploads: BlobUpload[] = [];
   private changeCount: number = 0;
 
+  private quizToBeCloned: null | DBSchema.IQuiz = null;
+
   initMarkConfig(): DBSchema.MarkConfig {
     return {
       allowMultipleMarkers: false,
@@ -345,8 +357,8 @@ export default class QuizPage extends Vue {
 
     // Set one is to upload quill which then follows creating the quiz
     const message: ModalEvent = {
-      title: this.isEditing ? `Editing quiz` : `Creating quiz`,
-      message: this.isEditing ? `Are you sure to edit quiz of ID ${this.id}?` : `Are you sure to create the quiz`,
+      title: this.pageAction,
+      message: ``,
       fn: EventBus.$emit,
       data: [EventList.CONSOLIDATE_UPLOADS],
       selfRef: EventBus
@@ -390,6 +402,41 @@ export default class QuizPage extends Vue {
 
           this.createQuiz();
       });
+    }
+  }
+
+  /**
+   * Check if `clone` parameter was passed.
+   * If `true`, that means that a quiz clone is being created
+   */
+  get isCloning(): boolean {
+    return !!this.$route.query.clone;
+  }
+
+  get clonedQuizName() {
+    if(this.isCloning && this.quizToBeCloned && this.quizToBeCloned.title) {
+      return this.quizToBeCloned.title;
+    }
+
+    return `-NA-`
+  }
+  get pageTitle() {
+    if(this.isEditing && !this.isCloning) {
+      return "Editing quiz session"
+    } else if(this.isCloning) {
+      return `Creating a copy of quiz session "${this.clonedQuizName}"`;
+    } else {
+      return "Create new quiz session"
+    }
+  }
+
+  get pageAction() {
+    if(this.isEditing && !this.isCloning) {
+      return "Edit quiz session"
+    } else if(this.isCloning) {
+      return "Save new copy"
+    } else {
+      return "Create quiz session"
     }
   }
 
@@ -476,10 +523,13 @@ export default class QuizPage extends Vue {
       rubricId: this.rubricId
     };
 
-    if (this.isEditing) {
+    if (this.isEditing && !this.isCloning) {
       outgoingQuiz._id = this.id;
       this.$store.dispatch("updateQuiz", outgoingQuiz);
     } else {
+      // If quiz is not being `edited` (i.e. being created or cloned)
+      // Remove the `id` associated with the old quiz
+      delete outgoingQuiz._id;
       this.$store.dispatch("createQuiz", outgoingQuiz);
     }
   }
@@ -564,6 +614,10 @@ export default class QuizPage extends Vue {
           dict[(this.mountedId++).toString()] = element;
           return dict;
         }, emptyDict);
+
+        if(this.isCloning) {
+          this.quizToBeCloned = Object.assign({}, loadedQuiz);
+        }
       }
     }
 
@@ -699,6 +753,7 @@ export default class QuizPage extends Vue {
 
 .controls {
   padding: 1rem;
+  justify-content: center;
 }
 
 .p-controls {
