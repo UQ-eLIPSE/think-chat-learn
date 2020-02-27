@@ -272,7 +272,7 @@ export default class Stepper extends Vue {
   }
 
   get renderBasedOnRoute() {
-    return this.$route.name === Names.MOOCCHAT_PAGE;
+    return this.$route.name === Names.TCL_PAGE;
   }
 
   /**

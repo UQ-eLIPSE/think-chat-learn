@@ -3,7 +3,7 @@ import { UserRepository } from "../repositories/UserRepository";
 import { QuizRepository } from "../repositories/QuizRepository";
 import { ILTIData } from "../../common/interfaces/ILTIData";
 import { LTIAuth } from "../js/auth/lti/LTIAuth";
-import { IMoocchatIdentityInfo } from "../js/auth/IMoocchatIdentityInfo";
+import { ITCLIdentityInfo } from "../js/auth/ITCLIdentityInfo";
 import { IUser, IQuiz, IDiscussionPage } from "../../common/interfaces/DBSchema";
 import { LoginResponse, AdminLoginResponse, QuizScheduleData, QuizScheduleDataAdmin, TypeQuestion,
     Page, QuestionRequestData, QuestionReconnectData, BackupLoginResponse,
@@ -212,7 +212,7 @@ export class UserService extends BaseService<IUser> {
         return output;
     }
 
-    public isLtiAdmin(identity: IMoocchatIdentityInfo) {
+    public isLtiAdmin(identity: ITCLIdentityInfo) {
         try {
             const adminRoles = [
                 "instructor",
@@ -508,14 +508,14 @@ class UserServiceHelper {
     }
 
     // Checks the existence of the id
-    public static CheckUserId(identity: IMoocchatIdentityInfo) {
+    public static CheckUserId(identity: ITCLIdentityInfo) {
         if (!identity.identityId) {
             throw new Error("[10] No user ID received.");
         }
     }
 
     // Gets the user from the DB based on id
-    public static async RetrieveUser(userRepo: UserRepository, identity: IMoocchatIdentityInfo): Promise<IUser> {
+    public static async RetrieveUser(userRepo: UserRepository, identity: ITCLIdentityInfo): Promise<IUser> {
 
         let user = await userRepo.findOne({
             username: identity.identityId

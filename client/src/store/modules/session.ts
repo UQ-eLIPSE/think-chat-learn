@@ -12,8 +12,8 @@ import * as IWSToClientData from "../../../../common/interfaces/IWSToClientData"
 import { WebsocketManager } from "../../../../common/js/WebsocketManager";
 import { WebsocketEvents } from "../../../../common/js/WebsocketEvents";
 // Common typings/utils
-import { SocketState, MoocChatMessage, StateMessage, Dictionary } from "../../interfaces";
-import { MoocChatMessageTypes, MoocChatStateMessageTypes } from "../../enums";
+import { SocketState, TCLMessage, StateMessage, Dictionary } from "../../interfaces";
+import { TCLMessageTypes, TCLStateMessageTypes } from "../../enums";
 import { logout, getLoginResponse } from "../../../../common/js/front_end_auth";
 import store, { SystemMessageTypes } from "..";
 import { Utils } from "../../../../common/js/Utils";
@@ -26,11 +26,11 @@ export interface IState {
     // Note the key of this dictionary would be the questionid as we simply respond to one question
     responses: Dictionary<Response>;
     socketState: SocketState;
-    chatMessages: MoocChatMessage[];
+    chatMessages: TCLMessage[];
     resyncAmount: number;
     // Stops the browser
     stopBrowser: boolean;
-    // Tells a resync to a moocchat page
+    // Tells a resync to a Think.Chat.Learn page
     resync: boolean;
     // Tells if the quiz session is available
     quizAvailable: boolean;
@@ -80,7 +80,7 @@ function reconnectFail() {
         error: true,
         type: SystemMessageTypes.FATAL_ERROR,
         message:
-            "Error: Connection lost. Please close current window/tab and launch MOOCchat again from Blackboard. " +
+            "Error: Connection lost. Please close current window/tab and launch Think.Chat.Learn again from Blackboard. " +
                 "(Your progress will be retained)"
       });
 }
@@ -111,8 +111,8 @@ async function handleGroupJoin(data?: IWSToClientData.ChatGroupFormed) {
 
     // Handle a join
     const joinMessage: StateMessage = {
-        state: MoocChatStateMessageTypes.ON_JOIN,
-        type: MoocChatMessageTypes.STATE_MESSAGE,
+        state: TCLStateMessageTypes.ON_JOIN,
+        type: TCLMessageTypes.STATE_MESSAGE,
         message: `Joined a group of ${data.groupSize} you are Student ${data.clientIndex}`
     };
 
@@ -136,8 +136,8 @@ function handleIncomingChatMessage(data?: IWSToClientData.ChatGroupMessage) {
     Vue.set(state.socketState.chatMessages, state.socketState.chatMessages.length, data);
 
     // Also handle the total chat message
-    const chatMessage: MoocChatMessage = {
-        type: MoocChatMessageTypes.CHAT_MESSAGE,
+    const chatMessage: TCLMessage = {
+        type: TCLMessageTypes.CHAT_MESSAGE,
         content: data
     };
 
@@ -179,8 +179,8 @@ function handleChatDisconnect(data?: IWSToClientData.ChatGroupDisconnect) {
     }
 
     const stateMessage: StateMessage = {
-        state: MoocChatStateMessageTypes.CHAT_GROUP_LEAVE,
-        type: MoocChatMessageTypes.STATE_MESSAGE,
+        state: TCLStateMessageTypes.CHAT_GROUP_LEAVE,
+        type: TCLMessageTypes.STATE_MESSAGE,
         message: `Student ${data.clientIndex} has disconnected`
     };
 
@@ -193,8 +193,8 @@ function handleChatGroupReconnect(data?: IWSToClientData.ChatGroupReconnect) {
     }
 
     const stateMessage: StateMessage = {
-        state: MoocChatStateMessageTypes.CHAT_GROUP_RECONNECT,
-        type: MoocChatMessageTypes.STATE_MESSAGE,
+        state: TCLStateMessageTypes.CHAT_GROUP_RECONNECT,
+        type: TCLMessageTypes.STATE_MESSAGE,
         message: `Student ${data.clientIndex} has reconnected`
     };
 
@@ -334,7 +334,7 @@ async function handleReconnect(data: any) {
                     expiry: null,
                     message:
                         "Error: Connection could not be established. " +
-                        "Please close current window/tab and launch MOOCchat again from Blackboard. " +
+                        "Please close current window/tab and launch Think.Chat.Learn again from Blackboard. " +
                         "(Your progress will be retained)"
                 };
 
@@ -403,7 +403,7 @@ const getters = {
         return state.socketState;
     },
 
-    chatMessages: (): MoocChatMessage[] => {
+    chatMessages: (): TCLMessage[] => {
         return state.chatMessages;
     },
 
@@ -589,11 +589,11 @@ const mutations = {
         }
     },
 
-    [mutationKeys.APPEND_STATE_MESSAGE](funcState: IState, data: { incomingState: MoocChatStateMessageTypes,
+    [mutationKeys.APPEND_STATE_MESSAGE](funcState: IState, data: { incomingState: TCLStateMessageTypes,
         message: string }) {
 
         const outgoingMessage: StateMessage = {
-            type: MoocChatMessageTypes.STATE_MESSAGE,
+            type: TCLMessageTypes.STATE_MESSAGE,
             state: data.incomingState,
             message: data.message
         };
@@ -608,13 +608,13 @@ const mutations = {
     [mutationKeys.SET_SOCKET_MESSAGES](funcState: IState, data: IWSToClientData.ChatGroupMessage[]) {
         Vue.set(funcState.socketState!, "chatMessages", data);
         Vue.set(funcState, "chatMessages", data.map((element) => {
-            const output: MoocChatMessage = {
-                type: MoocChatMessageTypes.CHAT_MESSAGE,
+            const output: TCLMessage = {
+                type: TCLMessageTypes.CHAT_MESSAGE,
                 content: element
             };
 
             return output;
-        }, [] as MoocChatMessage[]));
+        }, [] as TCLMessage[]));
     },
 
     [mutationKeys.SET_FETCH_STATE](funcState: IState, data: boolean) {

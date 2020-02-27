@@ -1,7 +1,7 @@
 <template>
     <v-container>
         <v-form ref="form">
-            <h1 class="moocchat-title">Question Editor</h1>
+            <h1 class="tcl-title">Question Editor</h1>
             <v-container fluid grid-list-md>
                 <v-layout row wrap>
                     <v-flex xs12>
@@ -60,7 +60,7 @@
     width: 100%;
 }
 
-.moocchat-title {
+.tcl-title {
   margin: 6px;
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
     <v-container>
-        <h1 class="moocchat-name">Rubric List</h1>
+        <h1 class="tcl-name">Rubric List</h1>
         <router-link tag="button" class="primary" to="/rubricEditor">Add Rubric</router-link>
         <v-container fluid grid-list-md>
             <v-layout row wrap>

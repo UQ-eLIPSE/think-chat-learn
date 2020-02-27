@@ -1,6 +1,6 @@
 <template>
     <v-container>
-        <h1 class="moocchat-name">Criteria List</h1>
+        <h1 class="tcl-name">Criteria List</h1>
         <router-link tag="button" class="primary" to="/criteriaEditor">Add Criteria</router-link>
         <v-container fluid grid-list-md>
             <v-layout row wrap>

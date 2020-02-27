@@ -422,7 +422,7 @@ export default class MarkQuiz extends Vue {
   margin: 1rem 2rem 1.5rem;
 }
 
-.moochat-name {
+.tcl-name {
   line-height: 1;
   margin: 2rem 2rem 1rem;
 }

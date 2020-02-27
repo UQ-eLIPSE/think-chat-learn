@@ -2,7 +2,7 @@ import { Utils } from "../../common/js/Utils";
 import { ICriteria } from "../../common/interfaces/DBSchema";
   
 /**
- * MOOCchat server configuration file
+ * Think.Chat.Learn server configuration file
  */
   
 const SERVER_URL = "http://localhost:8080";

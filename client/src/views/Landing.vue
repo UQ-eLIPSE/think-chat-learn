@@ -75,7 +75,7 @@
             <font-awesome-icon
               class="base4"
               icon="circle"
-            /> Fill out a survey about your MOOCchat experience</li>
+            /> Fill out a survey about your Think.Chat.Learn experience</li>
           <li>
             <font-awesome-icon
               class="base4"

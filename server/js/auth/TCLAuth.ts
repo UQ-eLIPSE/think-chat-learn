@@ -1,11 +1,11 @@
-import {IMoocchatIdentityInfo} from "./IMoocchatIdentityInfo";
-import {IMoocchatAuthProcessReturn} from "./IMoocchatAuthProcessReturn";
+import {ITCLIdentityInfo} from "./ITCLIdentityInfo";
+import {ITCLAuthProcessReturn} from "./ITCLAuthProcessReturn";
 
-export abstract class MoocchatAuth {
+export abstract class TCLAuth {
     private authName: string;
 
     /**
-     * Creates an instance of MoocchatAuth.
+     * Creates an instance of TCLAuth.
      * 
      * @param {...any[]} args
      */
@@ -14,17 +14,17 @@ export abstract class MoocchatAuth {
     }
 
 
-    public abstract isValid(): IMoocchatAuthProcessReturn;
+    public abstract isValid(): ITCLAuthProcessReturn;
 
-    public abstract isAuthenticated(): IMoocchatAuthProcessReturn;
+    public abstract isAuthenticated(): ITCLAuthProcessReturn;
 
-    public abstract getIdentity(): IMoocchatIdentityInfo;
+    public abstract getIdentity(): ITCLIdentityInfo;
 
     public getAuthName() {
         return this.authName;
     }
 
-    public authenticate(): IMoocchatAuthProcessReturn {
+    public authenticate(): ITCLAuthProcessReturn {
         const validCheckResult = this.isValid();
         if (!validCheckResult.success) {
             return validCheckResult;

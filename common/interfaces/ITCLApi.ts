@@ -44,12 +44,12 @@ export interface ToServerQuestionOptionId extends ToServerStandardRequestBase {
     questionOptionId: string,
 }
 
-export interface ToServerMoocchatFSMTransition extends ToServerStandardRequestBase {
+export interface ToServerTCLFSMTransition extends ToServerStandardRequestBase {
     transition: string,
     data?: any,
 }
 
-export interface ToClientMoocchatFSMState {
+export interface ToClientTCLFSMState {
     state: string,
     data?: any,
 }

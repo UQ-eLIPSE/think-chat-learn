@@ -1,11 +1,11 @@
-import {IMoocchatIdentityInfo} from "../IMoocchatIdentityInfo";
+import {ITCLIdentityInfo} from "../ITCLIdentityInfo";
 
 import * as crypto from "crypto";
 
-import {MoocchatAuth} from "../MoocchatAuth";
+import {TCLAuth} from "../TCLAuth";
 
-export class DummyAuth extends MoocchatAuth {
-    private identity: IMoocchatIdentityInfo;
+export class DummyAuth extends TCLAuth {
+    private identity: ITCLIdentityInfo;
 
     constructor() {
         super("Dummy");

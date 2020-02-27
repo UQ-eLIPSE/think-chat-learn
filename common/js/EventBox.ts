@@ -1,5 +1,5 @@
 /**
- * MOOCchat
+ * Think.Chat.Learn
  * EventBox class module
  *
  * Provides a basic event system that doesn't rely on DOM events

@@ -2,7 +2,7 @@
   "name": "deepconcepts",
   "version": "1.0.0",
   "private": true,
-  "description": "moocChat upgrade",
+  "description": "Think.Chat.Learn upgrade",
   "scripts": {
     "test": "test",
     "serve": "vue-cli-service serve",

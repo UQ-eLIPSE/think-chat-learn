@@ -15,7 +15,7 @@ import { ResponseService } from "../services/ResponseService";
 import { QuizSessionService } from "../services/QuizSessionService";
 import { SocketSession } from "./websocket/SocketSession";
 
-export class Moocchat {
+export class ThinkChatLearn {
     private socketIO: SocketIO.Server;
     private db: mongodb.Db;
     private chatGroupService: ChatGroupService;
@@ -95,7 +95,7 @@ export class Moocchat {
         // On each socket connection, join up to websocket endpoints
         this.socketIO.sockets.on("connection", this.instantiateSocket.bind(this));
 
-        console.log("MOOCchat set up complete");
+        console.log("Think.Chat.Learn set up complete");
         //});
     }
 

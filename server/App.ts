@@ -5,7 +5,7 @@ import * as bodyParser from "body-parser";
 import * as expressJwt from "express-jwt";
 import * as jwt from "jsonwebtoken";import { Db, MongoClient } from "mongodb";
 
-import { Moocchat } from "./js/Moocchat";
+import { ThinkChatLearn } from "./js/ThinkChatLearn";
 import { Conf } from "./config/Conf";
 // Repos
 import { UserRepository } from "./repositories/UserRepository";
@@ -45,8 +45,8 @@ import { RubricController } from "./controllers/RubricController";
 import { ImageController } from "./controllers/ImageController";
 // Authenticator for students
 import { StudentAuthenticatorMiddleware } from "./js/auth/StudentPageAuth";
-// Moocchat pool to initialize service
-import { MoocchatWaitPool } from "./js/queue/MoocchatWaitPool";
+// Think.Chat.Learn pool to initialize service
+import { TCLWaitPool } from "./js/queue/TCLWaitPool";
 import { MantaInterface } from "./manta/MantaInterface";
 export default class App {
 
@@ -179,7 +179,7 @@ export default class App {
         this.marksController.setupRoutes();
         this.imageController.setupRoutes();
         // Set up the wait pool service
-        MoocchatWaitPool.AssignQuizService(this.quizService);
+        TCLWaitPool.AssignQuizService(this.quizService);
 
         this.criteriaController.setupRoutes();
         this.rubricController.setupRoutes();
@@ -196,8 +196,8 @@ export default class App {
             pingTimeout: Conf.socketIo.pingTimeout
         });
 
-        // Used to set up the moocchat sockets
-        this.socketIO = new Moocchat(io, this.chatGroupService, this.responseService, this.quizSessionService).getSocketIO();
+        // Used to set up the Think.Chat.Learn sockets
+        this.socketIO = new ThinkChatLearn(io, this.chatGroupService, this.responseService, this.quizSessionService).getSocketIO();
     }
 
     // For now we also open up teh sockets and h
@@ -211,7 +211,7 @@ export default class App {
         
         
         // POST body parsing
-        this.express.use(bodyParser.json());         // JSON-encoded for MOOCchat API
+        this.express.use(bodyParser.json());         // JSON-encoded for Think.Chat.Learn API
         this.express.use(bodyParser.urlencoded({     // URL-encoded for LTI
             extended: true
         }));
@@ -263,11 +263,11 @@ export default class App {
             res.render("backup-client.ejs");
         });
         
-        console.log("Launching MOOCchat...");
+        console.log("Launching Think.Chat.Learn...");
         
         
         
-        // // MOOCchat standard client
+        // // Think.Chat.Learn standard client
         // this.express.post("/", (req, res) => {
         //     res.render("index.ejs", { conf: Conf, postData: req.body });
         // });

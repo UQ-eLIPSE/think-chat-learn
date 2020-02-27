@@ -1,5 +1,5 @@
 /**
- * MOOCchat
+ * Think.Chat.Learn
  * Nonce store class
  */
 

@@ -126,7 +126,7 @@ header {
 import { Vue, Component, Watch } from "vue-property-decorator";
 import { IUser, IQuizSession } from "../../../common/interfaces/DBSchema";
 import Chat from "../components/Chat/Chat.vue";
-import { MoocChatMessage } from "../interfaces";
+import { TCLMessage } from "../interfaces";
 import { EventBus } from "../EventBus";
 import { EmitterEvents } from "../emitters";
 
@@ -140,7 +140,7 @@ export default class Nav extends Vue {
     return this.$store.getters.user;
   }
 
-  get chatMessages(): MoocChatMessage[] {
+  get chatMessages(): TCLMessage[] {
     return this.$store.getters.chatMessages;
   }
 
@@ -155,8 +155,8 @@ export default class Nav extends Vue {
   // In short, if we have a message and the chat is off, notify new message
   @Watch("chatMessages")
   private handleMessageNotification(
-    newVal: MoocChatMessage[],
-    oldVal: MoocChatMessage[]
+    newVal: TCLMessage[],
+    oldVal: TCLMessage[]
   ) {
     if (!this.toggleChat) {
       this.newMessage = true;

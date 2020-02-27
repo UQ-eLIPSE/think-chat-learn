@@ -5,8 +5,8 @@ import * as IWSToClientData from "../../../../common/interfaces/IWSToClientData"
 
 import { PacSeqSocket_Server } from "../../../../common/js/PacSeqSocket_Server";
 
-import { MoocchatWaitPool } from "../../queue/MoocchatWaitPool";
-//import { MoocchatBackupClientQueue } from "../../queue/MoocchatBackupClientQueue";
+import { TCLWaitPool } from "../../queue/TCLWaitPool";
+//import { TCLBackupClientQueue } from "../../queue/TCLBackupClientQueue";
 
 import { ChatGroupFormationLoop } from "../../chat/ChatGroupFormationLoop";
 import { ResponseService } from "../../../services/ResponseService";
@@ -25,7 +25,7 @@ export class ChatEndpoint extends WSEndpoint {
         }
 
         // NOTE: implement socket authentication middleware
-        const waitPool = MoocchatWaitPool.GetPool(data.quizId, data.questionId);
+        const waitPool = TCLWaitPool.GetPool(data.quizId, data.questionId);
 
         const output: IWSToClientData.ChatPing = {
             size: waitPool ? waitPool.getSize() : 0,
@@ -41,7 +41,7 @@ export class ChatEndpoint extends WSEndpoint {
         }
 
         // Grab waitpool and hten remove
-        const waitPool = MoocchatWaitPool.GetPool(data.quizId, data.questionId);
+        const waitPool = TCLWaitPool.GetPool(data.quizId, data.questionId);
 
         if (!waitPool) {
             throw new Error(`Invalid wait pool of ${data.quizId} ${data.questionId}`);
@@ -81,7 +81,7 @@ export class ChatEndpoint extends WSEndpoint {
         }
 
         // Feed in the quiz and question id
-        const waitPool = await MoocchatWaitPool.GetPoolWithQuestionresponse(userResponse);
+        const waitPool = await TCLWaitPool.GetPoolWithQuestionresponse(userResponse);
 
         // Can't join into pool if already in pool
         if (waitPool.hasQuizResponse(userResponse)) {
@@ -181,7 +181,7 @@ export class ChatEndpoint extends WSEndpoint {
         // TODO implement backupqueue
 
         // Update backup queue
-        /*const backupClientQueue = MoocchatBackupClientQueue.GetQueueWithQuizScheduleFrom(quizAttempt);
+        /*const backupClientQueue = TCLBackupClientQueue.GetQueueWithQuizScheduleFrom(quizAttempt);
 
         if (backupClientQueue) {
             backupClientQueue.broadcastWaitPoolCount();

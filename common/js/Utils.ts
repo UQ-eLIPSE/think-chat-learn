@@ -1,5 +1,5 @@
 /**
- * MOOCchat
+ * Think.Chat.Learn
  * Utilities module
  */
 export namespace Utils {
