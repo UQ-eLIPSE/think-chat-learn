@@ -161,7 +161,10 @@ export default class QuillEditor extends Vue {
         this.blobReference.forEach((blobObject) => {
             URL.revokeObjectURL(blobObject.id);
         });
-        EventBus.$off(EventList.CONSOLIDATE_UPLOADS);
+
+        // Remove the quill instance so we tell bus to not upload images
+        // from this component.
+        this.quillInstance = null;
     }
 
     private async mounted() {
