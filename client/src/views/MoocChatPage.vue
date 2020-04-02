@@ -56,7 +56,7 @@
           <h2>Responses</h2>
           <!-- Note a lot of things have to be done to get here -->
           <div
-            v-for="answer in sortedQuestionGroupAnswers"
+            v-for="answer in sortedUniqueQuestionGroupAnswers"
             class="content"
             :key="answer._id"
           >
@@ -200,13 +200,13 @@ export default class MoocChatPage extends Vue {
   /**
    * Returns user responses to questions ordered by answer `clientIndex`
    */
-  get sortedQuestionGroupAnswers() {
+  get sortedUniqueQuestionGroupAnswers() {
     try {
       if(this.chatGroup && this.chatGroup.groupAnswers &&
         this.question && this.question._id &&
         this.chatGroup.groupAnswers[this.question._id]){
-
-        return this.chatGroup.groupAnswers[this.question._id].sort((a: IWSToClientData.ChatGroupAnswer, b: IWSToClientData.ChatGroupAnswer) => {
+        
+        const sorted = this.chatGroup.groupAnswers[this.question._id].sort((a: IWSToClientData.ChatGroupAnswer, b: IWSToClientData.ChatGroupAnswer) => {
             // Make sure clientIndex is truthy or zero before subtracting
             if((a && (a.clientIndex || a.clientIndex === 0)) &&
               (b && (b.clientIndex || b.clientIndex === 0))) {
@@ -217,6 +217,19 @@ export default class MoocChatPage extends Vue {
             // for availability (even if the order is wrong, response is visible)
             return 0;
         });
+
+        const uniqueSorted: IWSToClientData.ChatGroupAnswer[] = []; 
+        const uniqueMapAnswerId: {[key: string]: boolean} = {};
+
+        sorted.forEach((answer) => {
+          if(!answer.answer || !answer.answer._id) return;
+          if(!uniqueMapAnswerId[answer.answer._id]) {
+            uniqueMapAnswerId[answer.answer._id] = true;
+            uniqueSorted.push(answer);
+          }
+        });
+        
+        return uniqueSorted;
       }
       return [];
     } catch(e) {
@@ -434,7 +447,9 @@ export default class MoocChatPage extends Vue {
         };
 
         // If responses are to be displayed, fetch user responses from server
-        if(this.displayResponsesEnabled) this.emitUpdateRequest();
+        if(this.displayResponsesEnabled) {
+          this.emitUpdateRequest();
+        }
         
         EventBus.$emit(EmitterEvents.START_TIMER, this.$store.getters.currentTimerSettings);
       } else {
