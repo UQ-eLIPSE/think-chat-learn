@@ -207,7 +207,15 @@ export default class MoocChatPage extends Vue {
         this.chatGroup.groupAnswers[this.question._id]){
 
         return this.chatGroup.groupAnswers[this.question._id].sort((a: IWSToClientData.ChatGroupAnswer, b: IWSToClientData.ChatGroupAnswer) => {
-            return a.clientIndex - b.clientIndex;
+            // Make sure clientIndex is truthy or zero before subtracting
+            if((a && (a.clientIndex || a.clientIndex === 0)) &&
+              (b && (b.clientIndex || b.clientIndex === 0))) {
+              return a.clientIndex - b.clientIndex;
+            }
+
+            // if `clientIndex` is not available, ignore sort order and return 0
+            // for availability (even if the order is wrong, response is visible)
+            return 0;
         });
       }
       return [];
@@ -484,28 +492,33 @@ export default class MoocChatPage extends Vue {
   private emitUpdateRequest(
     callback?: (data?: IWSToClientData.UserResponseUpdate) => void
   ) {
-    if (
-      !this.socket ||
-      !this.quiz ||
-      !this.quizSession ||
-      !this.currentResponse ||
-      !this.quizSession._id ||
-      !this.currentResponse._id ||
-      !this.socketState ||
-      !this.socketState.chatGroupFormed
-    ) {
-      console.error("Sent a update request without a socket or quiz or group");
+    try {
+      if (
+        !this.socket ||
+        !this.quiz ||
+        !this.quizSession ||
+        !this.currentResponse ||
+        !this.quizSession._id ||
+        !this.currentResponse._id ||
+        !this.socketState ||
+        !this.socketState.chatGroupFormed
+      ) {
+        console.error("Sent a update request without a socket or quiz or group");
+        return;
+      }
+
+      this.socket!.emitData<IWSToServerData.ChatGroupUpdateResponse>(
+        WebsocketEvents.OUTBOUND.CHAT_GROUP_UPDATE,
+        {
+          quizSessionId: this.quizSession!._id!,
+          responseId: this.currentResponse!._id!,
+          groupId: this.socketState.chatGroupFormed.groupId!
+        }
+      );
+    } catch (e) {
+      // TODO: Handle error
       return;
     }
-
-    this.socket!.emitData<IWSToServerData.ChatGroupUpdateResponse>(
-      WebsocketEvents.OUTBOUND.CHAT_GROUP_UPDATE,
-      {
-        quizSessionId: this.quizSession!._id!,
-        responseId: this.currentResponse!._id!,
-        groupId: this.socketState.chatGroupFormed.groupId!
-      }
-    );
   }
 
   private mounted() {
