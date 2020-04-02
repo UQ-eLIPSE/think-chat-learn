@@ -56,7 +56,7 @@
           <h2>Responses</h2>
           <!-- Note a lot of things have to be done to get here -->
           <div
-            v-for="answer in chatGroup.groupAnswers[question._id]"
+            v-for="answer in sortedQuestionGroupAnswers"
             class="content"
             :key="answer._id"
           >
@@ -195,6 +195,25 @@ export default class MoocChatPage extends Vue {
     }
 
     return this.$store.getters.getQuestionById(this.page.questionId);
+  }
+
+  /**
+   * Returns user responses to questions ordered by answer `clientIndex`
+   */
+  get sortedQuestionGroupAnswers() {
+    try {
+      if(this.chatGroup && this.chatGroup.groupAnswers &&
+        this.question && this.question._id &&
+        this.chatGroup.groupAnswers[this.question._id]){
+
+        return this.chatGroup.groupAnswers[this.question._id].sort((a: IWSToClientData.ChatGroupAnswer, b: IWSToClientData.ChatGroupAnswer) => {
+            return a.clientIndex - b.clientIndex;
+        });
+      }
+      return [];
+    } catch(e) {
+      return [];
+    }
   }
 
   get socketState(): SocketState | null {
@@ -406,6 +425,9 @@ export default class MoocChatPage extends Vue {
           groupId: this.chatGroup!.groupId!
         };
 
+        // If responses are to be displayed, fetch user responses from server
+        if(this.displayResponsesEnabled) this.emitUpdateRequest();
+        
         EventBus.$emit(EmitterEvents.START_TIMER, this.$store.getters.currentTimerSettings);
       } else {
         this.$router.push("/allocation");
@@ -451,6 +473,37 @@ export default class MoocChatPage extends Vue {
         quizSessionId: this.quizSession!._id!,
         responseId: this.currentResponse!._id!,
         userId: this.user!._id!
+      }
+    );
+  }
+
+  /**
+   * Sends a chat group update request to the server.
+   * Essentially, fetches user responses
+   */
+  private emitUpdateRequest(
+    callback?: (data?: IWSToClientData.UserResponseUpdate) => void
+  ) {
+    if (
+      !this.socket ||
+      !this.quiz ||
+      !this.quizSession ||
+      !this.currentResponse ||
+      !this.quizSession._id ||
+      !this.currentResponse._id ||
+      !this.socketState ||
+      !this.socketState.chatGroupFormed
+    ) {
+      console.error("Sent a update request without a socket or quiz or group");
+      return;
+    }
+
+    this.socket!.emitData<IWSToServerData.ChatGroupUpdateResponse>(
+      WebsocketEvents.OUTBOUND.CHAT_GROUP_UPDATE,
+      {
+        quizSessionId: this.quizSession!._id!,
+        responseId: this.currentResponse!._id!,
+        groupId: this.socketState.chatGroupFormed.groupId!
       }
     );
   }
