@@ -7,12 +7,8 @@
         title="The University of Queensland"
       />
     </a>
-    <a href="https://www.elipse.uq.edu.au/">
-      <img
-        src="https://www.elipse.uq.edu.au/filething/get/74/h200-xlarge.png"
-        alt="eLIPSE"
-        title="eLIPSE"
-      />
+    <a href="https://www.elipse.uq.edu.au/" class="ft-right">
+      <img src="@/assets/images/elipse-logo.png" alt="eLIPSE" title="eLIPSE" />
     </a>
   </footer>
 </template>

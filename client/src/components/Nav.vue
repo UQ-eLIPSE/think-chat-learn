@@ -7,7 +7,11 @@
       />
     </transition>
     <header>
-      <div class="nav-item logo"><a href="/client/#/"><span class="logo-bold">MOOC</span>chat</a></div>
+      <div class="nav-item logo">
+        <a href="/client/#/">
+          <img src="@/assets/images/think-chat-learn-logo.svg" alt="Think.Chat.Learn" title="Think.Chat.Learn" />
+        </a>
+      </div>
       <div class="nav-item course-name">
         {{ `${user ? user.username : "No User"} - Session Id: ${quizSession ? quizSession._id : "N/A"}` }}
       </div>
@@ -39,28 +43,13 @@ header {
   width: 100%;
   z-index: 2;
 
-  .logo a {
-    color: #225566 !important;
-    font-family: "Lato", sans-serif;
-    font-size: 1.25em !important;
-    font-weight: 500 !important;
-
-    .logo-bold {
-      font-weight: 700 !important;
-    }
-
-    a {
-      all: unset;
-      cursor: pointer;
-      &:hover {
-        color: inherit;
-      }
-    }
-  }
-
   .nav-item {
     font-size: 20px;
     font-weight: 600;
+
+    &.logo a img {
+      width: 300px;
+    }
 
     .toggleChat {
       font-size: 14px;
