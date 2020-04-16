@@ -354,7 +354,6 @@ export default class QuizPage extends Vue {
         EventBus.$emit(EventList.PUSH_SNACKBAR, message);
         return;
     }
-
     // Set one is to upload quill which then follows creating the quiz
     const message: ModalEvent = {
       title: this.pageAction,
@@ -372,7 +371,6 @@ export default class QuizPage extends Vue {
     // rather than checking total array length
     this.uploadCount++;
     this.uploads = this.uploads.concat(blobs);
-
     // We should start uploading in a form, do nothing elsewise
     if (this.uploadCount >= this.numPages) {
 

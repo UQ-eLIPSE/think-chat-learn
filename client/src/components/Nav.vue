@@ -13,7 +13,8 @@
       </div>
       <div class="nav-item">
         <span class="toggleChat">
-          <span class="title">Show chat</span>
+          <font-awesome-icon icon="comment-dots" />
+          <span class="title"> Show/Hide Chat</span>
           <b-switch v-model="toggleChat"></b-switch>
         </span>
         <span class="userAvatar">{{user ? `${user.firstName}` : "Please login via Blackboard"}}
@@ -66,7 +67,7 @@ header {
       margin-right: 10px;
 
       .title {
-        font-size: 14px;
+        font-size: 20px;
         margin-right: 5px;
       }
 
@@ -124,11 +125,12 @@ header {
 
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator";
-import { IUser, IQuizSession } from "../../../common/interfaces/DBSchema";
+import { IUser, IQuizSession, IQuiz, Page } from "../../../common/interfaces/DBSchema";
 import Chat from "../components/Chat/Chat.vue";
 import { TCLMessage } from "../interfaces";
 import { EventBus } from "../EventBus";
 import { EmitterEvents } from "../emitters";
+import { PageType } from "../../../common/enums/DBEnums";
 
 @Component({
   components: {
@@ -174,6 +176,71 @@ export default class Nav extends Vue {
       this.newMessage = false;
       this.groupFormed = true;
     });
+  }
+
+  get quiz(): IQuiz | null {
+    const quiz = this.$store.getters.quiz;
+
+    if (!quiz) {
+      return null;
+    }
+
+    return quiz;
+  }
+
+  // The idea is based on the quiz and current page,
+  // render it appropiately
+  get currentIndex(): number {
+    return this.$store.getters.currentIndex;
+  }
+
+
+  // If we get an out of bound for the pages, set to null
+  get page(): Page | null {
+    if (
+      this.quiz &&
+      this.quiz.pages &&
+      this.currentIndex < this.quiz.pages.length
+    ) {
+      return this.quiz.pages[this.currentIndex];
+    } else {
+      return null;
+    }
+  }
+
+  get socketState() {
+    return this.$store.getters.socketState;
+  }
+
+/**
+ * Changes visibility of chat window  based on
+ * page type and chatGroupFormed status
+ */
+  @Watch("currentIndex")
+  private currentIndexChangeHandler(newVal: boolean, oldVal?: boolean) {
+    // this.toggleChat -> true, if
+    //  - chat group exists
+    //  - current page is discussion page
+    //  - (Note that this automatically handles the session re-join condition)
+    
+    // this.toggleChat -> false, if
+    //  - current page is not discussion page
+    //    - (since users complained of chat window covering content)
+  
+    // Note: Frequent opening/closing of chat window would (hopefully)
+    // signal to users that the chat window can be shown/hidden
+    if(this.page && this.page.type !== PageType.DISCUSSION_PAGE) {
+      this.toggleChat = false;
+    }
+    
+    if(this.page && this.page.type === PageType.DISCUSSION_PAGE &&
+      this.socketState && this.socketState.chatGroupFormed &&
+      this.socketState.chatGroupFormed.groupId) {
+      
+      this.toggleChat = true;
+    }
+
+    
   }
 }
 </script>

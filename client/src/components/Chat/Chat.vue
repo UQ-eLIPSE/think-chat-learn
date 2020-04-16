@@ -45,7 +45,7 @@
 .chat {
   background-color: #f7f8f8;
   bottom: 0;
-  box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.15);
+  box-shadow: 0px 0px 8px 1px rgba(0,0,0,0.5);
   height: 100vh;
   padding-top: 75px;
   position: fixed;
