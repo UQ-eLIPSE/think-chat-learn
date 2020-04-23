@@ -1,12 +1,12 @@
 import { ILTIData } from "../../../../common/interfaces/ILTIData";
-import { ITCLAuthProcessReturn } from "../ITCLAuthProcessReturn";
-import { ITCLIdentityInfo } from "../ITCLIdentityInfo";
+import { IAuthProcessReturn } from "../IAuthProcessReturn";
+import { IIdentityInfo } from "../IIdentityInfo";
 
 import { Conf } from "../../../config/Conf";
 import { LTIProcessor } from "./LTIProcessor";
-import { TCLAuth } from "../TCLAuth";
+import { Auth } from "../Auth";
 
-export class LTIAuth extends TCLAuth {
+export class LTIAuth extends Auth {
     private static Processor = new LTIProcessor(Conf.lti.signingInfo, true, Conf.lti.testMode);
 
     private ltiData: ILTIData;
@@ -22,7 +22,7 @@ export class LTIAuth extends TCLAuth {
         };
     }
 
-    public isAuthenticated(): ITCLAuthProcessReturn {
+    public isAuthenticated(): IAuthProcessReturn {
         try {
             LTIAuth.Processor.verifyAndReturnLTIObj(this.ltiData);
         } catch (e) {
@@ -37,7 +37,7 @@ export class LTIAuth extends TCLAuth {
         };
     }
 
-    public getIdentity(): ITCLIdentityInfo {
+    public getIdentity(): IIdentityInfo {
         if (!this.ltiData.user_id) {
             throw new Error("No user ID available for use");
         }

@@ -1,7 +1,7 @@
 import Vue from "vue";
 import Router, { Route } from "vue-router";
 import Landing from "./views/Landing.vue";
-import TCLPage from "./views/TCLPage.vue";
+import Page from "./views/PageTemplate.vue";
 import Discussion from "./views/Discussion.vue";
 import Reflection from "./views/Reflection.vue";
 import Survey from "./views/Survey.vue";
@@ -12,7 +12,7 @@ import Receipt from "./views/Receipt.vue";
 Vue.use(Router);
 export const Names = {
   LANDING: "Landing",
-  TCL_PAGE: "TCLPage",
+  PAGE: "Page",
   DISCUSSION: "Discussion",
   REFLECTION: "Reflection",
   SURVEY: "Survey",
@@ -31,8 +31,8 @@ export const router = new Router({
     },
     {
       path: "/page",
-      name: Names.TCL_PAGE,
-      component: TCLPage
+      name: Names.PAGE,
+      component: Page
     },
     {
       path: "/discussion",
@@ -85,10 +85,10 @@ function checkValidTransition(to: Route, from: Route): boolean {
   if (
     (from.name === null && to.name === Names.LOGIN) ||
     (from.name === Names.LOGIN && to.name === Names.LANDING) ||
-    (from.name === Names.LANDING && to.name === Names.TCL_PAGE) ||
-    (from.name === Names.TCL_PAGE && to.name === Names.GROUP_ALLOCATION) ||
-    (from.name === Names.GROUP_ALLOCATION && to.name === Names.TCL_PAGE) ||
-    (from.name === Names.TCL_PAGE && to.name === Names.RECEIPT)
+    (from.name === Names.LANDING && to.name === Names.PAGE) ||
+    (from.name === Names.PAGE && to.name === Names.GROUP_ALLOCATION) ||
+    (from.name === Names.GROUP_ALLOCATION && to.name === Names.PAGE) ||
+    (from.name === Names.PAGE && to.name === Names.RECEIPT)
   ) {
     return true;
   }

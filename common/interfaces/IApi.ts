@@ -44,12 +44,12 @@ export interface ToServerQuestionOptionId extends ToServerStandardRequestBase {
     questionOptionId: string,
 }
 
-export interface ToServerTCLFSMTransition extends ToServerStandardRequestBase {
+export interface ToServerFSMTransition extends ToServerStandardRequestBase {
     transition: string,
     data?: any,
 }
 
-export interface ToClientTCLFSMState {
+export interface ToClientFSMState {
     state: string,
     data?: any,
 }

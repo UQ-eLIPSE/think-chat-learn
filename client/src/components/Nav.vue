@@ -116,7 +116,7 @@ header {
 import { Vue, Component, Watch } from "vue-property-decorator";
 import { IUser, IQuizSession, IQuiz, Page } from "../../../common/interfaces/DBSchema";
 import Chat from "../components/Chat/Chat.vue";
-import { TCLMessage } from "../interfaces";
+import { Message } from "../interfaces";
 import { EventBus } from "../EventBus";
 import { EmitterEvents } from "../emitters";
 import { PageType } from "../../../common/enums/DBEnums";
@@ -131,7 +131,7 @@ export default class Nav extends Vue {
     return this.$store.getters.user;
   }
 
-  get chatMessages(): TCLMessage[] {
+  get chatMessages(): Message[] {
     return this.$store.getters.chatMessages;
   }
 
@@ -146,8 +146,8 @@ export default class Nav extends Vue {
   // In short, if we have a message and the chat is off, notify new message
   @Watch("chatMessages")
   private handleMessageNotification(
-    newVal: TCLMessage[],
-    oldVal: TCLMessage[]
+    newVal: Message[],
+    oldVal: Message[]
   ) {
     if (!this.toggleChat) {
       this.newMessage = true;
@@ -215,21 +215,18 @@ export default class Nav extends Vue {
     // this.toggleChat -> false, if
     //  - current page is not discussion page
     //    - (since users complained of chat window covering content)
-  
+    
     // Note: Frequent opening/closing of chat window would (hopefully)
     // signal to users that the chat window can be shown/hidden
-    if(this.page && this.page.type !== PageType.DISCUSSION_PAGE) {
+    if (this.page && this.page.type !== PageType.DISCUSSION_PAGE) {
       this.toggleChat = false;
     }
     
-    if(this.page && this.page.type === PageType.DISCUSSION_PAGE &&
+    if (this.page && this.page.type === PageType.DISCUSSION_PAGE &&
       this.socketState && this.socketState.chatGroupFormed &&
       this.socketState.chatGroupFormed.groupId) {
-      
-      this.toggleChat = true;
+        this.toggleChat = true;
     }
-
-    
   }
 }
 </script>

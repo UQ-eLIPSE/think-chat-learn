@@ -5,7 +5,7 @@ import * as bodyParser from "body-parser";
 import * as expressJwt from "express-jwt";
 import * as jwt from "jsonwebtoken";import { Db, MongoClient } from "mongodb";
 
-import { ThinkChatLearn } from "./js/ThinkChatLearn";
+import { Main } from "./js";
 import { Conf } from "./config/Conf";
 // Repos
 import { UserRepository } from "./repositories/UserRepository";
@@ -46,7 +46,7 @@ import { ImageController } from "./controllers/ImageController";
 // Authenticator for students
 import { StudentAuthenticatorMiddleware } from "./js/auth/StudentPageAuth";
 // Think.Chat.Learn pool to initialize service
-import { TCLWaitPool } from "./js/queue/TCLWaitPool";
+import { WaitPool } from "./js/queue/WaitPool";
 import { MantaInterface } from "./manta/MantaInterface";
 export default class App {
 
@@ -179,7 +179,7 @@ export default class App {
         this.marksController.setupRoutes();
         this.imageController.setupRoutes();
         // Set up the wait pool service
-        TCLWaitPool.AssignQuizService(this.quizService);
+        WaitPool.AssignQuizService(this.quizService);
 
         this.criteriaController.setupRoutes();
         this.rubricController.setupRoutes();
@@ -197,7 +197,7 @@ export default class App {
         });
 
         // Used to set up the Think.Chat.Learn sockets
-        this.socketIO = new ThinkChatLearn(io, this.chatGroupService, this.responseService, this.quizSessionService).getSocketIO();
+        this.socketIO = new Main(io, this.chatGroupService, this.responseService, this.quizSessionService).getSocketIO();
     }
 
     // For now we also open up teh sockets and h

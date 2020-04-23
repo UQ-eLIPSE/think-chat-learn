@@ -1,7 +1,7 @@
 <template>
     <v-container>
       <v-form ref="form">
-        <h1 class="tcl-title">{{ pageTitle }}</h1>
+        <h1>{{ pageTitle }}</h1>
         <h3 v-if="isCloning">
           Values have been pre-filled using the data from quiz session "{{ clonedQuizName }}".
           You can change these values as desired for the new quiz session (E.g. Start and end time, quiz title)
@@ -773,7 +773,7 @@ export default class QuizPage extends Vue {
   align-self: center;
 }
 
-.tcl-title {
+h1 {
   margin: 6px;
 }
 </style>

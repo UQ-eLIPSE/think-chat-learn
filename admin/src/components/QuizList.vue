@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-        <h1 class="tcl-name">Quiz Sessions List</h1>
+        <h1>Quiz Sessions List</h1>
         <router-link tag="button"
                      class="primary"
                      to="/quizPage">Add Quiz</router-link>

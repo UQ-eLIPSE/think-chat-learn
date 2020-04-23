@@ -63,7 +63,7 @@ export default class GroupAllocation extends Vue {
       : null;
   }
 
-  private goToTCLPage() {
+  private goToPage() {
     this.$router.push("/page");
   }
 
@@ -80,7 +80,7 @@ export default class GroupAllocation extends Vue {
   // Automatically redirect page back if somehow made it to this point
   private mounted() {
     if (this.chatGroup) {
-      this.goToTCLPage();
+      this.goToPage();
     }
 
     // Set timeout for loader
@@ -106,7 +106,7 @@ export default class GroupAllocation extends Vue {
         this.notifyAudio.play();
       }
 
-      this.goToTCLPage();
+      this.goToPage();
       EventBus.$emit(
         EmitterEvents.START_TIMER,
         this.$store.getters.currentTimerSettings

@@ -7,13 +7,13 @@
         :key="index"
       >
         <ChatMessage
-          v-if="message.type === TCLMessageTypes.CHAT_MESSAGE"
+          v-if="message.type === MessageTypes.CHAT_MESSAGE"
           :userNumber="`Client ${message.content.clientIndex}`"
           :content="message.content.message"
           :numeral="message.content.clientIndex"
         />
         <ChatAlert
-          v-else-if="(message.type === TCLMessageTypes.STATE_MESSAGE)"
+          v-else-if="(message.type === MessageTypes.STATE_MESSAGE)"
           :alertMessage="message.message"
           :alertType="`standard`"
         />
@@ -75,8 +75,8 @@ import { Vue, Component, Watch, Prop } from "vue-property-decorator";
 import ChatAlert from "./ChatAlert.vue";
 import ChatMessage from "./ChatMessage.vue";
 import CreateChatMessage from "./CreateChatMessage.vue";
-import { SocketState, TCLMessage } from "../../interfaces";
-import { TCLMessageTypes, TCLStateMessageTypes } from "../../enums";
+import { SocketState, Message } from "../../interfaces";
+import { MessageTypes, StateMessageTypes } from "../../enums";
 import * as IWSToClientData from ",,/../../../common/interfaces/IWSToClientData";
 import {
   IQuiz,
@@ -93,18 +93,18 @@ import { PageType } from "../../../../common/enums/DBEnums";
   }
 })
 export default class Chat extends Vue {
-  @Prop({ default: () => [] }) private chatMessages!: TCLMessage[];
+  @Prop({ default: () => [] }) private chatMessages!: Message[];
 
   get socketState(): SocketState | null {
     return this.$store.getters.socketState;
   }
 
-  get TCLMessageTypes() {
-    return TCLMessageTypes;
+  get MessageTypes() {
+    return MessageTypes;
   }
 
-  get TCLStateMessageTypes() {
-    return TCLStateMessageTypes;
+  get StateMessageTypes() {
+    return StateMessageTypes;
   }
 
   get clientNotifications(): number[] {

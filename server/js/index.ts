@@ -15,7 +15,7 @@ import { ResponseService } from "../services/ResponseService";
 import { QuizSessionService } from "../services/QuizSessionService";
 import { SocketSession } from "./websocket/SocketSession";
 
-export class ThinkChatLearn {
+export class Main {
     private socketIO: SocketIO.Server;
     private db: mongodb.Db;
     private chatGroupService: ChatGroupService;

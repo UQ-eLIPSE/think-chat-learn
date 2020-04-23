@@ -1,4 +1,4 @@
-export enum TCLMessageTypes {
+export enum MessageTypes {
     // Used for system wide messages (e.g. system shutdowns)
     SYSTEM_MESSAGE = "SYSTEM_MESSAGE",
     // Messages from other people (including self)
@@ -8,7 +8,7 @@ export enum TCLMessageTypes {
     STATE_MESSAGE = "STATE_MESSAGE"
 }
 
-export enum TCLStateMessageTypes {
+export enum StateMessageTypes {
     // For joining a group
     ON_JOIN = "ON_JOIN",
     // Reforming a new group

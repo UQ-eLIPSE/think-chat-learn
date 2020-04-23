@@ -12,8 +12,8 @@ import * as IWSToClientData from "../../../../common/interfaces/IWSToClientData"
 import { WebsocketManager } from "../../../../common/js/WebsocketManager";
 import { WebsocketEvents } from "../../../../common/js/WebsocketEvents";
 // Common typings/utils
-import { SocketState, TCLMessage, StateMessage, Dictionary } from "../../interfaces";
-import { TCLMessageTypes, TCLStateMessageTypes } from "../../enums";
+import { SocketState, Message, StateMessage, Dictionary } from "../../interfaces";
+import { MessageTypes, StateMessageTypes } from "../../enums";
 import { logout, getLoginResponse } from "../../../../common/js/front_end_auth";
 import store, { SystemMessageTypes } from "..";
 import { Utils } from "../../../../common/js/Utils";
@@ -26,7 +26,7 @@ export interface IState {
     // Note the key of this dictionary would be the questionid as we simply respond to one question
     responses: Dictionary<Response>;
     socketState: SocketState;
-    chatMessages: TCLMessage[];
+    chatMessages: Message[];
     resyncAmount: number;
     // Stops the browser
     stopBrowser: boolean;
@@ -76,13 +76,13 @@ const mutationKeys = {
 
 // Handles reconnect message fail messages by noting this on the store
 function reconnectFail() {
-    store.commit("SET_GLOBAL_MESSAGE", {
-        error: true,
-        type: SystemMessageTypes.FATAL_ERROR,
-        message:
-            "Error: Connection lost. Please close current window/tab and launch Think.Chat.Learn again from Blackboard. " +
-                "(Your progress will be retained)"
-      });
+  store.commit("SET_GLOBAL_MESSAGE", {
+    error: true,
+    type: SystemMessageTypes.FATAL_ERROR,
+    message:
+      "Error: Connection lost. Please close current window/tab and launch TCL again from Blackboard. " +
+      "(Your progress will be retained)"
+  });
 }
 
 // To be displayed when socket.io cannot reconnect.
@@ -111,8 +111,8 @@ async function handleGroupJoin(data?: IWSToClientData.ChatGroupFormed) {
 
     // Handle a join
     const joinMessage: StateMessage = {
-        state: TCLStateMessageTypes.ON_JOIN,
-        type: TCLMessageTypes.STATE_MESSAGE,
+        state: StateMessageTypes.ON_JOIN,
+        type: MessageTypes.STATE_MESSAGE,
         message: `Joined a group of ${data.groupSize} you are Student ${data.clientIndex}`
     };
 
@@ -136,8 +136,8 @@ function handleIncomingChatMessage(data?: IWSToClientData.ChatGroupMessage) {
     Vue.set(state.socketState.chatMessages, state.socketState.chatMessages.length, data);
 
     // Also handle the total chat message
-    const chatMessage: TCLMessage = {
-        type: TCLMessageTypes.CHAT_MESSAGE,
+    const chatMessage: Message = {
+        type: MessageTypes.CHAT_MESSAGE,
         content: data
     };
 
@@ -179,8 +179,8 @@ function handleChatDisconnect(data?: IWSToClientData.ChatGroupDisconnect) {
     }
 
     const stateMessage: StateMessage = {
-        state: TCLStateMessageTypes.CHAT_GROUP_LEAVE,
-        type: TCLMessageTypes.STATE_MESSAGE,
+        state: StateMessageTypes.CHAT_GROUP_LEAVE,
+        type: MessageTypes.STATE_MESSAGE,
         message: `Student ${data.clientIndex} has disconnected`
     };
 
@@ -193,8 +193,8 @@ function handleChatGroupReconnect(data?: IWSToClientData.ChatGroupReconnect) {
     }
 
     const stateMessage: StateMessage = {
-        state: TCLStateMessageTypes.CHAT_GROUP_RECONNECT,
-        type: TCLMessageTypes.STATE_MESSAGE,
+        state: StateMessageTypes.CHAT_GROUP_RECONNECT,
+        type: MessageTypes.STATE_MESSAGE,
         message: `Student ${data.clientIndex} has reconnected`
     };
 
@@ -403,7 +403,7 @@ const getters = {
         return state.socketState;
     },
 
-    chatMessages: (): TCLMessage[] => {
+    chatMessages: (): Message[] => {
         return state.chatMessages;
     },
 
@@ -589,11 +589,11 @@ const mutations = {
         }
     },
 
-    [mutationKeys.APPEND_STATE_MESSAGE](funcState: IState, data: { incomingState: TCLStateMessageTypes,
+    [mutationKeys.APPEND_STATE_MESSAGE](funcState: IState, data: { incomingState: StateMessageTypes,
         message: string }) {
 
         const outgoingMessage: StateMessage = {
-            type: TCLMessageTypes.STATE_MESSAGE,
+            type: MessageTypes.STATE_MESSAGE,
             state: data.incomingState,
             message: data.message
         };
@@ -608,13 +608,13 @@ const mutations = {
     [mutationKeys.SET_SOCKET_MESSAGES](funcState: IState, data: IWSToClientData.ChatGroupMessage[]) {
         Vue.set(funcState.socketState!, "chatMessages", data);
         Vue.set(funcState, "chatMessages", data.map((element) => {
-            const output: TCLMessage = {
-                type: TCLMessageTypes.CHAT_MESSAGE,
+            const output: Message = {
+                type: MessageTypes.CHAT_MESSAGE,
                 content: element
             };
 
             return output;
-        }, [] as TCLMessage[]));
+        }, [] as Message[]));
     },
 
     [mutationKeys.SET_FETCH_STATE](funcState: IState, data: boolean) {

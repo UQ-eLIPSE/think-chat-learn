@@ -3,7 +3,7 @@ import { UserRepository } from "../repositories/UserRepository";
 import { QuizRepository } from "../repositories/QuizRepository";
 import { ILTIData } from "../../common/interfaces/ILTIData";
 import { LTIAuth } from "../js/auth/lti/LTIAuth";
-import { ITCLIdentityInfo } from "../js/auth/ITCLIdentityInfo";
+import { IIdentityInfo } from "../js/auth/IIdentityInfo";
 import { IUser, IQuiz, IDiscussionPage } from "../../common/interfaces/DBSchema";
 import { LoginResponse, AdminLoginResponse, QuizScheduleData, QuizScheduleDataAdmin, TypeQuestion,
     Page, QuestionRequestData, QuestionReconnectData, BackupLoginResponse,
@@ -212,7 +212,7 @@ export class UserService extends BaseService<IUser> {
         return output;
     }
 
-    public isLtiAdmin(identity: ITCLIdentityInfo) {
+    public isLtiAdmin(identity: IIdentityInfo) {
         try {
             const adminRoles = [
                 "instructor",
@@ -508,14 +508,14 @@ class UserServiceHelper {
     }
 
     // Checks the existence of the id
-    public static CheckUserId(identity: ITCLIdentityInfo) {
+    public static CheckUserId(identity: IIdentityInfo) {
         if (!identity.identityId) {
             throw new Error("[10] No user ID received.");
         }
     }
 
     // Gets the user from the DB based on id
-    public static async RetrieveUser(userRepo: UserRepository, identity: ITCLIdentityInfo): Promise<IUser> {
+    public static async RetrieveUser(userRepo: UserRepository, identity: IIdentityInfo): Promise<IUser> {
 
         let user = await userRepo.findOne({
             username: identity.identityId

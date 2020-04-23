@@ -599,13 +599,10 @@ body > #content > section {
 
 /********** Header/sidebar **********/
 
-#tcl-name {
+h1 {
   line-height: 1;
   margin: $mc-sidebar-padding-tb * 2 $mc-sidebar-padding-lr
     $mc-sidebar-padding-tb;
-}
-
-#tcl-name {
   font-style: italic;
   margin: $mc-sidebar-padding-tb $mc-sidebar-padding-lr $mc-sidebar-padding-tb *
     1.5;
@@ -1816,7 +1813,7 @@ ol.welcome-instructions {
     display: none !important;
   }
 
-  #tcl-name,
+  h1,
   #course-name {
     display: inline-block;
   }

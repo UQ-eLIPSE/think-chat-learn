@@ -1,4 +1,4 @@
-export interface ITCLIdentityInfo {
+export interface IIdentityInfo {
     /**
      * Original authentication method or protocol that produced this identity.
      */

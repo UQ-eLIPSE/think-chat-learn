@@ -16,11 +16,11 @@ import { QuizService } from "../../services/QuizService";
  * quizId and questionId are unique, then the appendment of the two would make a
  * unique id as well
  */
-export class TCLWaitPool {
+export class WaitPool {
     //private static DesiredGroupSize: number = Conf.chat.groups.desiredSize;
     private static DesiredMaxWaitTime: number = CommonConf.timings.chatGroupFormationTimeoutMs;
     // A singleton of a pool dictionary where each key is the quiz id
-    private static readonly WaitPools = new KVStore<TCLWaitPool>();
+    private static readonly WaitPools = new KVStore<WaitPool>();
 
     private static QuizService: QuizService | null = null;
 
@@ -34,27 +34,27 @@ export class TCLWaitPool {
     private _questionId: string;
 
     // The answers of the pool
-    private readonly answerQueues = new KVStore<TCLWaitPoolAnswerQueueData[]>();
+    private readonly answerQueues = new KVStore<WaitPoolAnswerQueueData[]>();
 
 
     public static AssignQuizService(quizService: QuizService) {
-        if (!TCLWaitPool.QuizService) {
-            TCLWaitPool.QuizService = quizService;
+        if (!WaitPool.QuizService) {
+            WaitPool.QuizService = quizService;
         }
     }
 
     // Creates or gets a pool. Instantiates based on the quiz id
     public static async GetPoolAutoCreate(quizId: string, questionId: string) {
-        const waitPool = TCLWaitPool.GetPool(quizId, questionId);
+        const waitPool = WaitPool.GetPool(quizId, questionId);
 
         if (waitPool === undefined) {
-            if (TCLWaitPool.QuizService) {
+            if (WaitPool.QuizService) {
                 // Create new wait pool
-                const quiz = await TCLWaitPool.QuizService.findOne(quizId);
+                const quiz = await WaitPool.QuizService.findOne(quizId);
                 if (quiz && quiz.groupSize) {
-                    return new TCLWaitPool(quizId, questionId, quiz.groupSize);
+                    return new WaitPool(quizId, questionId, quiz.groupSize);
                 }
-                return new TCLWaitPool(quizId, questionId, CommonConf.groups.defaultGroupSize);
+                return new WaitPool(quizId, questionId, CommonConf.groups.defaultGroupSize);
             } else {
                 throw new Error(`No quiz service available`);
             }
@@ -67,7 +67,7 @@ export class TCLWaitPool {
     public static GetPool(quizId: string, questionId: string) {
         const combinedId = quizId + questionId;
 
-        return TCLWaitPool.WaitPools.get(combinedId);
+        return WaitPool.WaitPools.get(combinedId);
     }
 
     // Based on a user reponse to question, grab the details
@@ -76,16 +76,16 @@ export class TCLWaitPool {
             throw new Error("No id for quiz session for pool formation");
         }
 
-        return TCLWaitPool.GetPoolAutoCreate(userResponse.quizId, userResponse.questionId);
+        return WaitPool.GetPoolAutoCreate(userResponse.quizId, userResponse.questionId);
     }
 
     // Destroying a pool is essentially making sure the queue for each question option
     // is empty and then removin the reference from the store for garbage collection
-    public static Destroy(pool: TCLWaitPool) {
+    public static Destroy(pool: WaitPool) {
         // pool._quizSessionId = undefined;
         pool.answerQueues.empty();
 
-        TCLWaitPool.WaitPools.delete(pool.getQuizId() + pool.getQuestionId());
+        WaitPool.WaitPools.delete(pool.getQuizId() + pool.getQuestionId());
     }
 
     // Construction of a pools is essentially the creation of an empty answer queue
@@ -102,7 +102,7 @@ export class TCLWaitPool {
         // Put into singleton map
         const combinedId = quizId + questionId;
 
-        TCLWaitPool.WaitPools.put(combinedId, this);
+        WaitPool.WaitPools.put(combinedId, this);
     }
 
     // Simple getter
@@ -123,9 +123,9 @@ export class TCLWaitPool {
             }
 
             const waitTime = Date.now() - firstInQueueData.timestamp;
-            return smallestWaitTime > TCLWaitPool.DesiredMaxWaitTime - waitTime ?
-                TCLWaitPool.DesiredMaxWaitTime - waitTime : smallestWaitTime;
-        }, TCLWaitPool.DesiredMaxWaitTime);
+            return smallestWaitTime > WaitPool.DesiredMaxWaitTime - waitTime ?
+                WaitPool.DesiredMaxWaitTime - waitTime : smallestWaitTime;
+        }, WaitPool.DesiredMaxWaitTime);
     }
 
     // The idea is that within a pool, we attempt
@@ -236,7 +236,7 @@ export class TCLWaitPool {
 
             const waitTime = Date.now() - firstInQueueData.timestamp;
 
-            return waitTime > TCLWaitPool.DesiredMaxWaitTime;
+            return waitTime > WaitPool.DesiredMaxWaitTime;
         });
     }
 
@@ -283,7 +283,7 @@ export class TCLWaitPool {
             if (totalPoolSize < this._desiredGroupSize) {
                 // TODO handle backup queue
 
-                /*const backupClientQueue = TCLBackupClientQueue.GetQueue(this.getQuizSessionId());
+                /*const backupClientQueue = BackupClientQueue.GetQueue(this.getQuizSessionId());
 
                 if (backupClientQueue &&
                     totalPoolSize === 1 &&
@@ -343,7 +343,7 @@ export class TCLWaitPool {
     }
 }
 
-export interface TCLWaitPoolAnswerQueueData {
+export interface WaitPoolAnswerQueueData {
     quizResponse: Response;
     timestamp: number;
 }

@@ -244,7 +244,7 @@ export default class MarkQuizMarkingSection extends Vue {
   margin: 1rem 2rem 1.5rem;
 }
 
-.tcl-name {
+h1 {
   line-height: 1;
   margin: 2rem 2rem 1rem;
 }

@@ -2,7 +2,7 @@
     <v-container>
         <v-form ref="form">
             <v-container fluid grid-list-md>
-                <h1 class="tcl-name">Criteria Editor</h1>
+                <h1>Criteria Editor</h1>
                 <h2 v-if="currentCriteria._id">Editing mode</h2>
                 <v-layout row wrap>
                     <v-flex xs12>

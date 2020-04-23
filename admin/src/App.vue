@@ -254,7 +254,7 @@ html {
 
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
-import { Snackbar } from 'buefy/dist/components/snackbar'
+import { SnackbarProgrammatic as Snackbar } from 'buefy';
 import { EventBus, EventList, SnackEvent, ModalEvent } from "./EventBus";
 import SideNav from "./components/SideNav.vue";
 

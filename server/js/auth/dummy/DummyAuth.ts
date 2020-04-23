@@ -1,11 +1,11 @@
-import {ITCLIdentityInfo} from "../ITCLIdentityInfo";
+import {IIdentityInfo} from "../IIdentityInfo";
 
 import * as crypto from "crypto";
 
-import {TCLAuth} from "../TCLAuth";
+import {Auth} from "../Auth";
 
-export class DummyAuth extends TCLAuth {
-    private identity: ITCLIdentityInfo;
+export class DummyAuth extends Auth {
+    private identity: IIdentityInfo;
 
     constructor() {
         super("Dummy");

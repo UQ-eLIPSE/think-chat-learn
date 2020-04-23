@@ -2,8 +2,8 @@
     <v-container>
         <v-form ref="form">
             <v-container fluid grid-list-md>
-                <h1 class="tcl-title">Rubric Editor</h1>
-                <h2 class="tcl-title" v-if="id">Editing mode</h2>                
+                <h1>Rubric Editor</h1>
+                <h2 v-if="id">Editing mode</h2>                
                 <v-layout row wrap>
                     <v-flex xs12>
                         <b-field label="Set the title of the rubric">

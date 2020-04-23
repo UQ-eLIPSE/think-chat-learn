@@ -5,7 +5,7 @@ import { PacSeqSocket_Server } from "../../../../common/js/PacSeqSocket_Server";
 
 import * as mongodb from "mongodb";
 
-import { TCLBackupClientQueue } from "../../queue/TCLBackupClientQueue";
+import { BackupClientQueue } from "../../queue/BackupClientQueue";
 
 import { QuizAttempt } from "../../quiz/QuizAttempt";
 import { QuestionResponse } from "../../question/QuestionResponse";
@@ -34,7 +34,7 @@ export class BackupClientEndpoint extends WSEndpoint {
 
         // Add the client to the backup queue here, only *after* we
         // have all the information for question/answer
-        const backupClientQueue = TCLBackupClientQueue.GetQueueWithQuizScheduleFrom(quizAttempt);
+        const backupClientQueue = BackupClientQueue.GetQueueWithQuizScheduleFrom(quizAttempt);
 
         if (backupClientQueue) {
             backupClientQueue.addQuizAttempt(quizAttempt);
@@ -68,7 +68,7 @@ export class BackupClientEndpoint extends WSEndpoint {
         //   admins though)
         await newQuizAttempt.setResponseInitial(responseInitial);
 
-        const backupClientQueue = TCLBackupClientQueue.GetQueueWithQuizScheduleFrom(newQuizAttempt);
+        const backupClientQueue = BackupClientQueue.GetQueueWithQuizScheduleFrom(newQuizAttempt);
 
         if (backupClientQueue) {
             backupClientQueue.addQuizAttempt(newQuizAttempt);
@@ -82,7 +82,7 @@ export class BackupClientEndpoint extends WSEndpoint {
             return console.error("Attempted backup client status request with invalid quiz attempt ID = " + data.quizAttemptId);
         }
 
-        const backupClientQueue = TCLBackupClientQueue.GetQueueWithQuizScheduleFrom(quizAttempt);
+        const backupClientQueue = BackupClientQueue.GetQueueWithQuizScheduleFrom(quizAttempt);
 
         if (backupClientQueue) {
             backupClientQueue.broadcastQueueChange();
