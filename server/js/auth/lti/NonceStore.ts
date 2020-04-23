@@ -1,5 +1,4 @@
 /**
- * MOOCchat
  * Nonce store class
  */
 

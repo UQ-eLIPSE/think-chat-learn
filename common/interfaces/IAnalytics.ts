@@ -1,4 +1,4 @@
-export interface IMoocchatAnalytics_TrackEvent {
+export interface IAnalytics_TrackEvent {
     category: string,
     action: string,
     name?: string,

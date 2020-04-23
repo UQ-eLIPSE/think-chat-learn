@@ -37,11 +37,6 @@ jspm_packages
 # Visual Studio Code
 .vscode
 
-# Compiled client code
-public/js/moocchat2
-public/css/moocchat2
-public/combined-html
-
 # Compiled server code
 build
 

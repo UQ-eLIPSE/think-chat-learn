@@ -116,7 +116,7 @@ import { Conf } from "../../../common/config/Conf";
     ChatMessage
   }
 })
-export default class MoocChatPage extends Vue {
+export default class PageTemplate extends Vue {
   private DEFAULT_RESPONSE = "";
   private DEFAULT_CONFIDENCE = 3;
 

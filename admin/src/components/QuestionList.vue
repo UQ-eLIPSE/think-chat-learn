@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-        <h1 class="moochat-name">Question List</h1>
+        <h1>Question List</h1>
         <router-link tag="button" class="primary" to="/questionPage">Add Question</router-link>
         <v-container fluid grid-list-md>
             <v-layout row wrap>

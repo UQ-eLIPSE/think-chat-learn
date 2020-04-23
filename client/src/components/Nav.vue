@@ -7,7 +7,11 @@
       />
     </transition>
     <header>
-      <div class="nav-item logo"><a href="/client/#/"><span class="logo-bold">MOOC</span>chat</a></div>
+      <div class="nav-item logo">
+        <a href="/client/#/">
+          <img src="@/assets/images/think-chat-learn-logo.svg" alt="Think.Chat.Learn" title="Think.Chat.Learn" />
+        </a>
+      </div>
       <div class="nav-item course-name">
         {{ `${user ? user.username : "No User"} - Session Id: ${quizSession ? quizSession._id : "N/A"}` }}
       </div>
@@ -39,28 +43,13 @@ header {
   width: 100%;
   z-index: 2;
 
-  .logo a {
-    color: #225566 !important;
-    font-family: "Lato", sans-serif;
-    font-size: 1.25em !important;
-    font-weight: 500 !important;
-
-    .logo-bold {
-      font-weight: 700 !important;
-    }
-
-    a {
-      all: unset;
-      cursor: pointer;
-      &:hover {
-        color: inherit;
-      }
-    }
-  }
-
   .nav-item {
     font-size: 20px;
     font-weight: 600;
+
+    &.logo a img {
+      width: 300px;
+    }
 
     .toggleChat {
       font-size: 14px;
@@ -127,7 +116,7 @@ header {
 import { Vue, Component, Watch } from "vue-property-decorator";
 import { IUser, IQuizSession, IQuiz, Page } from "../../../common/interfaces/DBSchema";
 import Chat from "../components/Chat/Chat.vue";
-import { MoocChatMessage } from "../interfaces";
+import { Message } from "../interfaces";
 import { EventBus } from "../EventBus";
 import { EmitterEvents } from "../emitters";
 import { PageType } from "../../../common/enums/DBEnums";
@@ -142,7 +131,7 @@ export default class Nav extends Vue {
     return this.$store.getters.user;
   }
 
-  get chatMessages(): MoocChatMessage[] {
+  get chatMessages(): Message[] {
     return this.$store.getters.chatMessages;
   }
 
@@ -157,8 +146,8 @@ export default class Nav extends Vue {
   // In short, if we have a message and the chat is off, notify new message
   @Watch("chatMessages")
   private handleMessageNotification(
-    newVal: MoocChatMessage[],
-    oldVal: MoocChatMessage[]
+    newVal: Message[],
+    oldVal: Message[]
   ) {
     if (!this.toggleChat) {
       this.newMessage = true;
@@ -226,21 +215,18 @@ export default class Nav extends Vue {
     // this.toggleChat -> false, if
     //  - current page is not discussion page
     //    - (since users complained of chat window covering content)
-  
+    
     // Note: Frequent opening/closing of chat window would (hopefully)
     // signal to users that the chat window can be shown/hidden
-    if(this.page && this.page.type !== PageType.DISCUSSION_PAGE) {
+    if (this.page && this.page.type !== PageType.DISCUSSION_PAGE) {
       this.toggleChat = false;
     }
     
-    if(this.page && this.page.type === PageType.DISCUSSION_PAGE &&
+    if (this.page && this.page.type === PageType.DISCUSSION_PAGE &&
       this.socketState && this.socketState.chatGroupFormed &&
       this.socketState.chatGroupFormed.groupId) {
-      
-      this.toggleChat = true;
+        this.toggleChat = true;
     }
-
-    
   }
 }
 </script>

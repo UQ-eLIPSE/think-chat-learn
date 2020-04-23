@@ -1,5 +1,4 @@
 /**
- * MOOCchat
  * Utilities module
  */
 export namespace Utils {
