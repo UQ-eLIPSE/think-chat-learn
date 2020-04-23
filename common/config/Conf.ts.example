@@ -3,7 +3,7 @@ import {Utils} from "../js/Utils";
 export const Conf = {
     server: {
         // Change url to localhost:[PORT_NUMBER] for runnning locally
-        // Replace with the absolute address where Think.Chat.Learn server is deployed
+        // Replace with the absolute address where server is deployed
         url: "localhost:8080"
     },
     pacSeqSocket: {

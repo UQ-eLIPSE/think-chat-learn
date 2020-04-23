@@ -36,7 +36,7 @@ export class SurveyEndpoint extends WSEndpoint {
             content: data.content,
         }, survey, quizAttempt);
 
-        // TODO: Think.Chat.Learn does not currently return survey success message; this should be included.
+        // TODO: Not currently returning survey success message; this should be included.
     }
 
 

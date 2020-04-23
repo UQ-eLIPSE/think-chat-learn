@@ -4,7 +4,6 @@ import { PacSeqSocket_Client } from "../../common/js/PacSeqSocket_Client";
 import { Conf } from "../config/Conf";
 
 /**
- * Think.Chat.Learn
  * Websocket management class module
  *
  * Acts as thin layer over Socket.IO object; methods act approximately the same way.

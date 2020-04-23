@@ -4,7 +4,6 @@ import {ILTIData} from "../../../../common/interfaces/ILTIData";
 import {ILTISignatureVerifyInfo} from "../../../../common/interfaces/ILTISignatureVerifyInfo";
 
 /**
- * Think.Chat.Learn
  * LTI utilities class
  */
 

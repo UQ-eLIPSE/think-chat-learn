@@ -30,7 +30,7 @@ export interface IState {
     resyncAmount: number;
     // Stops the browser
     stopBrowser: boolean;
-    // Tells a resync to a Think.Chat.Learn page
+    // Tells a resync to a page
     resync: boolean;
     // Tells if the quiz session is available
     quizAvailable: boolean;
@@ -334,7 +334,7 @@ async function handleReconnect(data: any) {
                     expiry: null,
                     message:
                         "Error: Connection could not be established. " +
-                        "Please close current window/tab and launch Think.Chat.Learn again from Blackboard. " +
+                        "Please close current window/tab and launch again from Blackboard. " +
                         "(Your progress will be retained)"
                 };
 
