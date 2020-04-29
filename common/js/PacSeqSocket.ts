@@ -122,27 +122,32 @@ export class PacSeqSocket<SocketType> {
   }
 
   public emit(event: string, ...args: any[]) {
-    this.resume();
+    try {  
+      this.resume();
 
-    if (this.outboundLogging) {
-      const loggedData = [
-        `PacSeqSocket/${this.id}`,
-        "OUTBOUND",
-        "[" + event + "]"
-      ];
+      if (this.outboundLogging) {
+        const loggedData = [
+          `PacSeqSocket/${this.id}`,
+          "OUTBOUND",
+          "[" + event + "]"
+        ];
 
-      if (typeof args[0] !== "undefined") {
-        loggedData.push(args[0]);
+        if (typeof args[0] !== "undefined") {
+          loggedData.push(args[0]);
+        }
       }
-    }
-    
-    for (let i = 0; i < this.numberOfTimesToRepeatEmit; ++i) {
-      try {
-        this.sendDAT(event, args[0]);
-      } catch(e) {
-        console.error('----\nError: PacSeqSocket.ts\n\t -- emit() -> sendDAT() :: ', event, args[0]);
-        console.error(e, '\n----');
+      
+      for (let i = 0; i < this.numberOfTimesToRepeatEmit; ++i) {
+        try {
+          this.sendDAT(event, args[0]);
+        } catch(e) {
+          console.error('Error: PacSeqSocket.ts\n\t -- emit() -> sendDAT() :: ', event);
+          console.error(e, '\n----');
+        }
       }
+    } catch(e) {
+      console.error('Error: PacSeqSocket.ts\n\t -- emit() :: ', event);
+      console.error(e, '\n----');
     }
   }
 
