@@ -17,7 +17,7 @@
         </div>
 
         <!-- Accordion for Questions and Responses only required on Discussion page -->
-        <div class="accordion" v-if="page.type === PageType.DISCUSSION_PAGE">
+        <div class="accordion" v-if="page.type === PageType.DISCUSSION_PAGE && chatGroup">
           <dl>
             <!-- Discussion content -->
             <dt :class="contentPanelOpen ? 'opened' : ''" v-on:click="contentPanelOpen = !contentPanelOpen">
@@ -104,8 +104,8 @@
           />
         </div>
         <!-- Handle Chat Page data -->
+        <div v-else-if="page.type === PageType.DISCUSSION_PAGE && chatGroup">
         <!-- <div v-else-if="page.type === PageType.DISCUSSION_PAGE && chatGroup && displayResponsesEnabled"> -->
-        <div v-else-if="page.type === PageType.DISCUSSION_PAGE">
           <div class="flex-row align-center justify-space-between">
             <h2>Chat</h2>
             <span class="personal-number">You are <CircularNumberLabel :numeral="chatGroup.clientIndex" /></span>

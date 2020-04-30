@@ -33,6 +33,7 @@
     margin: auto 0;
     transform: translateY(20%);
   }
+  
   .message {
     background-color: $white;
     font-size: 0.87em;

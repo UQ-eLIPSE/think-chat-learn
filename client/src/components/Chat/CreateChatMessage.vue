@@ -20,7 +20,6 @@
 .create-chat-message {
   align-items: center;
   background-color: $white;
-  border-bottom-right-radius: 10px;
   display: flex;
   height: 100px;
   padding: 15px;
