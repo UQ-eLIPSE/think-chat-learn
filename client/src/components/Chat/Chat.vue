@@ -96,8 +96,10 @@ export default class Chat extends Vue {
 
   private scrollToEnd() {
     const container = document.querySelector(".message-container");
-    const scrollHeight = container.scrollHeight;
-    container.scrollTop = scrollHeight;
+    if (container) {
+      const scrollHeight = container.scrollHeight;
+      container.scrollTop = scrollHeight;
+    }
   }
 
   private mounted() {

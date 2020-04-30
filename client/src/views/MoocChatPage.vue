@@ -17,7 +17,7 @@
         </div>
 
         <!-- Accordion for Questions and Responses only required on Discussion page -->
-        <div class="accordion" v-if="page.type === PageType.DISCUSSION_PAGE && chatGroup">
+        <div class="accordion" v-if="page.type === PageType.DISCUSSION_PAGE && chatGroup && displayResponsesEnabled">
           <dl>
             <!-- Discussion content -->
             <dt :class="contentPanelOpen ? 'opened' : ''" v-on:click="contentPanelOpen = !contentPanelOpen">
@@ -104,8 +104,7 @@
           />
         </div>
         <!-- Handle Chat Page data -->
-        <div v-else-if="page.type === PageType.DISCUSSION_PAGE && chatGroup">
-        <!-- <div v-else-if="page.type === PageType.DISCUSSION_PAGE && chatGroup && displayResponsesEnabled"> -->
+        <div v-else-if="page.type === PageType.DISCUSSION_PAGE && chatGroup && displayResponsesEnabled">
           <div class="flex-row align-center justify-space-between">
             <h2>Chat</h2>
             <span class="personal-number">You are <CircularNumberLabel :numeral="chatGroup.clientIndex" /></span>
@@ -221,7 +220,7 @@ import CircularNumberLabel from "../components/CircularNumberLabel.vue";
   }
 })
 export default class MoocChatPage extends Vue {
-  private contentPanelOpen = false;
+  private contentPanelOpen = true;
   private questionsPanelOpen = false;
   private responsesPanelOpen = true;
 
