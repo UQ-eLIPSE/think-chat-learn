@@ -19,7 +19,11 @@ import {
   faArrowRight,
   faArrowLeft,
   faInfoCircle,
-  faCheckCircle
+  faCheckCircle,
+  faPaperPlane,
+  faChevronDown,
+  faChevronUp,
+  faClock,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
@@ -36,7 +40,11 @@ library.add(
   faArrowRight,
   faArrowLeft,
   faInfoCircle,
-  faCheckCircle
+  faCheckCircle,
+  faPaperPlane,
+  faChevronDown,
+  faChevronUp,
+  faClock,
 );
 
 Vue.use(Buefy);

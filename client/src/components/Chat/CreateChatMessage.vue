@@ -3,23 +3,35 @@
     <textarea
       type="text"
       placeholder="Share your ideas"
+      @keydown.enter.exact.prevent
+      @keyup.enter.exact="sendMessage"
+      @keydown.enter.shift.exact="newline"
       @keydown="resetTimer()"
       v-model="loadedMessage"
       :disabled="!canType"
     />
-    <button class="secondary" @click="sendMessage()">Submit</button>
+    <button class="chat-submit" @click="sendMessage()">
+      <font-awesome-icon icon="paper-plane" />
+    </button>
   </div>
 </template>
 
 <style lang="scss" scoped>
 .create-chat-message {
+  align-items: center;
+  background-color: $white;
+  border-bottom-right-radius: 10px;
+  display: flex;
+  height: 100px;
+  padding: 15px;
+
   textarea {
     border: none;
     font-family: "Open Sans", sans-serif;
     font-size: 0.75em;
-    height: 110px;
     margin: 0px;
     resize: none;
+    height: 100%;
     width: 100%;
 
     &::placeholder {
@@ -62,6 +74,10 @@ export default class CreateChatMessage extends Vue {
   private loadedMessage: string = "";
   private MAX_LENGTH: number = 1024;
   private typingStateHandle: number = -1;
+
+  private newline() {
+    this.loadedMessage = `${this.loadedMessage}`;
+  }
 
   get user(): IUser | null {
     return this.$store.getters.user;

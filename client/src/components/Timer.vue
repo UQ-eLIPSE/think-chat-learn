@@ -1,35 +1,43 @@
 <template>
   <div
-    class="timer"
+    class="timer green-static"
     v-show="['MoocChatPage', 'Discussion', 'Reflection'].includes($route.name)"
   >
+    <font-awesome-icon icon="clock" />
     <b>Next page will load in:</b> {{timeLeftInMinutesSeconds}}
   </div>
 </template>
 
 <style lang="scss">
-@import "../../../css/variables.scss";
 .timer {
-  background-color: rgba(96, 175, 161, 0.15);
-  border: 2px solid $baseDark1;
-  border-radius: 5px;
-  color: $baseDark1;
-  font-size: 20px;
-  margin: 0 auto;
-  padding: 8px 8px;
+  border-radius: 20px;
+  font-size: 17px;
+  left: 50%;
+  padding: 10px;
+  position: absolute;
   text-align: center;
-  width: 20%;
+  transform: translateX(-50%);
+  min-width: 325px;
+
+  &.green-static {
+    background-color: rgba(#2ea836, 0.15);
+    color: #2ea836;
+  }
+  
+  svg {
+    margin-right: 0.5em;
+  }
 }
 </style>
 
 <script lang="ts">
 import { Vue, Component, Watch, Prop } from "vue-property-decorator";
-import { EmitterEvents } from "../../emitters";
-import { TimerSettings, SocketState } from "../../interfaces";
-import { EventBus } from "../../EventBus";
-import { IQuiz, IQuizSession } from "../../../../common/interfaces/DBSchema";
-import * as IWSToClientData from "../../../../common/interfaces/IWSToClientData";
-import { Conf } from "../../../config/Conf";
+import { EmitterEvents } from "../emitters";
+import { TimerSettings, SocketState } from "../interfaces";
+import { EventBus } from "../EventBus";
+import { IQuiz, IQuizSession } from "../../../common/interfaces/DBSchema";
+import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
+import { Conf } from "../../config/Conf";
 
 enum FETCH_STATES {
   READY = 0,

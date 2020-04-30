@@ -31,6 +31,11 @@
         />
       </template>
     </div>
+    
+    <div class="tips">
+      <span><b>Return</b> to send</span>
+      <span><b>Return + Shift</b> to add new line</span>
+    </div>
 
     <div class="input-container">
       <CreateChatMessage />
@@ -40,32 +45,26 @@
 </template>
 
 <style lang="scss" scoped>
-@import "../../../css/variables.scss";
-
 .chat {
   background-color: #f7f8f8;
-  bottom: 0;
-  box-shadow: 0px 0px 8px 1px rgba(0,0,0,0.5);
-  height: 100vh;
-  padding-top: 75px;
-  position: fixed;
-  right: 0;
-  width: 400px;
-  z-index: 1;
 
   .message-container {
-    height: calc(100vh - 263px);
+    height: 50vh;
     overflow: scroll;
-    padding: 15px;
+    padding: 1.25em;
   }
 
-  .input-container {
-    background-color: $white;
-    height: 188px;
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    padding: 15px;
+  .tips {
+    color: $dark-grey;
+    display: flex;
+    flex-flow: row wrap;
+    font-size: 0.69em;
+    justify-content: flex-end;
+    padding: 0.62em 1.25em;
+
+    span:not(:first-of-type) {
+      margin-left: 1em;
+    }
   }
 }
 </style>
@@ -94,6 +93,20 @@ import { PageType } from "../../../../common/enums/DBEnums";
 })
 export default class Chat extends Vue {
   @Prop({ default: () => [] }) private chatMessages!: MoocChatMessage[];
+
+  private scrollToEnd() {
+    const container = document.querySelector(".message-container");
+    const scrollHeight = container.scrollHeight;
+    container.scrollTop = scrollHeight;
+  }
+
+  private mounted() {
+    this.scrollToEnd();
+  }
+
+  private updated() {
+    this.scrollToEnd();
+  }
 
   get socketState(): SocketState | null {
     return this.$store.getters.socketState;

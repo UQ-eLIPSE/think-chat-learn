@@ -8,7 +8,6 @@
       <div class="info"><font-awesome-icon icon="info-circle" /> If you encounter connection issues with MOOCchat, close this window/tab and relaunch MOOCchat from Blackboard. (Your progress will be saved) </div>
       <GlobalMessage v-if="GlobalMessageExists"/>
       <Stepper steps=5 />
-      <Timer />
       <div class="content-container">
         <router-view class="router-panel" />
       </div>
@@ -19,6 +18,7 @@
 </template>
 
 <style lang="scss">
+@import "./sass/app.scss";
 @import url("https://fonts.googleapis.com/css?family=Open+Sans");
 @import "../css/variables.scss";
 
@@ -203,14 +203,12 @@ import { getIdToken, getLoginResponse } from "../../common/js/front_end_auth";
 import Nav from "./components/Nav.vue";
 import Stepper from "./components/Stepper.vue";
 import Footer from "./components/Footer.vue";
-import Timer from "./components/Timer/Timer.vue";
 import GlobalMessage from "./components/GlobalMessage.vue";
 
 @Component({
   components: {
     Nav,
     Stepper,
-    Timer,
     Footer,
     GlobalMessage
   }
