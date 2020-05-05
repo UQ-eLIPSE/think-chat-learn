@@ -8,6 +8,7 @@
       <div class="info"><font-awesome-icon icon="info-circle" /> If you encounter connection issues with MOOCchat, close this window/tab and relaunch MOOCchat from Blackboard. (Your progress will be saved) </div>
       <GlobalMessage v-if="GlobalMessageExists"/>
       <Stepper steps=5 />
+      <Timer />
       <div class="content-container">
         <router-view class="router-panel" />
       </div>
@@ -112,7 +113,7 @@ html {
     }
     section {
       margin-bottom: 150px;
-      min-height: calc(100vh - 321px);
+      min-height: calc(100vh - 295px);
       padding-top: 25px;
 
       .content-container {
@@ -121,7 +122,7 @@ html {
         bottom: 0;
         box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.15);
         left: 0;
-        max-width: 1570px;
+        max-width: 1920px;
         margin: 1em auto 1em auto;
         width: 85%;
       }
@@ -204,13 +205,15 @@ import Nav from "./components/Nav.vue";
 import Stepper from "./components/Stepper.vue";
 import Footer from "./components/Footer.vue";
 import GlobalMessage from "./components/GlobalMessage.vue";
+import Timer from "./components/Timer.vue";
 
 @Component({
   components: {
     Nav,
     Stepper,
     Footer,
-    GlobalMessage
+    GlobalMessage,
+    Timer
   }
 })
 export default class App extends Vue {

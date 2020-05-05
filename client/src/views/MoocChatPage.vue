@@ -17,43 +17,40 @@
         </div>
 
         <!-- Accordion for Questions and Responses only required on Discussion page -->
-        <div class="accordion" v-if="page.type === PageType.DISCUSSION_PAGE && chatGroup && displayResponsesEnabled">
+        <div class="accordion" v-if="page.type === PageType.DISCUSSION_PAGE && chatGroup">
           <dl>
             <!-- Discussion content -->
-            <dt :class="contentPanelOpen ? 'opened' : ''" v-on:click="contentPanelOpen = !contentPanelOpen">
+            <dt :class="contentPanelOpen ? 'opened' : ''" v-on:click="contentPanelOpen = !contentPanelOpen" v-if="page.content !== emptyContent">
               <div class="flex-row align-center justify-space-between">
                 <h2>{{page ? page.title : ""}}</h2>
                 <font-awesome-icon :icon="contentPanelOpen ? 'chevron-up' : 'chevron-down'" />
               </div>
             </dt>
-            <dd :class="contentPanelOpen ? 'opened' : ''" v-if="contentPanelOpen">
+            <dd :class="contentPanelOpen ? 'opened' : ''" v-if="page.content !== emptyContent && contentPanelOpen">
               <div class="content" v-html="page.content"/>
             </dd>
 
             <!-- Question -->
-            <dt :class="questionsPanelOpen ? 'opened' : ''" v-on:click="questionsPanelOpen = !questionsPanelOpen">
+            <dt :class="questionsPanelOpen ? 'opened' : ''" v-on:click="questionsPanelOpen = !questionsPanelOpen" v-if="question.content">
               <div class="flex-row align-center justify-space-between">
                 <h2>{{question ? question.title : ""}}</h2>
                 <font-awesome-icon :icon="questionsPanelOpen ? 'chevron-up' : 'chevron-down'" />
               </div>
             </dt>
-            <dd :class="questionsPanelOpen ? 'opened' : ''" v-if="questionsPanelOpen">
+            <dd :class="questionsPanelOpen ? 'opened' : ''" v-if="questionsPanelOpen && question.content">
               <template>
-                <div class="content" v-if="question" v-html="question.content"></div>
+                <div class="content" v-html="question.content"></div>
               </template>
             </dd>
 
             <!-- Responses -->
-            <dt :class="responsesPanelOpen ? 'opened' : ''" v-on:click="responsesPanelOpen = !responsesPanelOpen">
+            <dt :class="responsesPanelOpen ? 'opened' : ''" v-on:click="responsesPanelOpen = !responsesPanelOpen" v-if="displayResponsesEnabled">
               <div class="flex-row align-center justify-space-between">  
                 <h2>Responses</h2>
                 <font-awesome-icon :icon="responsesPanelOpen ? 'chevron-up' : 'chevron-down'" />
               </div>
             </dt>
-            <dd v-if="responsesPanelOpen">
-              <span class="confidence flex justify-center">
-                <b>Your confidence:</b> <label class="highlight uq-static">{{currentResponse.confidence}}</label>
-              </span>
+            <dd v-if="responsesPanelOpen && displayResponsesEnabled">
               <div
                 v-for="answer in sortedUniqueQuestionGroupAnswers"
                 class="content"
@@ -104,7 +101,7 @@
           />
         </div>
         <!-- Handle Chat Page data -->
-        <div v-else-if="page.type === PageType.DISCUSSION_PAGE && chatGroup && displayResponsesEnabled">
+        <div v-else-if="page.type === PageType.DISCUSSION_PAGE && chatGroup">
           <div class="flex-row align-center justify-space-between">
             <h2>Chat</h2>
             <span class="personal-number">You are <CircularNumberLabel :numeral="chatGroup.clientIndex" /></span>
@@ -220,6 +217,9 @@ import CircularNumberLabel from "../components/CircularNumberLabel.vue";
   }
 })
 export default class MoocChatPage extends Vue {
+  // Used for Quill content areas as Quill sets empty content as the below
+  private emptyContent = "<p><br></p>";
+
   private contentPanelOpen = true;
   private questionsPanelOpen = false;
   private responsesPanelOpen = true;

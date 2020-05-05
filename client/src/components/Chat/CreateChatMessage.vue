@@ -1,22 +1,47 @@
 <template>
-  <div class="create-chat-message">
-    <textarea
-      type="text"
-      placeholder="Share your ideas"
-      @keydown.enter.exact.prevent
-      @keyup.enter.exact="sendMessage"
-      @keydown.enter.shift.exact="newline"
-      @keydown="resetTimer()"
-      v-model="loadedMessage"
-      :disabled="!canType"
-    />
-    <button class="chat-submit" @click="sendMessage()">
-      <font-awesome-icon icon="paper-plane" />
-    </button>
+  <div>
+    <div class="message-details justify-space-between">
+      <div>
+        <span>{{loadedMessage.length}}/<b>1024</b></span>
+      </div>
+      <div>
+        <span><b>Return</b> to send</span>
+        <span><b>Return + Shift</b> to add new line</span>
+      </div>
+    </div>
+    <div class="create-chat-message">
+      <textarea
+        minlength="10"
+        maxlength="1024"
+        type="text"
+        placeholder="Share your ideas"
+        @keydown.enter.exact.prevent
+        @keyup.enter.exact="sendMessage"
+        @keydown.enter.shift.exact="newline"
+        @keydown="resetTimer()"
+        v-model="loadedMessage"
+        :disabled="!canType"
+      />
+      <button class="chat-submit" @click="sendMessage()">
+        <font-awesome-icon icon="paper-plane" />
+      </button>
+    </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
+.message-details {
+  color: $dark-grey;
+  display: flex;
+  flex-flow: row wrap;
+  font-size: 0.69em;
+  padding: 0.62em 1.25em;
+
+  span:not(:first-of-type) {
+    margin-left: 1em;
+  }
+}
+
 .create-chat-message {
   align-items: center;
   background-color: $white;

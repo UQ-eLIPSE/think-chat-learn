@@ -13,11 +13,11 @@
   border-radius: 20px;
   font-size: 17px;
   left: 50%;
+  margin: 0 auto;
+  min-width: 310px;
   padding: 10px;
-  position: absolute;
   text-align: center;
-  transform: translateX(-50%);
-  min-width: 325px;
+  width: 300px;
 
   &.green-static {
     background-color: rgba(#2ea836, 0.15);

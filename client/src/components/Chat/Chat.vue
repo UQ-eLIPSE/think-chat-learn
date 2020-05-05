@@ -32,14 +32,7 @@
       </template>
     </div>
     
-    <div class="tips">
-      <span><b>Return</b> to send</span>
-      <span><b>Return + Shift</b> to add new line</span>
-    </div>
-
-    <div class="input-container">
-      <CreateChatMessage />
-    </div>
+    <CreateChatMessage />
     <!-- </div> -->
   </div>
 </template>
@@ -52,19 +45,6 @@
     height: 50vh;
     overflow: scroll;
     padding: 1.25em;
-  }
-
-  .tips {
-    color: $dark-grey;
-    display: flex;
-    flex-flow: row wrap;
-    font-size: 0.69em;
-    justify-content: flex-end;
-    padding: 0.62em 1.25em;
-
-    span:not(:first-of-type) {
-      margin-left: 1em;
-    }
   }
 }
 </style>

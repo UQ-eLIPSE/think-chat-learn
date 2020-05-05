@@ -3,7 +3,6 @@
     <a class="logo" href="/client/#/">
       <img src="@/assets/images/think-chat-learn-logo.svg" alt="Think.Chat.Learn" title="Think.Chat.Learn" />
     </a>
-    <Timer />
   </header>
 </template>
 
