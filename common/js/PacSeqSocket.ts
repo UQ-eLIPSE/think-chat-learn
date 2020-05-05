@@ -52,7 +52,7 @@ export class PacSeqSocket<SocketType> {
     // NOTE: ***Do not destroy*** #eventManager as it refers to the same
     // EventBox which was carried over to the new PacSeqSocket obj when .Copy() is run
     // EventBox.Destroy(psSocket.eventManager);
-
+    console.log('PacSeqSocket.Destroy - socket id: ', psSocket.id);
     delete psSocket.mode;
     delete psSocket.sequencer;
     delete psSocket.lastAcknowledged;
@@ -122,22 +122,32 @@ export class PacSeqSocket<SocketType> {
   }
 
   public emit(event: string, ...args: any[]) {
-    this.resume();
+    try {  
+      this.resume();
 
-    if (this.outboundLogging) {
-      const loggedData = [
-        `PacSeqSocket/${this.id}`,
-        "OUTBOUND",
-        "[" + event + "]"
-      ];
+      if (this.outboundLogging) {
+        const loggedData = [
+          `PacSeqSocket/${this.id}`,
+          "OUTBOUND",
+          "[" + event + "]"
+        ];
 
-      if (typeof args[0] !== "undefined") {
-        loggedData.push(args[0]);
+        if (typeof args[0] !== "undefined") {
+          loggedData.push(args[0]);
+        }
       }
-    }
-
-    for (let i = 0; i < this.numberOfTimesToRepeatEmit; ++i) {
-      this.sendDAT(event, args[0]);
+      
+      for (let i = 0; i < this.numberOfTimesToRepeatEmit; ++i) {
+        try {
+          this.sendDAT(event, args[0]);
+        } catch(e) {
+          console.error('Error: PacSeqSocket.ts\n\t -- emit() -> sendDAT() :: ', event);
+          console.error(e, '\n----');
+        }
+      }
+    } catch(e) {
+      console.error('Error: PacSeqSocket.ts\n\t -- emit() :: ', event);
+      console.error(e, '\n----');
     }
   }
 
@@ -372,6 +382,8 @@ export class PacSeqSocket<SocketType> {
       event,
       data
     };
+
+    if (!this.sequencer) return;
 
     // We can only know the sequence number
     // AFTER we insert the packet data in the sequencer

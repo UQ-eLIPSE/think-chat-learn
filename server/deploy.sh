@@ -112,9 +112,9 @@ mv config/temp.Conf.ts config/Conf.ts
 mv ../client/config/temp.Conf.ts ../client/config/Conf.ts
 mv ../common/config/temp.Conf.ts ../common/config/Conf.ts
 
-mv "../client/temp.env.$MODE" "../client/.env.$MODE"
-mv "../admin/temp.env.$MODE" "../admin/.env.$MODE"
-mv "../intermediate/temp.env.$MODE" "../intermediate/.env.$MODE"
+[ -f "../client/.env.$MODE" ] && mv "../client/temp.env.$MODE" "../client/.env.$MODE"
+[ -f "../admin/.env.$MODE" ] && mv "../admin/temp.env.$MODE" "../admin/.env.$MODE"
+[ -f "../intermediate/.env.$MODE" ] && mv "../intermediate/temp.env.$MODE" "../intermediate/.env.$MODE"
 
 
 echo -e "Logging deployment information"
