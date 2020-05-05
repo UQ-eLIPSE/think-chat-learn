@@ -1,6 +1,6 @@
 <template>
   <div
-    class="timer green-static"
+    class="timer"
     v-show="['MoocChatPage', 'Discussion', 'Reflection'].includes($route.name)"
   >
     <font-awesome-icon icon="clock" />
@@ -10,20 +10,17 @@
 
 <style lang="scss">
 .timer {
+  background-color: $green;
   border-radius: 20px;
+  color: $white;
   font-size: 17px;
   left: 50%;
+  margin: 0 auto;
+  min-width: 310px;
   padding: 10px;
-  position: absolute;
   text-align: center;
-  transform: translateX(-50%);
-  min-width: 325px;
+  width: 300px;
 
-  &.green-static {
-    background-color: rgba(#2ea836, 0.15);
-    color: #2ea836;
-  }
-  
   svg {
     margin-right: 0.5em;
   }

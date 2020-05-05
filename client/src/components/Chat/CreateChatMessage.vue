@@ -1,18 +1,25 @@
 <template>
-  <div class="create-chat-message">
-    <textarea
-      type="text"
-      placeholder="Share your ideas"
-      @keydown.enter.exact.prevent
-      @keyup.enter.exact="sendMessage"
-      @keydown.enter.shift.exact="newline"
-      @keydown="resetTimer()"
-      v-model="loadedMessage"
-      :disabled="!canType"
-    />
-    <button class="chat-submit" @click="sendMessage()">
-      <font-awesome-icon icon="paper-plane" />
-    </button>
+  <div class="relative">
+    <div class="create-chat-message">
+      <textarea
+        minlength="10"
+        maxlength="1024"
+        type="text"
+        placeholder="Share your ideas"
+        @keydown.enter.exact.prevent
+        @keyup.enter.exact="sendMessage"
+        @keydown.enter.shift.exact="newline"
+        @keydown="resetTimer()"
+        v-model="loadedMessage"
+        :disabled="!canType"
+      />
+      <button class="chat-submit" @click="sendMessage()">
+        <font-awesome-icon icon="paper-plane" />
+      </button>
+    </div>
+    <div class="counter flex-align-end">
+      <span>{{loadedMessage.length}}/<b>1024</b></span>
+    </div>
   </div>
 </template>
 
@@ -45,6 +52,18 @@
   button.secondary {
     font-size: 0.8em;
   }
+}
+
+.counter {
+  background: $white;
+  bottom: 0;
+  color: $dark-grey;
+  display: flex;
+  font-size: 0.69em;
+  padding-bottom: 5px;
+  padding-right: 15px;
+  position: absolute;
+  right: 0;
 }
 </style>
 

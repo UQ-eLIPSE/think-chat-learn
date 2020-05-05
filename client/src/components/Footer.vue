@@ -17,7 +17,7 @@ footer {
   display: flex;
   height: 75px;
   left: 0;
-  padding: 3em 3em;
+  padding: 0 3em;
   position: inherit;
   width: 100%;
 
@@ -26,7 +26,7 @@ footer {
   }
 
   a {
-    width: 10.625em;
+    width: 9em;
 
     &:first-child {
       margin-right: 2em;
