@@ -32,6 +32,11 @@
       </template>
     </div>
     
+    <div class="shortcuts flex-align-end">
+      <span><b>Return</b> to send</span>
+      <span><b>Return + Shift</b> to add new line</span>
+    </div>
+
     <CreateChatMessage />
     <!-- </div> -->
   </div>
@@ -40,6 +45,18 @@
 <style lang="scss" scoped>
 .chat {
   background-color: #f7f8f8;
+
+  .shortcuts {
+    color: $dark-grey;
+    display: flex;
+    flex-flow: row wrap;
+    font-size: 0.69em;
+    padding: 0.62em 1.25em;
+
+    span:not(:first-of-type) {
+      margin-left: 1em;
+    }
+  }
 
   .message-container {
     height: 50vh;

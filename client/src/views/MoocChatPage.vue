@@ -44,13 +44,14 @@
             </dd>
 
             <!-- Responses -->
-            <dt :class="responsesPanelOpen ? 'opened' : ''" v-on:click="responsesPanelOpen = !responsesPanelOpen" v-if="displayResponsesEnabled">
+            <dt :class="responsesPanelOpen ? 'opened' : ''" v-on:click="responsesPanelOpen = !responsesPanelOpen" 
+                v-if="displayResponsesEnabled && checkResponses()">
               <div class="flex-row align-center justify-space-between">  
                 <h2>Responses</h2>
                 <font-awesome-icon :icon="responsesPanelOpen ? 'chevron-up' : 'chevron-down'" />
               </div>
             </dt>
-            <dd v-if="responsesPanelOpen && displayResponsesEnabled">
+            <dd v-if="responsesPanelOpen && displayResponsesEnabled && checkResponses()">
               <div
                 v-for="answer in sortedUniqueQuestionGroupAnswers"
                 class="content"
@@ -168,10 +169,10 @@
         }
         &.pane1 {
           border-right: 1px solid $grey;
-          flex-grow: 1;
+          flex-grow: 1.5;
           flex-shrink: 1;
           overflow: scroll;
-          max-height: 871px;
+          max-height: 867px;
         }
         &.pane2 {
           flex-grow: 2;
@@ -257,6 +258,11 @@ export default class MoocChatPage extends Vue {
   public changeChatState() {
     this.toggleChat = !this.toggleChat;
     this.newMessage = false;
+  }
+
+  private checkResponses() {
+    const itemIsValid = (currentValue) => currentValue.answer.content;
+    return this.sortedUniqueQuestionGroupAnswers.some(itemIsValid);
   }
 
   get quiz(): IQuiz | null {

@@ -1,14 +1,5 @@
 <template>
-  <div>
-    <div class="message-details justify-space-between">
-      <div>
-        <span>{{loadedMessage.length}}/<b>1024</b></span>
-      </div>
-      <div>
-        <span><b>Return</b> to send</span>
-        <span><b>Return + Shift</b> to add new line</span>
-      </div>
-    </div>
+  <div class="relative">
     <div class="create-chat-message">
       <textarea
         minlength="10"
@@ -26,22 +17,13 @@
         <font-awesome-icon icon="paper-plane" />
       </button>
     </div>
+    <div class="counter flex-align-end">
+      <span>{{loadedMessage.length}}/<b>1024</b></span>
+    </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
-.message-details {
-  color: $dark-grey;
-  display: flex;
-  flex-flow: row wrap;
-  font-size: 0.69em;
-  padding: 0.62em 1.25em;
-
-  span:not(:first-of-type) {
-    margin-left: 1em;
-  }
-}
-
 .create-chat-message {
   align-items: center;
   background-color: $white;
@@ -70,6 +52,18 @@
   button.secondary {
     font-size: 0.8em;
   }
+}
+
+.counter {
+  background: $white;
+  bottom: 0;
+  color: $dark-grey;
+  display: flex;
+  font-size: 0.69em;
+  padding-bottom: 5px;
+  padding-right: 15px;
+  position: absolute;
+  right: 0;
 }
 </style>
 
