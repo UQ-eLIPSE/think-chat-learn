@@ -261,8 +261,16 @@ export default class MoocChatPage extends Vue {
   }
 
   private checkResponses() {
-    const itemIsValid = (currentValue) => currentValue.answer.content;
-    return this.sortedUniqueQuestionGroupAnswers.some(itemIsValid);
+    return this.sortedUniqueQuestionGroupAnswers.some(currentValue => {
+      if (currentValue && currentValue.answer) {
+        if (currentValue.answer.type === QuestionType.QUALITATIVE &&
+          currentValue.answer.content &&
+          currentValue.answer.content.trim()) return true;
+        if (currentValue.answer.type === QuestionType.MCQ &&
+          currentValue.answer.optionId) return true;
+      }
+      return false;
+    });
   }
 
   get quiz(): IQuiz | null {
