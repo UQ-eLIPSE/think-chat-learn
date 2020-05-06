@@ -86,7 +86,7 @@ import { SocketState, Dictionary } from "../../interfaces";
 import { PageType } from "../../../../common/enums/DBEnums";
 
 // Amount of time to send a false state
-const TIMEOUT = 1500;
+const TIMEOUT = 2000;
 
 @Component({})
 export default class CreateChatMessage extends Vue {
@@ -183,8 +183,21 @@ export default class CreateChatMessage extends Vue {
 
   private resetTimer() {
     // Have not assigned a timer yet. Reduce the number of messages sent by only sending if the timer is out
-    if (this.typingStateHandle !== -1) {
+    if (this.typingStateHandle === -1) {
+      /**
+       * If `typingStateHandle === -1`, this means either:
+       *  - User has not started typing
+       *  - Timer has timed out and user is still typing
+       *    - In this case, send typing notification to the server
+       */
       this.sendTypingState(true);
+      window.clearTimeout(this.typingStateHandle);
+    } else if (this.typingStateHandle !== -1) {
+      /**
+       * If `typingStateHandle !== -1`, this means:
+       *  - User started typing but the current timer (ref in typingStateHandle) has not timed out
+       *    - In this case we clear the current timeout which is refreshed below
+       */
       window.clearTimeout(this.typingStateHandle);
     }
 
