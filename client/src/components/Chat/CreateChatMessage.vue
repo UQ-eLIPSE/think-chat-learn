@@ -1,25 +1,44 @@
 <template>
-  <div class="create-chat-message">
-    <textarea
-      type="text"
-      placeholder="Share your ideas"
-      @keydown="resetTimer()"
-      v-model="loadedMessage"
-      :disabled="!canType"
-    />
-    <button class="secondary" @click="sendMessage()">Submit</button>
+  <div class="relative">
+    <div class="create-chat-message">
+      <textarea
+        minlength="10"
+        maxlength="1024"
+        type="text"
+        placeholder="Share your ideas"
+        @keydown.enter.exact.prevent
+        @keyup.enter.exact="sendMessage"
+        @keydown.enter.shift.exact="newline"
+        @keydown="resetTimer()"
+        v-model="loadedMessage"
+        :disabled="!canType"
+      />
+      <button class="chat-submit" @click="sendMessage()">
+        <font-awesome-icon icon="paper-plane" />
+      </button>
+    </div>
+    <div class="counter flex-align-end">
+      <span>{{loadedMessage.length}}/<b>1024</b></span>
+    </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
 .create-chat-message {
+  align-items: center;
+  background-color: $white;
+  border-top: 1px solid $grey;
+  display: flex;
+  height: 100px;
+  padding: 15px;
+
   textarea {
     border: none;
     font-family: "Open Sans", sans-serif;
     font-size: 0.75em;
-    height: 110px;
     margin: 0px;
     resize: none;
+    height: 100%;
     width: 100%;
 
     &::placeholder {
@@ -33,6 +52,18 @@
   button.secondary {
     font-size: 0.8em;
   }
+}
+
+.counter {
+  background: $white;
+  bottom: 0;
+  color: $dark-grey;
+  display: flex;
+  font-size: 0.69em;
+  padding-bottom: 5px;
+  padding-right: 15px;
+  position: absolute;
+  right: 0;
 }
 </style>
 
@@ -62,6 +93,10 @@ export default class CreateChatMessage extends Vue {
   private loadedMessage: string = "";
   private MAX_LENGTH: number = 1024;
   private typingStateHandle: number = -1;
+
+  private newline() {
+    this.loadedMessage = `${this.loadedMessage}`;
+  }
 
   get user(): IUser | null {
     return this.$store.getters.user;

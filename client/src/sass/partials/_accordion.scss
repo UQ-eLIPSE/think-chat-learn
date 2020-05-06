@@ -1,0 +1,23 @@
+.accordion {
+  dl {
+    dt {
+      border-bottom: 1px solid $border-grey;
+      svg {
+        color: $grey;
+        font-size: 1em;
+      }
+      &.opened {
+        border-bottom: 0;
+      }
+      &:hover {
+        cursor: pointer;
+      }
+    }
+    dd {
+      padding: 0 1em 1em;
+      &.opened {
+        border-bottom: 1px solid $border-grey;
+      }
+    }
+  }
+}

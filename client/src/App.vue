@@ -19,6 +19,7 @@
 </template>
 
 <style lang="scss">
+@import "./sass/app.scss";
 @import url("https://fonts.googleapis.com/css?family=Open+Sans");
 @import "../css/variables.scss";
 
@@ -112,7 +113,7 @@ html {
     }
     section {
       margin-bottom: 150px;
-      min-height: calc(100vh - 321px);
+      min-height: calc(100vh - 295px);
       padding-top: 25px;
 
       .content-container {
@@ -121,7 +122,7 @@ html {
         bottom: 0;
         box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.15);
         left: 0;
-        max-width: 1570px;
+        max-width: 1920px;
         margin: 1em auto 1em auto;
         width: 85%;
       }
@@ -203,16 +204,16 @@ import { getIdToken, getLoginResponse } from "../../common/js/front_end_auth";
 import Nav from "./components/Nav.vue";
 import Stepper from "./components/Stepper.vue";
 import Footer from "./components/Footer.vue";
-import Timer from "./components/Timer/Timer.vue";
 import GlobalMessage from "./components/GlobalMessage.vue";
+import Timer from "./components/Timer.vue";
 
 @Component({
   components: {
     Nav,
     Stepper,
-    Timer,
     Footer,
-    GlobalMessage
+    GlobalMessage,
+    Timer
   }
 })
 export default class App extends Vue {
