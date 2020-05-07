@@ -5,7 +5,7 @@
       <template v-if="renderRestart">
         <div @click="restartSocket()">Restart</div>
       </template>
-      <div class="info"><font-awesome-icon icon="info-circle" /> If you encounter connection issues with MOOCchat, close this window/tab and relaunch MOOCchat from Blackboard. (Your progress will be saved) </div>
+      <div class="info"><font-awesome-icon icon="info-circle" /> If you encounter connection issues with Think.Chat.Learn, close this window/tab and relaunch Think.Chat.Learn from Blackboard. (Your progress will be saved) </div>
       <GlobalMessage v-if="GlobalMessageExists"/>
       <Stepper steps=5 />
       <Timer />

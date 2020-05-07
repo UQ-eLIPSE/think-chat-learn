@@ -7,7 +7,7 @@
       <span class="icon-container">
         <font-awesome-icon icon="user" />
       </span>
-      {{user ? `${user.firstName}` : "Please login via Blackboard"}}
+      {{user ? `${user.username}` : "Please login via Blackboard"}}
     </span>
   </header>
 </template>
