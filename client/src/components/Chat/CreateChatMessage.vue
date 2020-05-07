@@ -181,27 +181,31 @@ export default class CreateChatMessage extends Vue {
     }
   }
 
+  /**
+   * Function used to send typing notifications to server
+   * `resetTimer()` is called every time a user presses a key in chat box
+   */
   private resetTimer() {
-    // Have not assigned a timer yet. Reduce the number of messages sent by only sending if the timer is out
-    if (this.typingStateHandle === -1) {
+
+  if (this.typingStateHandle === -1) {
       /**
        * If `typingStateHandle === -1`, this means either:
        *  - User has not started typing
-       *  - Timer has timed out and user is still typing
-       *    - In this case, send typing notification to the server
+       *  - User continues typing after `TIMEOUT` seconds of not typing
+       *    - In these cases, send typing notification to the server
        */
       this.sendTypingState(true);
-      window.clearTimeout(this.typingStateHandle);
-    } else if (this.typingStateHandle !== -1) {
-      /**
-       * If `typingStateHandle !== -1`, this means:
-       *  - User started typing but the current timer (ref in typingStateHandle) has not timed out
-       *    - In this case we clear the current timeout which is refreshed below
-       */
-      window.clearTimeout(this.typingStateHandle);
     }
 
+    /**
+      * Refresh existing typing handle timeout and re-assign new timer
+      *  - When user continues to type within `TIMEOUT` seconds, the `typingStateHandle`
+      *    is effectively "extended" without sending a notification to the server
+      */
+    
+    window.clearTimeout(this.typingStateHandle);
     this.typingStateHandle = window.setTimeout(() => {
+      // When the user stops typing, wait for `TIMEOUT` ms before notifying server
       this.sendTypingState(false);
       // remember to unassign the handle
       this.typingStateHandle = -1;
