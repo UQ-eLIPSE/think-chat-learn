@@ -187,7 +187,7 @@ export default class CreateChatMessage extends Vue {
    */
   private resetTimer() {
 
-  if (this.typingStateHandle === -1) {
+    if (this.typingStateHandle === -1) {
       /**
        * If `typingStateHandle === -1`, this means either:
        *  - User has not started typing
