@@ -415,20 +415,11 @@ export default class MoocChatPage extends Vue {
     }
   }
 
-  // get socketState(): SocketState | null {
-  //   return this.$store.getters.socketState;
-  // }
-
   get socket(): WebsocketManager | null {
     return this.socketState && this.socketState.socket
       ? this.socketState.socket
       : null;
   }
-
-  // Empty should be default behaviour if no socket state is present
-  // get chatMessages(): IWSToClientData.ChatGroupMessage[] {
-  //   return this.socketState ? this.socketState.chatMessages : [];
-  // }
 
   get chatGroup(): IWSToClientData.ChatGroupFormed | null {
     return this.socketState && this.socketState.chatGroupFormed
