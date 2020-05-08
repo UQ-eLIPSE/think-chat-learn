@@ -80,7 +80,7 @@ function reconnectFail() {
         error: true,
         type: SystemMessageTypes.FATAL_ERROR,
         message:
-            "Error: Connection lost. Please close current window/tab and launch MOOCchat again from Blackboard. " +
+            "Error: Connection lost. Please close current window/tab and launch Think.Chat.Learn again from Blackboard. " +
                 "(Your progress will be retained)"
       });
 }
@@ -334,7 +334,7 @@ async function handleReconnect(data: any) {
                     expiry: null,
                     message:
                         "Error: Connection could not be established. " +
-                        "Please close current window/tab and launch MOOCchat again from Blackboard. " +
+                        "Please close current window/tab and launch Think.Chat.Learn again from Blackboard. " +
                         "(Your progress will be retained)"
                 };
 

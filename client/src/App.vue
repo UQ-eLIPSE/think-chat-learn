@@ -5,7 +5,7 @@
       <template v-if="renderRestart">
         <div @click="restartSocket()">Restart</div>
       </template>
-      <div class="info"><font-awesome-icon icon="info-circle" /> If you encounter connection issues with MOOCchat, close this window/tab and relaunch MOOCchat from Blackboard. (Your progress will be saved) </div>
+      <div class="info"><font-awesome-icon icon="info-circle" /> If you encounter connection issues with Think.Chat.Learn, close this window/tab and relaunch Think.Chat.Learn from Blackboard. (Your progress will be saved) </div>
       <GlobalMessage v-if="GlobalMessageExists"/>
       <Stepper steps=5 />
       <Timer />
@@ -19,6 +19,7 @@
 </template>
 
 <style lang="scss">
+@import "./sass/app.scss";
 @import url("https://fonts.googleapis.com/css?family=Open+Sans");
 @import "../css/variables.scss";
 
@@ -112,8 +113,12 @@ html {
     }
     section {
       margin-bottom: 150px;
-      min-height: calc(100vh - 321px);
+      min-height: calc(100vh - 295px);
       padding-top: 25px;
+
+      @media only screen and (max-width: 475px) {
+        margin-bottom: 0px;
+      }
 
       .content-container {
         background-color: $white;
@@ -121,9 +126,19 @@ html {
         bottom: 0;
         box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.15);
         left: 0;
-        max-width: 1570px;
+        max-width: 1920px;
         margin: 1em auto 1em auto;
         width: 85%;
+
+        @media only screen and (min-width: 769px) and (max-width: 1024px) {
+          margin: 1em;
+          width: auto;
+        }
+
+        @media only screen and (max-width: 768px) {
+          margin: 1em 0 0 0;
+          width: 100%;
+        }
       }
     }
 
@@ -203,16 +218,16 @@ import { getIdToken, getLoginResponse } from "../../common/js/front_end_auth";
 import Nav from "./components/Nav.vue";
 import Stepper from "./components/Stepper.vue";
 import Footer from "./components/Footer.vue";
-import Timer from "./components/Timer/Timer.vue";
 import GlobalMessage from "./components/GlobalMessage.vue";
+import Timer from "./components/Timer.vue";
 
 @Component({
   components: {
     Nav,
     Stepper,
-    Timer,
     Footer,
-    GlobalMessage
+    GlobalMessage,
+    Timer
   }
 })
 export default class App extends Vue {

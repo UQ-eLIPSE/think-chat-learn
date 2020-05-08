@@ -5,17 +5,17 @@
         <h1>Feedback</h1>
         <p>
           By completing this survey, you’ll be providing essential information
-          that we’ll use to be able to improve the efficiency of MOOCchat.
+          that we’ll use to be able to improve the efficiency of Think.Chat.Learn.
         </p>
 
         <h2>General</h2>
-        <p><b>Provide comments on MOOCchat and these questions</b></p>
+        <p><b>Provide comments on Think.Chat.Learn and these questions</b></p>
         <b-field>
           <b-input
             type="textarea"
             minlength="10"
             maxlength="500"
-            placeholder="I love MOOCchat, it makes learning fun!"
+            placeholder="I love Think.Chat.Learn, it makes learning fun!"
           >
           </b-input>
         </b-field>
