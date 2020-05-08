@@ -15,6 +15,11 @@
     }
     dd {
       padding: 0 1em 1em;
+
+      @media only screen and (max-width: 768px) {
+        border-bottom: 1px solid $border-grey;
+      }
+
       &.opened {
         border-bottom: 1px solid $border-grey;
       }
