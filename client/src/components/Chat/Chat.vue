@@ -18,7 +18,7 @@
           :alertType="`standard`"
         />
         <ChatAlert
-          v-else-if="(systemMessage.type === SystemMessageTypes.WARNING || 
+          v-else-if="(systemMessage && systemMessage.type === SystemMessageTypes.WARNING || 
           systemMessage.type === SystemMessageTypes.FATAL_ERROR)"
           alertMessage="Error: Connection lost. Please close current window/tab and launch MOOCchat again from
            Blackboard. (Your progress will be retained)"
