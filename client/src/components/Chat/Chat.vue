@@ -17,6 +17,13 @@
           :alertMessage="message.message"
           :alertType="`standard`"
         />
+        <ChatAlert
+          v-else-if="(systemMessage.type === SystemMessageTypes.WARNING || 
+          systemMessage.type === SystemMessageTypes.FATAL_ERROR)"
+          alertMessage="Error: Connection lost. Please close current window/tab and launch MOOCchat again from
+           Blackboard. (Your progress will be retained)"
+          :alertType="`warning`"
+        />
       </div>
       <!-- Note since is typing notification is always last. We can render it to the bottom like this
            Also note that the div above is simply a wrapper. Template cannot be used -->
@@ -73,6 +80,7 @@ import ChatMessage from "./ChatMessage.vue";
 import CreateChatMessage from "./CreateChatMessage.vue";
 import { SocketState, MoocChatMessage } from "../../interfaces";
 import { MoocChatMessageTypes, MoocChatStateMessageTypes } from "../../enums";
+import { SystemMessageTypes } from "../../store";
 import * as IWSToClientData from ",,/../../../common/interfaces/IWSToClientData";
 import {
   IQuiz,
