@@ -4,7 +4,7 @@
   "private": true,
   "description": "moocChat upgrade",
   "scripts": {
-    "test": "test",
+    "test": "node_modules/.bin/cypress open",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "build_dev": "vue-cli-service build --mode development",
@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "buefy": "^0.7.7",
+    "cypress": "^4.5.0",
     "jwt-decode": "^2.2.0",
     "katex": "^0.10.2",
     "luxon": "^1.8.3",
