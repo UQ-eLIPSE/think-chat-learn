@@ -115,6 +115,10 @@ export default class Chat extends Vue {
     this.scrollToEnd();
   }
 
+  get systemMessage() {
+    return this.$store.state.systemMessage;
+  }
+
   get socketState(): SocketState | null {
     return this.$store.getters.socketState;
   }
