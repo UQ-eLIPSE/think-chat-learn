@@ -6,25 +6,16 @@
 </template>
 
 <style lang="scss" scoped>
-@import "../../../css/variables.scss";
-
 .chat-alert {
   margin-bottom: 10px;
   label {
-    border-radius: 5px;
-    display: block;
-    font-size: 1rem;
-    font-weight: 600;
-    padding: 10px;
+    font-size: 1em;
+    font-weight: 500;
     &.standard {
-      background-color: rgba(96, 175, 161, 0.15);
-      border: 1px solid $baseDark1;
-      color: $baseDark1;
+      color: $light-blue;
     }
     &.warning {
-      background-color: rgba(253, 117, 88, 0.15);
-      border: 1px solid $baseDark4;
-      color: $baseDark4;
+      color: $red;
     }
   }
 }

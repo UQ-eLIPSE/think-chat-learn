@@ -17,7 +17,8 @@ export const Conf = {
     },
     
     websockets: {
-        reconnectionAmount: 20,
+        // Connection attempt has been reduced from 20 to 5.
+        reconnectionAmount: 5,
         disconnectCooloffTimeoutMs: Utils.DateTime.secToMs(0.5)
     },
     timings: {

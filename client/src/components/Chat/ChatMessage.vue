@@ -1,12 +1,8 @@
 <template>
   <div class="chat-message">
     <CircularNumberLabel :numeral="numeral" />
-    <div
-      class="message"
-      :class="`base${+numeral}`"
-    >
+    <div class="message" :class="`base${+numeral}`">
       <span>{{ content }}</span>
-      <!-- <p>is typing</p> -->
       <template v-if="isTyping">
         <Spinner />
       </template>
@@ -15,13 +11,16 @@
 </template>
 
 <style lang="scss" scoped>
-@import "../../../css/variables.scss";
+@mixin coloredBorder($color) {
+  border: 1px solid $color;
+}
 
 .chat-message {
   margin-bottom: 10px;
   margin-left: 15px;
   position: relative;
   word-break: break-word;
+
   label {
     width: 30px;
     height: 30px;
@@ -34,29 +33,21 @@
     margin: auto 0;
     transform: translateY(20%);
   }
+  
   .message {
     background-color: $white;
-    padding: 0.5em;
+    font-size: 0.87em;
+    padding: 0.75em;
 
-    &.base1 {
-      border: 1px solid $baseLight1;
-    }
-
-    &.base2 {
-      border: 1px solid $baseLight2;
-    }
-
-    &.base3 {
-      border: 1px solid $baseLight3;
-    }
-
-    &.base4 {
-      border: 1px solid $baseLight4;
-    }
+    &.base1 { @include coloredBorder($light-blue); }
+    &.base2 { @include coloredBorder($green); }
+    &.base3 { @include coloredBorder($yellow); }
+    &.base4 { @include coloredBorder($red); }
 
     span {
       font-weight: 400;
       margin-left: 15px;
+      white-space: pre-wrap;
     }
   }
 }

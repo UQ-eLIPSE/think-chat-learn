@@ -27,42 +27,64 @@ export const router = new Router({
     {
       path: "/",
       name: Names.LANDING,
-      component: Landing
+      component: Landing,
+      meta: {
+        title: "Think.Chat.Learn"
+      },
     },
     {
       path: "/page",
       name: Names.PAGE,
       component: Page
+        title: "Think.Chat.Learn"
     },
     {
       path: "/discussion",
       name: Names.DISCUSSION,
-      component: Discussion
+      component: Discussion,
+      meta: {
+        title: "Think.Chat.Learn - Discussion"
+      },
     },
     {
       path: "/reflection",
       name: Names.REFLECTION,
-      component: Reflection
+      component: Reflection,
+      meta: {
+        title: "Think.Chat.Learn - Reflection"
+      },
     },
     {
       path: "/survey",
       name: Names.SURVEY,
-      component: Survey
+      component: Survey,
+      meta: {
+        title: "Think.Chat.Learn - Survey"
+      },
     },
     {
       path: "/login",
       name: Names.LOGIN,
-      component: Login
+      component: Login,
+      meta: {
+        title: "Think.Chat.Learn - Login"
+      },
     },
     {
       path: "/allocation",
       name: Names.GROUP_ALLOCATION,
-      component: GroupAllocation
+      component: GroupAllocation,
+      meta: {
+        title: "Think.Chat.Learn - Allocation"
+      },
     },
     {
       path: "/receipt",
       name: Names.RECEIPT,
-      component: Receipt
+      component: Receipt,
+      meta: {
+        title: "Think.Chat.Learn - Receipt"
+      },
     }
   ]
 });

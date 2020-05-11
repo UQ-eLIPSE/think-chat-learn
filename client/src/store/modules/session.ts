@@ -76,13 +76,15 @@ const mutationKeys = {
 
 // Handles reconnect message fail messages by noting this on the store
 function reconnectFail() {
-  store.commit("SET_GLOBAL_MESSAGE", {
-    error: true,
-    type: SystemMessageTypes.FATAL_ERROR,
-    message:
-      "Error: Connection lost. Please close current window/tab and launch TCL again from Blackboard. " +
-      "(Your progress will be retained)"
-  });
+    store.commit("SET_GLOBAL_MESSAGE", {
+        error: true,
+        type: SystemMessageTypes.FATAL_ERROR,
+        message:
+            "Error: Connection lost. Please close current window/tab and launch Think.Chat.Learn again from Blackboard. " +
+                "(Your progress will be retained)"
+      });
+      alert("Error: Connection lost. Please close current window/tab and launch Think.Chat.Learn again from Blackboard. " +
+      "(Your progress will be retained)");
 }
 
 // To be displayed when socket.io cannot reconnect.
@@ -94,6 +96,7 @@ function reconnectAttempt(attemptNumber: number) {
         message: `Connection lost.
             Attempting to reconnect (#${attemptNumber}/${CommonConf.Conf.websockets.reconnectionAmount})`
       });
+    
 }
 
 // Grabs the reference from user.ts
@@ -334,7 +337,7 @@ async function handleReconnect(data: any) {
                     expiry: null,
                     message:
                         "Error: Connection could not be established. " +
-                        "Please close current window/tab and launch again from Blackboard. " +
+                        "Please close current window/tab and launch Think.Chat.Learn again from Blackboard. " +
                         "(Your progress will be retained)"
                 };
 

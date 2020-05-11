@@ -1,11 +1,7 @@
 <template>
   <footer>
     <a href="https://uq.edu.au/">
-      <img
-        src="../../public/uq-logo-white.png"
-        alt="The University of Queensland"
-        title="The University of Queensland"
-      />
+      <img src="@/assets/images/uq-logo-white.png" alt="The University of Queensland" title="The University of Queensland" />
     </a>
     <a href="https://www.elipse.uq.edu.au/" class="ft-right">
       <img src="@/assets/images/elipse-logo.png" alt="eLIPSE" title="eLIPSE" />
@@ -14,16 +10,14 @@
 </template>
 
 <style lang="scss" scoped>
-@import "../../css/variables.scss";
-
 footer {
   align-items: center;
-  background-color: $primary;
+  background-color: $uq;
   bottom: 0;
   display: flex;
   height: 75px;
   left: 0;
-  padding: 3em 3em;
+  padding: 0 3em;
   position: inherit;
   width: 100%;
 
@@ -32,7 +26,7 @@ footer {
   }
 
   a {
-    width: 10.625em;
+    width: 9em;
 
     &:first-child {
       margin-right: 2em;

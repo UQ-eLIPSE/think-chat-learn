@@ -114,7 +114,6 @@
 </template>
 
 <style lang="scss" scoped>
-@import "../../css/variables.scss";
 
 .landing {
   margin-bottom: 175px;
@@ -136,18 +135,10 @@
       margin-right: 0.5em;
       vertical-align: baseline;
 
-      &.base1 {
-        color: #6dc7b7;
-      }
-      &.base2 {
-        color: #99b204;
-      }
-      &.base3 {
-        color: #ffae00;
-      }
-      &.base4 {
-        color: #ff7659;
-      }
+      &.base1 { color: $light-blue; }
+      &.base2 { color: $green; }
+      &.base3 { color: $yellow; }
+      &.base4 { color: $red; }
     }
   }
 }
@@ -214,7 +205,13 @@ export default class Landing extends Vue {
     return this.$store.getters.resync;
   }
 
+  private scrollToTop(): void {
+    window.scrollTo(0, 0);
+  }
+
   private startQuizSession() {
+    this.scrollToTop();
+
     if (!this.quiz || !this.userSession) {
       return;
     }
