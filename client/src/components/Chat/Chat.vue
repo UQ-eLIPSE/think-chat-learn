@@ -76,8 +76,8 @@ import { Vue, Component, Watch, Prop } from "vue-property-decorator";
 import ChatAlert from "./ChatAlert.vue";
 import ChatMessage from "./ChatMessage.vue";
 import CreateChatMessage from "./CreateChatMessage.vue";
-import { SocketState, MoocChatMessage } from "../../interfaces";
-import { MoocChatMessageTypes, MoocChatStateMessageTypes } from "../../enums";
+import { SocketState, Message } from "../../interfaces";
+import { MessageTypes, StateMessageTypes } from "../../enums";
 import { SystemMessageTypes } from "../../store";
 import * as IWSToClientData from ",,/../../../common/interfaces/IWSToClientData";
 import {

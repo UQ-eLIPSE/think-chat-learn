@@ -17,6 +17,7 @@
     "buefy": "^0.7.1",
     "bulma-extensions": "^4.0.0",
     "katex": "^0.10.2",
+    "node-sass": "^4.14.1",
     "postcss-import": "^12.0.1",
     "postcss-url": "^8.0.0",
     "socket.io-client": "^2.2.0",
@@ -34,7 +35,6 @@
     "@vue/cli-plugin-unit-mocha": "^3.0.5",
     "@vue/cli-service": "^3.0.5",
     "@vue/test-utils": "^1.0.0-beta.20",
-    "node-sass": "^4.11.0",
     "sass-loader": "^8.0.2",
     "typescript": "^3.3.3333",
     "vue-template-compiler": "^2.5.17"

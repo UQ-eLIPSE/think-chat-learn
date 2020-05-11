@@ -1,7 +1,6 @@
 import Vue from "vue";
 import Router, { Route } from "vue-router";
 import Landing from "./views/Landing.vue";
-import Page from "./views/PageTemplate.vue";
 import Discussion from "./views/Discussion.vue";
 import Reflection from "./views/Reflection.vue";
 import Survey from "./views/Survey.vue";
@@ -31,12 +30,6 @@ export const router = new Router({
       meta: {
         title: "Think.Chat.Learn"
       },
-    },
-    {
-      path: "/page",
-      name: Names.PAGE,
-      component: Page
-        title: "Think.Chat.Learn"
     },
     {
       path: "/discussion",
