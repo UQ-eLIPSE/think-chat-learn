@@ -22,7 +22,7 @@ export const Conf = {
     },
 
     websockets: {
-        reconnectionAmount: 20,
+        reconnectionAmount: 2,
         disconnectCooloffTimeoutMs: Utils.DateTime.secToMs(0.5)
     },
 
