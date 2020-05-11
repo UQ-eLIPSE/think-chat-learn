@@ -94,6 +94,7 @@ function reconnectAttempt(attemptNumber: number) {
         message: `Connection lost.
             Attempting to reconnect (#${attemptNumber}/${CommonConf.Conf.websockets.reconnectionAmount})`
       });
+    alert("Connection has been lost. Attempting to reconnect");
 }
 
 // Grabs the reference from user.ts
