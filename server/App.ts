@@ -5,7 +5,7 @@ import * as bodyParser from "body-parser";
 import * as expressJwt from "express-jwt";
 import * as jwt from "jsonwebtoken";import { Db, MongoClient } from "mongodb";
 
-import { Moocchat } from "./js/Moocchat";
+import { Main } from "./js";
 import { Conf } from "./config/Conf";
 // Repos
 import { UserRepository } from "./repositories/UserRepository";
@@ -45,8 +45,8 @@ import { RubricController } from "./controllers/RubricController";
 import { ImageController } from "./controllers/ImageController";
 // Authenticator for students
 import { StudentAuthenticatorMiddleware } from "./js/auth/StudentPageAuth";
-// Moocchat pool to initialize service
-import { MoocchatWaitPool } from "./js/queue/MoocchatWaitPool";
+// Pool to initialize service
+import { WaitPool } from "./js/queue/WaitPool";
 import { MantaInterface } from "./manta/MantaInterface";
 export default class App {
 
@@ -179,7 +179,7 @@ export default class App {
         this.marksController.setupRoutes();
         this.imageController.setupRoutes();
         // Set up the wait pool service
-        MoocchatWaitPool.AssignQuizService(this.quizService);
+        WaitPool.AssignQuizService(this.quizService);
 
         this.criteriaController.setupRoutes();
         this.rubricController.setupRoutes();
@@ -196,11 +196,11 @@ export default class App {
             pingTimeout: Conf.socketIo.pingTimeout
         });
 
-        // Used to set up the moocchat sockets
-        this.socketIO = new Moocchat(io, this.chatGroupService, this.responseService, this.quizSessionService).getSocketIO();
+        // Used to set up sockets
+        this.socketIO = new Main(io, this.chatGroupService, this.responseService, this.quizSessionService).getSocketIO();
     }
 
-    // For now we also open up teh sockets and h
+    // For now we also open up the sockets
     private setupRoutes(): void {
         console.log(`socket.io listening on ${Conf.portNum}`);
         
@@ -211,7 +211,7 @@ export default class App {
         
         
         // POST body parsing
-        this.express.use(bodyParser.json());         // JSON-encoded for MOOCchat API
+        this.express.use(bodyParser.json());         // JSON-encoded for API
         this.express.use(bodyParser.urlencoded({     // URL-encoded for LTI
             extended: true
         }));
@@ -263,11 +263,11 @@ export default class App {
             res.render("backup-client.ejs");
         });
         
-        console.log("Launching MOOCchat...");
+        console.log("Launching...");
         
         
         
-        // // MOOCchat standard client
+        // // Standard client
         // this.express.post("/", (req, res) => {
         //     res.render("index.ejs", { conf: Conf, postData: req.body });
         // });

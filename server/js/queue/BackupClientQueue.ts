@@ -3,10 +3,10 @@ import { Conf } from "../../config/Conf";
 import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
 
 import { QuizAttempt } from "../quiz/QuizAttempt";
-import { MoocchatWaitPool } from "./MoocchatWaitPool";
+import { WaitPool } from "./WaitPool";
 
-export class MoocchatBackupClientQueue {
-    private static BackupClientQueues: { [quizSessionId: string]: MoocchatBackupClientQueue } = {};
+export class BackupClientQueue {
+    private static BackupClientQueues: { [quizSessionId: string]: BackupClientQueue } = {};
 
     private _quizAttempts: QuizAttempt[];
     private _quizSessionId: string;
@@ -15,12 +15,12 @@ export class MoocchatBackupClientQueue {
     private callNoResponseTimeoutHandle: number;
 
     public static GetQueue(quizSessionId: string) {
-        if (!MoocchatBackupClientQueue.BackupClientQueues.hasOwnProperty(quizSessionId)) {
+        if (!BackupClientQueue.BackupClientQueues.hasOwnProperty(quizSessionId)) {
             // Create new queue
-            return new MoocchatBackupClientQueue(quizSessionId);
+            return new BackupClientQueue(quizSessionId);
         }
 
-        return MoocchatBackupClientQueue.BackupClientQueues[quizSessionId];
+        return BackupClientQueue.BackupClientQueues[quizSessionId];
     }
 
     /**
@@ -32,14 +32,14 @@ export class MoocchatBackupClientQueue {
      * @returns
      */
     public static GetQueueWithQuizScheduleFrom(quizAttempt: QuizAttempt) {
-        return MoocchatBackupClientQueue.GetQueue(quizAttempt.getQuizSchedule().getId());
+        return BackupClientQueue.GetQueue(quizAttempt.getQuizSchedule().getId());
     }
 
-    public static Destroy(backupQueue: MoocchatBackupClientQueue) {
+    public static Destroy(backupQueue: BackupClientQueue) {
         delete backupQueue._quizSessionId;
         delete backupQueue._quizAttempts;
 
-        delete MoocchatBackupClientQueue.BackupClientQueues[backupQueue.getQuizSessionId()];
+        delete BackupClientQueue.BackupClientQueues[backupQueue.getQuizSessionId()];
     }
 
 
@@ -50,7 +50,7 @@ export class MoocchatBackupClientQueue {
         this._quizAttempts = [];
 
         // Put into singleton map
-        MoocchatBackupClientQueue.BackupClientQueues[this.getQuizSessionId()] = this;
+        BackupClientQueue.BackupClientQueues[this.getQuizSessionId()] = this;
     }
 
     public getQuizSessionId() {
@@ -85,7 +85,7 @@ export class MoocchatBackupClientQueue {
     }
 
     public broadcastWaitPoolCount() {
-        const waitPool = MoocchatWaitPool.GetPool(this.getQuizSessionId());
+        const waitPool = WaitPool.GetPool(this.getQuizSessionId());
 
         // If there is no wait pool, stop
         if (!waitPool) {
@@ -105,7 +105,7 @@ export class MoocchatBackupClientQueue {
             return;
         }
 
-        console.log(`MoocchatBackupClientQueue(${this.getQuizSessionId()}) ADDING Quiz Attempt ${quizAttempt.getId()}`);
+        console.log(`BackupClientQueue(${this.getQuizSessionId()}) ADDING Quiz Attempt ${quizAttempt.getId()}`);
 
         this._quizAttempts.push(quizAttempt);
 
@@ -130,7 +130,7 @@ export class MoocchatBackupClientQueue {
             return undefined;
         }
 
-        console.log(`MoocchatBackupClientQueue(${this.getQuizSessionId()}) REMOVING Quiz Attempt ${quizAttempt.getId()}`);
+        console.log(`BackupClientQueue(${this.getQuizSessionId()}) REMOVING Quiz Attempt ${quizAttempt.getId()}`);
 
         const removedSession = this._quizAttempts.splice(index, 1)[0];
 
@@ -148,7 +148,7 @@ export class MoocchatBackupClientQueue {
     /**
      * @return {boolean} Whether call has been made and we are waiting for a backup client to pop over to the supplied wait pool
      */
-    public callToPool(waitPool: MoocchatWaitPool) {
+    public callToPool(waitPool: WaitPool) {
         // If already called, then return true while we wait
         if (this.quizAttemptToCall) {
             return true;
@@ -194,7 +194,7 @@ export class MoocchatBackupClientQueue {
 
             clearTimeout(this.callNoResponseTimeoutHandle);
 
-            console.log(`MoocchatBackupClientQueue(${this.getQuizSessionId()}) MOVING TO POOL Session ${quizAttemptToCall.getId()}`);
+            console.log(`BackupClientQueue(${this.getQuizSessionId()}) MOVING TO POOL Session ${quizAttemptToCall.getId()}`);
 
             this.removeQuizAttempt(quizAttemptToCall);
             waitPool.addQuizAttempt(quizAttemptToCall);
@@ -209,7 +209,7 @@ export class MoocchatBackupClientQueue {
 
 
         // Send call out
-        console.log(`MoocchatBackupClientQueue(${this.getQuizSessionId()}) CALLING Session ${quizAttemptToCall.getId()}`);
+        console.log(`BackupClientQueue(${this.getQuizSessionId()}) CALLING Session ${quizAttemptToCall.getId()}`);
         quizAttemptToCallSocket.emit("backupClientTransferCall");
 
         return true;

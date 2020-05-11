@@ -1,12 +1,12 @@
 import { ILTIData } from "../../../../common/interfaces/ILTIData";
-import { IMoocchatAuthProcessReturn } from "../IMoocchatAuthProcessReturn";
-import { IMoocchatIdentityInfo } from "../IMoocchatIdentityInfo";
+import { IAuthProcessReturn } from "../IAuthProcessReturn";
+import { IIdentityInfo } from "../IIdentityInfo";
 
 import { Conf } from "../../../config/Conf";
 import { LTIProcessor } from "./LTIProcessor";
-import { MoocchatAuth } from "../MoocchatAuth";
+import { Auth } from "../Auth";
 
-export class LTIAuth extends MoocchatAuth {
+export class LTIAuth extends Auth {
     private static Processor = new LTIProcessor(Conf.lti.signingInfo, true, Conf.lti.testMode);
 
     private ltiData: ILTIData;
@@ -22,7 +22,7 @@ export class LTIAuth extends MoocchatAuth {
         };
     }
 
-    public isAuthenticated(): IMoocchatAuthProcessReturn {
+    public isAuthenticated(): IAuthProcessReturn {
         try {
             LTIAuth.Processor.verifyAndReturnLTIObj(this.ltiData);
         } catch (e) {
@@ -37,7 +37,7 @@ export class LTIAuth extends MoocchatAuth {
         };
     }
 
-    public getIdentity(): IMoocchatIdentityInfo {
+    public getIdentity(): IIdentityInfo {
         if (!this.ltiData.user_id) {
             throw new Error("No user ID available for use");
         }

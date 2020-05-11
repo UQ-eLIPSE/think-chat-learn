@@ -1,6 +1,6 @@
 <template>
     <div class="sidebar">
-        <h1 class="moochat-name">MOOCchat</h1>
+        <h1>Think.Chat.Learn</h1>
         <div class="course-name">{{ course }}</div>
         <!-- Add v-for later-->
         <ul>
@@ -41,7 +41,7 @@ li.inactive {
   margin: 1rem 2rem 1.5rem;
 }
 
-.moochat-name {
+h1 {
   line-height: 1;
   color: white !important;
   margin: 2rem 2rem 1rem;

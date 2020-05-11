@@ -3,7 +3,7 @@ import {Utils} from "../../common/js/Utils";
 export const Conf = {
     server: {
         // Change url to localhost:[PORT_NUMBER] for runnning locally
-        // Replace with the absolute address where moocchat server is deployed
+        // Replace with the absolute address where server is deployed
         url: "localhost:8080"
     },
     taskTimer: {
@@ -22,7 +22,7 @@ export const Conf = {
     },
 
     websockets: {
-        reconnectionAmount: 20,
+        reconnectionAmount: 2,
         disconnectCooloffTimeoutMs: Utils.DateTime.secToMs(0.5)
     },
 

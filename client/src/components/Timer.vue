@@ -1,7 +1,7 @@
 <template>
   <div
     class="timer"
-    v-show="['MoocChatPage', 'Discussion', 'Reflection'].includes($route.name)"
+    v-show="['Page', 'Discussion', 'Reflection'].includes($route.name)"
   >
     <font-awesome-icon icon="clock" />
     <b>Next page will load in:</b> {{timeLeftInMinutesSeconds}}

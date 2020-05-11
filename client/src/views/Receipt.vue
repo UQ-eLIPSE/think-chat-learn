@@ -8,7 +8,7 @@
       <font-awesome-icon icon="star" />&nbsp;<b>Attempt ID:</b> {{receipt}}</label>
     <div class="content">
       <p>
-        If you need to discuss your <b>MOOCchat</b> in the future,<br />
+        If you need to discuss your <b>Think.Chat.Learn</b> in the future,<br />
         please provide this ID in your communications.
       </p>
     </div>

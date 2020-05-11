@@ -3,7 +3,7 @@ import {Utils} from "../js/Utils";
 export const Conf = {
     server: {
         // Change url to localhost:[PORT_NUMBER] for runnning locally
-        // Replace with the absolute address where moocchat server is deployed
+        // Replace with the absolute address where server is deployed
         url: "localhost:8080"
     },
     pacSeqSocket: {
@@ -17,7 +17,8 @@ export const Conf = {
     },
     
     websockets: {
-        reconnectionAmount: 20,
+        // Connection attempt has been reduced from 20 to 5.
+        reconnectionAmount: 5,
         disconnectCooloffTimeoutMs: Utils.DateTime.secToMs(0.5)
     },
     timings: {

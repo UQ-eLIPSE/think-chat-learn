@@ -206,7 +206,7 @@ import Chat from "../components/Chat/Chat.vue";
 import ChatMessage from "../components/Chat/ChatMessage.vue";
 import katex from "katex";
 import { Conf } from "../../../common/config/Conf";
-import { MoocChatMessage } from "../interfaces";
+import { Message } from "../interfaces";
 import CircularNumberLabel from "../components/CircularNumberLabel.vue";
 
 @Component({
@@ -217,7 +217,7 @@ import CircularNumberLabel from "../components/CircularNumberLabel.vue";
     CircularNumberLabel
   }
 })
-export default class MoocChatPage extends Vue {
+export default class Page extends Vue {
   // Used for Quill content areas as Quill sets empty content as the below
   private emptyContent = "<p><br></p>";
 
@@ -232,7 +232,7 @@ export default class MoocChatPage extends Vue {
   private responseContent: string = "";
   private confidence: number = 3;
 
-  get chatMessages(): MoocChatMessage[] {
+  get chatMessages(): Message[] {
     return this.$store.getters.chatMessages;
   }
 
@@ -247,8 +247,8 @@ export default class MoocChatPage extends Vue {
   // In short, if we have a message and the chat is off, notify new message
   @Watch("chatMessages")
   private handleMessageNotification(
-    newVal: MoocChatMessage[],
-    oldVal: MoocChatMessage[]
+    newVal: Message[],
+    oldVal: Message[]
   ) {
     if (!this.toggleChat) {
       this.newMessage = true;
@@ -415,20 +415,11 @@ export default class MoocChatPage extends Vue {
     }
   }
 
-  // get socketState(): SocketState | null {
-  //   return this.$store.getters.socketState;
-  // }
-
   get socket(): WebsocketManager | null {
     return this.socketState && this.socketState.socket
       ? this.socketState.socket
       : null;
   }
-
-  // Empty should be default behaviour if no socket state is present
-  // get chatMessages(): IWSToClientData.ChatGroupMessage[] {
-  //   return this.socketState ? this.socketState.chatMessages : [];
-  // }
 
   get chatGroup(): IWSToClientData.ChatGroupFormed | null {
     return this.socketState && this.socketState.chatGroupFormed
