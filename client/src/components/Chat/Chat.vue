@@ -17,11 +17,6 @@
           :alertMessage="message.message"
           :alertType="`standard`"
         />
-        <ChatAlert
-          v-if="displayChatErrorMessage" alertMessage="Error: Connection lost. Please close current window/tab and launch Think.Chat.Learn again from
-           Blackboard. (Your progress will be retained)"
-          :alertType="`warning`"
-        />
       </div>
       <!-- Note since is typing notification is always last. We can render it to the bottom like this
            Also note that the div above is simply a wrapper. Template cannot be used -->
@@ -33,6 +28,11 @@
           :content="`Student ${typingNotif + 1} is typing`"
           :numeral="typingNotif + 1"
           :isTyping="true"
+        />
+        <ChatAlert
+          v-if="displayChatErrorMessage" alertMessage="Error: Connection lost. Please close current window/tab and launch Think.Chat.Learn again from
+           Blackboard. (Your progress will be retained)"
+          :alertType="`warning`"
         />
       </template>
     </div>
