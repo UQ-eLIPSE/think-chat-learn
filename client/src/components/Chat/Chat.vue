@@ -18,9 +18,7 @@
           :alertType="`standard`"
         />
         <ChatAlert
-          v-else-if="(systemMessage && systemMessage.type === SystemMessageTypes.WARNING || 
-          systemMessage.type === SystemMessageTypes.FATAL_ERROR)"
-          alertMessage="Error: Connection lost. Please close current window/tab and launch MOOCchat again from
+          v-else-if="displayChatErrorMessage" alertMessage="Error: Connection lost. Please close current window/tab and launch Think.Chat.Learn again from
            Blackboard. (Your progress will be retained)"
           :alertType="`warning`"
         />
@@ -115,10 +113,6 @@ export default class Chat extends Vue {
     this.scrollToEnd();
   }
 
-  get systemMessage() {
-    return this.$store.state.systemMessage;
-  }
-
   get socketState(): SocketState | null {
     return this.$store.getters.socketState;
   }
@@ -147,6 +141,25 @@ export default class Chat extends Vue {
     return this.socketState && this.socketState.chatTypingNotifications
       ? this.socketState.chatTypingNotifications
       : null;
+  }
+
+  get systemMessage() {
+    return this.$store.state.systemMessage;
+  }
+
+  get hasMessage() {
+    return this.systemMessage && this.systemMessage.message;
+  }
+
+  get displayChatErrorMessage() {
+    try {
+      if(!this.hasMessage) return false;
+      
+      return (this.systemMessage.type === SystemMessageTypes.WARNING || 
+            this.systemMessage.type === SystemMessageTypes.FATAL_ERROR);
+    } catch(e) {
+        return false;
+    }
   }
 }
 </script>
