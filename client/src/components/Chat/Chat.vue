@@ -18,7 +18,7 @@
           :alertType="`standard`"
         />
         <ChatAlert
-          v-else-if="displayChatErrorMessage" alertMessage="Error: Connection lost. Please close current window/tab and launch Think.Chat.Learn again from
+          v-if="displayChatErrorMessage" alertMessage="Error: Connection lost. Please close current window/tab and launch Think.Chat.Learn again from
            Blackboard. (Your progress will be retained)"
           :alertType="`warning`"
         />
