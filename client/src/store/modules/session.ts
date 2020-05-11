@@ -12,8 +12,8 @@ import * as IWSToClientData from "../../../../common/interfaces/IWSToClientData"
 import { WebsocketManager } from "../../../../common/js/WebsocketManager";
 import { WebsocketEvents } from "../../../../common/js/WebsocketEvents";
 // Common typings/utils
-import { SocketState, MoocChatMessage, StateMessage, Dictionary } from "../../interfaces";
-import { MoocChatMessageTypes, MoocChatStateMessageTypes } from "../../enums";
+import { SocketState, Message, StateMessage, Dictionary } from "../../interfaces";
+import { MessageTypes, StateMessageTypes } from "../../enums";
 import { logout, getLoginResponse } from "../../../../common/js/front_end_auth";
 import store, { SystemMessageTypes } from "..";
 import { Utils } from "../../../../common/js/Utils";
@@ -26,11 +26,11 @@ export interface IState {
     // Note the key of this dictionary would be the questionid as we simply respond to one question
     responses: Dictionary<Response>;
     socketState: SocketState;
-    chatMessages: MoocChatMessage[];
+    chatMessages: Message[];
     resyncAmount: number;
     // Stops the browser
     stopBrowser: boolean;
-    // Tells a resync to a moocchat page
+    // Tells a resync to a page
     resync: boolean;
     // Tells if the quiz session is available
     quizAvailable: boolean;
@@ -114,8 +114,8 @@ async function handleGroupJoin(data?: IWSToClientData.ChatGroupFormed) {
 
     // Handle a join
     const joinMessage: StateMessage = {
-        state: MoocChatStateMessageTypes.ON_JOIN,
-        type: MoocChatMessageTypes.STATE_MESSAGE,
+        state: StateMessageTypes.ON_JOIN,
+        type: MessageTypes.STATE_MESSAGE,
         message: `Joined a group of ${data.groupSize} you are Student ${data.clientIndex}`
     };
 
@@ -139,8 +139,8 @@ function handleIncomingChatMessage(data?: IWSToClientData.ChatGroupMessage) {
     Vue.set(state.socketState.chatMessages, state.socketState.chatMessages.length, data);
 
     // Also handle the total chat message
-    const chatMessage: MoocChatMessage = {
-        type: MoocChatMessageTypes.CHAT_MESSAGE,
+    const chatMessage: Message = {
+        type: MessageTypes.CHAT_MESSAGE,
         content: data
     };
 
@@ -182,8 +182,8 @@ function handleChatDisconnect(data?: IWSToClientData.ChatGroupDisconnect) {
     }
 
     const stateMessage: StateMessage = {
-        state: MoocChatStateMessageTypes.CHAT_GROUP_LEAVE,
-        type: MoocChatMessageTypes.STATE_MESSAGE,
+        state: StateMessageTypes.CHAT_GROUP_LEAVE,
+        type: MessageTypes.STATE_MESSAGE,
         message: `Student ${data.clientIndex} has disconnected`
     };
 
@@ -196,8 +196,8 @@ function handleChatGroupReconnect(data?: IWSToClientData.ChatGroupReconnect) {
     }
 
     const stateMessage: StateMessage = {
-        state: MoocChatStateMessageTypes.CHAT_GROUP_RECONNECT,
-        type: MoocChatMessageTypes.STATE_MESSAGE,
+        state: StateMessageTypes.CHAT_GROUP_RECONNECT,
+        type: MessageTypes.STATE_MESSAGE,
         message: `Student ${data.clientIndex} has reconnected`
     };
 
@@ -406,7 +406,7 @@ const getters = {
         return state.socketState;
     },
 
-    chatMessages: (): MoocChatMessage[] => {
+    chatMessages: (): Message[] => {
         return state.chatMessages;
     },
 
@@ -592,11 +592,11 @@ const mutations = {
         }
     },
 
-    [mutationKeys.APPEND_STATE_MESSAGE](funcState: IState, data: { incomingState: MoocChatStateMessageTypes,
+    [mutationKeys.APPEND_STATE_MESSAGE](funcState: IState, data: { incomingState: StateMessageTypes,
         message: string }) {
 
         const outgoingMessage: StateMessage = {
-            type: MoocChatMessageTypes.STATE_MESSAGE,
+            type: MessageTypes.STATE_MESSAGE,
             state: data.incomingState,
             message: data.message
         };
@@ -611,13 +611,13 @@ const mutations = {
     [mutationKeys.SET_SOCKET_MESSAGES](funcState: IState, data: IWSToClientData.ChatGroupMessage[]) {
         Vue.set(funcState.socketState!, "chatMessages", data);
         Vue.set(funcState, "chatMessages", data.map((element) => {
-            const output: MoocChatMessage = {
-                type: MoocChatMessageTypes.CHAT_MESSAGE,
+            const output: Message = {
+                type: MessageTypes.CHAT_MESSAGE,
                 content: element
             };
 
             return output;
-        }, [] as MoocChatMessage[]));
+        }, [] as Message[]));
     },
 
     [mutationKeys.SET_FETCH_STATE](funcState: IState, data: boolean) {

@@ -1,8 +1,8 @@
 {
   "name": "moocChat",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "private": true,
-  "description": "moocChat upgrade",
+  "description": "v3 of moocChat will be branded as Think.Chat.Learn and will include a complete rebrand and significant code improvements.",
   "scripts": {
     "test": "node_modules/.bin/cypress open",
     "serve": "vue-cli-service serve",
@@ -18,6 +18,7 @@
     "bulma-extensions": "^4.0.0",
     "cypress": "^4.5.0",
     "katex": "^0.10.2",
+    "node-sass": "^4.14.1",
     "postcss-import": "^12.0.1",
     "postcss-url": "^8.0.0",
     "socket.io-client": "^2.2.0",
@@ -35,7 +36,6 @@
     "@vue/cli-plugin-unit-mocha": "^3.0.5",
     "@vue/cli-service": "^3.0.5",
     "@vue/test-utils": "^1.0.0-beta.20",
-    "node-sass": "^4.11.0",
     "sass-loader": "^8.0.2",
     "typescript": "^3.3.3333",
     "vue-template-compiler": "^2.5.17"

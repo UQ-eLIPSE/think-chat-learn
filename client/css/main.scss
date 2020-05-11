@@ -1,9 +1,5 @@
 @import "uq-branding";
 
-/**
- * MOOCchat
- */
-
 /********** Colours **********/
 $body-bg-colour: #fdfdfd;
 $body-std-font-size: 16px;
@@ -603,13 +599,10 @@ body > #content > section {
 
 /********** Header/sidebar **********/
 
-#moocchat-name {
+h1 {
   line-height: 1;
   margin: $mc-sidebar-padding-tb * 2 $mc-sidebar-padding-lr
     $mc-sidebar-padding-tb;
-}
-
-#course-name {
   font-style: italic;
   margin: $mc-sidebar-padding-tb $mc-sidebar-padding-lr $mc-sidebar-padding-tb *
     1.5;
@@ -1794,59 +1787,6 @@ ol.welcome-instructions {
   }
 }
 
-// // Short height devices (< 600px in window, approx < 900px in Blackboard, device approx < 1000px)
-// @media (max-height: 650px) {
-//     html, body {
-//         font-size: $body-std-font-size * 0.9;
-//     }
-
-//     #moocchat-name {
-//         margin-top: $mc-sidebar-padding-tb * 1.5;
-//     }
-
-//     #course-name {
-//         margin-bottom: $mc-sidebar-padding-tb * 0.7;
-//     }
-
-//     #task-sections {
-//         li {
-//             padding-top: $mc-sidebar-padding-tb * 0.8;
-//             padding-bottom: $mc-sidebar-padding-tb * 0.8;
-//         }
-//     }
-// }
-
-// @media (max-height: 550px) {
-//     #task-sections {
-//         li {
-//             padding-top: $mc-sidebar-padding-tb * 0.5;
-//             padding-bottom: $mc-sidebar-padding-tb * 0.5;
-//         }
-//     }
-// }
-
-// // Very short height devices (< 400px in window, approx < 600px in Blackboard, device approx < 800px)
-// @media (max-height: 450px) {
-//     #header {
-//         font-size: 1.1rem;
-//     }
-
-//     #moocchat-name {
-//         margin-bottom: $mc-sidebar-padding-tb * 0.3;
-//     }
-
-//     #course-name {
-//         margin-top: $mc-sidebar-padding-tb * 0.3;
-//     }
-
-//     #task-sections {
-//         li {
-//             padding-top: $mc-sidebar-padding-tb * 0.3;
-//             padding-bottom: $mc-sidebar-padding-tb * 0.3;
-//         }
-//     }
-// }
-
 // Printers
 @media print {
   html,
@@ -1873,7 +1813,7 @@ ol.welcome-instructions {
     display: none !important;
   }
 
-  #moocchat-name,
+  h1,
   #course-name {
     display: inline-block;
   }

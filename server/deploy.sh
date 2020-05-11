@@ -68,7 +68,7 @@ cp "../intermediate/envs/$SERVER" "../intermediate/.env.$MODE"
 #######
 # BUILD
 #######
-echo -e "Building and deploying MOOCchat using node $NODE_VERSION"
+echo -e "Building and deploying using node $NODE_VERSION"
 
 # Remove previously built files
 rm -rf ./$TEMP

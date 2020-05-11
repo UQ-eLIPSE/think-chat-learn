@@ -7,13 +7,13 @@
         :key="index"
       >
         <ChatMessage
-          v-if="message.type === MoocChatMessageTypes.CHAT_MESSAGE"
+          v-if="message.type === MessageTypes.CHAT_MESSAGE"
           :userNumber="`Client ${message.content.clientIndex}`"
           :content="message.content.message"
           :numeral="message.content.clientIndex"
         />
         <ChatAlert
-          v-else-if="(message.type === MoocChatMessageTypes.STATE_MESSAGE)"
+          v-else-if="(message.type === MessageTypes.STATE_MESSAGE)"
           :alertMessage="message.message"
           :alertType="`standard`"
         />
@@ -76,8 +76,8 @@ import { Vue, Component, Watch, Prop } from "vue-property-decorator";
 import ChatAlert from "./ChatAlert.vue";
 import ChatMessage from "./ChatMessage.vue";
 import CreateChatMessage from "./CreateChatMessage.vue";
-import { SocketState, MoocChatMessage } from "../../interfaces";
-import { MoocChatMessageTypes, MoocChatStateMessageTypes } from "../../enums";
+import { SocketState, Message } from "../../interfaces";
+import { MessageTypes, StateMessageTypes } from "../../enums";
 import { SystemMessageTypes } from "../../store";
 import * as IWSToClientData from ",,/../../../common/interfaces/IWSToClientData";
 import {
@@ -95,7 +95,7 @@ import { PageType } from "../../../../common/enums/DBEnums";
   }
 })
 export default class Chat extends Vue {
-  @Prop({ default: () => [] }) private chatMessages!: MoocChatMessage[];
+  @Prop({ default: () => [] }) private chatMessages!: Message[];
 
   private scrollToEnd() {
     const container = document.querySelector(".message-container");
@@ -117,12 +117,12 @@ export default class Chat extends Vue {
     return this.$store.getters.socketState;
   }
 
-  get MoocChatMessageTypes() {
-    return MoocChatMessageTypes;
+  get MessageTypes() {
+    return MessageTypes;
   }
 
-  get MoocChatStateMessageTypes() {
-    return MoocChatStateMessageTypes;
+  get StateMessageTypes() {
+    return StateMessageTypes;
   }
 
   get clientNotifications(): number[] {

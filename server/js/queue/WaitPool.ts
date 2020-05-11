@@ -16,11 +16,11 @@ import { QuizService } from "../../services/QuizService";
  * quizId and questionId are unique, then the appendment of the two would make a
  * unique id as well
  */
-export class MoocchatWaitPool {
+export class WaitPool {
     //private static DesiredGroupSize: number = Conf.chat.groups.desiredSize;
     private static DesiredMaxWaitTime: number = CommonConf.timings.chatGroupFormationTimeoutMs;
     // A singleton of a pool dictionary where each key is the quiz id
-    private static readonly WaitPools = new KVStore<MoocchatWaitPool>();
+    private static readonly WaitPools = new KVStore<WaitPool>();
 
     private static QuizService: QuizService | null = null;
 
@@ -34,27 +34,27 @@ export class MoocchatWaitPool {
     private _questionId: string;
 
     // The answers of the pool
-    private readonly answerQueues = new KVStore<MoocchatWaitPoolAnswerQueueData[]>();
+    private readonly answerQueues = new KVStore<WaitPoolAnswerQueueData[]>();
 
 
     public static AssignQuizService(quizService: QuizService) {
-        if (!MoocchatWaitPool.QuizService) {
-            MoocchatWaitPool.QuizService = quizService;
+        if (!WaitPool.QuizService) {
+            WaitPool.QuizService = quizService;
         }
     }
 
     // Creates or gets a pool. Instantiates based on the quiz id
     public static async GetPoolAutoCreate(quizId: string, questionId: string) {
-        const waitPool = MoocchatWaitPool.GetPool(quizId, questionId);
+        const waitPool = WaitPool.GetPool(quizId, questionId);
 
         if (waitPool === undefined) {
-            if (MoocchatWaitPool.QuizService) {
+            if (WaitPool.QuizService) {
                 // Create new wait pool
-                const quiz = await MoocchatWaitPool.QuizService.findOne(quizId);
+                const quiz = await WaitPool.QuizService.findOne(quizId);
                 if (quiz && quiz.groupSize) {
-                    return new MoocchatWaitPool(quizId, questionId, quiz.groupSize);
+                    return new WaitPool(quizId, questionId, quiz.groupSize);
                 }
-                return new MoocchatWaitPool(quizId, questionId, CommonConf.groups.defaultGroupSize);
+                return new WaitPool(quizId, questionId, CommonConf.groups.defaultGroupSize);
             } else {
                 throw new Error(`No quiz service available`);
             }
@@ -67,7 +67,7 @@ export class MoocchatWaitPool {
     public static GetPool(quizId: string, questionId: string) {
         const combinedId = quizId + questionId;
 
-        return MoocchatWaitPool.WaitPools.get(combinedId);
+        return WaitPool.WaitPools.get(combinedId);
     }
 
     // Based on a user reponse to question, grab the details
@@ -76,16 +76,16 @@ export class MoocchatWaitPool {
             throw new Error("No id for quiz session for pool formation");
         }
 
-        return MoocchatWaitPool.GetPoolAutoCreate(userResponse.quizId, userResponse.questionId);
+        return WaitPool.GetPoolAutoCreate(userResponse.quizId, userResponse.questionId);
     }
 
     // Destroying a pool is essentially making sure the queue for each question option
     // is empty and then removin the reference from the store for garbage collection
-    public static Destroy(pool: MoocchatWaitPool) {
+    public static Destroy(pool: WaitPool) {
         // pool._quizSessionId = undefined;
         pool.answerQueues.empty();
 
-        MoocchatWaitPool.WaitPools.delete(pool.getQuizId() + pool.getQuestionId());
+        WaitPool.WaitPools.delete(pool.getQuizId() + pool.getQuestionId());
     }
 
     // Construction of a pools is essentially the creation of an empty answer queue
@@ -102,7 +102,7 @@ export class MoocchatWaitPool {
         // Put into singleton map
         const combinedId = quizId + questionId;
 
-        MoocchatWaitPool.WaitPools.put(combinedId, this);
+        WaitPool.WaitPools.put(combinedId, this);
     }
 
     // Simple getter
@@ -123,9 +123,9 @@ export class MoocchatWaitPool {
             }
 
             const waitTime = Date.now() - firstInQueueData.timestamp;
-            return smallestWaitTime > MoocchatWaitPool.DesiredMaxWaitTime - waitTime ?
-                MoocchatWaitPool.DesiredMaxWaitTime - waitTime : smallestWaitTime;
-        }, MoocchatWaitPool.DesiredMaxWaitTime);
+            return smallestWaitTime > WaitPool.DesiredMaxWaitTime - waitTime ?
+                WaitPool.DesiredMaxWaitTime - waitTime : smallestWaitTime;
+        }, WaitPool.DesiredMaxWaitTime);
     }
 
     // The idea is that within a pool, we attempt
@@ -236,7 +236,7 @@ export class MoocchatWaitPool {
 
             const waitTime = Date.now() - firstInQueueData.timestamp;
 
-            return waitTime > MoocchatWaitPool.DesiredMaxWaitTime;
+            return waitTime > WaitPool.DesiredMaxWaitTime;
         });
     }
 
@@ -283,7 +283,7 @@ export class MoocchatWaitPool {
             if (totalPoolSize < this._desiredGroupSize) {
                 // TODO handle backup queue
 
-                /*const backupClientQueue = MoocchatBackupClientQueue.GetQueue(this.getQuizSessionId());
+                /*const backupClientQueue = BackupClientQueue.GetQueue(this.getQuizSessionId());
 
                 if (backupClientQueue &&
                     totalPoolSize === 1 &&
@@ -343,7 +343,7 @@ export class MoocchatWaitPool {
     }
 }
 
-export interface MoocchatWaitPoolAnswerQueueData {
+export interface WaitPoolAnswerQueueData {
     quizResponse: Response;
     timestamp: number;
 }

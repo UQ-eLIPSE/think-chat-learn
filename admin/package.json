@@ -1,8 +1,8 @@
 {
-  "name": "deepconcepts",
-  "version": "1.0.0",
+  "name": "moocChat",
+  "version": "3.0.0",
   "private": true,
-  "description": "moocChat upgrade",
+  "description": "v3 of moocChat will be branded as Think.Chat.Learn and will include a complete rebrand and significant code improvements.",
   "scripts": {
     "test": "node_modules/.bin/cypress open",
     "serve": "vue-cli-service serve",
