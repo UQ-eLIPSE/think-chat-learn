@@ -83,6 +83,8 @@ function reconnectFail() {
             "Error: Connection lost. Please close current window/tab and launch Think.Chat.Learn again from Blackboard. " +
                 "(Your progress will be retained)"
       });
+      alert("Error: Connection lost. Please close current window/tab and launch Think.Chat.Learn again from Blackboard. " +
+      "(Your progress will be retained)");
 }
 
 // To be displayed when socket.io cannot reconnect.
@@ -94,6 +96,7 @@ function reconnectAttempt(attemptNumber: number) {
         message: `Connection lost.
             Attempting to reconnect (#${attemptNumber}/${CommonConf.Conf.websockets.reconnectionAmount})`
       });
+    
 }
 
 // Grabs the reference from user.ts

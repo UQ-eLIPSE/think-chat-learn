@@ -29,6 +29,11 @@
           :numeral="typingNotif + 1"
           :isTyping="true"
         />
+        <ChatAlert
+          v-if="displayChatErrorMessage" alertMessage="Error: Connection lost. Please close current window/tab and launch Think.Chat.Learn again from
+           Blackboard. (Your progress will be retained)"
+          :alertType="`warning`"
+        />
       </template>
     </div>
     
@@ -73,6 +78,7 @@ import ChatMessage from "./ChatMessage.vue";
 import CreateChatMessage from "./CreateChatMessage.vue";
 import { SocketState, MoocChatMessage } from "../../interfaces";
 import { MoocChatMessageTypes, MoocChatStateMessageTypes } from "../../enums";
+import { SystemMessageTypes } from "../../store";
 import * as IWSToClientData from ",,/../../../common/interfaces/IWSToClientData";
 import {
   IQuiz,
@@ -135,6 +141,25 @@ export default class Chat extends Vue {
     return this.socketState && this.socketState.chatTypingNotifications
       ? this.socketState.chatTypingNotifications
       : null;
+  }
+
+  get systemMessage() {
+    return this.$store.state.systemMessage;
+  }
+
+  get hasMessage() {
+    return this.systemMessage && this.systemMessage.message;
+  }
+
+  get displayChatErrorMessage() {
+    try {
+      if(!this.hasMessage) return false;
+      
+      return (this.systemMessage.type === SystemMessageTypes.WARNING || 
+            this.systemMessage.type === SystemMessageTypes.FATAL_ERROR);
+    } catch(e) {
+        return false;
+    }
   }
 }
 </script>
