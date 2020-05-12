@@ -217,7 +217,7 @@ import CircularNumberLabel from "../components/CircularNumberLabel.vue";
     CircularNumberLabel
   }
 })
-export default class Page extends Vue {
+export default class PageTemplate extends Vue {
   // Used for Quill content areas as Quill sets empty content as the below
   private emptyContent = "<p><br></p>";
 

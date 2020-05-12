@@ -12,11 +12,8 @@ Vue.use(Vuetify);
 Vue.use(Buefy);
 Vue.config.productionTip = false;
 
-const vuetifyOptions = { }
-
 new Vue({
   router,
   store,
-  vuetify: new Vuetify(vuetifyOptions),
   render: (h) => h(App)
 }).$mount("#app");

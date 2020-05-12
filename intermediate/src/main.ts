@@ -39,11 +39,8 @@ Vue.use(Vuetify);
 Vue.component("font-awesome-icon", FontAwesomeIcon);
 Vue.config.productionTip = false;
 
-const vuetifyOptions = { };
-
 new Vue({
   router,
   store,
-  vuetify: new Vuetify(vuetifyOptions),
   render: (h) => h(App)
 }).$mount("#app");

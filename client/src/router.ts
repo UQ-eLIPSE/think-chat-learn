@@ -6,7 +6,7 @@ import Discussion from "./views/Discussion.vue";
 import GroupAllocation from "./views/GroupAllocation.vue";
 import Landing from "./views/Landing.vue";
 import Login from "./views/Login.vue";
-import Page from "./views/Page.vue";
+import PageTemplate from "./views/PageTemplate.vue";
 import Receipt from "./views/Receipt.vue";
 import Reflection from "./views/Reflection.vue";
 import Survey from "./views/Survey.vue";
@@ -14,7 +14,7 @@ import Survey from "./views/Survey.vue";
 Vue.use(Router);
 export const Names = {
   LANDING: "Landing",
-  PAGE: "Page",
+  PAGE_TEMPLATE: "Page Template",
   DISCUSSION: "Discussion",
   REFLECTION: "Reflection",
   SURVEY: "Survey",
@@ -36,8 +36,8 @@ export const router = new Router({
     },
     {
       path: "/page",
-      name: Names.PAGE,
-      component: Page,
+      name: Names.PAGE_TEMPLATE,
+      component: PageTemplate,
       meta: {
         title: "Think.Chat.Learn"
       },
@@ -111,10 +111,10 @@ function checkValidTransition(to: Route, from: Route): boolean {
   if (
     (from.name === null && to.name === Names.LOGIN) ||
     (from.name === Names.LOGIN && to.name === Names.LANDING) ||
-    (from.name === Names.LANDING && to.name === Names.PAGE) ||
-    (from.name === Names.PAGE && to.name === Names.GROUP_ALLOCATION) ||
-    (from.name === Names.GROUP_ALLOCATION && to.name === Names.PAGE) ||
-    (from.name === Names.PAGE && to.name === Names.RECEIPT)
+    (from.name === Names.LANDING && to.name === Names.PAGE_TEMPLATE) ||
+    (from.name === Names.PAGE_TEMPLATE && to.name === Names.GROUP_ALLOCATION) ||
+    (from.name === Names.GROUP_ALLOCATION && to.name === Names.PAGE_TEMPLATE) ||
+    (from.name === Names.PAGE_TEMPLATE && to.name === Names.RECEIPT)
   ) {
     return true;
   }
