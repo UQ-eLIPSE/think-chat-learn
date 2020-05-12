@@ -11,11 +11,11 @@ services:
       - ./client:/var/www/think-chat-learn/client
       - server_modules:/var/www/think-chat-learn/client/node_modules
     expose:
-      - "8080"
+      - "3000"
     ports:
-      - "8080:8080"
+      - "3000:3000"
     environment:
-      - PORT=8080
+      - PORT=3000
       - NODE_ENV=development  
     networks:
       - network
@@ -34,11 +34,11 @@ services:
       - ./admin:/var/www/think-chat-learn/admin
       - admin_modules:/var/www/think-chat-learn/admin/node_modules
     expose:
-      - "8080"
+      - "4000"
     ports:
-      - "8080:8080"
+      - "4000:4000"
     environment:
-      - PORT=8080
+      - PORT=4000
       - NODE_ENV=development  
     networks:
       - network
@@ -58,11 +58,11 @@ services:
       - ./intermediate:/var/www/think-chat-learn/intermediate
       - intermediate_modules:/var/www/think-chat-learn/intermediate/node_modules
     expose:
-      - "8080"
+      - "5000"
     ports:
-      - "8080:8080"
+      - "5000:5000"
     environment:
-      - PORT=8080
+      - PORT=5000
       - NODE_ENV=development    
     networks:
       - network
@@ -71,20 +71,20 @@ services:
       - mongodb
       - volsync_intermediate
 
-  # server:
-  #   build:
-  #     context: ./server
-  #   container_name: server-app
-  #   volumes:
-  #     - ./server:/var/www/think-chat-learn/server
-  #   expose:
-  #     - "8080"
-  #   ports:
-  #     - "8080:8080"
-  #   networks:
-  #     - network
-  #   depends_on:
-  #     - volsync_server
+  server:
+    build:
+      context: ./server
+    container_name: server-app
+    volumes:
+      - ./server:/var/www/think-chat-learn/server
+    expose:
+      - "8080"
+    ports:
+      - "8080:8080"
+    networks:
+      - network
+    depends_on:
+      - volsync_server
   
   mongodb:
     image: mongo:latest
@@ -96,6 +96,8 @@ services:
       - MONGO_LOG_DIR=/dev/null
     ports:
       - '27017:27017'
+    networks:
+      - network
 
   # Docker container responsible for syncing `node_modules` between host and container
   # Source: https://github.com/jtreminio/volsync
