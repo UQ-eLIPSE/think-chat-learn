@@ -1,12 +1,15 @@
 import Vue from "vue";
 import Router, { Route } from "vue-router";
-import Landing from "./views/Landing.vue";
+
+// Views
 import Discussion from "./views/Discussion.vue";
+import GroupAllocation from "./views/GroupAllocation.vue";
+import Landing from "./views/Landing.vue";
+import Login from "./views/Login.vue";
+import Page from "./views/Page.vue";
+import Receipt from "./views/Receipt.vue";
 import Reflection from "./views/Reflection.vue";
 import Survey from "./views/Survey.vue";
-import Login from "./views/Login.vue";
-import GroupAllocation from "./views/GroupAllocation.vue";
-import Receipt from "./views/Receipt.vue";
 
 Vue.use(Router);
 export const Names = {
@@ -27,6 +30,14 @@ export const router = new Router({
       path: "/",
       name: Names.LANDING,
       component: Landing,
+      meta: {
+        title: "Think.Chat.Learn"
+      },
+    },
+    {
+      path: "/page",
+      name: Names.PAGE,
+      component: Page,
       meta: {
         title: "Think.Chat.Learn"
       },

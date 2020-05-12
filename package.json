@@ -4,7 +4,7 @@
   "description": "v3 of moocChat will be branded as Think.Chat.Learn and will include a complete rebrand and significant code improvements.",
   "main": "build/server/main.js",
   "engines": {
-    "node": "^10"
+    "node": "^12"
   },
   "scripts": {
     "start": "node build/server/main.js",
