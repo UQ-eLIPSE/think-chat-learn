@@ -1,17 +1,67 @@
 <template>
-  <div class="contentContainer" v-if="page">
-    <div class="columns">
+  <div class="contentContainer" :class="question && page.type === PageType.QUESTION_ANSWER_PAGE ? 
+        'questionPage' : ''" v-if="page">
+    <div class="columns" :class="page.type === PageType.DISCUSSION_PAGE ? 'discussion-page' : ''">
       <div class="column pane1">
-        <h1>{{page ? page.title : ""}}</h1>
-        <div class="content" v-html="page.content"/>
-        <template v-if="question && page.type === PageType.QUESTION_ANSWER_PAGE">
-          <h1>{{question ? question.title : ""}}</h1>
-          <div
-            class="content"
-            v-if="question"
-            v-html="question.content"
-          ></div>
-        </template>
+        <div v-if="page.type !== PageType.DISCUSSION_PAGE">
+          <h2>{{page ? page.title : ""}}</h2>
+          <div class="content" v-html="page.content"/>
+          <template v-if="question && page.type === PageType.QUESTION_ANSWER_PAGE">
+            <h2>{{question ? question.title : ""}}</h2>
+            <div
+              class="content"
+              v-if="question"
+              v-html="question.content"
+            ></div>
+          </template>
+        </div>
+
+        <!-- Accordion for Questions and Responses only required on Discussion page -->
+        <div class="accordion" v-if="page.type === PageType.DISCUSSION_PAGE && chatGroup">
+          <dl>
+            <!-- Discussion content -->
+            <dt :class="contentPanelOpen ? 'opened' : ''" v-on:click="contentPanelOpen = !contentPanelOpen" v-if="page.content !== emptyContent">
+              <div class="flex-row align-center justify-space-between">
+                <h2>{{page ? page.title : ""}}</h2>
+                <font-awesome-icon :icon="contentPanelOpen ? 'chevron-up' : 'chevron-down'" />
+              </div>
+            </dt>
+            <dd :class="contentPanelOpen ? 'opened' : ''" v-if="page.content !== emptyContent && contentPanelOpen">
+              <div class="content" v-html="page.content"/>
+            </dd>
+
+            <!-- Question -->
+            <dt :class="questionsPanelOpen ? 'opened' : ''" v-on:click="questionsPanelOpen = !questionsPanelOpen" v-if="question.content">
+              <div class="flex-row align-center justify-space-between">
+                <h2>{{question ? question.title : ""}}</h2>
+                <font-awesome-icon :icon="questionsPanelOpen ? 'chevron-up' : 'chevron-down'" />
+              </div>
+            </dt>
+            <dd :class="questionsPanelOpen ? 'opened' : ''" v-if="questionsPanelOpen && question.content">
+              <template>
+                <div class="content" v-html="question.content"></div>
+              </template>
+            </dd>
+
+            <!-- Responses -->
+            <dt :class="responsesPanelOpen ? 'opened' : ''" v-on:click="responsesPanelOpen = !responsesPanelOpen" 
+                v-if="displayResponsesEnabled && checkResponses()">
+              <div class="flex-row align-center justify-space-between">  
+                <h2>Responses</h2>
+                <font-awesome-icon :icon="responsesPanelOpen ? 'chevron-up' : 'chevron-down'" />
+              </div>
+            </dt>
+            <dd v-if="responsesPanelOpen && displayResponsesEnabled && checkResponses()">
+              <div
+                v-for="answer in sortedUniqueQuestionGroupAnswers"
+                class="content"
+                :key="answer._id"
+              >
+                <ChatMessage :content="answer.answer.content" :numeral="answer.clientIndex" />
+              </div>
+            </dd>
+          </dl>
+        </div>
       </div>
       <!-- For now only question answer pages have this -->
       <div class="column pane2">
@@ -52,17 +102,12 @@
           />
         </div>
         <!-- Handle Chat Page data -->
-        <div v-else-if="page.type === PageType.DISCUSSION_PAGE && chatGroup && displayResponsesEnabled">
-          <h2>Responses</h2>
-          <!-- Note a lot of things have to be done to get here -->
-          <div
-            v-for="answer in chatGroup.groupAnswers[question._id]"
-            class="content"
-            :key="answer._id"
-          >
-            <ChatMessage :content="answer.answer.content" :numeral="answer.clientIndex" />
-            <!-- {{`Student ${answer.clientIndex}'s response: ${answer.answer.content} with a confidence of ${answer.answer.confidence}`}} -->
+        <div v-else-if="page.type === PageType.DISCUSSION_PAGE && chatGroup">
+          <div class="flex-row align-center justify-space-between">
+            <h2>Chat</h2>
+            <span class="personal-number">You are <CircularNumberLabel :numeral="chatGroup.clientIndex" /></span>
           </div>
+          <Chat :chatMessages="chatMessages"/>
         </div>
       </div>
     </div>
@@ -72,16 +117,67 @@
 <style lang="scss" scoped>
 .contentContainer {
   height: 100%;
+
   .columns {
     height: 100%;
     margin-bottom: 0;
     margin-left: 0;
     margin-right: 0;
     margin-top: 0;
+
     .column {
       padding: 2em 3em 3em 3em;
       &.pane2 {
         background-color: #fafafa;
+      }
+    }
+
+    &.discussion-page {
+      h2 {
+        color: $uq;
+        margin: 0 !important;
+        padding: 0;
+      }
+      .confidence {
+        margin-bottom: 1em;
+        
+        label.highlight {
+          align-items: center;
+          border-radius: 50%;
+          display: flex;
+          font-weight: 600;
+          justify-content: center;
+          height: 25px;
+          margin-left: 0.5em;
+          text-align: center;
+          width: 25px;
+        }
+      }
+      .personal-number label[class^='base'] {
+        border: 0;
+        font-size: 1rem;
+        height: 25px;
+        margin-top: 0;
+        position: relative;
+        width: 25px;
+      }
+      .column {
+        padding: 0;
+        .flex-row {
+          background-color: $white;
+          padding: 1em;
+        }
+        &.pane1 {
+          border-right: 1px solid $grey;
+          flex-grow: 1.5;
+          flex-shrink: 1;
+          overflow: scroll;
+          max-height: 867px;
+        }
+        &.pane2 {
+          flex-grow: 2;
+          flex-shrink: 0;
+        }
       }
     }
   }
@@ -106,17 +202,29 @@ import { WebsocketEvents } from "../../../common/js/WebsocketEvents";
 import { WebsocketManager } from "../../../common/js/WebsocketManager";
 import { EventBus } from "../EventBus";
 import { EmitterEvents } from "../emitters";
+import Chat from "../components/Chat/Chat.vue";
 import ChatMessage from "../components/Chat/ChatMessage.vue";
 import katex from "katex";
 import { Conf } from "../../../common/config/Conf";
+import { MoocChatMessage } from "../interfaces";
+import CircularNumberLabel from "../components/CircularNumberLabel.vue";
 
 @Component({
   components: {
     Confidence,
-    ChatMessage
+    ChatMessage,
+    Chat,
+    CircularNumberLabel
   }
 })
 export default class MoocChatPage extends Vue {
+  // Used for Quill content areas as Quill sets empty content as the below
+  private emptyContent = "<p><br></p>";
+
+  private contentPanelOpen = true;
+  private questionsPanelOpen = false;
+  private responsesPanelOpen = true;
+
   private DEFAULT_RESPONSE = "";
   private DEFAULT_CONFIDENCE = 3;
 
@@ -124,30 +232,45 @@ export default class MoocChatPage extends Vue {
   private responseContent: string = "";
   private confidence: number = 3;
 
-  get PageType() {
-    return PageType;
-  }
-
-  get QuestionType() {
-    return QuestionType;
-  }
-
-  get user(): IUser | null {
-    return this.$store.getters.user;
+  get chatMessages(): MoocChatMessage[] {
+    return this.$store.getters.chatMessages;
   }
 
   get quizSession(): IQuizSession | null {
     return this.$store.getters.quizSession;
   }
 
-  // The idea is based on the quiz and current page,
-  // render it appropiately
-  get currentIndex(): number {
-    return this.$store.getters.currentIndex;
+  private toggleChat: boolean = false;
+  private newMessage: boolean | null = false;
+  private groupFormed: boolean = false;
+
+  // In short, if we have a message and the chat is off, notify new message
+  @Watch("chatMessages")
+  private handleMessageNotification(
+    newVal: MoocChatMessage[],
+    oldVal: MoocChatMessage[]
+  ) {
+    if (!this.toggleChat) {
+      this.newMessage = true;
+    }
   }
 
-  get maxIndex(): number {
-    return this.$store.getters.maxIndex;
+  public changeChatState() {
+    this.toggleChat = !this.toggleChat;
+    this.newMessage = false;
+  }
+
+  private checkResponses() {
+    return this.sortedUniqueQuestionGroupAnswers.some(currentValue => {
+      if (currentValue && currentValue.answer) {
+        if (currentValue.answer.type === QuestionType.QUALITATIVE &&
+          currentValue.answer.content &&
+          currentValue.answer.content.trim()) return true;
+        if (currentValue.answer.type === QuestionType.MCQ &&
+          currentValue.answer.optionId) return true;
+      }
+      return false;
+    });
   }
 
   get quiz(): IQuiz | null {
@@ -158,6 +281,12 @@ export default class MoocChatPage extends Vue {
     }
 
     return quiz;
+  }
+
+  // The idea is based on the quiz and current page,
+  // render it appropiately
+  get currentIndex(): number {
+    return this.$store.getters.currentIndex;
   }
 
   // If we get an out of bound for the pages, set to null
@@ -171,6 +300,55 @@ export default class MoocChatPage extends Vue {
     } else {
       return null;
     }
+  }
+
+  get socketState() {
+    return this.$store.getters.socketState;
+  }
+
+/**
+ * Changes visibility of chat window  based on
+ * page type and chatGroupFormed status
+ */
+  @Watch("currentIndex")
+  private currentIndexChangeHandler(newVal: boolean, oldVal?: boolean) {
+    // this.toggleChat -> true, if
+    //  - chat group exists
+    //  - current page is discussion page
+    //  - (Note that this automatically handles the session re-join condition)
+    
+    // this.toggleChat -> false, if
+    //  - current page is not discussion page
+    //    - (since users complained of chat window covering content)
+  
+    // Note: Frequent opening/closing of chat window would (hopefully)
+    // signal to users that the chat window can be shown/hidden
+    if(this.page && this.page.type !== PageType.DISCUSSION_PAGE) {
+      this.toggleChat = false;
+    }
+    
+    if(this.page && this.page.type === PageType.DISCUSSION_PAGE &&
+      this.socketState && this.socketState.chatGroupFormed &&
+      this.socketState.chatGroupFormed.groupId) {
+      
+      this.toggleChat = true;
+    }
+  }
+
+  get PageType() {
+    return PageType;
+  }
+
+  get QuestionType() {
+    return QuestionType;
+  }
+
+  get user(): IUser | null {
+    return this.$store.getters.user;
+  }
+
+  get maxIndex(): number {
+    return this.$store.getters.maxIndex;
   }
 
   // Gets the current page type, used for watching. Returns null if
@@ -197,19 +375,50 @@ export default class MoocChatPage extends Vue {
     return this.$store.getters.getQuestionById(this.page.questionId);
   }
 
-  get socketState(): SocketState | null {
-    return this.$store.getters.socketState;
+  /**
+   * Returns user responses to questions ordered by answer `clientIndex`
+   */
+  get sortedUniqueQuestionGroupAnswers() {
+    try {
+      if(this.chatGroup && this.chatGroup.groupAnswers &&
+        this.question && this.question._id &&
+        this.chatGroup.groupAnswers[this.question._id]){
+        
+        const sorted = this.chatGroup.groupAnswers[this.question._id].sort((a: IWSToClientData.ChatGroupAnswer, b: IWSToClientData.ChatGroupAnswer) => {
+            // Make sure clientIndex is truthy or zero before subtracting
+            if((a && (a.clientIndex || a.clientIndex === 0)) &&
+              (b && (b.clientIndex || b.clientIndex === 0))) {
+              return a.clientIndex - b.clientIndex;
+            }
+
+            // if `clientIndex` is not available, ignore sort order and return 0
+            // for availability (even if the order is wrong, response is visible)
+            return 0;
+        });
+
+        const uniqueSorted: IWSToClientData.ChatGroupAnswer[] = []; 
+        const uniqueMapAnswerId: {[key: string]: boolean} = {};
+
+        sorted.forEach((answer) => {
+          if(!answer.answer || !answer.answer._id) return;
+          if(!uniqueMapAnswerId[answer.answer._id]) {
+            uniqueMapAnswerId[answer.answer._id] = true;
+            uniqueSorted.push(answer);
+          }
+        });
+        
+        return uniqueSorted;
+      }
+      return [];
+    } catch(e) {
+      return [];
+    }
   }
 
   get socket(): WebsocketManager | null {
     return this.socketState && this.socketState.socket
       ? this.socketState.socket
       : null;
-  }
-
-  // Empty should be default behaviour if no socket state is present
-  get chatMessages(): IWSToClientData.ChatGroupMessage[] {
-    return this.socketState ? this.socketState.chatMessages : [];
   }
 
   get chatGroup(): IWSToClientData.ChatGroupFormed | null {
@@ -406,6 +615,11 @@ export default class MoocChatPage extends Vue {
           groupId: this.chatGroup!.groupId!
         };
 
+        // If responses are to be displayed, fetch user responses from server
+        if(this.displayResponsesEnabled) {
+          this.emitUpdateRequest();
+        }
+        
         EventBus.$emit(EmitterEvents.START_TIMER, this.$store.getters.currentTimerSettings);
       } else {
         this.$router.push("/allocation");
@@ -455,7 +669,49 @@ export default class MoocChatPage extends Vue {
     );
   }
 
+  /**
+   * Sends a chat group update request to the server.
+   * Essentially, fetches user responses
+   */
+  private emitUpdateRequest(
+    callback?: (data?: IWSToClientData.UserResponseUpdate) => void
+  ) {
+    try {
+      if (
+        !this.socket ||
+        !this.quiz ||
+        !this.quizSession ||
+        !this.currentResponse ||
+        !this.quizSession._id ||
+        !this.currentResponse._id ||
+        !this.socketState ||
+        !this.socketState.chatGroupFormed
+      ) {
+        console.error("Sent a update request without a socket or quiz or group");
+        return;
+      }
+
+      this.socket!.emitData<IWSToServerData.ChatGroupUpdateResponse>(
+        WebsocketEvents.OUTBOUND.CHAT_GROUP_UPDATE,
+        {
+          quizSessionId: this.quizSession!._id!,
+          responseId: this.currentResponse!._id!,
+          groupId: this.socketState.chatGroupFormed.groupId!
+        }
+      );
+    } catch (e) {
+      // TODO: Handle error
+      return;
+    }
+  }
+
   private mounted() {
+    EventBus.$on(EmitterEvents.GROUP_FORMED, () => {
+      this.toggleChat = true;
+      this.newMessage = false;
+      this.groupFormed = true;
+    });
+    
     if (!this.quiz || !this.quiz.pages) {
       return;
     }
@@ -490,3 +746,4 @@ export default class MoocChatPage extends Vue {
   }
 }
 </script>
+

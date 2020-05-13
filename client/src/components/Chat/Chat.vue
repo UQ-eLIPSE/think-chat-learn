@@ -29,43 +29,44 @@
           :numeral="typingNotif + 1"
           :isTyping="true"
         />
+        <ChatAlert
+          v-if="displayChatErrorMessage" alertMessage="Error: Connection lost. Please close current window/tab and launch Think.Chat.Learn again from
+           Blackboard. (Your progress will be retained)"
+          :alertType="`warning`"
+        />
       </template>
     </div>
-
-    <div class="input-container">
-      <CreateChatMessage />
+    
+    <div class="shortcuts flex-align-end">
+      <span><b>Return</b> to send</span>
+      <span><b>Return + Shift</b> to add new line</span>
     </div>
+
+    <CreateChatMessage />
     <!-- </div> -->
   </div>
 </template>
 
 <style lang="scss" scoped>
-@import "../../../css/variables.scss";
-
 .chat {
   background-color: #f7f8f8;
-  bottom: 0;
-  box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.15);
-  height: 100vh;
-  padding-top: 75px;
-  position: fixed;
-  right: 0;
-  width: 400px;
-  z-index: 1;
 
-  .message-container {
-    height: calc(100vh - 263px);
-    overflow: scroll;
-    padding: 15px;
+  .shortcuts {
+    color: $dark-grey;
+    display: flex;
+    flex-flow: row wrap;
+    font-size: 0.69em;
+    padding: 0.62em 1.25em;
+
+    span:not(:first-of-type) {
+      margin-left: 1em;
+    }
   }
 
-  .input-container {
-    background-color: $white;
-    height: 188px;
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    padding: 15px;
+  .message-container {
+    height: 50vh;
+    overflow: scroll;
+    padding: 1.25em;
   }
 }
 </style>
@@ -77,6 +78,7 @@ import ChatMessage from "./ChatMessage.vue";
 import CreateChatMessage from "./CreateChatMessage.vue";
 import { SocketState, MoocChatMessage } from "../../interfaces";
 import { MoocChatMessageTypes, MoocChatStateMessageTypes } from "../../enums";
+import { SystemMessageTypes } from "../../store";
 import * as IWSToClientData from ",,/../../../common/interfaces/IWSToClientData";
 import {
   IQuiz,
@@ -94,6 +96,22 @@ import { PageType } from "../../../../common/enums/DBEnums";
 })
 export default class Chat extends Vue {
   @Prop({ default: () => [] }) private chatMessages!: MoocChatMessage[];
+
+  private scrollToEnd() {
+    const container = document.querySelector(".message-container");
+    if (container) {
+      const scrollHeight = container.scrollHeight;
+      container.scrollTop = scrollHeight;
+    }
+  }
+
+  private mounted() {
+    this.scrollToEnd();
+  }
+
+  private updated() {
+    this.scrollToEnd();
+  }
 
   get socketState(): SocketState | null {
     return this.$store.getters.socketState;
@@ -123,6 +141,25 @@ export default class Chat extends Vue {
     return this.socketState && this.socketState.chatTypingNotifications
       ? this.socketState.chatTypingNotifications
       : null;
+  }
+
+  get systemMessage() {
+    return this.$store.state.systemMessage;
+  }
+
+  get hasMessage() {
+    return this.systemMessage && this.systemMessage.message;
+  }
+
+  get displayChatErrorMessage() {
+    try {
+      if(!this.hasMessage) return false;
+      
+      return (this.systemMessage.type === SystemMessageTypes.WARNING || 
+            this.systemMessage.type === SystemMessageTypes.FATAL_ERROR);
+    } catch(e) {
+        return false;
+    }
   }
 }
 </script>

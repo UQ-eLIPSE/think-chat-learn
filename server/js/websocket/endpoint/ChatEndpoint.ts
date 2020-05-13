@@ -384,9 +384,6 @@ export class ChatEndpoint extends WSEndpoint {
 
         delete response.confidence;
         delete response.quizSessionId;
-        delete response._id;
-        delete response.quizId;
-        delete response.type;
 
         const responderIndex = chatGroup.quizSessionIds!.findIndex((sessionId) => { 
             return data.quizSessionId === sessionId

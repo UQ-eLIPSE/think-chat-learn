@@ -3,7 +3,9 @@
 </template>
 
 <style lang="scss" scoped>
-@import "../../css/variables.scss";
+@mixin labelColor($color) {
+  background-color: $color;
+}
 
 label {
   border-radius: 50%;
@@ -20,22 +22,10 @@ label {
   top: 0;
   width: 60px;
 
-  &.base1 {
-    background-color: $baseLight1;
-    border: 3px solid $baseDark1;
-  }
-  &.base2 {
-    background-color: $baseLight2;
-    border: 3px solid $baseDark2;
-  }
-  &.base3 {
-    background-color: $baseLight3;
-    border: 3px solid $baseDark3;
-  }
-  &.base4 {
-    background-color: $baseLight4;
-    border: 3px solid $baseDark4;
-  }
+  &.base1 { @include labelColor($light-blue); }
+  &.base2 { @include labelColor($green); }
+  &.base3 { @include labelColor($yellow); }
+  &.base4 { @include labelColor($red); }
 }
 </style>
 
