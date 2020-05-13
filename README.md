@@ -76,3 +76,12 @@ Run `npm run test` from `client`, `admin` or `intermediate` folders to run cypre
 ## Deploying on production / test zone
 
 Deployment steps and configurations on `Confluence`.
+
+
+# Testing
+
+## E2E using Cypress
+
+Navigate to the FE apps `client`, `admin` or `intermediate`. To test: -
+
+`npm run test:e2e`

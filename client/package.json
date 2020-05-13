@@ -4,7 +4,7 @@
   "private": true,
   "description": "v3 of moocChat will be branded as Think.Chat.Learn and will include a complete rebrand and significant code improvements.",
   "scripts": {
-    "test": "node_modules/.bin/cypress open",
+    "test:e2e": "node_modules/.bin/cypress open",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "build_dev": "vue-cli-service build --mode development",
