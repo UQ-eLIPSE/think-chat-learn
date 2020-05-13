@@ -20,6 +20,7 @@ services:
     networks:
       - network
     depends_on:
+      - server
       - mongodb
       - volsync_client
 
@@ -43,7 +44,7 @@ services:
     networks:
       - network
     depends_on:
-      # - server
+      - server
       - mongodb
       - volsync_admin
 
@@ -67,13 +68,13 @@ services:
     networks:
       - network
     depends_on:
-      # - server
+      - server
       - mongodb
       - volsync_intermediate
 
   server:
     build:
-      context: ./server
+      context: ./
     container_name: server-app
     volumes:
       - ./server:/var/www/think-chat-learn/server
