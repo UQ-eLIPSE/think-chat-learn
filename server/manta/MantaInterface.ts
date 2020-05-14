@@ -1,11 +1,11 @@
 // Whole imports done due to commonjs vs es6
-import * as stream from "stream";
-import * as express from "express";
-import * as multer from "multer";
-import * as manta from "manta";
-import * as fs from "fs";
-import * as uniqid from "uniqid";
-import * as path from "path";
+import stream from "stream";
+import express from "express";
+import multer from "multer";
+import manta from "manta";
+import fs from "fs";
+import uniqid from "uniqid";
+import path from "path";
 import { Conf } from "../config/Conf";
 
 export class MantaInterface implements multer.StorageEngine {

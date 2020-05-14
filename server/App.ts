@@ -1,9 +1,10 @@
-import * as express from "express";
+import express from "express";
 import * as http from "http";
-import * as SocketIO from "socket.io";
-import * as bodyParser from "body-parser";
-import * as expressJwt from "express-jwt";
-import * as jwt from "jsonwebtoken";import { Db, MongoClient } from "mongodb";
+import SocketIO from "socket.io";
+import bodyParser from "body-parser";
+import expressJwt from "express-jwt";
+import jwt from "jsonwebtoken";
+import { Db, MongoClient } from "mongodb";
 
 import { Main } from "./js";
 import { Conf } from "./config/Conf";
@@ -263,7 +264,7 @@ export default class App {
             res.render("backup-client.ejs");
         });
         
-        console.log("Launching...");
+        console.log("Launching TCL server...");
         
         
         

@@ -103,3 +103,8 @@ server/config/production/*
 __deploy
 *.Conf.ts
 temp.*
+
+# Mongodb docker files
+mongodb/*
+some_location
+dist

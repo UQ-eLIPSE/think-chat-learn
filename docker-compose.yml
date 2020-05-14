@@ -1,138 +1,150 @@
 version: '3.7'
 services:
-  client:
-    env_file:
-      - ./client/.env.development
-    build:
-      context: ./client
-      dockerfile: Dockerfile
-    container_name: client-app
-    volumes:
-      - ./client:/var/www/think-chat-learn/client
-      - server_modules:/var/www/think-chat-learn/client/node_modules
-    expose:
-      - "3000"
-    ports:
-      - "3000:3000"
-    environment:
-      - PORT=3000
-      - NODE_ENV=development  
-    networks:
-      - network
-    depends_on:
-      - server
-      - mongodb
-      - volsync_client
+  # client:
+  #   env_file:
+  #     - ./client/.env.development
+  #   build:
+  #     context: ./client
+  #     dockerfile: Dockerfile
+  #   container_name: client-app
+  #   volumes:
+  #     - ./client:/var/www/think-chat-learn/client
+  #     - ./common:/var/www/think-chat-learn/common
+  #     # - server_modules:/var/www/think-chat-learn/client/node_modules
+  #   expose:
+  #     - "3000"
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - PORT=3000
+  #     - NODE_ENV=development  
+  #   networks:
+  #     - network
+  #   depends_on:
+  #     - server
+  #     - mongodb
 
-  admin:
-    env_file:
-      - ./admin/.env.development
-    build:
-      context: ./admin
-      dockerfile: Dockerfile
-    container_name: admin-app
-    volumes:
-      - ./admin:/var/www/think-chat-learn/admin
-      - admin_modules:/var/www/think-chat-learn/admin/node_modules
-    expose:
-      - "4000"
-    ports:
-      - "4000:4000"
-    environment:
-      - PORT=4000
-      - NODE_ENV=development  
-    networks:
-      - network
-    depends_on:
-      - server
-      - mongodb
-      - volsync_admin
+      
+      # - volsync_client
 
-  intermediate:
-    env_file:
-      - ./intermediate/.env.development
-    build:
-      context: ./intermediate
-      dockerfile: Dockerfile
-    container_name: intermediate-app
-    volumes:
-      - ./intermediate:/var/www/think-chat-learn/intermediate
-      - intermediate_modules:/var/www/think-chat-learn/intermediate/node_modules
-    expose:
-      - "5000"
-    ports:
-      - "5000:5000"
-    environment:
-      - PORT=5000
-      - NODE_ENV=development    
-    networks:
-      - network
-    depends_on:
-      - server
-      - mongodb
-      - volsync_intermediate
+  # admin:
+  #   env_file:
+  #     - ./admin/.env.development
+  #   build:
+  #     context: ./admin
+  #     dockerfile: Dockerfile
+  #   container_name: admin-app
+  #   volumes:
+  #     - ./admin:/var/www/think-chat-learn/admin
+  #     - ./common:/var/www/think-chat-learn/common
+  #     # - admin_modules:/var/www/think-chat-learn/admin/node_modules
+  #   expose:
+  #     - "4000"
+  #   ports:
+  #     - "4000:4000"
+  #   environment:
+  #     - PORT=4000
+  #     - NODE_ENV=development  
+  #   networks:
+  #     - network
+  #   depends_on:
+  #     - server
+  #     - mongodb
+
+  
+      # - volsync_admin
+
+  # intermediate:
+  #   env_file:
+  #     - ./intermediate/.env.development
+  #   build:
+  #     context: ./intermediate
+  #     dockerfile: Dockerfile
+  #   container_name: intermediate-app
+  #   volumes:
+  #     - ./intermediate:/var/www/think-chat-learn/intermediate
+  #     - ./common:/var/www/think-chat-learn/common
+  #     # - intermediate_modules:/var/www/think-chat-learn/intermediate/node_modules
+  #   expose:
+  #     - "5000"
+  #   ports:
+  #     - "5000:5000"
+  #   environment:
+  #     - PORT=5000
+  #     - NODE_ENV=development    
+  #   networks:
+  #     - network
+  #   depends_on:
+  #     - server
+  #     - mongodb
+
+
+      # - volsync_intermediate
 
   server:
     build:
-      context: ./
+      context: ./server
     container_name: server-app
     volumes:
       - ./server:/var/www/think-chat-learn/server
+      - ./common:/var/www/think-chat-learn/common
     expose:
       - "8080"
     ports:
       - "8080:8080"
     networks:
       - network
-    depends_on:
-      - volsync_server
+    # depends_on:
+      # - volsync_server
   
   mongodb:
     image: mongo:latest
     container_name: mongo-db
-    volumes:
-      - ./mongodb:/data/db
+    # volumes:
+    #   - ./mongodb:/data/db
     environment:
       - MONGO_DATA_DIR=/data/db
       - MONGO_LOG_DIR=/dev/null
     ports:
-      - '27017:27017'
+      - '27000:27017'
     networks:
       - network
+    logging:
+      driver: none 
 
   # Docker container responsible for syncing `node_modules` between host and container
   # Source: https://github.com/jtreminio/volsync
-  volsync_client:
-    image: jtreminio/volsync
-    volumes:
-      - client_modules:/vol/container/client_node_modules
-      - ./idmin-client/node_modules/:/vol/host/client_node_modules
-    logging:
-      driver: none  
+  # volsync_client:
+  #   image: jtreminio/volsync
+  #   volumes:
+  #     - client_modules:/vol/container/client_node_modules
+  #     - ./idmin-client/node_modules/:/vol/host/client_node_modules
+  #   logging:
+  #     driver: none  
   
-  volsync_admin:
-    image: jtreminio/volsync
-    volumes:
-      - admin_modules:/vol/container/admin_node_modules
-      - ./admin/node_modules/:/vol/host/admin_node_modules
-    logging:
-      driver: none  
+  # volsync_admin:
+  #   image: jtreminio/volsync
+  #   volumes:
+  #     - admin_modules:/vol/container/admin_node_modules
+  #     # - ./admin/node_modules/:/vol/host/admin_node_modules
+  #   logging:
+  #     driver: none  
 
-  volsync_intermediate:
-    image: jtreminio/volsync
-    volumes:
-      - intermediate_modules:/vol/container/intermediate_node_modules
-      - ./intermediate/node_modules/:/vol/host/intermediate_node_modules
-    logging:
-      driver: none      
+  # volsync_intermediate:
+  #   image: jtreminio/volsync
+  #   volumes:
+  #     - intermediate_modules:/vol/container/intermediate_node_modules
+  #     - ./intermediate/node_modules/:/vol/host/intermediate_node_modules
+  #   logging:
+  #     driver: none      
       
-  volsync_server:
-    image: jtreminio/volsync
-    volumes:
-      - server_modules:/vol/container/server_node_modules
-      - ./server/node_modules/:/vol/host/server_node_modules
-    logging:
-      driver: none
+  # volsync_server:
+  #   image: jtreminio/volsync
+  #   volumes:
+  #     - server_modules:/vol/container/server_node_modules
+  #     - ./server/node_modules/:/vol/host/server_node_modules
+  #   logging:
+  #     driver: none
 
 #Docker Networks
 networks:
@@ -141,13 +153,13 @@ networks:
 
 #Volumes
 volumes:
-  client_modules:
-    driver: local
-  admin_modules:
-    driver: local
-  intermediate_modules:
-    driver: local
-  server_modules:
-    driver: local
+  # client_modules:
+  #   driver: local
+  # admin_modules:
+  #   driver: local
+  # intermediate_modules:
+  #   driver: local
+  # server_modules:
+  #   driver: local
   dbdata:
     driver: local
