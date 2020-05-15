@@ -4,7 +4,7 @@
   "private": true,
   "description": "ThinkChatLearn is a discussion platform which allows collaborative learning among students",
   "scripts": {
-    "test": "test",
+    "test:e2e": "node_modules/.bin/cypress open",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "build_dev": "vue-cli-service build --mode development",
@@ -16,6 +16,7 @@
     "@fortawesome/vue-fontawesome": "^0.1.9",
     "buefy": "^0.8.18",
     "bulma-extensions": "^6.2.7",
+    "cypress": "^4.5.0",
     "katex": "^0.11.1",
     "node-sass": "^4.14.1",
     "postcss-import": "^12.0.1",

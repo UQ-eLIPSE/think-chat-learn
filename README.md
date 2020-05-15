@@ -41,6 +41,7 @@ Quick command for installing everything:
 #### Development configuration
 Set up environment and configuration files (Examples files included in repository.)
     /server/config/Conf.ts (make a copy of /server/config/Conf.ts.example)
+    /server/utils/query.ts
     /common/config/Conf.ts
 
     /client/config/Conf.ts
@@ -69,6 +70,18 @@ Production configuration on `Confluence`.
 1. Go to https://ltilib.uqcloud.net/connector/ and set the URL as `http://localhost:<PORT_NUMBER>/user/login`
 2. If you need to access a specific quiz, another parameter with key `custom_quizid` and value `<quiz_id>` needs to be added to the LTI form.
 
+## End to End Testing with Cypress
+Run `npm run test` from `client`, `admin` or `intermediate` folders to run cypress test suite.
+
 ## Deploying on production / test zone
 
 Deployment steps and configurations on `Confluence`.
+
+
+# Testing
+
+## E2E using Cypress
+
+Navigate to the FE apps `client`, `admin` or `intermediate`. To test: -
+
+`npm run test:e2e`
