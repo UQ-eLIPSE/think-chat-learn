@@ -1,12 +1,15 @@
 FROM node:12
 
-WORKDIR /var/www/think-chat-learn/intermediate
+
+ENV BASE_DIR=/var/www/think-chat-learn
+
+WORKDIR ${BASE_DIR}/intermediate
 
 COPY package.json .
 
-# Run npm and install packages
-RUN npm i
+# Run yarn and install packages
+RUN yarn
 
 # Keep the container running
 CMD echo -e "\n\n======== Run \n\n\t'docker exec -it intermediate-app /bin/bash'\n\n======== to log into the container ========\n"  && \
-  npm run build_dev_watch
+  cd ${BASE_DIR}/common && yarn && cd ${BASE_DIR}/intermediate && yarn &&  yarn run build_dev_watch

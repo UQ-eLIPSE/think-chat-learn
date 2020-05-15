@@ -63,8 +63,8 @@ import { IQuiz, QuizScheduleDataAdmin, Page, IDiscussionPage, IQuestion,
   IQuestionAnswerPage, IQuizSession, IUserSession, IUser, IChatGroup,
   Response, QuizSessionDataObject, IPage, IChatMessage } from "../../../../common/interfaces/ToClientData";
 import { PageType } from "../../../../common/enums/DBEnums";
-import ChatMessage from './ChatMessage.vue';
-import MarkingComponent from './MarkingComponent.vue';
+import ChatMessage from "./ChatMessage.vue";
+import MarkingComponent from "./MarkingComponent.vue";
 import { CurrentMarkingContext } from "../../store/modules/quiz";
 
 // Since we are dumping the entire page here, we need to know what content there is to render
@@ -126,7 +126,7 @@ export default class MarkQuizMarkingSection extends Vue {
   }
 
   get chatMessages() {
-    if (!this.$store.getters.currentChatGroupQuestionMessages) return [];
+    if (!this.$store.getters.currentChatGroupQuestionMessages) { return []; }
     return this.$store.getters.currentChatGroupQuestionMessages;
   }
 
@@ -137,22 +137,22 @@ export default class MarkQuizMarkingSection extends Vue {
     return this.$store.getters.currentChatGroupQuestionMessageMap || [];
   }
 
-  messageBelongsTocurrentQuizSessionInfoObject(qid: string): boolean {
-    if (!this.currentQuizSessionInfoObject || !this.currentQuizSessionInfoObject.quizSession) return false;
+  public messageBelongsTocurrentQuizSessionInfoObject(qid: string): boolean {
+    if (!this.currentQuizSessionInfoObject || !this.currentQuizSessionInfoObject.quizSession) { return false; }
     return (this.currentQuizSessionInfoObject.quizSession._id === qid);
   }
 
   get currentChatGroup() {
     return this.$store.getters.currentChatGroup;
   }
-  responseBelongsTocurrentQuizSessionInfoObject(qid: string): boolean {
-    if (!this.currentQuizSessionInfoObject || !this.currentQuizSessionInfoObject.quizSession) return false;
+  public responseBelongsTocurrentQuizSessionInfoObject(qid: string): boolean {
+    if (!this.currentQuizSessionInfoObject || !this.currentQuizSessionInfoObject.quizSession) { return false; }
     return (this.currentQuizSessionInfoObject.quizSession._id === qid);
   }
-  getNumeralFromQuizSessionId(qid: string) {
-    if (!this.currentChatGroup || !this.currentChatGroup.quizSessionIds) return 1;
+  public getNumeralFromQuizSessionId(qid: string) {
+    if (!this.currentChatGroup || !this.currentChatGroup.quizSessionIds) { return 1; }
     const ind = this.currentChatGroup.quizSessionIds.indexOf(qid);
-    if (ind === -1) return 1;
+    if (ind === -1) { return 1; }
     return ind + 1;
   }
 
@@ -178,7 +178,7 @@ export default class MarkQuizMarkingSection extends Vue {
       // Push the page regardless
       output.push({
         type: ContentType.PAGE,
-        page: page,
+        page,
         visible: true
       });
 
@@ -187,7 +187,7 @@ export default class MarkQuizMarkingSection extends Vue {
 
         if (this.currentQuizSessionInfoObject) {
           const maybeResponses = this.currentChatGroupResponsesMap[page.questionId];
-          const referredQuestion = this.getQuestionById(page.questionId)
+          const referredQuestion = this.getQuestionById(page.questionId);
           if (maybeResponses) {
             output.push({
               type: ContentType.RESPONSE,
@@ -200,7 +200,7 @@ export default class MarkQuizMarkingSection extends Vue {
       } else if (page.type === PageType.DISCUSSION_PAGE) {
         if (this.currentChatGroupQuestionMessageMap) {
           const maybeChat = this.currentChatGroupQuestionMessageMap[page.questionId];
-          const referredQuestion = this.getQuestionById(page.questionId)
+          const referredQuestion = this.getQuestionById(page.questionId);
           if (maybeChat) {
             output.push({
               type: ContentType.CHAT,

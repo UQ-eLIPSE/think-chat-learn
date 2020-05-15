@@ -21,7 +21,7 @@ import CircularNumberLabel from "./CircularNumberLabel.vue";
 })
 export default class ChatMessage extends Vue {
   // @Prop({}) private userNumber!: string;
-  @Prop({ required: true, default: () => '' }) private content!: string;
+  @Prop({ required: true, default: () => "" }) private content!: string;
   @Prop({}) private numeral!: number;
   @Prop({ default: false }) private isTyping!: boolean;
   @Prop({ required: false, default: false }) private selected!: boolean;

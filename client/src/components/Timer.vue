@@ -1,7 +1,7 @@
 <template>
   <div
     class="timer"
-    v-show="['Page', 'Discussion', 'Reflection'].includes($route.name)"
+    v-show="[routeNames.PAGE_TEMPLATE, routeNames.DISCUSSION, routeNames.REFLECTION].includes($route.name)"
   >
     <font-awesome-icon icon="clock" />
     <b>Next page will load in:</b> {{timeLeftInMinutesSeconds}}
@@ -35,6 +35,7 @@ import { EventBus } from "../EventBus";
 import { IQuiz, IQuizSession } from "../../../common/interfaces/DBSchema";
 import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
 import { Conf } from "../../config/Conf";
+import { Names } from "../router";
 
 enum FETCH_STATES {
   READY = 0,
@@ -86,6 +87,10 @@ export default class Timer extends Vue {
     if (!newVal && oldVal) {
       EventBus.$emit(EmitterEvents.PAGE_TIMEOUT);
     }
+  }
+
+  get routeNames() {
+    return Names;
   }
 
   private createNewTimer(newVal: TimerSettings, oldVal?: TimerSettings) {

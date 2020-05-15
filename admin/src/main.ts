@@ -7,7 +7,7 @@ import Buefy from "buefy";
 import Vuetify from "vuetify";
 // CSS imports
 import "buefy/dist/buefy.css";
-import 'vuetify/dist/vuetify.min.css'
+import "vuetify/dist/vuetify.min.css";
 Vue.use(Vuetify);
 Vue.use(Buefy);
 Vue.config.productionTip = false;

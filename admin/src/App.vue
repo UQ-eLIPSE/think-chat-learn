@@ -254,15 +254,15 @@ html {
 
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
-import { SnackbarProgrammatic as Snackbar } from 'buefy';
+import { SnackbarProgrammatic as Snackbar } from "buefy";
 import { EventBus, EventList, SnackEvent, ModalEvent } from "./EventBus";
 import SideNav from "./components/SideNav.vue";
 
 // Temporary interface for the side nav
 interface SideNavItem {
-  icon: string,
-  name: string,
-  route: string
+  icon: string;
+  name: string;
+  route: string;
 }
 
 const SideNavItems: SideNavItem[] = [
@@ -295,7 +295,7 @@ const SideNavItems: SideNavItem[] = [
     name: "View Rubric List",
     route: "/rubric"
   }
-]
+];
 
 @Component({
   components: {
@@ -308,7 +308,7 @@ export default class App extends Vue {
   private loadedDialogEvent: ModalEvent = {
     message: "",
     title: ""
-  }
+  };
 
   get sideNavItems() {
     return SideNavItems;
@@ -316,8 +316,8 @@ export default class App extends Vue {
 
   // Fetch the course for generic display
   get course() {
-    return this.$store.state.Quiz.course || '';
-  }  
+    return this.$store.state.Quiz.course || "";
+  }
 
   // Goes to the particular route
   private goToRoute(path: string) {
@@ -328,7 +328,7 @@ export default class App extends Vue {
   private handlePushSnackBar(data: SnackEvent) {
     Snackbar.open({
       message: data.message,
-      type: data.error ? 'is-danger' : 'is-success'
+      type: data.error ? "is-danger" : "is-success"
     });
   }
 
@@ -340,7 +340,8 @@ export default class App extends Vue {
   private handledLoadedFunction() {
     if (this.loadedDialogEvent.fn && this.loadedDialogEvent.data) {
       // Remember, apply takes in an array of data and fills out the function signature
-      this.loadedDialogEvent.fn.apply(this.loadedDialogEvent.selfRef ? this.loadedDialogEvent.selfRef : null, this.loadedDialogEvent.data);
+      this.loadedDialogEvent.fn.apply(this.loadedDialogEvent.selfRef ?
+        this.loadedDialogEvent.selfRef : null, this.loadedDialogEvent.data);
     }
   }
 

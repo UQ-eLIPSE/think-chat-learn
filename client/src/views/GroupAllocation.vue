@@ -45,9 +45,6 @@ import { Conf } from "../../../common/config/Conf";
   }
 })
 export default class GroupAllocation extends Vue {
-  private notifyTone: boolean | null = null;
-  private notifyAudio: HTMLAudioElement | null = null;
-  private timeElapsed: number = 100;
   get socketState(): SocketState | null {
     return this.$store.getters.socketState;
   }
@@ -62,20 +59,23 @@ export default class GroupAllocation extends Vue {
       ? this.socketState.chatGroupFormed
       : null;
   }
+  private notifyTone: boolean | null = null;
+  private notifyAudio: HTMLAudioElement | null = null;
+  private timeElapsed: number = 100;
 
-  private goToPage() {
-    this.$router.push("/page");
-  }
-
-  initLoaderTimeout(timeElapsedInMs: number, timerReference?: any) {
+  public initLoaderTimeout(timeElapsedInMs: number, timerReference?: any) {
     this.timeElapsed = timeElapsedInMs;
     if (timeElapsedInMs < Conf.timings.chatGroupFormationTimeoutMs) {
-      let timerReference = setTimeout(() => {
-        this.initLoaderTimeout(timeElapsedInMs + 1000, timerReference);
+      const timerRef = setTimeout(() => {
+        this.initLoaderTimeout(timeElapsedInMs + 1000, timerRef);
       }, 1000);
     } else {
       clearTimeout(timerReference);
     }
+  }
+
+  private goToPage() {
+    this.$router.push("/page");
   }
   // Automatically redirect page back if somehow made it to this point
   private mounted() {

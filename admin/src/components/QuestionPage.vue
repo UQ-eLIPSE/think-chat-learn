@@ -77,8 +77,8 @@ import { IQuestionQualitative } from "../../../common/interfaces/DBSchema";
 import API from "../../../common/js/DB_API";
 
 interface DropDownConfiguration {
-  text: string,
-  value: string,
+  text: string;
+  value: string;
 }
 
 interface FrontEndQuestionOption extends IQuestionOption {
@@ -103,7 +103,7 @@ const IMAGE_LOCATION = process.env.VUE_APP_IMAGE_LOCATION;
 @Component({
   components: {
     QuillEditor
-  }    
+  }
 })
 export default class QuestionPage extends Vue {
 
@@ -123,7 +123,7 @@ export default class QuestionPage extends Vue {
             text: QuestionType.QUALITATIVE,
             value: QuestionType.QUALITATIVE
         }
-    ]
+    ];
 
     // Quill Upload information
     private uploadCount: number = 0;
@@ -174,16 +174,17 @@ export default class QuestionPage extends Vue {
         this.uploads.forEach((upload) => {
             tempForm.append(upload.id, upload.blob);
         });
-        API.uploadForm("image/imageUpload", tempForm).then((files: { fieldName: string, fileName: string}[]) => {
+        API.uploadForm("image/imageUpload", tempForm).then((files: Array<{ fieldName: string, fileName: string}>) => {
             const payload: SnackEvent = {
                 message: "Finished uploading associated images"
-            }
+            };
             EventBus.$emit(EventList.PUSH_SNACKBAR, payload);
 
-            for (let file of files) {
+            for (const file of files) {
                 // For the sake of TypeScript
                 if (this.pageQuestion && this.pageQuestion.content) {
-                    this.pageQuestion.content = this.pageQuestion.content.replace(file.fieldName, IMAGE_LOCATION + file.fileName);
+                    this.pageQuestion.content =
+                        this.pageQuestion.content.replace(file.fieldName, IMAGE_LOCATION + file.fileName);
                 }
             }
 
@@ -193,7 +194,7 @@ export default class QuestionPage extends Vue {
 
             this.createQuestion();
         });
-    }    
+    }
 
     private createQuestion() {
         // Remember to strip the data appropiately for backend purposes
@@ -238,11 +239,11 @@ export default class QuestionPage extends Vue {
         const valid = (this.$refs.form as any).validate();
 
         if (!valid) {
-            const message: SnackEvent = {
+            const failureMessage: SnackEvent = {
                 message: "Failed to generate question. Check the form for any errors",
                 error: true
-            }
-            EventBus.$emit(EventList.PUSH_SNACKBAR, message);
+            };
+            EventBus.$emit(EventList.PUSH_SNACKBAR, failureMessage);
             return;
         }
 
@@ -253,7 +254,7 @@ export default class QuestionPage extends Vue {
             fn: EventBus.$emit,
             data: [EventList.CONSOLIDATE_UPLOADS],
             selfRef: EventBus
-        }
+        };
 
         EventBus.$emit(EventList.OPEN_MODAL, message);
     }

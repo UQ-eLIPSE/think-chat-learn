@@ -1,59 +1,50 @@
 version: '3.7'
 services:
-  # client:
-  #   env_file:
-  #     - ./client/.env.development
-  #   build:
-  #     context: ./client
-  #     dockerfile: Dockerfile
-  #   container_name: client-app
-  #   volumes:
-  #     - ./client:/var/www/think-chat-learn/client
-  #     - ./common:/var/www/think-chat-learn/common
-  #     # - server_modules:/var/www/think-chat-learn/client/node_modules
-  #   expose:
-  #     - "3000"
-  #   ports:
-  #     - "3000:3000"
-  #   environment:
-  #     - PORT=3000
-  #     - NODE_ENV=development  
-  #   networks:
-  #     - network
-  #   depends_on:
-  #     - server
-  #     - mongodb
+  client:
+    env_file:
+      - ./client/.env.development
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: client-app
+    volumes:
+      - ./client:/var/www/think-chat-learn/client
+      - ./common:/var/www/think-chat-learn/common
+    expose:
+      - "3000"
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - NODE_ENV=development  
+    networks:
+      - network
+    depends_on:
+      - server
+      - mongodb
 
-      
-      # - volsync_client
-
-  # admin:
-  #   env_file:
-  #     - ./admin/.env.development
-  #   build:
-  #     context: ./admin
-  #     dockerfile: Dockerfile
-  #   container_name: admin-app
-  #   volumes:
-  #     - ./admin:/var/www/think-chat-learn/admin
-  #     - ./common:/var/www/think-chat-learn/common
-  #     # - admin_modules:/var/www/think-chat-learn/admin/node_modules
-  #   expose:
-  #     - "4000"
-  #   ports:
-  #     - "4000:4000"
-  #   environment:
-  #     - PORT=4000
-  #     - NODE_ENV=development  
-  #   networks:
-  #     - network
-  #   depends_on:
-  #     - server
-  #     - mongodb
-
-  
-      # - volsync_admin
-
+  admin:
+    env_file:
+      - ./admin/.env.development
+    build:
+      context: ./admin
+      dockerfile: Dockerfile
+    container_name: admin-app
+    volumes:
+      - ./admin:/var/www/think-chat-learn/admin
+      - ./common:/var/www/think-chat-learn/common
+    expose:
+      - "4000"
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - NODE_ENV=development  
+    networks:
+      - network
+    depends_on:
+      - server
+      - mongodb
   # intermediate:
   #   env_file:
   #     - ./intermediate/.env.development
@@ -64,7 +55,6 @@ services:
   #   volumes:
   #     - ./intermediate:/var/www/think-chat-learn/intermediate
   #     - ./common:/var/www/think-chat-learn/common
-  #     # - intermediate_modules:/var/www/think-chat-learn/intermediate/node_modules
   #   expose:
   #     - "5000"
   #   ports:
@@ -94,8 +84,6 @@ services:
       - "8080:8080"
     networks:
       - network
-    # depends_on:
-      # - volsync_server
   
   mongodb:
     image: mongo:latest
@@ -112,39 +100,6 @@ services:
     logging:
       driver: none 
 
-  # Docker container responsible for syncing `node_modules` between host and container
-  # Source: https://github.com/jtreminio/volsync
-  # volsync_client:
-  #   image: jtreminio/volsync
-  #   volumes:
-  #     - client_modules:/vol/container/client_node_modules
-  #     - ./idmin-client/node_modules/:/vol/host/client_node_modules
-  #   logging:
-  #     driver: none  
-  
-  # volsync_admin:
-  #   image: jtreminio/volsync
-  #   volumes:
-  #     - admin_modules:/vol/container/admin_node_modules
-  #     # - ./admin/node_modules/:/vol/host/admin_node_modules
-  #   logging:
-  #     driver: none  
-
-  # volsync_intermediate:
-  #   image: jtreminio/volsync
-  #   volumes:
-  #     - intermediate_modules:/vol/container/intermediate_node_modules
-  #     - ./intermediate/node_modules/:/vol/host/intermediate_node_modules
-  #   logging:
-  #     driver: none      
-      
-  # volsync_server:
-  #   image: jtreminio/volsync
-  #   volumes:
-  #     - server_modules:/vol/container/server_node_modules
-  #     - ./server/node_modules/:/vol/host/server_node_modules
-  #   logging:
-  #     driver: none
 
 #Docker Networks
 networks:
@@ -153,13 +108,5 @@ networks:
 
 #Volumes
 volumes:
-  # client_modules:
-  #   driver: local
-  # admin_modules:
-  #   driver: local
-  # intermediate_modules:
-  #   driver: local
-  # server_modules:
-  #   driver: local
   dbdata:
     driver: local

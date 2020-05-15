@@ -11,18 +11,18 @@ import { convertNetworkQuizIntoQuiz, convertNetworkQuizzesIntoQuizzes } from "..
 // Event bus for snackbar purposes
 import { EventBus, EventList, SnackEvent } from "../../EventBus";
 
-type QuizSessionInfoMap = { [key: string]: QuizSessionDataObject };
-type ChatGroupQuestionMessagesMap = { [chatGroupId: string]: { [questionId: string]: IChatMessage[] } };
-export type CurrentMarkingContext = {
-    currentUserId: string | null,
-    currentQuizSessionId: string | null,
-    currentChatGroupId: string | null,
-    currentQuizId: string | null,
-    currentQuestionId: string | null,
+interface QuizSessionInfoMap { [key: string]: QuizSessionDataObject; }
+interface ChatGroupQuestionMessagesMap { [chatGroupId: string]: { [questionId: string]: IChatMessage[] }; }
+export interface CurrentMarkingContext {
+    currentUserId: string | null;
+    currentQuizSessionId: string | null;
+    currentChatGroupId: string | null;
+    currentQuizId: string | null;
+    currentQuestionId: string | null;
     currentMarks: Mark | undefined | null;
-};
+}
 
-type MarksQuestionUserMap = { [quizSessionId: string]: { [questionId: string]: { [markerId: string]: Mark } } };
+interface MarksQuestionUserMap { [quizSessionId: string]: { [questionId: string]: { [markerId: string]: Mark } }; }
 
 export interface IState {
     quiz: IQuiz[];
@@ -37,7 +37,7 @@ export interface IState {
 
 const state: IState = {
     quiz: [],
-    course: '',
+    course: "",
     chatGroups: [],
     quizSessionInfoMap: {},
     currentMarkingContext: {
@@ -82,14 +82,14 @@ const getters: GetterTree<IState, undefined> = {
         const chatGroups: IChatGroup[] = state.chatGroups || [];
         const map: ChatGroupQuestionMessagesMap = {};
         chatGroups.forEach((g) => {
-            if (!g || !g._id) return;
-            if (!map[g._id]) map[g._id] = {};
+            if (!g || !g._id) { return; }
+            if (!map[g._id]) { map[g._id] = {}; }
             (g.messages || []).forEach((m) => {
                 if (m) {
-                    if (!map[g!._id!][m.questionId]) map[g!._id!][m.questionId] = [];
+                    if (!map[g!._id!][m.questionId]) { map[g!._id!][m.questionId] = []; }
                     map[g!._id!][m.questionId].push(m);
                 }
-            })
+            });
         });
         return map;
     },
@@ -103,65 +103,65 @@ const getters: GetterTree<IState, undefined> = {
         return state.chatGroups || [];
     },
     currentChatGroup: (): IChatGroup | undefined => {
-        if (!state.chatGroups || !state.currentMarkingContext.currentChatGroupId) return undefined;
+        if (!state.chatGroups || !state.currentMarkingContext.currentChatGroupId) { return undefined; }
         return state.chatGroups.find((g) => g._id === state.currentMarkingContext.currentChatGroupId);
     },
     currentQuizQuestions: (): IQuestionAnswerPage[] => {
-        if(!getters.currentQuiz) return [];
+        if (!getters.currentQuiz) { return []; }
         const questionPages = ((getters.currentQuiz as IQuiz).pages || []).filter((p) => p.type === PageType.QUESTION_ANSWER_PAGE) as IQuestionAnswerPage[];
         return questionPages || [];
     },
     currentQuestion: (state, getters): any | undefined => {
-        if(!getters.currentQuiz) return undefined;
+        if (!getters.currentQuiz) { return undefined; }
         return ((getters.currentQuiz as IQuiz).pages || []).filter((p) => p.type === PageType.QUESTION_ANSWER_PAGE).find((qp) => (qp as IQuestionAnswerPage).questionId === state.currentMarkingContext.currentQuestionId!);
     },
     currentQuizSessionInfoObject: (state, getters): QuizSessionDataObject | undefined => {
-        if(!state.currentMarkingContext || !state.currentMarkingContext.currentQuizSessionId) return undefined;
+        if (!state.currentMarkingContext || !state.currentMarkingContext.currentQuizSessionId) { return undefined; }
         const currentSessionId = state.currentMarkingContext.currentQuizSessionId;
         return getters.quizSessionInfoMap[currentSessionId];
     },
     currentGroupQuizSessionInfoObjects(state, getters): QuizSessionDataObject[] {
         const currentChatGroup = getters.currentChatGroup as IChatGroup | undefined;
-        if (!currentChatGroup) return [];
+        if (!currentChatGroup) { return []; }
         const quizSessionIdsInCurrentChatGroup = currentChatGroup.quizSessionIds;
-        if (!quizSessionIdsInCurrentChatGroup) return [];
+        if (!quizSessionIdsInCurrentChatGroup) { return []; }
         const quizSessionInfoObjectsInCurrentChatGroup = quizSessionIdsInCurrentChatGroup.map((qid) => state.quizSessionInfoMap[qid]).filter((o) => o !== null && o !== undefined);
-        
+
         return quizSessionInfoObjectsInCurrentChatGroup;
     },
     currentChatGroupQuestionMessageMap: (state, getters): { [questionId: string]: IChatMessage[]} => {
-        if(!(getters.currentChatGroup as IChatGroup | undefined) || !state.currentMarkingContext.currentQuestionId) return {};
+        if (!(getters.currentChatGroup as IChatGroup | undefined) || !state.currentMarkingContext.currentQuestionId) { return {}; }
         const currentChatGroupId = getters.currentChatGroup._id;
         const currentChatGroupQuestionMessageMap = getters.chatGroupQuestionMessagesMap[currentChatGroupId];
         return currentChatGroupQuestionMessageMap;
     },
     currentChatGroupQuestionMessages: (state, getters): IChatMessage[] => {
         const currentChatGroupQuestionMessageMap = getters.chatGroupQuestionMessagesMap;
-        if(!currentChatGroupQuestionMessageMap || !state.currentMarkingContext.currentChatGroupId || !state.currentMarkingContext.currentQuestionId) return [];
-        if(!currentChatGroupQuestionMessageMap[state.currentMarkingContext.currentChatGroupId]) return [];
+        if (!currentChatGroupQuestionMessageMap || !state.currentMarkingContext.currentChatGroupId || !state.currentMarkingContext.currentQuestionId) { return []; }
+        if (!currentChatGroupQuestionMessageMap[state.currentMarkingContext.currentChatGroupId]) { return []; }
         return currentChatGroupQuestionMessageMap[state.currentMarkingContext.currentChatGroupId][state.currentMarkingContext.currentQuestionId] || [];
     },
     currentChatGroupResponsesMap: (state, getters): { [questionId: string]: Response[] } => {
-        const currentChatGroup:  IChatGroup | undefined = getters.currentChatGroup;
-        if(!currentChatGroup || !state.quizSessionInfoMap) return {};
+        const currentChatGroup: IChatGroup | undefined = getters.currentChatGroup;
+        if (!currentChatGroup || !state.quizSessionInfoMap) { return {}; }
         const groupSessionInfoObjectResponses = (currentChatGroup.quizSessionIds || []).filter((qid) => state.quizSessionInfoMap[qid]).map((qid) => state.quizSessionInfoMap[qid].responses);
-        let map:{ [questionId: string]: any[] }  = {};
+        const map: { [questionId: string]: any[] }  = {};
 
         groupSessionInfoObjectResponses.forEach((responseArray) => {
             responseArray.forEach((response) => {
-                if(map[response.questionId] === undefined) map[response.questionId] = [];
+                if (map[response.questionId] === undefined) { map[response.questionId] = []; }
                 map[response.questionId].push(response);
-            })
+            });
         });
         return map;
     },
     currentChatGroupQuestionResponses: (state, getters): Response[] => {
         const currentChatGroupResponsesMap = getters.currentChatGroupResponsesMap;
-        if(!currentChatGroupResponsesMap || !state.currentMarkingContext.currentQuestionId) return [];
+        if (!currentChatGroupResponsesMap || !state.currentMarkingContext.currentQuestionId) { return []; }
         return currentChatGroupResponsesMap[state.currentMarkingContext.currentQuestionId] || [];
     },
     currentMarks: (state, getters): Mark | undefined | null => {
-        if(!getters.currentQuizSessionInfoObject) return undefined;
+        if (!getters.currentQuizSessionInfoObject) { return undefined; }
         return getters.currentQuizSessionInfoObject.marks;
     },
     criterias: (state): ICriteria[] => {
@@ -226,7 +226,7 @@ const actions: ActionTree<IState, undefined> = {
                 const message: SnackEvent = {
                     message: "Deleted a quiz"
                 };
-                
+
                 EventBus.$emit(EventList.PUSH_SNACKBAR, message);
             }
         });
@@ -236,11 +236,11 @@ const actions: ActionTree<IState, undefined> = {
         const quizSessionResponse = await API.request(API.GET, (API.QUIZSESSION + "quizsession-marking/" + quizSessionId), {});
 
         const quizSession = quizSessionResponse.session as IQuizSession;
-        
+
         // Fetch user session by user session id
         const userSessionResponse = await API.request(API.GET, API.USERSESSION + "marking/" + quizSession.userSessionId, {});
         const userSession = userSessionResponse;
-        
+
         // Fetch user by userId
         const user = await API.request(API.GET, API.USER + "marking/" + userSessionResponse.userId, {});
 
@@ -248,7 +248,7 @@ const actions: ActionTree<IState, undefined> = {
         const responseResponse = await API.request(API.GET, API.RESPONSE + "quizSession/" + quizSessionId, {});
         const responses = responseResponse.data ? responseResponse.data : [];
 
-        const payload = { quizSession: quizSession, userSession: userSession, user: user, responses: responses } as QuizSessionDataObject;
+        const payload = { quizSession, userSession, user, responses } as QuizSessionDataObject;
         Vue.set(context.state.quizSessionInfoMap, quizSessionId, payload);
     },
     async getQuizSessionInfoForMarking(context, quizSessionId: string) {
@@ -256,15 +256,15 @@ const actions: ActionTree<IState, undefined> = {
         const quizSessionResponse = await API.request(API.GET, (API.QUIZSESSION + "quizsession-marking/" + quizSessionId), {});
 
         const quizSession = quizSessionResponse.session as IQuizSession;
-        
+
         // Fetch user session by user session id
         const userSessionResponse = await API.request(API.GET, API.USERSESSION + "marking/" + quizSession.userSessionId, {});
         const userSession = userSessionResponse;
-        
+
         // Fetch user by userId
         const user = await API.request(API.GET, API.USER + "marking/" + userSessionResponse.userId, {});
 
-        const payload = { quizSession: quizSession, userSession: userSession, user: user, responses: [] } as QuizSessionDataObject;
+        const payload = { quizSession, userSession, user, responses: [] } as QuizSessionDataObject;
         Vue.set(context.state.quizSessionInfoMap, quizSessionId, payload);
     },
 
@@ -315,7 +315,7 @@ const actions: ActionTree<IState, undefined> = {
 
         const message: SnackEvent = {
             message: "Deleted a criteria"
-        };        
+        };
 
         EventBus.$emit(EventList.PUSH_SNACKBAR, message);
     },
@@ -366,7 +366,7 @@ const actions: ActionTree<IState, undefined> = {
         };
 
         EventBus.$emit(EventList.PUSH_SNACKBAR, message);
-    }    
+    }
 };
 
 const mutations = {
@@ -415,7 +415,7 @@ const mutations = {
     },
     [mutationKeys.DELETE_RUBRIC](funcState: IState, index: number) {
         Vue.delete(funcState.rubrics, index);
-    },    
+    },
     UPDATE_CURRENT_MARKING_CONTEXT(state: IState, payload: any) {
         Vue.set(state.currentMarkingContext, payload.prop, payload.value);
     },

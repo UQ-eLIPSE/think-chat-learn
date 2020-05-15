@@ -31,8 +31,8 @@ const getters = {
             return state.questions.find((question) => {
                 return question._id === id;
             });
-        }
-    } 
+        };
+    }
 };
 const actions = {
     createQuestion({ commit }: {commit: Commit}, data: IQuestion) {
@@ -73,7 +73,7 @@ const actions = {
         API.request(API.PUT, API.QUESTION + "update/", data).then((outcome: boolean) => {
             if (outcome) {
                 commit(mutationKeys.EDIT_QUESTION, data);
-                
+
                 const message: SnackEvent = {
                     message: "Edited a Question"
                 };

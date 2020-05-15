@@ -3,7 +3,7 @@
 // served on localhost/client/#/
 module.exports = {
   // Change based on the directory needs
-  baseUrl: process.env.NODE_ENV === 'production'
+  publicPath: process.env.NODE_ENV === 'production'
     ? '/intermediate/'
     : '/intermediate/'
 }

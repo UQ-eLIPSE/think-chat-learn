@@ -218,19 +218,6 @@ import CircularNumberLabel from "../components/CircularNumberLabel.vue";
   }
 })
 export default class PageTemplate extends Vue {
-  // Used for Quill content areas as Quill sets empty content as the below
-  private emptyContent = "<p><br></p>";
-
-  private contentPanelOpen = true;
-  private questionsPanelOpen = false;
-  private responsesPanelOpen = true;
-
-  private DEFAULT_RESPONSE = "";
-  private DEFAULT_CONFIDENCE = 3;
-
-  /** Only used when its a question page that is qualitative */
-  private responseContent: string = "";
-  private confidence: number = 3;
 
   get chatMessages(): Message[] {
     return this.$store.getters.chatMessages;
@@ -238,39 +225,6 @@ export default class PageTemplate extends Vue {
 
   get quizSession(): IQuizSession | null {
     return this.$store.getters.quizSession;
-  }
-
-  private toggleChat: boolean = false;
-  private newMessage: boolean | null = false;
-  private groupFormed: boolean = false;
-
-  // In short, if we have a message and the chat is off, notify new message
-  @Watch("chatMessages")
-  private handleMessageNotification(
-    newVal: Message[],
-    oldVal: Message[]
-  ) {
-    if (!this.toggleChat) {
-      this.newMessage = true;
-    }
-  }
-
-  public changeChatState() {
-    this.toggleChat = !this.toggleChat;
-    this.newMessage = false;
-  }
-
-  private checkResponses() {
-    return this.sortedUniqueQuestionGroupAnswers.some(currentValue => {
-      if (currentValue && currentValue.answer) {
-        if (currentValue.answer.type === QuestionType.QUALITATIVE &&
-          currentValue.answer.content &&
-          currentValue.answer.content.trim()) return true;
-        if (currentValue.answer.type === QuestionType.MCQ &&
-          currentValue.answer.optionId) return true;
-      }
-      return false;
-    });
   }
 
   get quiz(): IQuiz | null {
@@ -304,35 +258,6 @@ export default class PageTemplate extends Vue {
 
   get socketState() {
     return this.$store.getters.socketState;
-  }
-
-/**
- * Changes visibility of chat window  based on
- * page type and chatGroupFormed status
- */
-  @Watch("currentIndex")
-  private currentIndexChangeHandler(newVal: boolean, oldVal?: boolean) {
-    // this.toggleChat -> true, if
-    //  - chat group exists
-    //  - current page is discussion page
-    //  - (Note that this automatically handles the session re-join condition)
-    
-    // this.toggleChat -> false, if
-    //  - current page is not discussion page
-    //    - (since users complained of chat window covering content)
-  
-    // Note: Frequent opening/closing of chat window would (hopefully)
-    // signal to users that the chat window can be shown/hidden
-    if(this.page && this.page.type !== PageType.DISCUSSION_PAGE) {
-      this.toggleChat = false;
-    }
-    
-    if(this.page && this.page.type === PageType.DISCUSSION_PAGE &&
-      this.socketState && this.socketState.chatGroupFormed &&
-      this.socketState.chatGroupFormed.groupId) {
-      
-      this.toggleChat = true;
-    }
   }
 
   get PageType() {
@@ -380,13 +305,15 @@ export default class PageTemplate extends Vue {
    */
   get sortedUniqueQuestionGroupAnswers() {
     try {
-      if(this.chatGroup && this.chatGroup.groupAnswers &&
+      if (this.chatGroup && this.chatGroup.groupAnswers &&
         this.question && this.question._id &&
-        this.chatGroup.groupAnswers[this.question._id]){
-        
-        const sorted = this.chatGroup.groupAnswers[this.question._id].sort((a: IWSToClientData.ChatGroupAnswer, b: IWSToClientData.ChatGroupAnswer) => {
+        this.chatGroup.groupAnswers[this.question._id]) {
+
+        const sorted =
+          this.chatGroup.groupAnswers[this.question._id].sort(
+              (a: IWSToClientData.ChatGroupAnswer, b: IWSToClientData.ChatGroupAnswer) => {
             // Make sure clientIndex is truthy or zero before subtracting
-            if((a && (a.clientIndex || a.clientIndex === 0)) &&
+            if ((a && (a.clientIndex || a.clientIndex === 0)) &&
               (b && (b.clientIndex || b.clientIndex === 0))) {
               return a.clientIndex - b.clientIndex;
             }
@@ -396,21 +323,21 @@ export default class PageTemplate extends Vue {
             return 0;
         });
 
-        const uniqueSorted: IWSToClientData.ChatGroupAnswer[] = []; 
+        const uniqueSorted: IWSToClientData.ChatGroupAnswer[] = [];
         const uniqueMapAnswerId: {[key: string]: boolean} = {};
 
         sorted.forEach((answer) => {
-          if(!answer.answer || !answer.answer._id) return;
-          if(!uniqueMapAnswerId[answer.answer._id]) {
+          if (!answer.answer || !answer.answer._id) { return; }
+          if (!uniqueMapAnswerId[answer.answer._id]) {
             uniqueMapAnswerId[answer.answer._id] = true;
             uniqueSorted.push(answer);
           }
         });
-        
+
         return uniqueSorted;
       }
       return [];
-    } catch(e) {
+    } catch (e) {
       return [];
     }
   }
@@ -472,11 +399,94 @@ export default class PageTemplate extends Vue {
   }
 
   get maxAnswerLength() {
-    if(Conf && Conf.answers && Conf.answers.justification && Conf.answers.justification.maxLength) {
+    if (Conf && Conf.answers && Conf.answers.justification && Conf.answers.justification.maxLength) {
       return Conf.answers.justification.maxLength;
     }
 
     return 1000;
+  }
+
+  get displayResponsesEnabled() {
+    if (this.page && this.page.type === PageType.DISCUSSION_PAGE) {
+      return this.page.displayResponses;
+    }
+
+    return false;
+  }
+  // Used for Quill content areas as Quill sets empty content as the below
+  private emptyContent = "<p><br></p>";
+
+  private contentPanelOpen = true;
+  private questionsPanelOpen = false;
+  private responsesPanelOpen = true;
+
+  private DEFAULT_RESPONSE = "";
+  private DEFAULT_CONFIDENCE = 3;
+
+  /** Only used when its a question page that is qualitative */
+  private responseContent: string = "";
+  private confidence: number = 3;
+
+  private toggleChat: boolean = false;
+  private newMessage: boolean | null = false;
+  private groupFormed: boolean = false;
+
+  public changeChatState() {
+    this.toggleChat = !this.toggleChat;
+    this.newMessage = false;
+  }
+
+  // In short, if we have a message and the chat is off, notify new message
+  @Watch("chatMessages")
+  private handleMessageNotification(
+    newVal: Message[],
+    oldVal: Message[]
+  ) {
+    if (!this.toggleChat) {
+      this.newMessage = true;
+    }
+  }
+
+  private checkResponses() {
+    return this.sortedUniqueQuestionGroupAnswers.some((currentValue) => {
+      if (currentValue && currentValue.answer) {
+        if (currentValue.answer.type === QuestionType.QUALITATIVE &&
+          currentValue.answer.content &&
+          currentValue.answer.content.trim()) { return true; }
+        if (currentValue.answer.type === QuestionType.MCQ &&
+          currentValue.answer.optionId) { return true; }
+      }
+      return false;
+    });
+  }
+
+/**
+ * Changes visibility of chat window  based on
+ * page type and chatGroupFormed status
+ */
+  @Watch("currentIndex")
+  private currentIndexChangeHandler(newVal: boolean, oldVal?: boolean) {
+    // this.toggleChat -> true, if
+    //  - chat group exists
+    //  - current page is discussion page
+    //  - (Note that this automatically handles the session re-join condition)
+
+    // this.toggleChat -> false, if
+    //  - current page is not discussion page
+    //    - (since users complained of chat window covering content)
+
+    // Note: Frequent opening/closing of chat window would (hopefully)
+    // signal to users that the chat window can be shown/hidden
+    if (this.page && this.page.type !== PageType.DISCUSSION_PAGE) {
+      this.toggleChat = false;
+    }
+
+    if (this.page && this.page.type === PageType.DISCUSSION_PAGE &&
+      this.socketState && this.socketState.chatGroupFormed &&
+      this.socketState.chatGroupFormed.groupId) {
+
+      this.toggleChat = true;
+    }
   }
 
   private handleConfidenceChange(confidenceValue: number) {
@@ -581,14 +591,6 @@ export default class PageTemplate extends Vue {
         });
     }
   }
-
-  get displayResponsesEnabled() {
-    if (this.page && this.page.type === PageType.DISCUSSION_PAGE) {
-      return this.page.displayResponses;
-    }
-
-    return false;
-  }
   // If this page becomes a discussion page, handles the instantiation of the sockets and the sessions in the db
   @Watch("maxIndex")
   private handlePageChange(newVal: number | null, oldVal: number | null) {
@@ -616,10 +618,10 @@ export default class PageTemplate extends Vue {
         };
 
         // If responses are to be displayed, fetch user responses from server
-        if(this.displayResponsesEnabled) {
+        if (this.displayResponsesEnabled) {
           this.emitUpdateRequest();
         }
-        
+
         EventBus.$emit(EmitterEvents.START_TIMER, this.$store.getters.currentTimerSettings);
       } else {
         this.$router.push("/allocation");
@@ -711,7 +713,7 @@ export default class PageTemplate extends Vue {
       this.newMessage = false;
       this.groupFormed = true;
     });
-    
+
     if (!this.quiz || !this.quiz.pages) {
       return;
     }

@@ -46,7 +46,7 @@ export default class RubricList extends Vue {
             fn: this.$store.dispatch,
             data: ["deleteRubric", id]
         };
-        EventBus.$emit(EventList.OPEN_MODAL, payload);          
+        EventBus.$emit(EventList.OPEN_MODAL, payload);
     }
 
     get rubrics(): IRubric[] {

@@ -5,6 +5,7 @@ import bodyParser from "body-parser";
 import expressJwt from "express-jwt";
 import jwt from "jsonwebtoken";
 import { Db, MongoClient } from "mongodb";
+import cors from "cors";
 
 import { Main } from "./js";
 import { Conf } from "./config/Conf";
@@ -205,6 +206,8 @@ export default class App {
     private setupRoutes(): void {
         console.log(`socket.io listening on ${Conf.portNum}`);
         
+        // TODO: Configure cors to be more secure
+        this.express.use(cors());
         
         // Use ejs for templating on pages
         this.express.set("view engine", "ejs");

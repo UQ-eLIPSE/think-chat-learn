@@ -153,11 +153,11 @@ export default class Chat extends Vue {
 
   get displayChatErrorMessage() {
     try {
-      if(!this.hasMessage) return false;
-      
-      return (this.systemMessage.type === SystemMessageTypes.WARNING || 
+      if (!this.hasMessage) { return false; }
+
+      return (this.systemMessage.type === SystemMessageTypes.WARNING ||
             this.systemMessage.type === SystemMessageTypes.FATAL_ERROR);
-    } catch(e) {
+    } catch (e) {
         return false;
     }
   }

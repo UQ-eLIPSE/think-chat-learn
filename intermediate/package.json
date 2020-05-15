@@ -1,8 +1,8 @@
 {
-  "name": "moocChat",
+  "name": "thinkchatlearn-intermediate",
   "version": "3.0.0",
   "private": true,
-  "description": "v3 of moocChat will be branded as Think.Chat.Learn and will include a complete rebrand and significant code improvements.",
+  "description": "ThinkChatLearn is a discussion platform which allows collaborative learning among students",
   "scripts": {
     "test": "test",
     "serve": "vue-cli-service serve",

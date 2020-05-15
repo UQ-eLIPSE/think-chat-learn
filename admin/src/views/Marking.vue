@@ -73,7 +73,7 @@ export default class Marking extends Vue {
         return this.$store.getters.quizzes;
     }
     get course() {
-        return this.$store.state.Quiz.course || '';
+        return this.$store.state.Quiz.course || "";
     }
 
 }

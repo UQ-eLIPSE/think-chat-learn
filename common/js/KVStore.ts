@@ -4,7 +4,7 @@ export interface KVStore<T> {
 }
 
 export class KVStore<T> {
-    private kvStore: { [key: string]: T };
+    private kvStore: { [key: string]: T } = {};
 
     constructor() {
         this.empty();
