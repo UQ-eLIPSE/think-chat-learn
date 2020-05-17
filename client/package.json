@@ -2,7 +2,7 @@
   "name": "thinkchatlearn-client",
   "version": "3.0.0",
   "private": true,
-  "description": "ThinkChatLearn is a discussion platform which allows collaborative learning among students",
+  "description": "Client Vue App for ThinkChatLearn",
   "scripts": {
     "test:e2e": "node_modules/.bin/cypress open",
     "serve": "vue-cli-service serve",

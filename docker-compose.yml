@@ -45,28 +45,29 @@ services:
     depends_on:
       - server
       - mongodb
-  # intermediate:
-  #   env_file:
-  #     - ./intermediate/.env.development
-  #   build:
-  #     context: ./intermediate
-  #     dockerfile: Dockerfile
-  #   container_name: intermediate-app
-  #   volumes:
-  #     - ./intermediate:/var/www/think-chat-learn/intermediate
-  #     - ./common:/var/www/think-chat-learn/common
-  #   expose:
-  #     - "5000"
-  #   ports:
-  #     - "5000:5000"
-  #   environment:
-  #     - PORT=5000
-  #     - NODE_ENV=development    
-  #   networks:
-  #     - network
-  #   depends_on:
-  #     - server
-  #     - mongodb
+
+  intermediate:
+    env_file:
+      - ./intermediate/.env.development
+    build:
+      context: ./intermediate
+      dockerfile: Dockerfile
+    container_name: intermediate-app
+    volumes:
+      - ./intermediate:/var/www/think-chat-learn/intermediate
+      - ./common:/var/www/think-chat-learn/common
+    expose:
+      - "5000"
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - NODE_ENV=development    
+    networks:
+      - network
+    depends_on:
+      - server
+      - mongodb
 
 
       # - volsync_intermediate
