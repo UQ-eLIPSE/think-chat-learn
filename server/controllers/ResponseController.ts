@@ -1,4 +1,4 @@
-import * as express from "express";
+import express from "express";
 import { BaseController } from "./BaseController";
 import { ResponseService } from "../services/ResponseService";
 import { Response } from "../../common/interfaces/ToClientData";

@@ -1,5 +1,5 @@
 import express from "express";
-import * as http from "http";
+import http from "http";
 import SocketIO from "socket.io";
 import bodyParser from "body-parser";
 import expressJwt from "express-jwt";

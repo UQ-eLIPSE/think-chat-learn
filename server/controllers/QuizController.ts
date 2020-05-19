@@ -1,4 +1,4 @@
-import * as express from "express";
+import express from "express";
 import { BaseController } from "./BaseController";
 import { QuizService } from "../services/QuizService";
 import { IQuizOverNetwork } from "../../common/interfaces/NetworkData";

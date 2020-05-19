@@ -195,13 +195,13 @@ import { IQuizOverNetwork } from "../../../common/interfaces/NetworkData";
 import { Conf } from "../../../common/config/Conf";
 import { EventBus, EventList, SnackEvent, ModalEvent, BlobUpload } from "../EventBus";
 import { Utils } from "../../../common/js/Utils";
-import API from "../../../common/js/DB_API";
+import { API } from "../../../common/js/DB_API";
 interface DropDownConfiguration {
   text: string;
   value: string;
 }
 
-const IMAGE_LOCATION = process.env.VUE_APP_IMAGE_LOCATION;
+const IMAGE_LOCATION = Conf.admin.imageLocation;
 
 @Component({
   components: {
@@ -378,7 +378,7 @@ export default class QuizPage extends Vue {
       this.uploads.forEach((upload) => {
         tempForm.append(upload.id, upload.blob);
       });
-      API.uploadForm("image/imageUpload", tempForm).then((files: Array<{ fieldName: string, fileName: string}>) => {
+      API.uploadForm("/image/imageUpload", tempForm).then((files: Array<{ fieldName: string, fileName: string}>) => {
           const payload: SnackEvent = {
               message: "Finished uploading associated images"
           };

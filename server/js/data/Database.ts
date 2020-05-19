@@ -1,5 +1,5 @@
-import * as mongodb from "mongodb";
-import * as crypto from "crypto";
+import mongodb from "mongodb";
+import crypto from "crypto";
 
 export abstract class Database<CollectionData> {
     public static ObjectId = mongodb.ObjectID;

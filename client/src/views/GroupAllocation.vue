@@ -37,7 +37,7 @@ import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
 import { SocketState, TimerSettings } from "../interfaces";
 import { EventBus } from "../EventBus";
 import { EmitterEvents } from "../emitters";
-import { Conf } from "../../../common/config/Conf";
+import { Conf as CommonConf } from "../../../common/config/Conf";
 
 @Component({
   components: {
@@ -50,7 +50,7 @@ export default class GroupAllocation extends Vue {
   }
 
   get percentLoadedByTime() {
-    const waitTime = Conf.timings.chatGroupFormationTimeoutMs;
+    const waitTime = CommonConf.timings.chatGroupFormationTimeoutMs;
     return Math.round((this.timeElapsed / waitTime) * 100);
   }
 
@@ -65,7 +65,7 @@ export default class GroupAllocation extends Vue {
 
   public initLoaderTimeout(timeElapsedInMs: number, timerReference?: any) {
     this.timeElapsed = timeElapsedInMs;
-    if (timeElapsedInMs < Conf.timings.chatGroupFormationTimeoutMs) {
+    if (timeElapsedInMs < CommonConf.timings.chatGroupFormationTimeoutMs) {
       const timerRef = setTimeout(() => {
         this.initLoaderTimeout(timeElapsedInMs + 1000, timerRef);
       }, 1000);

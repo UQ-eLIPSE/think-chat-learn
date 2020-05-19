@@ -1,6 +1,6 @@
 import {IIdentityInfo} from "../IIdentityInfo";
 
-import * as crypto from "crypto";
+import crypto from "crypto";
 
 import {Auth} from "../Auth";
 

@@ -74,7 +74,8 @@ import { getAdminLoginResponse } from "../../../common/js/front_end_auth";
 import { Utils } from "../../../common/js/Utils";
 import { EventBus, EventList, SnackEvent, ModalEvent, BlobUpload } from "../EventBus";
 import { IQuestionQualitative } from "../../../common/interfaces/DBSchema";
-import API from "../../../common/js/DB_API";
+import { API } from "../../../common/js/DB_API";
+import { Conf as CommonConf } from "../../../common/config/Conf";
 
 interface DropDownConfiguration {
   text: string;
@@ -98,7 +99,7 @@ const defaultQuestion: IQuestionQualitative = {
     content: ""
 };
 
-const IMAGE_LOCATION = process.env.VUE_APP_IMAGE_LOCATION;
+const IMAGE_LOCATION = CommonConf.admin.imageLocation;
 
 @Component({
   components: {
@@ -174,7 +175,7 @@ export default class QuestionPage extends Vue {
         this.uploads.forEach((upload) => {
             tempForm.append(upload.id, upload.blob);
         });
-        API.uploadForm("image/imageUpload", tempForm).then((files: Array<{ fieldName: string, fileName: string}>) => {
+        API.uploadForm("/image/imageUpload", tempForm).then((files: Array<{ fieldName: string, fileName: string}>) => {
             const payload: SnackEvent = {
                 message: "Finished uploading associated images"
             };

@@ -1,4 +1,4 @@
-import * as express from "express";
+import express from "express";
 import { BaseController } from "./BaseController";
 import { MarksService } from "../services/MarksService";
 import { SocketSession } from "../js/websocket/SocketSession";

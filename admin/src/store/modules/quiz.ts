@@ -177,7 +177,7 @@ const getters: GetterTree<IState, undefined> = {
 };
 const actions: ActionTree<IState, undefined> = {
     createQuiz({ commit }: { commit: Commit }, data: IQuizOverNetwork) {
-        API.request(API.POST, API.QUIZ + "create", data).then((output: {outgoingId: string}) => {
+        API.request(API.POST, API.QUIZ + "/create", data).then((output: {outgoingId: string}) => {
             if (output.outgoingId) {
                 data._id = output.outgoingId;
                 commit(mutationKeys.SET_QUIZ, convertNetworkQuizIntoQuiz(data));
@@ -192,7 +192,7 @@ const actions: ActionTree<IState, undefined> = {
     },
 
     updateQuiz({ commit }: { commit: Commit }, data: IQuizOverNetwork) {
-        API.request(API.PUT, API.QUIZ + "update", data).then((outcome: boolean) => {
+        API.request(API.PUT, API.QUIZ + "/update", data).then((outcome: boolean) => {
             if (outcome) {
                 commit(mutationKeys.EDIT_QUIZ, convertNetworkQuizIntoQuiz(data));
 
@@ -206,12 +206,12 @@ const actions: ActionTree<IState, undefined> = {
     },
 
     getQuizzes(context, courseId: string) {
-        API.request(API.GET, API.QUIZ + "course/" + courseId, {}).then((output: IQuizOverNetwork[]) => {
+        API.request(API.GET, API.QUIZ + "/course/" + courseId, {}).then((output: IQuizOverNetwork[]) => {
             context.commit(mutationKeys.SET_QUIZZES, convertNetworkQuizzesIntoQuizzes(output));
         });
     },
     async getChatGroups({ commit }: { commit: Commit }, quizId: string) {
-        await API.request(API.GET, API.CHATGROUP + `getChatGroups?quizid=${quizId}`, {}).then((output: any[]) => {
+        await API.request(API.GET, API.CHATGROUP + `/getChatGroups?quizid=${quizId}`, {}).then((output: any[]) => {
             commit(mutationKeys.SET_CHATGROUPS, output);
         });
     },
@@ -219,7 +219,7 @@ const actions: ActionTree<IState, undefined> = {
         commit(mutationKeys.SET_QUIZZES, data);
     },
     deleteQuiz({ commit }: { commit: Commit }, data: string) {
-        API.request(API.DELETE, API.QUIZ + "delete/" + data, {}).then((outcome: boolean) => {
+        API.request(API.DELETE, API.QUIZ + "/delete/" + data, {}).then((outcome: boolean) => {
             if (outcome) {
                 commit(mutationKeys.DELETE_QUIZ, data);
 
@@ -233,19 +233,19 @@ const actions: ActionTree<IState, undefined> = {
     },
     async getQuizSessionInfo(context, quizSessionId: string) {
         // Fetch quiz session by quiz session id
-        const quizSessionResponse = await API.request(API.GET, (API.QUIZSESSION + "quizsession-marking/" + quizSessionId), {});
+        const quizSessionResponse = await API.request(API.GET, (API.QUIZSESSION + "/quizsession-marking/" + quizSessionId), {});
 
         const quizSession = quizSessionResponse.session as IQuizSession;
 
         // Fetch user session by user session id
-        const userSessionResponse = await API.request(API.GET, API.USERSESSION + "marking/" + quizSession.userSessionId, {});
+        const userSessionResponse = await API.request(API.GET, API.USERSESSION + "/marking/" + quizSession.userSessionId, {});
         const userSession = userSessionResponse;
 
         // Fetch user by userId
-        const user = await API.request(API.GET, API.USER + "marking/" + userSessionResponse.userId, {});
+        const user = await API.request(API.GET, API.USER + "/marking/" + userSessionResponse.userId, {});
 
         // Fetch responses by quiz session id
-        const responseResponse = await API.request(API.GET, API.RESPONSE + "quizSession/" + quizSessionId, {});
+        const responseResponse = await API.request(API.GET, API.RESPONSE + "/quizSession/" + quizSessionId, {});
         const responses = responseResponse.data ? responseResponse.data : [];
 
         const payload = { quizSession, userSession, user, responses } as QuizSessionDataObject;
@@ -253,16 +253,16 @@ const actions: ActionTree<IState, undefined> = {
     },
     async getQuizSessionInfoForMarking(context, quizSessionId: string) {
         // Fetch quiz session by quiz session id
-        const quizSessionResponse = await API.request(API.GET, (API.QUIZSESSION + "quizsession-marking/" + quizSessionId), {});
+        const quizSessionResponse = await API.request(API.GET, (API.QUIZSESSION + "/quizsession-marking/" + quizSessionId), {});
 
         const quizSession = quizSessionResponse.session as IQuizSession;
 
         // Fetch user session by user session id
-        const userSessionResponse = await API.request(API.GET, API.USERSESSION + "marking/" + quizSession.userSessionId, {});
+        const userSessionResponse = await API.request(API.GET, API.USERSESSION + "/marking/" + quizSession.userSessionId, {});
         const userSession = userSessionResponse;
 
         // Fetch user by userId
-        const user = await API.request(API.GET, API.USER + "marking/" + userSessionResponse.userId, {});
+        const user = await API.request(API.GET, API.USER + "/marking/" + userSessionResponse.userId, {});
 
         const payload = { quizSession, userSession, user, responses: [] } as QuizSessionDataObject;
         Vue.set(context.state.quizSessionInfoMap, quizSessionId, payload);
@@ -278,7 +278,7 @@ const actions: ActionTree<IState, undefined> = {
 
     async sendCriteria({ commit }: { commit: Commit }, data: ICriteria) {
         if (data._id) {
-            await API.request(API.POST, API.CRITERIA + "update/", data);
+            await API.request(API.POST, API.CRITERIA + "/update/", data);
 
             const index = state.criterias.findIndex((criteria) => {
                 return criteria._id === data._id;
@@ -292,7 +292,7 @@ const actions: ActionTree<IState, undefined> = {
 
             EventBus.$emit(EventList.PUSH_SNACKBAR, message);
         } else {
-            const id: {outgoingId: string } = await API.request(API.PUT, API.CRITERIA + "create/", data);
+            const id: {outgoingId: string } = await API.request(API.PUT, API.CRITERIA + "/create/", data);
             data._id = id.outgoingId;
             commit(mutationKeys.SET_CRITERIA, { criteria: data, index: state.criterias.length });
 
@@ -305,7 +305,7 @@ const actions: ActionTree<IState, undefined> = {
     },
 
     async deleteCriteria({ commit }: { commit: Commit }, id: string) {
-        await API.request(API.DELETE, API.CRITERIA + "delete/" + id, {});
+        await API.request(API.DELETE, API.CRITERIA + "/delete/" + id, {});
 
         const index = state.criterias.findIndex((criteria) => {
             return criteria._id === id;
@@ -326,7 +326,7 @@ const actions: ActionTree<IState, undefined> = {
 
     async sendRubric({ commit }: { commit: Commit }, data: IRubric) {
         if (data._id) {
-            await API.request(API.POST, API.RUBRIC + "update/", data);
+            await API.request(API.POST, API.RUBRIC + "/update/", data);
 
             const index = state.rubrics.findIndex((rubric) => {
                 return rubric._id === data._id;
@@ -340,7 +340,7 @@ const actions: ActionTree<IState, undefined> = {
 
             EventBus.$emit(EventList.PUSH_SNACKBAR, message);
         } else {
-            const id: {outgoingId: string } = await API.request(API.PUT, API.RUBRIC + "create/", data);
+            const id: {outgoingId: string } = await API.request(API.PUT, API.RUBRIC + "/create/", data);
             data._id = id.outgoingId;
             commit(mutationKeys.SET_RUBRIC, { rubric: data, index: state.rubrics.length });
 
@@ -353,7 +353,7 @@ const actions: ActionTree<IState, undefined> = {
     },
 
     async deleteRubric({ commit }: { commit: Commit }, id: string) {
-        await API.request(API.DELETE, API.RUBRIC + "delete/" + id, {});
+        await API.request(API.DELETE, API.RUBRIC + "/delete/" + id, {});
 
         const index = state.rubrics.findIndex((rubric) => {
             return rubric._id === id;

@@ -1,4 +1,4 @@
-import * as express from "express";
+import express from "express";
 import { BaseController } from "./BaseController";
 import { QuestionService } from "../services/QuestionService";
 import { TypeQuestion } from "../../common/interfaces/DBSchema";

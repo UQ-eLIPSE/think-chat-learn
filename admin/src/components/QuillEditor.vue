@@ -21,7 +21,7 @@ import Quill from "quill";
 import ImageResize from "quill-image-resize";
 import { getIdToken } from "../../../common/js/front_end_auth";
 import { EventBus, EventList, SnackEvent, BlobUpload } from "../EventBus";
-import API from "../../../common/js/DB_API";
+import { API } from "../../../common/js/DB_API";
 // import Delta from "quill-delta";
 
 // Unfortunately we have to create our own custom element

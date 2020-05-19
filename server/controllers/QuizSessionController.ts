@@ -1,4 +1,4 @@
-import * as express from "express";
+import express from "express";
 import { BaseController } from "./BaseController";
 import { QuizSessionService } from "../services/QuizSessionService";
 import { IQuizSession, LoginResponse } from "../../common/interfaces/ToClientData";

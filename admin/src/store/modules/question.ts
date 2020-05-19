@@ -36,7 +36,7 @@ const getters = {
 };
 const actions = {
     createQuestion({ commit }: {commit: Commit}, data: IQuestion) {
-        API.request(API.POST, API.QUESTION + "create", data).then((payload: { outgoingId: string }) => {
+        API.request(API.POST, API.QUESTION + "/create", data).then((payload: { outgoingId: string }) => {
             if (payload) {
                 data._id = payload.outgoingId;
                 commit(mutationKeys.SET_QUESTION, data);
@@ -56,7 +56,7 @@ const actions = {
     },
 
     deleteQuestion({ commit }: {commit: Commit}, data: string) {
-        API.request(API.DELETE, API.QUESTION + "delete/" + data, {}).then((outcome: boolean) => {
+        API.request(API.DELETE, API.QUESTION + "/delete/" + data, {}).then((outcome: boolean) => {
             if (outcome) {
                 commit(mutationKeys.DELETE_QUESTION, data);
                 const message: SnackEvent = {
@@ -70,7 +70,7 @@ const actions = {
     },
 
     editQuestion({ commit }: {commit: Commit}, data: IQuestion) {
-        API.request(API.PUT, API.QUESTION + "update/", data).then((outcome: boolean) => {
+        API.request(API.PUT, API.QUESTION + "/update/", data).then((outcome: boolean) => {
             if (outcome) {
                 commit(mutationKeys.EDIT_QUESTION, data);
 

@@ -1,4 +1,4 @@
-import * as mongodb from "mongodb";
+import mongodb from "mongodb";
 
 import * as IPacSeqSocketPacket from "../../common/interfaces/IPacSeqSocketPacket";
 

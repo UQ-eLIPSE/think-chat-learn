@@ -1,7 +1,7 @@
 import Vue from "vue";
 import { Commit } from "vuex";
 import { IQuizSession, Response } from "../../../../common/interfaces/ToClientData";
-import API from "../../../../common/js/DB_API";
+import { API } from "../../../../common/js/DB_API";
 import store from "..";
 // Websocket interfaces
 import * as IWSToClientData from "../../../../common/interfaces/IWSToClientData";
@@ -137,7 +137,7 @@ const actions = {
 
     createQuizSession({ commit }: {commit: Commit}, quizSession: IQuizSession) {
 
-        return API.request(API.POST, API.QUIZSESSION + "create", quizSession, undefined,
+        return API.request(API.POST, API.QUIZSESSION + "/create", quizSession, undefined,
             getToken()).then((id: { outgoingId: string }) => {
 
             quizSession._id = id.outgoingId;
@@ -147,14 +147,14 @@ const actions = {
     },
 
     sendResponse({ commit }: {commit: Commit}, response: Response) {
-        return API.request(API.POST, API.RESPONSE + "create", response, undefined,
+        return API.request(API.POST, API.RESPONSE + "/create", response, undefined,
             getToken()).catch((e: Error) => {
             throw Error("Failed to send response");
         });
     },
 
     createIntermediate({ commit }: {commit: Commit}, responses: Response[]) {
-        return API.request(API.POST, API.USER + "intermediate-register", responses,
+        return API.request(API.POST, API.USER + "/intermediate-register", responses,
             undefined, getToken()).then((output: { token: string, responses: Response[]}) => {
                 commit(mutationKeys.APPEND_TOKEN, output.token);
                 commit(mutationKeys.SET_RESPONSES, output.responses);
@@ -162,7 +162,7 @@ const actions = {
     },
 
     updateResponses({ commit }: {commit: Commit}, responses: Response[]) {
-        return API.request(API.PUT, API.RESPONSE + "bulkUpdate", responses,
+        return API.request(API.PUT, API.RESPONSE + "/bulkUpdate", responses,
             undefined, getToken()).then((output: { outcome: boolean }) => {
                 if (output.outcome) {
                     commit(mutationKeys.SET_RESPONSES, responses);

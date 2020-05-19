@@ -59,7 +59,7 @@ export default class MarkingComponent extends Vue {
             const currentMarkingContext = this.currentMarkingContext;
             const quizSessionId = currentMarkingContext.currentQuizSessionId;
             const questionId = currentMarkingContext.currentQuestionId;
-            const quizSessionIdMarks: Schema.Mark = await API.request(API.GET, API.MARKS + `quizSessionId/${quizSessionId}`, {});
+            const quizSessionIdMarks: Schema.Mark = await API.request(API.GET, API.MARKS + `/quizSessionId/${quizSessionId}`, {});
             const marker = this.marker;
             let marks: Schema.Mark | null = null;
             if (Array.isArray(quizSessionIdMarks)) {
@@ -213,12 +213,12 @@ export default class MarkingComponent extends Vue {
             const multipleMarking = this.markingConfig.allowMultipleMarkers;
 
             if (multipleMarking) {
-                const markSaveResponse = await API.request(API.POST, API.MARKS + `multiple/createOrUpdate/quizSessionId/${this.currentQuizSessionId}/questionId/${this.currentQuestionId}`, marksToBeSaved);
+                const markSaveResponse = await API.request(API.POST, API.MARKS + `/multiple/createOrUpdate/quizSessionId/${this.currentQuizSessionId}/questionId/${this.currentQuestionId}`, marksToBeSaved);
                 if (markSaveResponse) {
                     this.showSuccessMessage();
                 }
             } else {
-                const markSaveResponse = await API.request(API.POST, API.MARKS + `createOrUpdate/quizSessionId/${this.currentQuizSessionId}/questionId/${this.currentQuestionId}`, marksToBeSaved);
+                const markSaveResponse = await API.request(API.POST, API.MARKS + `/createOrUpdate/quizSessionId/${this.currentQuizSessionId}/questionId/${this.currentQuestionId}`, marksToBeSaved);
                 if (markSaveResponse) {
                     this.showSuccessMessage();
                 }

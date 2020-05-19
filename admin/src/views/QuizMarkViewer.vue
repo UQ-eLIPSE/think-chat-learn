@@ -123,7 +123,7 @@ export default class QuizMarkViewer extends Vue {
             Vue.delete(vm.marksMap, q);
             Vue.delete(vm.quizSessionUserMap, q);
         });
-        const { totalQuizSessions, marksMap, quizSessionUserMap } = await API.request(API.GET, API.MARKS + `bulk/quiz?q=${vm.$route.params.id}&c=${vm.pagination.currentPage}&p=${vm.pagination.perPage}`, {});
+        const { totalQuizSessions, marksMap, quizSessionUserMap } = await API.request(API.GET, API.MARKS + `/bulk/quiz?q=${vm.$route.params.id}&c=${vm.pagination.currentPage}&p=${vm.pagination.perPage}`, {});
         const quizSessionIds = Object.keys(marksMap);
         vm.pagination.total = totalQuizSessions;
         vm.marksMap = marksMap;
@@ -299,7 +299,7 @@ export default class QuizMarkViewer extends Vue {
             totalQuizSessions: any,
             marksMap: { [key: string]: Schema.Mark[] },
             quizSessionUserMap: any
-        } = await API.request(API.GET, API.MARKS + `bulk/quiz?q=${this.$route.params.id}&c=1&p=${Number.MAX_SAFE_INTEGER}`, {});
+        } = await API.request(API.GET, API.MARKS + `/bulk/quiz?q=${this.$route.params.id}&c=1&p=${Number.MAX_SAFE_INTEGER}`, {});
 
         const DELIMITER = ",";
 

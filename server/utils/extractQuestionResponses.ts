@@ -1,7 +1,7 @@
 import { Db, MongoClient } from "mongodb";
 import { Conf } from "../config/Conf";
 import { Query } from "./query";
-import * as fs from "fs";
+import fs from "fs";
 
 // Controllers
 import { UserRepository } from "../repositories/UserRepository";
