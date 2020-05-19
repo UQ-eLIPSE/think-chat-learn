@@ -2,21 +2,27 @@ import { Utils } from "../../common/js/Utils";
 import { ICriteria } from "../../common/interfaces/DBSchema";
   
 /**
- * Server configuration file
+ * MOOCchat server configuration file
  */
   
 const SERVER_URL = "http://localhost:8080";
 const ENDPOINT_URL = `${SERVER_URL}`;
- 
+const ADMIN_URL = "http://localhost:4000";
+const CLIENT_URL = "http://localhost:3000";
+const INTERMEDIATE_URL = "http://localhost:5000";
+
 export const Conf: IConf = {
     portNum: 8080,
-    database: "mongodb://localhost:27017/moocchatDB",
+    database: "mongodb://mongodb:27017/moocchatDB",
     http: {
         maxSockets: 65000
     },
-    adminPage: `${SERVER_URL}/admin/#/login`,
-    clientPage: `${SERVER_URL}/client/#/login`,
-    intermediatePage: `${SERVER_URL}/intermediate/#/login`,
+    // adminPage: `${SERVER_URL}/admin/#/login`,
+    adminPage: `${ADMIN_URL}/admin/#/login`,
+    // clientPage: `${SERVER_URL}/client/#/login`,
+    clientPage: `${CLIENT_URL}/client/#/login`,
+    // intermediatePage: `${SERVER_URL}/intermediate/#/login`,
+    intermediatePage: `${INTERMEDIATE_URL}/intermediate/#/login`,
     jwt: {
         SECRET: "YOUR_SECRET",
         TOKEN_LIFESPAN: "7h"
