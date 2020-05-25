@@ -25,7 +25,7 @@ const actions = {
     },
 
     handleToken({ commit }: { commit: Commit}, token: string) {
-        return API.request(API.POST, API.USER + "handleToken", {});
+        return API.request(API.POST, API.USER + "/handleToken", {});
     }
 };
 

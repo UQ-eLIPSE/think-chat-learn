@@ -1,15 +1,16 @@
-import * as express from "express";
+import express from "express";
 import { BaseController } from "./BaseController";
 import { isAdmin } from "../js/auth/AdminPageAuth";
-import * as multer from "multer";
-import * as uniqid from "uniqid";
-import * as path from "path";
+import multer from "multer";
+import uniqid from "uniqid";
+import path from "path";
 import { Conf } from "../config/Conf";
 import { MantaInterface } from "../manta/MantaInterface";
 export class ImageController extends BaseController {
 
     private mantaInterface: MantaInterface;
-    private uploadHandler: multer.Instance;
+    // TODO: Try to fix type of uploadHandler
+    private uploadHandler: any;
     constructor() {
         super();
         this.mantaInterface = new MantaInterface(Conf.storage.mantaDetails.mantaFolderName);

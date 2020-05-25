@@ -1,4 +1,4 @@
-import * as socket from "socket.io-client";
+import socket from "socket.io-client";
 import { PacSeqSocket_Client } from "../../common/js/PacSeqSocket_Client";
 
 import { Conf } from "../config/Conf";
@@ -16,7 +16,7 @@ export class WebsocketManager {
   constructor(reconnectFunction?: (data?: {}) => void, reconnectFailFunction?: () => void,
               reconnectAttemptFunction?: (attemptNumber: number) => void) {
     this.socketProxy = new PacSeqSocket_Client(
-      socket.connect("//" + Conf.server.url, {
+      socket.connect(Conf.server.url, {
         path: "/socket.io",
 
         // Permit infinite reconnects

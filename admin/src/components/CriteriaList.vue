@@ -49,7 +49,7 @@ export default class CriteriaList extends Vue {
             fn: this.$store.dispatch,
             data: ["deleteCriteria", id]
         };
-        EventBus.$emit(EventList.OPEN_MODAL, payload);          
+        EventBus.$emit(EventList.OPEN_MODAL, payload);
     }
 
     get criterias(): ICriteria[] {

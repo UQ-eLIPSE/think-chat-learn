@@ -18,7 +18,10 @@
       </button>
     </div>
     <div class="counter flex-align-end">
-      <span>{{loadedMessage.length}}/<b>1024</b></span>
+      <span>
+        {{loadedMessage.length}}/
+        <b>1024</b>
+      </span>
     </div>
   </div>
 </template>
@@ -186,7 +189,6 @@ export default class CreateChatMessage extends Vue {
    * `resetTimer()` is called every time a user presses a key in chat box
    */
   private resetTimer() {
-
     if (this.typingStateHandle === -1) {
       /**
        * If `typingStateHandle === -1`, this means either:
@@ -198,11 +200,11 @@ export default class CreateChatMessage extends Vue {
     }
 
     /**
-      * Refresh existing typing handle timeout and re-assign new timer
-      *  - When user continues to type within `TIMEOUT` seconds, the `typingStateHandle`
-      *    is effectively "extended" without sending a notification to the server
-      */
-    
+     * Refresh existing typing handle timeout and re-assign new timer
+     *  - When user continues to type within `TIMEOUT` seconds, the `typingStateHandle`
+     *    is effectively "extended" without sending a notification to the server
+     */
+
     window.clearTimeout(this.typingStateHandle);
     this.typingStateHandle = window.setTimeout(() => {
       // When the user stops typing, wait for `TIMEOUT` ms before notifying server
@@ -210,7 +212,6 @@ export default class CreateChatMessage extends Vue {
       // remember to unassign the handle
       this.typingStateHandle = -1;
     }, TIMEOUT);
-
   }
 
   // Used shift + enter keypress for a new line in chat window
@@ -228,8 +229,10 @@ export default class CreateChatMessage extends Vue {
     };
 
     this.socket!.emitData<IWSToServerData.ChatGroupTypingNotification>(
-      WebsocketEvents.OUTBOUND.CHAT_GROUP_TYPING_NOTIFICATION, output);
-    }
+      WebsocketEvents.OUTBOUND.CHAT_GROUP_TYPING_NOTIFICATION,
+      output
+    );
+  }
 
   private sendMessage() {
     // Sends a message to the server. Note that we do

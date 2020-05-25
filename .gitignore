@@ -55,9 +55,9 @@ common/config/Conf.ts
 server/config/Conf.ts
 
 # Config file to set up vue endpoint
-intermediate/vue.config.js
-client/vue.config.js
-admin/vue.config.js
+#intermediate/vue.config.js
+#client/vue.config.js
+#admin/vue.config.js
 
 # Front end dist files
 client/dist
@@ -103,3 +103,8 @@ server/config/production/*
 __deploy
 *.Conf.ts
 temp.*
+
+# Mongodb docker files
+mongodb/*
+some_location
+dist

@@ -54,7 +54,7 @@ import { Vue, Component } from "vue-property-decorator";
 export default class SideNav extends Vue {
 
   get course() {
-    return this.$store.state.Quiz.course || '';
+    return this.$store.state.Quiz.course || "";
   }
 
 }

@@ -1,4 +1,4 @@
-import * as express from "express";
+import express from "express";
 import { LoginResponse, IUserSession, IQuizSession, Response } from "../../../common/interfaces/ToClientData";
 import { UserService } from "../../services/UserService";
 import { UserSessionService } from "../../services/UserSessionService";

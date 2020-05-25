@@ -3,7 +3,7 @@ import { Commit } from "vuex";
 import { IQuiz, TypeQuestion, IDiscussionPage,
     QuestionRequestData, Page } from "../../../../common/interfaces/ToClientData";
 import { PageType } from "../../../../common/enums/DBEnums";
-import API from "../../../../common/js/DB_API";
+import { API } from "../../../../common/js/DB_API";
 import { StateMessageTypes } from "@/enums";
 import { TimerSettings } from "@/interfaces";
 
@@ -121,7 +121,7 @@ const actions = {
   },
 
   getPage({ commit }: {commit: Commit}, data: any) {
-      return API.request(API.POST, API.USER + "page/", data).then((output: QuestionRequestData | null) => {
+      return API.request(API.POST, API.USER + "/page/", data).then((output: QuestionRequestData | null) => {
           if (!output) {
               return false;
           }

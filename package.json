@@ -1,10 +1,10 @@
 {
-  "name": "moocChat",
+  "name": "thinkchatlearn-server",
   "version": "3.0.0",
-  "description": "v3 of moocChat will be branded as Think.Chat.Learn and will include a complete rebrand and significant code improvements.",
+  "description": "ThinkChatLearn is a discussion platform which allows collaborative learning among students",
   "main": "build/server/main.js",
   "engines": {
-    "node": "^10"
+    "node": "^12"
   },
   "scripts": {
     "start": "node build/server/main.js",
@@ -13,19 +13,19 @@
     "m2p": "node server/util/m2p.js",
     "test_compile": "tsc --project ./test",
     "test_run": "mocha \"test-build/test/**/*.js\"",
-    "test": "npm run clean_tests && npm run test_compile && npm run test_run",
+    "test": "yarn run clean_tests && yarn run test_compile && yarn run test_run",
     "clean": "rimraf build",
-    "build_admin": "cd ./admin && npm run build",
-    "build_admin_dev": "cd ./admin && npm run build_dev",
-    "build_client": "cd ./client && npm run build",
-    "build_client_dev": "cd ./client && npm run build_dev",
-    "build_intermediate": "cd ./intermediate && npm run build",
-    "build_intermediate_dev": "cd ./intermediate && npm run build_dev",
+    "build_admin": "cd ./admin && yarn run build",
+    "build_admin_dev": "cd ./admin && yarn run build_dev",
+    "build_client": "cd ./client && yarn run build",
+    "build_client_dev": "cd ./client && yarn run build_dev",
+    "build_intermediate": "cd ./intermediate && yarn run build",
+    "build_intermediate_dev": "cd ./intermediate && yarn run build_dev",
     "build_server_main": "tsc --project ./server/tsconfig.json",
     "build_server_copy_static": "copyfiles \"./server/static/**\" ./build",
-    "build_server": "npm run build_server_main && npm run build_server_copy_static",
-    "build": "npm run clean && npm run build_client && npm run build_server && npm run build_admin && npm run build_intermediate",
-    "build_dev": "npm run clean && npm run build_client_dev && npm run build_server && npm run build_admin_dev &&  npm run build_intermediate_dev"
+    "build_server": "yarn run build_server_main && yarn run build_server_copy_static",
+    "build": "yarn run clean && yarn run build_client && yarn run build_server && yarn run build_admin && yarn run build_intermediate",
+    "build_dev": "yarn run clean && yarn run build_client_dev && yarn run build_server && yarn run build_admin_dev &&  yarn run build_intermediate_dev"
   },
   "author": "eLIPSE",
   "license": "MIT",

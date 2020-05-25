@@ -195,13 +195,13 @@ import { IQuizOverNetwork } from "../../../common/interfaces/NetworkData";
 import { Conf } from "../../../common/config/Conf";
 import { EventBus, EventList, SnackEvent, ModalEvent, BlobUpload } from "../EventBus";
 import { Utils } from "../../../common/js/Utils";
-import API from "../../../common/js/DB_API";
+import { API } from "../../../common/js/DB_API";
 interface DropDownConfiguration {
-  text: string,
-  value: string,
+  text: string;
+  value: string;
 }
 
-const IMAGE_LOCATION = process.env.VUE_APP_IMAGE_LOCATION;
+const IMAGE_LOCATION = Conf.admin.imageLocation;
 
 @Component({
   components: {
@@ -241,25 +241,25 @@ export default class QuizPage extends Vue {
   // The default configurations of the dropdown menu for interfaces
   private pageTypeDropDown: DropDownConfiguration[] = [
     {
-      text: 'Question Answer Page',
+      text: "Question Answer Page",
       value: PageType.QUESTION_ANSWER_PAGE
     },
     {
-      text: 'Information Page',
+      text: "Information Page",
       value: PageType.INFO_PAGE
     },
     {
-      text: 'Discussion Page',
+      text: "Discussion Page",
       value: PageType.DISCUSSION_PAGE
-    },    
-  ]
+    },
+  ];
 
   // Menu booleans
   private startDateShow: boolean = false;
   private endDateShow: boolean = false;
   private startTimeShow: boolean = false;
   private endTimeShow: boolean = false;
-  
+
   // Quill Upload information
   private uploadCount: number = 0;
   private uploads: BlobUpload[] = [];
@@ -267,11 +267,11 @@ export default class QuizPage extends Vue {
 
   private quizToBeCloned: null | DBSchema.IQuiz = null;
 
-  initMarkConfig(): DBSchema.MarkConfig {
+  public initMarkConfig(): DBSchema.MarkConfig {
     return {
       allowMultipleMarkers: false,
       maximumMarks: 5
-    }
+    };
   }
 
   // Converts the dictionary to an array based on key number
@@ -283,7 +283,7 @@ export default class QuizPage extends Vue {
       .sort((a, b) => {
         return parseInt(a, 10) - parseInt(b, 10);
       })
-      .forEach(element => {
+      .forEach((element) => {
         temp.push(this.pageDict[parseInt(element, 10)]);
       });
 
@@ -347,11 +347,11 @@ export default class QuizPage extends Vue {
     const valid = (this.$refs.form as any).validate();
 
     if (!valid) {
-        const message: SnackEvent = {
+        const failureMessage: SnackEvent = {
             message: "Failed generate quiz. Check the form for any errors",
             error: true
-        }
-        EventBus.$emit(EventList.PUSH_SNACKBAR, message);
+        };
+        EventBus.$emit(EventList.PUSH_SNACKBAR, failureMessage);
         return;
     }
     // Set one is to upload quill which then follows creating the quiz
@@ -361,7 +361,7 @@ export default class QuizPage extends Vue {
       fn: EventBus.$emit,
       data: [EventList.CONSOLIDATE_UPLOADS],
       selfRef: EventBus
-    }
+    };
 
     EventBus.$emit(EventList.OPEN_MODAL, message);
   }
@@ -378,16 +378,16 @@ export default class QuizPage extends Vue {
       this.uploads.forEach((upload) => {
         tempForm.append(upload.id, upload.blob);
       });
-      API.uploadForm("image/imageUpload", tempForm).then((files: { fieldName: string, fileName: string}[]) => {
+      API.uploadForm("/image/imageUpload", tempForm).then((files: Array<{ fieldName: string, fileName: string}>) => {
           const payload: SnackEvent = {
               message: "Finished uploading associated images"
-          }
+          };
           EventBus.$emit(EventList.PUSH_SNACKBAR, payload);
 
           // The assumption here is that we can explicitly change the content of each page
-          for (let key of Object.keys(this.pageDict)) {
+          for (const key of Object.keys(this.pageDict)) {
             const page = this.pageDict[key];
-            for (let file of files) {
+            for (const file of files) {
               page.content = page.content.replace(file.fieldName, IMAGE_LOCATION + file.fileName);
             }
 
@@ -412,29 +412,29 @@ export default class QuizPage extends Vue {
   }
 
   get clonedQuizName() {
-    if(this.isCloning && this.quizToBeCloned && this.quizToBeCloned.title) {
+    if (this.isCloning && this.quizToBeCloned && this.quizToBeCloned.title) {
       return this.quizToBeCloned.title;
     }
 
-    return `-NA-`
+    return `-NA-`;
   }
   get pageTitle() {
-    if(this.isEditing && !this.isCloning) {
-      return "Editing quiz session"
-    } else if(this.isCloning) {
+    if (this.isEditing && !this.isCloning) {
+      return "Editing quiz session";
+    } else if (this.isCloning) {
       return `Creating a copy of quiz session "${this.clonedQuizName}"`;
     } else {
-      return "Create new quiz session"
+      return "Create new quiz session";
     }
   }
 
   get pageAction() {
-    if(this.isEditing && !this.isCloning) {
-      return "Edit quiz session"
-    } else if(this.isCloning) {
-      return "Save new copy"
+    if (this.isEditing && !this.isCloning) {
+      return "Edit quiz session";
+    } else if (this.isCloning) {
+      return "Save new copy";
     } else {
-      return "Create quiz session"
+      return "Create quiz session";
     }
   }
 
@@ -445,7 +445,7 @@ export default class QuizPage extends Vue {
     const outgoingPages: Page[] = [];
 
     // Iterate through each page and strip the appropaite values
-    this.pages.forEach(element => {
+    this.pages.forEach((element) => {
       // Note it is possile for unique elements to be stored in the front end
       // but only the relevant data is sent over to the back end
       switch (element.type) {
@@ -556,7 +556,7 @@ export default class QuizPage extends Vue {
   private up(index: number) {
 
     if (this.pageDict[index]) {
-      if (index === 0) return;
+      if (index === 0) { return; }
       const temp = JSON.parse(JSON.stringify(this.pageDict[index]));
       this.pageDict[index] = this.pageDict[index - 1];
       this.pageDict[index - 1] = JSON.parse(JSON.stringify(temp));
@@ -566,7 +566,7 @@ export default class QuizPage extends Vue {
 
   private down(index: number) {
     if (this.pageDict[index]) {
-      if (index === this.pages.length - 1) return;
+      if (index === this.pages.length - 1) { return; }
       const temp = JSON.parse(JSON.stringify(this.pageDict[index]));
       this.pageDict[index] = this.pageDict[index + 1];
       this.pageDict[index + 1] = JSON.parse(JSON.stringify(temp));
@@ -579,7 +579,7 @@ export default class QuizPage extends Vue {
     if (this.id === "") {
       this.createPage();
     } else {
-      const loadedQuiz = this.quizzes.find(element => {
+      const loadedQuiz = this.quizzes.find((element) => {
         return element._id === this.id;
       });
 
@@ -613,7 +613,7 @@ export default class QuizPage extends Vue {
           return dict;
         }, emptyDict);
 
-        if(this.isCloning) {
+        if (this.isCloning) {
           this.quizToBeCloned = Object.assign({}, loadedQuiz);
         }
       }
@@ -636,23 +636,23 @@ export default class QuizPage extends Vue {
   private onEndDateChange(val: string, oldVal?: string) {
     this.endDate = new Date(val);
   }
-  
+
   // Watching the start time is generally done when a user touches the Vuetify timepicker
   @Watch("startTimeString")
   private onStartTimeChange(val: string, oldVal?: string) {
     this.startTime = new Date();
     // Vuetify times are assumed to be in a HH:MM format
     const hourMinutes = val.split(":");
-    this.startTime.setHours(parseInt(hourMinutes[0]), parseInt(hourMinutes[1]));
+    this.startTime.setHours(parseInt(hourMinutes[0], 10), parseInt(hourMinutes[1], 10));
   }
-  
+
   // Similar logic above
   @Watch("endTimeString")
   private onEndTimeChange(val: string, oldVal?: string) {
     this.endTime = new Date();
     const hourMinutes = val.split(":");
-    this.endTime.setHours(parseInt(hourMinutes[0]), parseInt(hourMinutes[1]));    
-  }  
+    this.endTime.setHours(parseInt(hourMinutes[0], 10), parseInt(hourMinutes[1], 10));
+  }
 
   /**
    * Below is a list of rules that should be validated both front and back end
@@ -660,7 +660,7 @@ export default class QuizPage extends Vue {
 
   // Determines whether or not a quiz has a discussion page
   get discussionPageRule() {
-    return (() => { 
+    return (() => {
       const hasDiscussion = this.pages.some((page) => {
         return page.type === PageType.DISCUSSION_PAGE;
       });
@@ -692,7 +692,7 @@ export default class QuizPage extends Vue {
         );
         return availableEnd.getTime() > availableStart.getTime() || "Set the end time to be greater than start time";
       } else {
-        return "Start Date and End Date needs to be filled out"
+        return "Start Date and End Date needs to be filled out";
       }
     });
   }
@@ -709,7 +709,7 @@ export default class QuizPage extends Vue {
             }
             return count;
         }, 0);
-        return totalIds == 1 || "Duplicate questions detected";            
+        return totalIds === 1 || "Duplicate questions detected";
     });
   }
 
@@ -721,7 +721,7 @@ export default class QuizPage extends Vue {
             }
             return count;
         }, 0);
-        return totalIds == 1 || "Duplicate discussions detected";            
+        return totalIds === 1 || "Duplicate discussions detected";
     });
   }
 }

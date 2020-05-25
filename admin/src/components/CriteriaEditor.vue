@@ -50,7 +50,7 @@ export default class CriteriaEditor extends Vue {
     };
 
     private failedFetch: boolean = false;
-    
+
     get criterias(): ICriteria[] {
         return this.$store.getters.criterias;
     }
@@ -68,7 +68,7 @@ export default class CriteriaEditor extends Vue {
             const message: SnackEvent = {
                 message: "Failed generate quiz. Check the form for any errors",
                 error: true
-            }
+            };
             EventBus.$emit(EventList.PUSH_SNACKBAR, message);
             return;
         } else {
@@ -77,7 +77,7 @@ export default class CriteriaEditor extends Vue {
                 title: `Creating/modifying a criteria`,
                 fn: this.$store.dispatch,
                 data: ["sendCriteria", this.currentCriteria]
-            }
+            };
             EventBus.$emit(EventList.OPEN_MODAL, message);
         }
     }
@@ -96,7 +96,7 @@ export default class CriteriaEditor extends Vue {
                 this.failedFetch = true;
             }
         } else {
-            // Otherwise, only set the course 
+            // Otherwise, only set the course
             this.currentCriteria.course = this.course;
         }
     }

@@ -1,4 +1,4 @@
-import * as express from "express";
+import express from "express";
 import { BaseController } from "./BaseController";
 import { ChatGroupService } from "../services/ChatGroupService";
 import { SocketSession } from "../js/websocket/SocketSession";
@@ -24,7 +24,7 @@ export class ChatGroupController extends BaseController {
     }
 
     private getChatGroups(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        this.chatGroupService.getChatGroups(req.query.quizid).then((result) => {
+        this.chatGroupService.getChatGroups(req.query.quizid as string).then((result) => {
             res.json(result);
         }).catch((e) => {
             res.sendStatus(400);

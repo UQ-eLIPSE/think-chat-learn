@@ -21,14 +21,14 @@ export interface ModalEvent {
     message: string;
     title: string;
     data?: any[];
-    fn?: Function;
+    fn?: (...args: any) => any;
     selfRef?: any;
 }
 
 // Allows blobs to be uploaded from Quill to a page which then allows consolidation of uploads
 export interface BlobUpload {
-    id: string,
-    blob: Blob
+    id: string;
+    blob: Blob;
 }
 
 export const EventBus = new Vue();

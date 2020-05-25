@@ -1,8 +1,8 @@
 {
-  "name": "moocChat",
+  "name": "thinkchatlearn-client",
   "version": "3.0.0",
   "private": true,
-  "description": "v3 of moocChat will be branded as Think.Chat.Learn and will include a complete rebrand and significant code improvements.",
+  "description": "Client Vue App for ThinkChatLearn",
   "scripts": {
     "test:e2e": "node_modules/.bin/cypress open",
     "serve": "vue-cli-service serve",
@@ -11,33 +11,33 @@
     "build_dev_watch": "vue-cli-service build --mode development --watch"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^1.2.12",
-    "@fortawesome/free-solid-svg-icons": "^5.6.3",
-    "@fortawesome/vue-fontawesome": "^0.1.4",
-    "buefy": "^0.7.1",
-    "bulma-extensions": "^4.0.0",
+    "@fortawesome/fontawesome-svg-core": "^1.2.28",
+    "@fortawesome/free-solid-svg-icons": "^5.13.0",
+    "@fortawesome/vue-fontawesome": "^0.1.9",
+    "buefy": "^0.8.18",
+    "bulma-extensions": "^6.2.7",
     "cypress": "^4.5.0",
-    "katex": "^0.10.2",
+    "katex": "^0.11.1",
     "node-sass": "^4.14.1",
     "postcss-import": "^12.0.1",
     "postcss-url": "^8.0.0",
-    "socket.io-client": "^2.2.0",
-    "vue": "^2.5.21",
-    "vue-class-component": "^6.3.2",
-    "vue-property-decorator": "^7.2.0",
-    "vue-router": "^3.0.2",
-    "vuex": "^3.0.1"
+    "socket.io-client": "^2.3.0",
+    "vue": "^2.6.11",
+    "vue-class-component": "^7.2.3",
+    "vue-property-decorator": "^8.4.2",
+    "vue-router": "^3.1.6",
+    "vuex": "^3.4.0"
   },
   "devDependencies": {
-    "@types/katex": "^0.10.1",
+    "@types/katex": "^0.11.0",
     "@types/socket.io-client": "^1.4.32",
     "@types/vue-router": "^2.0.0",
-    "@vue/cli-plugin-typescript": "^3.0.5",
-    "@vue/cli-plugin-unit-mocha": "^3.0.5",
-    "@vue/cli-service": "^3.0.5",
-    "@vue/test-utils": "^1.0.0-beta.20",
+    "@vue/cli-plugin-typescript": "^4.3.1",
+    "@vue/cli-plugin-unit-mocha": "^4.3.1",
+    "@vue/cli-service": "^4.3.1",
+    "@vue/test-utils": "^1.0.2",
     "sass-loader": "^8.0.2",
-    "typescript": "^3.3.3333",
-    "vue-template-compiler": "^2.5.17"
+    "typescript": "^3.8.3",
+    "vue-template-compiler": "^2.6.11"
   }
 }

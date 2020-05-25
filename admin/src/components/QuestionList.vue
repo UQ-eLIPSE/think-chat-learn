@@ -48,7 +48,7 @@ export default class QuestionList extends Vue {
             fn: this.$store.dispatch,
             data: ["deleteQuestion", id]
         };
-        EventBus.$emit(EventList.OPEN_MODAL, payload);        
+        EventBus.$emit(EventList.OPEN_MODAL, payload);
     }
 
     get questions(): IQuestion[] {

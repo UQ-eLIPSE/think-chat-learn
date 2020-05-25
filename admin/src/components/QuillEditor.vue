@@ -21,31 +21,31 @@ import Quill from "quill";
 import ImageResize from "quill-image-resize";
 import { getIdToken } from "../../../common/js/front_end_auth";
 import { EventBus, EventList, SnackEvent, BlobUpload } from "../EventBus";
-import API from "../../../common/js/DB_API";
-import Delta from "quill-delta";
+import { API } from "../../../common/js/DB_API";
+// import Delta from "quill-delta";
 
 // Unfortunately we have to create our own custom element
 // See: https://quilljs.com/guides/cloning-medium-with-parchment/#images
-const BlockEmbed = Quill.import('blots/block/embed');
+const BlockEmbed = Quill.import("blots/block/embed");
 class ImageBlot extends BlockEmbed {
-  static create(url: string) {
+  public static create(url: string) {
     const node: any = super.create();
-    node.setAttribute('src', url);
+    node.setAttribute("src", url);
     return node;
   }
 
-  static value(node: HTMLImageElement) {
+  public static value(node: HTMLImageElement) {
     return {
-      url: node.getAttribute('src')
+      url: node.getAttribute("src")
     };
   }
 }
-ImageBlot.blotName = 'image';
-ImageBlot.tagName = 'img';
+ImageBlot.blotName = "image";
+ImageBlot.tagName = "img";
 
 // Register the modules
 Quill.register(ImageBlot);
-Quill.register('modules/imageResize', ImageResize);
+Quill.register("modules/imageResize", ImageResize);
 
 @Component({})
 export default class QuillEditor extends Vue {
@@ -65,7 +65,7 @@ export default class QuillEditor extends Vue {
 
     // Explcitly forces HTML to be updated by the v-model
     private fetchHTML() {
-        this.$emit('input', this.quillInstance ? this.quillInstance.root.innerHTML : '')
+        this.$emit("input", this.quillInstance ? this.quillInstance.root.innerHTML : "");
     }
 
     // Rewrite how the images are handled with Quill
@@ -82,7 +82,7 @@ export default class QuillEditor extends Vue {
                 const message: SnackEvent = {
                     message: "No files added to input",
                     error: true
-                }
+                };
                 EventBus.$emit(EventList.PUSH_SNACKBAR, message);
                 return;
             }
@@ -94,7 +94,7 @@ export default class QuillEditor extends Vue {
                 const message: SnackEvent = {
                     message: "Invalid file added",
                     error: true
-                }
+                };
                 EventBus.$emit(EventList.PUSH_SNACKBAR, message);
                 return;
             }
@@ -129,8 +129,8 @@ export default class QuillEditor extends Vue {
 
             const imageUrls: string[] = [];
             deltas.forEach((delta) => {
-                if (delta.insert && (delta.insert as any)["image"]) {
-                    imageUrls.push((delta.insert as any)["image"].url);
+                if (delta.insert && (delta.insert as any).image) {
+                    imageUrls.push((delta.insert as any).image.url);
                 }
             });
 
@@ -140,7 +140,7 @@ export default class QuillEditor extends Vue {
                 const index = imageUrls.findIndex((url) => {
                     return blobUpload.id === url;
                 });
-                
+
                 if (index === -1) {
                     URL.revokeObjectURL(blobUpload.id);
                 } else {
@@ -173,24 +173,24 @@ export default class QuillEditor extends Vue {
         this.quillInstance = new Quill(`#${this.id}`, {
             modules: {
                 toolbar: `#toolbar-${this.id}`,
-                'formula': true,
+                formula: true,
                 imageResize : {}
             },
-            theme: 'snow'
+            theme: "snow"
         });
 
         if (this.quillInstance) {
             // Override the image and delete listener
-            this.quillInstance.getModule("toolbar").addHandler('image', () => {
+            this.quillInstance.getModule("toolbar").addHandler("image", () => {
                 this.fetchImage();
             });
             // See https://quilljs.com/docs/modules/clipboard/#dangerouslypastehtml
             // Worst case scenario would be to remove the editor outright or only use deltas
             // to represent the information
             if (this.value) {
-                this.quillInstance.root.innerHTML= this.value;
+                this.quillInstance.root.innerHTML = this.value;
             }
-        }     
+        }
     }
 }
 </script>

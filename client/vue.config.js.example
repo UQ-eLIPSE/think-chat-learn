@@ -3,14 +3,17 @@
 // served on localhost/client/#/
 module.exports = {
     // Change based on the directory needs
-    baseUrl: process.env.NODE_ENV === 'production'
+    publicPath: process.env.NODE_ENV === 'production'
       ? '/client/'
       : '/client/'
-  css: {
-    loaderOptions: {
-      sass: {
-        prependData: `@import "@/sass/partials/_variables.scss";`
+    css: {
+      loaderOptions: {
+        sass: {
+          prependData: `@import "@/sass/partials/_variables.scss";`
+        }
       }
+    },
+    devServer: {
+      progress: false
     }
-  }
 }

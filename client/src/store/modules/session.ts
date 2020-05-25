@@ -5,7 +5,7 @@ import { IUserSession, IQuizSession, Response, IQuiz,
     TypeQuestion,
     QuestionReconnectData,
     LoginResponseTypes} from "../../../../common/interfaces/ToClientData";
-import API from "../../../../common/js/DB_API";
+import { API } from "../../../../common/js/DB_API";
 
 // Websocket interfaces
 import * as IWSToClientData from "../../../../common/interfaces/IWSToClientData";
@@ -20,7 +20,7 @@ import { Utils } from "../../../../common/js/Utils";
 import { PageType, QuestionType } from "../../../../common/enums/DBEnums";
 import { ChatGroupResync } from "../../../../common/interfaces/HTTPToClientData";
 import { IResponseMCQ, IResponseQualitative } from "../../../../common/interfaces/DBSchema";
-import * as CommonConf from "../../../../common/config/Conf";
+import { Conf as CommonConf } from "../../../../common/config/Conf";
 export interface IState {
     quizSession: IQuizSession | null;
     // Note the key of this dictionary would be the questionid as we simply respond to one question
@@ -76,15 +76,16 @@ const mutationKeys = {
 
 // Handles reconnect message fail messages by noting this on the store
 function reconnectFail() {
+    const errorMessage = "Error: Connection lost. Please close current window/tab and launch" +
+    "Think.Chat.Learn again from Blackboard. (Your progress will be retained)";
+
     store.commit("SET_GLOBAL_MESSAGE", {
         error: true,
         type: SystemMessageTypes.FATAL_ERROR,
         message:
-            "Error: Connection lost. Please close current window/tab and launch Think.Chat.Learn again from Blackboard. " +
-                "(Your progress will be retained)"
+            errorMessage
       });
-      alert("Error: Connection lost. Please close current window/tab and launch Think.Chat.Learn again from Blackboard. " +
-      "(Your progress will be retained)");
+    alert(errorMessage);
 }
 
 // To be displayed when socket.io cannot reconnect.
@@ -94,9 +95,9 @@ function reconnectAttempt(attemptNumber: number) {
         error: false,
         type: SystemMessageTypes.WARNING,
         message: `Connection lost.
-            Attempting to reconnect (#${attemptNumber}/${CommonConf.Conf.websockets.reconnectionAmount})`
+            Attempting to reconnect (#${attemptNumber}/${CommonConf.websockets.reconnectionAmount})`
       });
-    
+
 }
 
 // Grabs the reference from user.ts
@@ -264,7 +265,7 @@ async function handleReconnect(data: any) {
 
         if (userSession && quiz) {
             // Retreive the quiz and user id
-            quizSession = (await API.request(API.POST, API.QUIZSESSION + "fetchByUserQuiz", {
+            quizSession = (await API.request(API.POST, API.QUIZSESSION + "/fetchByUserQuiz", {
                 userId: userSession.userId,
                 quizId: quiz._id
             }, undefined, getToken())).data;
@@ -296,7 +297,7 @@ async function handleReconnect(data: any) {
     }
     // We have a quiz session (whether it is an on client disconnect or not)
     // The next step is to check for our socket session
-    const socketPresent: { outcome: boolean } = await API.request(API.POST, API.QUIZSESSION + "findSession",
+    const socketPresent: { outcome: boolean } = await API.request(API.POST, API.QUIZSESSION + "/findSession",
         state.quizSession!, undefined, getToken());
 
     if (socketPresent.outcome) {
@@ -350,10 +351,10 @@ async function handleReconnect(data: any) {
     if (!state.socketState!.chatGroupFormed) {
         const groupSession: ChatGroupResync | null =
             await API.request(API.POST, API.CHATGROUP +
-                "recoverSession", state.quizSession!);
+                "/recoverSession", state.quizSession!);
 
         const userResponses: Response[] =
-            (await API.request(API.GET, API.RESPONSE + "quizSession/" + state.quizSession!._id, {},
+            (await API.request(API.GET, API.RESPONSE + "/quizSession/" + state.quizSession!._id, {},
                 undefined, getToken())).data;
 
         const quizQuestionData: QuestionReconnectData = await API.request(API.POST, API.USER + "/reconnectData", {
@@ -432,7 +433,7 @@ const getters = {
 };
 const actions = {
     createQuizSession({ commit }: {commit: Commit}, quizSession: IQuizSession) {
-        return API.request(API.POST, API.QUIZSESSION + "create", quizSession, undefined,
+        return API.request(API.POST, API.QUIZSESSION + "/create", quizSession, undefined,
             getToken()).then((id: { outgoingId: string }) => {
 
             quizSession._id = id.outgoingId;
@@ -446,7 +447,7 @@ const actions = {
     },
 
     retrieveQuizSession({ commit }: { commit: Commit }, id: string) {
-        return API.request(API.GET, API.QUIZSESSION + "quizsession/" + id, {}, undefined,
+        return API.request(API.GET, API.QUIZSESSION + "/quizsession/" + id, {}, undefined,
             getToken()).then((data:
             { session: IQuizSession }) => {
 
@@ -456,7 +457,7 @@ const actions = {
     },
 
     sendResponse({ commit }: {commit: Commit}, response: Response) {
-        return API.request(API.POST, API.RESPONSE + "create", response, undefined,
+        return API.request(API.POST, API.RESPONSE + "/create", response, undefined,
             getToken()).then((id: { outgoingId: string}) => {
 
             response._id = id.outgoingId;

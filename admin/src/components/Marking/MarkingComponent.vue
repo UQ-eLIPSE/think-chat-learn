@@ -42,9 +42,9 @@ import { API } from "../../../../common/js/DB_API";
 import { EventBus, EventList, SnackEvent } from "../../EventBus";
 
 Component.registerHooks([
-    'updated',
-    'created'
-])
+    "updated",
+    "created"
+]);
 
 @Component({})
 export default class MarkingComponent extends Vue {
@@ -54,17 +54,17 @@ export default class MarkingComponent extends Vue {
         return this.$store.getters.currentMarkingContext;
     }
 
-    async fetchMarksForQuestion() {
+    public async fetchMarksForQuestion() {
         try {
             const currentMarkingContext = this.currentMarkingContext;
             const quizSessionId = currentMarkingContext.currentQuizSessionId;
             const questionId = currentMarkingContext.currentQuestionId;
-            const quizSessionIdMarks: Schema.Mark = await API.request(API.GET, API.MARKS + `quizSessionId/${quizSessionId}`, {});
+            const quizSessionIdMarks: Schema.Mark = await API.request(API.GET, API.MARKS + `/quizSessionId/${quizSessionId}`, {});
             const marker = this.marker;
             let marks: Schema.Mark | null = null;
             if (Array.isArray(quizSessionIdMarks)) {
                 marks = quizSessionIdMarks.find((mark) => mark.markerId === marker._id);
-                if (!marks) throw new Error();
+                if (!marks) { throw new Error(); }
                 // If there are any missing marks, add default values or negative values?
                 const missingCriterias = this.associatedCriterias.filter((criteria) => {
                   return marks!.marks.findIndex((mark) => {
@@ -88,7 +88,7 @@ export default class MarkingComponent extends Vue {
         }
     }
 
-    initMark(): Schema.Mark {
+    public initMark(): Schema.Mark {
         const currentMarkingContext = this.currentMarkingContext;
         const quizSessionId = currentMarkingContext.currentQuizSessionId;
         const currentQuizSessionInfoObject = this.$store.getters.currentQuizSessionInfoObject;
@@ -102,7 +102,7 @@ export default class MarkingComponent extends Vue {
         }, []);
 
         return {
-            quizSessionId: quizSessionId,
+            quizSessionId,
             markerId: null,
             userId: undefined,
             username: undefined,
@@ -111,19 +111,19 @@ export default class MarkingComponent extends Vue {
             quizId: null,
             marks: defaultMarks,
             feedback: "",
-        }
+        };
     }
 
     get markingContext() {
         return this.$store.getters.currentMarkingContext;
     }
     get currentQuestionId() {
-        if (!this.markingContext) return undefined;
+        if (!this.markingContext) { return undefined; }
         return this.markingContext.currentQuestionId;
     }
 
     get currentQuizSessionId() {
-        if (!this.markingContext) return undefined;
+        if (!this.markingContext) { return undefined; }
         return this.markingContext.currentQuizSessionId;
     }
 
@@ -188,11 +188,11 @@ export default class MarkingComponent extends Vue {
         return Object.keys(empty);
     }
 
-    async saveMarks() {
+    public async saveMarks() {
         try {
 
 
-            if (!this.marks || !this.markingConfig || !this.currentQuestionId || !this.currentQuizSessionId) return;
+            if (!this.marks || !this.markingConfig || !this.currentQuestionId || !this.currentQuizSessionId) { return; }
 
             const marksToBeSaved: Schema.Mark = Object.assign({}, this.marks);
 
@@ -213,49 +213,49 @@ export default class MarkingComponent extends Vue {
             const multipleMarking = this.markingConfig.allowMultipleMarkers;
 
             if (multipleMarking) {
-                const markSaveResponse = await API.request(API.POST, API.MARKS + `multiple/createOrUpdate/quizSessionId/${this.currentQuizSessionId}/questionId/${this.currentQuestionId}`, marksToBeSaved);
+                const markSaveResponse = await API.request(API.POST, API.MARKS + `/multiple/createOrUpdate/quizSessionId/${this.currentQuizSessionId}/questionId/${this.currentQuestionId}`, marksToBeSaved);
                 if (markSaveResponse) {
                     this.showSuccessMessage();
                 }
             } else {
-                const markSaveResponse = await API.request(API.POST, API.MARKS + `createOrUpdate/quizSessionId/${this.currentQuizSessionId}/questionId/${this.currentQuestionId}`, marksToBeSaved);
+                const markSaveResponse = await API.request(API.POST, API.MARKS + `/createOrUpdate/quizSessionId/${this.currentQuizSessionId}/questionId/${this.currentQuestionId}`, marksToBeSaved);
                 if (markSaveResponse) {
                     this.showSuccessMessage();
                 }
             }
 
         } catch (e) {
-            console.log('Error: Could not save mark');
+            console.log("Error: Could not save mark");
         }
     }
-    showSuccessMessage() {
+    public showSuccessMessage() {
         const message: SnackEvent = {
             message: "Saved a mark"
-        }
+        };
 
         EventBus.$emit(EventList.PUSH_SNACKBAR, message);
     }
 
-    showErrorMessage() {
+    public showErrorMessage() {
         const message: SnackEvent = {
             message: "Failed to save a mark",
             error: true
-        }
+        };
 
-        EventBus.$emit(EventList.PUSH_SNACKBAR, message);        
+        EventBus.$emit(EventList.PUSH_SNACKBAR, message);
     }
-    async created() {
+    public async created() {
         await this.fetchMarksForQuestion();
     }
 
 
-    @Watch('currentQuizSessionId')
-    async quizSessionChangeHandler() {
+    @Watch("currentQuizSessionId")
+    public async quizSessionChangeHandler() {
         this.fetchMarksForQuestion();
     }
 
-    @Watch('currentQuestionId')
-    async questionChangeHandler() {
+    @Watch("currentQuestionId")
+    public async questionChangeHandler() {
         this.fetchMarksForQuestion();
     }
 

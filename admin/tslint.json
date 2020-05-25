@@ -6,7 +6,8 @@
     "linterOptions": {
       "exclude": [
         "node_modules/**",
-        "../*/**"
+        "dist/**",
+        "./**"
       ]
     },
     "rules": {
@@ -16,7 +17,13 @@
       "ordered-imports": false,
       "object-literal-sort-keys": false,
       "no-consecutive-blank-lines": false,
-      "trailing-comma": false
+      "trailing-comma": false,
+      "max-classes-per-file": false,
+      "check-format": true,
+      "allow-leading-underscore": true,
+      "no-shadowed-variable": false,
+      "no-console": false,
+      "prefer-for-of": false
     }
   }
   

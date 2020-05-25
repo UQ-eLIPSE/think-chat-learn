@@ -83,14 +83,14 @@ import { IQuiz, QuizScheduleDataAdmin, Page, IDiscussionPage, IQuestionAnswerPag
     QuizSessionDataObject } from "../../../common/interfaces/ToClientData";
 import * as Schema from "../../../common/interfaces/DBSchema";
 import { PageType } from "../../../common/enums/DBEnums";
-import MarkQuizMarkingSection from '../components/Marking/MarkQuizMarkingSection.vue';
+import MarkQuizMarkingSection from "../components/Marking/MarkQuizMarkingSection.vue";
 import { API } from "../../../common/js/DB_API";
 
 Component.registerHooks([
-    'beforeRouteEnter',
-    'beforeRouteLeave',
-    'beforeRouteUpdate' // for vue-router 2.2+
-])
+    "beforeRouteEnter",
+    "beforeRouteLeave",
+    "beforeRouteUpdate" // for vue-router 2.2+
+]);
 
 @Component({
     components: {
@@ -110,65 +110,65 @@ export default class QuizMarkViewer extends Vue {
         currentPage: 1
     };
 
-    getMarkRowClass(mark: Schema.Mark) {
+    public getMarkRowClass(mark: Schema.Mark) {
         const marked = this.isMarked(mark);
         return {
-            'marked': marked,
-            'unmarked': !marked
-        }
+            marked,
+            unmarked: !marked
+        };
     }
-    async fetchAndUpdatePaginatedMarksForQuiz(vm: any) {
+    public async fetchAndUpdatePaginatedMarksForQuiz(vm: any) {
         const currentQuizSessionKeys = Object.keys(vm.marksMap);
         currentQuizSessionKeys.forEach((q) => {
-            Vue.delete(vm.marksMap, q)
+            Vue.delete(vm.marksMap, q);
             Vue.delete(vm.quizSessionUserMap, q);
-        })
-        const { totalQuizSessions, marksMap, quizSessionUserMap } = await API.request(API.GET, API.MARKS + `bulk/quiz?q=${vm.$route.params.id}&c=${vm.pagination.currentPage}&p=${vm.pagination.perPage}`, {})
+        });
+        const { totalQuizSessions, marksMap, quizSessionUserMap } = await API.request(API.GET, API.MARKS + `/bulk/quiz?q=${vm.$route.params.id}&c=${vm.pagination.currentPage}&p=${vm.pagination.perPage}`, {});
         const quizSessionIds = Object.keys(marksMap);
         vm.pagination.total = totalQuizSessions;
         vm.marksMap = marksMap;
         vm.quizSessionUserMap = quizSessionUserMap;
     }
 
-    @Watch('pagination.currentPage')
-    async pageChangeHandler() {
+    @Watch("pagination.currentPage")
+    public async pageChangeHandler() {
         await this.fetchAndUpdatePaginatedMarksForQuiz(this);
     }
 
-    @Watch('pagination.perPage')
-    async perPageChangeHandler() {
+    @Watch("pagination.perPage")
+    public async perPageChangeHandler() {
         this.pagination.currentPage = 1;
         await this.fetchAndUpdatePaginatedMarksForQuiz(this);
 
     }
 
     get hasMultipleMarkersEnabled() {
-        if (!this.q || !this.q.markingConfiguration) return false;
+        if (!this.q || !this.q.markingConfiguration) { return false; }
         return this.q.markingConfiguration.allowMultipleMarkers;
     }
 
-    isMarked(markObject: Schema.Mark) {
+    public isMarked(markObject: Schema.Mark) {
         return markObject.markerUsername && markObject.userId && markObject.username && markObject.quizSessionId;
     }
 
     get orderedDiscussionPageQuestionIds() {
-        if (!this.q || !this.q.pages) return [];
+        if (!this.q || !this.q.pages) { return []; }
         const discussionPages = this.q.pages.filter((p) => p.type === PageType.DISCUSSION_PAGE);
         const discussionPageQuestionIds = discussionPages.map((p) => (p as IDiscussionPage).questionId);
         return discussionPageQuestionIds;
     }
 
-    getEmptyMarkForUser(quizSessionId: string, username: string, userId: string): Schema.Mark {
+    public getEmptyMarkForUser(quizSessionId: string, username: string, userId: string): Schema.Mark {
         return {
             marks: [],
             feedback: "",
             quizSessionId,
             markerId: null,
-            userId: userId,
-            username: username,
+            userId,
+            username,
             markerUsername: undefined,
             timestamp: null,
-            quizId: null,            
+            quizId: null,
         };
     }
 
@@ -177,7 +177,7 @@ export default class QuizMarkViewer extends Vue {
     }
 
     get associatedRubric(): Schema.IRubric | undefined {
-        if (this.q && this.q != undefined) {
+        if (this.q && this.q !== undefined) {
             return this.rubrics.find((rubric) => {
                 return rubric._id === this.q!.rubricId;
             });
@@ -221,20 +221,20 @@ export default class QuizMarkViewer extends Vue {
     }
 
     get markingConfiguration() {
-        if (!this.q) return null;
+        if (!this.q) { return null; }
         return this.q.markingConfiguration;
     }
     get q() {
-        if (!this.$route.params.id) return null;
+        if (!this.$route.params.id) { return null; }
         return this.quizzes.find((q) => q._id === this.$route.params.id);
     }
     get quizzes(): IQuiz[] {
         return this.$store.getters.quizzes || [];
     }
 
-    async fetchAllMarksForQuiz(vm: any) {
-        if (!vm.$route.params.id) return;
-        vm.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuizId', value: vm.$route.params.id });
+    public async fetchAllMarksForQuiz(vm: any) {
+        if (!vm.$route.params.id) { return; }
+        vm.$store.commit("UPDATE_CURRENT_MARKING_CONTEXT", { prop: "currentQuizId", value: vm.$route.params.id });
 
         // Fetch chat groups for quiz id
         await vm.$store.dispatch("getChatGroups", vm.q._id);
@@ -245,11 +245,11 @@ export default class QuizMarkViewer extends Vue {
 
     }
 
-    async created() {
+    public async created() {
         await this.fetchAllMarksForQuiz(this);
     }
 
-    getOrderedMarkValuesArray(m: Schema.Mark): string[] {
+    public getOrderedMarkValuesArray(m: Schema.Mark): string[] {
         if (m) {
             const markValues: string[] = [];
 
@@ -263,7 +263,7 @@ export default class QuizMarkViewer extends Vue {
                 if (markIndex !== -1) {
                     arr.push(m.marks[markIndex].value!.toString());
                 } else {
-                    arr.push('-');
+                    arr.push("-");
                 }
                 return arr;
             }, []);
@@ -274,7 +274,7 @@ export default class QuizMarkViewer extends Vue {
 
 
     // TODO: Add types for maps
-    populateMarksRows(csvRowArray: string[], DELIMITER: string, marksMap: { [key: string]: Schema.Mark[] }) {
+    public populateMarksRows(csvRowArray: string[], DELIMITER: string, marksMap: { [key: string]: Schema.Mark[] }) {
         // Push Header info
         const headRow = ["Username", "Marked_By", ...this.criteriaHeadings].join(DELIMITER);
         csvRowArray.push(headRow);
@@ -283,36 +283,36 @@ export default class QuizMarkViewer extends Vue {
             const marksArr = marksMap[key];
             marksArr.forEach((mark) => {
                 const csvRow: string[] = [];
-                csvRow.push(mark.username || 'N/A',
-                    mark.markerUsername || 'N/A',
+                csvRow.push(mark.username || "N/A",
+                    mark.markerUsername || "N/A",
                     ...this.getOrderedMarkValuesArray(mark));
                 csvRowArray.push(csvRow.join(DELIMITER));
-                // For each marker, 
+                // For each marker,
             });
 
         });
 
     }
 
-    async exportToCsv() {
-        const { totalQuizSessions, marksMap, quizSessionUserMap } : {
+    public async exportToCsv() {
+        const { totalQuizSessions, marksMap, quizSessionUserMap }: {
             totalQuizSessions: any,
             marksMap: { [key: string]: Schema.Mark[] },
             quizSessionUserMap: any
-        } = await API.request(API.GET, API.MARKS + `bulk/quiz?q=${this.$route.params.id}&c=1&p=${Number.MAX_SAFE_INTEGER}`, {})
+        } = await API.request(API.GET, API.MARKS + `/bulk/quiz?q=${this.$route.params.id}&c=1&p=${Number.MAX_SAFE_INTEGER}`, {});
 
-        const DELIMITER = ","
+        const DELIMITER = ",";
 
         const csvRowArray: string[] = [];
-        if (!this.markingConfiguration) return;
+        if (!this.markingConfiguration) { return; }
 
         this.populateMarksRows(csvRowArray, DELIMITER, marksMap);
         const csvFileContents = "data:text/csv;charset=utf-8," + csvRowArray.join("\n");
 
-        var encodedUri = encodeURI(csvFileContents);
-        var link = document.createElement("a");
+        const encodedUri = encodeURI(csvFileContents);
+        const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `${(this.q || { title: 'marks' }).title}_${Date.now().toString()}.csv`);
+        link.setAttribute("download", `${(this.q || { title: "marks" }).title}_${Date.now().toString()}.csv`);
         document.body.appendChild(link); // Required for FF
         link.click();
     }

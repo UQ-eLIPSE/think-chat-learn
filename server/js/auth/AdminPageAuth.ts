@@ -1,4 +1,4 @@
-import * as express from "express";
+import express from "express";
 import { AdminLoginResponse } from "../../../common/interfaces/ToClientData";
 
 // Checking for admin relies on the fact that the token cannot be changed.

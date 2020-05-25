@@ -1,4 +1,4 @@
-import * as express from "express";
+import express from "express";
 import { BaseController } from "./BaseController";
 import { MarksService } from "../services/MarksService";
 import { SocketSession } from "../js/websocket/SocketSession";
@@ -27,9 +27,13 @@ export class MarksController extends BaseController {
 
     private getMarksByQuizId(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
 
-        const quizId = req.query.q;
-        const currentPage = parseInt(req.query.c);
-        const perPage = parseInt(req.query.p);
+        const quizId = (typeof req.query.q === "string")? req.query.q: null;
+        const c = (typeof req.query.c === "string")? req.query.c: null;
+        const p = (typeof req.query.p === "string")? req.query.p: null;
+        if(!c || !p) res.sendStatus(400);
+
+        const currentPage = parseInt(c as string);
+        const perPage = parseInt(p as string);
         if (!quizId || !currentPage || !perPage) throw new Error('Pagination Parameters not supplied');
         this.marksService.getMarksForQuizPaginated(quizId, currentPage, perPage).then((result) => {
             res.json(result).status(200);

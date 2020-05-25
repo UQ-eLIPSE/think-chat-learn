@@ -39,8 +39,8 @@ import { Utils } from "../../../common/js/Utils";
 import { EventBus, EventList, SnackEvent, ModalEvent } from "../EventBus";
 
 interface DropDownConfiguration {
-  text: string,
-  value: string,
+  text: string;
+  value: string;
 }
 
 @Component({})
@@ -62,7 +62,7 @@ export default class RubricEditor extends Vue {
     // It should be duly noted that the ordering of the criteria is done with maps into an array
     // this is because maps always guarantees a particular oder. Note that order doesn't really matter here
     private mountedCriteriasId: string[] = [];
-    
+
     get criterias(): ICriteria[] {
         return this.$store.getters.criterias;
     }
@@ -106,7 +106,7 @@ export default class RubricEditor extends Vue {
             const message: SnackEvent = {
                 message: "Failed generate quiz. Check the form for any errors",
                 error: true
-            }
+            };
             EventBus.$emit(EventList.PUSH_SNACKBAR, message);
             return;
         } else {
@@ -118,8 +118,8 @@ export default class RubricEditor extends Vue {
                 title: `Creating/modifying a rubric`,
                 fn: this.$store.dispatch,
                 data: ["sendRubric", this.currentRubric]
-            }
-            EventBus.$emit(EventList.OPEN_MODAL, message);            
+            };
+            EventBus.$emit(EventList.OPEN_MODAL, message);
         }
     }
 
@@ -138,7 +138,7 @@ export default class RubricEditor extends Vue {
                 this.failedFetch = true;
             }
         } else {
-            // Otherwise, only set the course 
+            // Otherwise, only set the course
             this.currentRubric.course = this.course;
         }
     }
@@ -159,7 +159,7 @@ export default class RubricEditor extends Vue {
                 }
                 return count;
             }, 0);
-            return totalIds == 1 || "Duplicate criterias detected";            
+            return totalIds === 1 || "Duplicate criterias detected";
         });
     }
 }
