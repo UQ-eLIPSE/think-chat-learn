@@ -101,6 +101,7 @@ server/config/production/*
 
 # Temporary deploy folder
 __deploy
+!__deploy/.gitkeep
 *.Conf.ts
 temp.*
 

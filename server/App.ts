@@ -119,7 +119,7 @@ export default class App {
     
     private async connectDb(): Promise<Db> {
         // The conf.database variable should have the db as part of the url
-        const connection = await MongoClient.connect(Conf.database, { useNewUrlParser: true });
+        const connection = await MongoClient.connect(Conf.database, { useNewUrlParser: true, useUnifiedTopology: true });
         return connection.db();
     }
 

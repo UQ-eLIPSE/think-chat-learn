@@ -1,0 +1,30 @@
+version: '3.7'
+services:
+  deploy:
+    image: node:12
+    container_name: deploy-app
+    volumes:
+      - ./.git:/var/www/think-chat-learn/.git
+      - ./server:/var/www/think-chat-learn/server
+      - ./common:/var/www/think-chat-learn/common
+      - ./intermediate:/var/www/think-chat-learn/intermediate
+      - ./admin:/var/www/think-chat-learn/admin
+      - ./client:/var/www/think-chat-learn/client
+      - ./__deploy:/var/www/think-chat-learn/__deploy
+      - ./build.sh:/var/www/think-chat-learn/build.sh
+    command: ["/bin/bash", "-c", "cd /var/www/think-chat-learn && chmod +x build.sh && ./build.sh"]
+    environment: 
+      - DOCKER_ROOT=/var/www/think-chat-learn
+      - TCL_USER=${TCL_USER}
+      - TCL_SERVER=${TCL_SERVER}
+
+
+# Docker Networks
+networks:
+  network:
+    driver: bridge
+
+#Volumes
+volumes:
+  dbdata:
+    driver: local
