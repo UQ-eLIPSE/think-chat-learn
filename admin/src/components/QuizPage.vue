@@ -47,7 +47,7 @@
                     <v-text-field v-model="startTimeString" prepend-icon= "access_time" readonly v-on="on" :rules="[existenceRule]">
                     </v-text-field>
                   </template>
-                  <v-time-picker v-model="startTimeString" scrollable>
+                  <v-time-picker v-model="startTimeString" scrollable format="24hr">
                       <v-btn flat @click="startTimeShow = false">Cancel</v-btn>
                       <v-btn flat @click="$refs.startTimeMenu.save(startTimeString)">OK</v-btn>  
                   </v-time-picker>
@@ -85,7 +85,7 @@
                     <v-text-field v-model="endTimeString" prepend-icon= "access_time" readonly v-on="on" :rules="[existenceRule, validDateRule]">
                     </v-text-field>
                   </template> 
-                  <v-time-picker v-model="endTimeString" scrollable>
+                  <v-time-picker v-model="endTimeString" scrollable format="24hr">
                     <v-btn flat @click="endTimeShow = false">Cancel</v-btn>
                     <v-btn flat @click="$refs.endTimeMenu.save(endTimeString)">OK</v-btn>
                   </v-time-picker>
@@ -492,22 +492,24 @@ export default class QuizPage extends Vue {
       throw Error("Missing start or end datetimes");
     }
 
+    // Note: Seconds are being set to 0 (round down to minute)
     const availableStart = new Date(
       this.startDate.getFullYear(),
       this.startDate.getMonth(),
       this.startDate.getDate(),
       this.startTime.getHours(),
       this.startTime.getMinutes(),
-      this.startTime.getSeconds()
+      0
     ).toString();
 
+    // Note: Seconds are being set to 0 (round down to minute)
     const availableEnd = new Date(
       this.endDate.getFullYear(),
       this.endDate.getMonth(),
       this.endDate.getDate(),
       this.endTime.getHours(),
       this.endTime.getMinutes(),
-      this.endTime.getSeconds()
+      0
     ).toString();
 
     const outgoingQuiz: IQuizOverNetwork = {
@@ -593,9 +595,8 @@ export default class QuizPage extends Vue {
         this.endTime = new Date(loadedQuiz.availableEnd!);
         this.groupSize = loadedQuiz.groupSize!;
 
-        // Assuming the date comes from ISO8601 we need to strip the string in this manner
-        this.startDateString = this.startDate ? this.startDate.toISOString().substr(0, 10) : "";
-        this.endDateString = this.endDate ? this.endDate.toISOString().substr(0, 10) : "";
+        this.startDateString = this.convertServerDateToString(this.startDate);
+        this.endDateString = this.convertServerDateToString(this.endDate);
         // Padding isn't necessary but for visualisation purposes it is
         this.startTimeString = this.startTime ? `${this.startTime.getHours()}`.padStart(2, "0") + ":" + `${this.startTime.getMinutes()}`.padStart(2, "0") : "";
         this.endTimeString = this.endTime ? `${this.endTime.getHours()}`.padStart(2, "0") + ":" + `${this.endTime.getMinutes()}`.padStart(2, "0") : "";
@@ -724,6 +725,23 @@ export default class QuizPage extends Vue {
         return totalIds == 1 || "Duplicate discussions detected";            
     });
   }
+
+  /**
+   * Converts server-specified date to 'yyyy-mm-dd' string
+   * compatible with v-date-picker
+   * Ref: https://stackoverflow.com/a/50130338
+   */
+  private convertServerDateToString(date: Date) {
+    try {
+      const quizDateTime = new Date(date);
+      return (new Date(quizDateTime.getTime() - (quizDateTime.getTimezoneOffset() * 60000 ))
+        .toISOString().split("T")[0]).toString();
+    } catch (e) {
+      console.error('Date invalid');
+      return new Date(Date.now()).toString();
+    }
+  }
+
 }
 </script>
 
