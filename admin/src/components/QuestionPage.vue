@@ -170,29 +170,33 @@ export default class QuestionPage extends Vue {
 
         // We should start uploading in a form, do nothing elsewise
 
-        const tempForm = new FormData();
-        this.uploads.forEach((upload) => {
-            tempForm.append(upload.id, upload.blob);
-        });
-        API.uploadForm("image/imageUpload", tempForm).then((files: { fieldName: string, fileName: string}[]) => {
-            const payload: SnackEvent = {
-                message: "Finished uploading associated images"
-            }
-            EventBus.$emit(EventList.PUSH_SNACKBAR, payload);
+        if(this.uploads && this.uploads.length) {
+            const tempForm = new FormData();
+            this.uploads.forEach((upload) => {
+                tempForm.append(upload.id, upload.blob);
+            });
 
-            for (let file of files) {
-                // For the sake of TypeScript
-                if (this.pageQuestion && this.pageQuestion.content) {
-                    this.pageQuestion.content = this.pageQuestion.content.replace(file.fieldName, IMAGE_LOCATION + file.fileName);
+            API.uploadForm("image/imageUpload", tempForm).then((files: { fieldName: string, fileName: string}[]) => {
+                for (let file of files) {
+                    // For the sake of TypeScript
+                    if (this.pageQuestion && this.pageQuestion.content) {
+                        this.pageQuestion.content = this.pageQuestion.content.replace(file.fieldName, IMAGE_LOCATION + file.fileName);
+                    }
                 }
-            }
 
-            // Reset the upload counters and then create the quiz
-            this.uploads = [];
-            this.uploadCount = 0;
+                // Reset the upload counters and then create the quiz
+                this.uploads = [];
+                this.uploadCount = 0;
 
-            this.createQuestion();
-        });
+                this.createQuestion();
+            }).catch(e => {
+                const payload: SnackEvent = {
+                    message: "Image(s) could not be uploaded"
+                }
+                EventBus.$emit(EventList.PUSH_SNACKBAR, payload);
+            });
+        }
+        
     }    
 
     private createQuestion() {
@@ -260,6 +264,8 @@ export default class QuestionPage extends Vue {
 
     private destroyed() {
         EventBus.$off(EventList.QUILL_UPLOAD);
+        // Turn off quill event listeners
+        EventBus.$off(EventList.CONSOLIDATE_UPLOADS);
     }
 
     private mounted() {

@@ -379,11 +379,6 @@ export default class QuizPage extends Vue {
         tempForm.append(upload.id, upload.blob);
       });
       API.uploadForm("image/imageUpload", tempForm).then((files: { fieldName: string, fileName: string}[]) => {
-          const payload: SnackEvent = {
-              message: "Finished uploading associated images"
-          }
-          EventBus.$emit(EventList.PUSH_SNACKBAR, payload);
-
           // The assumption here is that we can explicitly change the content of each page
           for (let key of Object.keys(this.pageDict)) {
             const page = this.pageDict[key];
@@ -399,6 +394,11 @@ export default class QuizPage extends Vue {
           this.uploadCount = 0;
 
           this.createQuiz();
+      }).catch(e => {
+          const payload: SnackEvent = {
+              message: "Image(s) could not be uploaded"
+          }
+          EventBus.$emit(EventList.PUSH_SNACKBAR, payload);
       });
     }
   }
@@ -625,6 +625,8 @@ export default class QuizPage extends Vue {
 
   private destroyed() {
     EventBus.$off(EventList.QUILL_UPLOAD);
+    // Turn off quill event listeners
+    EventBus.$off(EventList.CONSOLIDATE_UPLOADS);
   }
 
   @Watch("startDateString")
