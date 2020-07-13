@@ -624,7 +624,7 @@ export default class QuizPage extends Vue {
     EventBus.$on(EventList.QUILL_UPLOAD, this.handleQuillUpload);
   }
 
-  private destroyed() {
+  private beforeDestroy() {
     EventBus.$off(EventList.QUILL_UPLOAD);
   }
 
