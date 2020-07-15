@@ -363,7 +363,6 @@ export default class QuizPage extends Vue {
 
   get numPages(): number {
     return this.pagesArray.length;
-    // return Object.keys(this.pageDict).length;
   }
 
   private async submitQuiz() {
@@ -565,7 +564,7 @@ export default class QuizPage extends Vue {
     if (index === 0) return;
     if (this.pagesArray[index] && this.pagesArray[index - 1]) {
       const items = [this.pagesArray[index - 1], this.pagesArray[index]];
-      this.pagesArray.splice(index, 2, items[1], items[0]);
+      this.pagesArray.splice(index - 1, 2, items[1], items[0]);
     }
   }
 
