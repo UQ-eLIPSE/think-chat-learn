@@ -111,6 +111,7 @@
             <span class="ql-formats">
                 <button type="button" class="ql-formula"></button>
                 <button type="button" class="ql-image"><v-icon>add_a_photo</v-icon></button>            
+                <button type="button" class="ql-video"><v-icon>add_a_video</v-icon></button>            
             </span>
         </div>
         <!-- It's better to bind to the quill instance than use a getter as VueJS cannot listen to it -->
@@ -278,7 +279,7 @@ export default class QuillEditor extends Vue {
         this.quillInstance = new Quill(`#${this.id}`, {
             modules: {
                 toolbar: `#toolbar-${this.id}`,
-                'formula': true,
+                formula: true,
                 imageResize : {}
             },
             theme: 'snow'

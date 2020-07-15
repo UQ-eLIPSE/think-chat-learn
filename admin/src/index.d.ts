@@ -3,3 +3,4 @@
 declare module "buefy";
 declare module "buefy/dist/components/snackbar";
 declare module "quill-image-resize";
+declare const tinymce: any; 

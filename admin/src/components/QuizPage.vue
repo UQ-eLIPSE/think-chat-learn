@@ -119,8 +119,14 @@
                       v-else-if="page.type === PageType.SURVEY_PAGE">
                 <option> Some Default survey</option>
               </select>
-              <b-field label="Set the content of the page">
+              <!-- <b-field label="Set the content of the page">
                 <QuillEditor :id="`quiz-quill-${index}`" v-model="page.content"></QuillEditor>
+              </b-field> -->
+              <!-- <b-field>
+                <TipTap :id="`quiz-quill-2-${index}`" v-model="page.content" />
+              </b-field> -->
+              <b-field>
+                <TinyMce :id="`quiz-tinymce-${index}`" v-model="page.content" />
               </b-field>
               <b-field label="Set the timeout in minutes">
                 <v-text-field label="Timeout" v-model="page.timeoutInMins" outline type="number"/>
@@ -177,6 +183,9 @@
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import QuillEditor from "./QuillEditor.vue";
+// import QuillEditor2 from "./QuillEditor2.vue";
+// import TipTap from "./TipTap.vue";
+import TinyMce from "./TinyMce.vue";
 import {
   IPage,
   IQuestionAnswerPage,
@@ -205,7 +214,10 @@ const IMAGE_LOCATION = process.env.VUE_APP_IMAGE_LOCATION;
 
 @Component({
   components: {
-    QuillEditor
+    QuillEditor,
+    // QuillEditor2,
+    // TipTap,
+    TinyMce
   }
 })
 export default class QuizPage extends Vue {
