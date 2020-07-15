@@ -27,8 +27,7 @@
           <!-- All questions have some form of content -->
           <v-flex xs12>
             <b-field label="Set the content of the question">
-              <!-- <QuillEditor :id="`question-quill`" v-model="pageQuestion.content"></QuillEditor> -->
-              <TinyMce2 :id="editorId" :options="{}" v-model="pageQuestion.content" />
+              <TinyMce :id="editorId" :options="{}" v-model="pageQuestion.content" />
             </b-field>
           </v-flex>
           <br />
@@ -85,7 +84,7 @@
 </style>
 <script lang="ts">
 import { Vue, Component, Prop } from "vue-property-decorator";
-import QuillEditor from "./QuillEditor.vue";
+
 import {
   TypeQuestion,
   IQuestionMCQ,
@@ -95,17 +94,12 @@ import {
 import { QuestionType } from "../../../common/enums/DBEnums";
 import { getAdminLoginResponse } from "../../../common/js/front_end_auth";
 import { Utils } from "../../../common/js/Utils";
-import {
-  EventBus,
-  EventList,
-  SnackEvent,
-  ModalEvent,
-  BlobUpload
-} from "../EventBus";
 import { IQuestionQualitative } from "../../../common/interfaces/DBSchema";
 import API from "../../../common/js/DB_API";
-import TinyMce2 from "./TinyMce2.vue";
+import TinyMce from "./TinyMce.vue";
 import uniqueId from "../util/uniqueId";
+import { showSnackbar } from '../EventBus';
+import { saveTinyMceEditorContent } from '../util/TinyMceUtils';
 
 interface DropDownConfiguration {
   text: string;
@@ -133,8 +127,7 @@ const IMAGE_LOCATION = process.env.VUE_APP_IMAGE_LOCATION;
 
 @Component({
   components: {
-    QuillEditor,
-    TinyMce2
+    TinyMce
   }
 })
 export default class QuestionPage extends Vue {
@@ -152,11 +145,6 @@ export default class QuestionPage extends Vue {
       value: QuestionType.QUALITATIVE
     }
   ];
-
-  // Quill Upload information
-  private uploadCount: number = 0;
-  private uploads: BlobUpload[] = [];
-  private changeCount: number = 0;
 
   // Import the types as well
   get QuestionType() {
@@ -189,94 +177,6 @@ export default class QuestionPage extends Vue {
         newOption
       );
     }
-  }
-
-  /**
-   * Saves editor content and modify resource
-   */
-  private saveTinyMceEditorContent(
-    editorId: string
-  ): Promise<{ success: boolean; payload?: string; messages?: string[] }> {
-    const rejectPayload = {
-      success: false,
-      messages: ["Editor contents could not be saved"]
-    };
-
-    return new Promise((resolve, _reject) => {
-      try {
-        console.log('tinymce: ', tinymce);
-        // Fetch `editor` associated with this component
-        const editor = (tinymce.editors || [])[editorId];
-        // If error does not exist, something is wrong since if this component exists,
-        // the corresponding TinyMCE editor should also exist
-        console.log('editor: ', editor);
-        if (!editor) return resolve(rejectPayload);
-
-        // Call the `uploadImages` hook and pass a callback function to be executed
-        // after `uploadImages` resolves.
-        editor.uploadImages((response: { status: boolean; element: any }[]) => {
-            console.log('uploadImages cb:', response);
-          if (!response) return resolve(rejectPayload);
-
-          // Check for unexpected response type
-          if (!Array.isArray(response)) return resolve(rejectPayload);
-
-          // Resolve successfully if there are no images
-          if (response.length === 0) return resolve({ success: true });
-
-          // Resolve if every image was able to be uploaded successfully
-          if (response.length && response.every(r => r.status === true)) {
-            const content = editor.getContent();
-            return resolve({ success: true, payload: content });
-          }
-
-          // Reject implicitly
-          return resolve(rejectPayload);
-        });
-      } catch (e) {
-        console.log(e);
-        // Reject implicitly if an error is caught
-        return resolve(rejectPayload);
-      }
-    });
-  }
-
-  // Duplication from before
-  private handleQuillUpload(blobs: BlobUpload[]) {
-    // Since we are concating rather than appending, we have to count each transaction
-    // rather than checking total array length
-    this.uploads = this.uploads.concat(blobs);
-
-    // We should start uploading in a form, do nothing elsewise
-
-    const tempForm = new FormData();
-    this.uploads.forEach(upload => {
-      tempForm.append(upload.id, upload.blob);
-    });
-    API.uploadForm("image/imageUpload", tempForm).then(
-      (files: { fieldName: string; fileName: string }[]) => {
-        const payload: SnackEvent = {
-          message: "Finished uploading associated images"
-        };
-        EventBus.$emit(EventList.PUSH_SNACKBAR, payload);
-
-        for (let file of files) {
-          // For the sake of TypeScript
-          if (this.pageQuestion && this.pageQuestion.content) {
-            this.pageQuestion.content = this.pageQuestion.content.replace(
-              file.fieldName,
-              IMAGE_LOCATION + file.fileName
-            );
-          }
-        }
-
-        // Reset the upload counters and then create the quiz
-        this.uploads = [];
-        this.uploadCount = 0;
-
-        this.createQuestion();
-      }
-    );
   }
 
   private createQuestion() {
@@ -317,53 +217,29 @@ export default class QuestionPage extends Vue {
     }
   }
 
-  private showSnackbar(messageText: string, isError?: boolean) {
-    const message: SnackEvent = {
-      message: messageText,
-      error: isError || false
-    };
-    EventBus.$emit(EventList.PUSH_SNACKBAR, message);
-    return;
-  }
-
   private async submitQuestion() {
     // Perform a basic error check based on the rules
     const valid = (this.$refs.form as any).validate();
 
     if (!valid) {
-      this.showSnackbar("Failed to generate question. Check the form for any errors", true);
+      showSnackbar("Failed to generate question. Check the form for any errors", true);
       return;
     }
 
     const confirmed = confirm("Save question?");
 
     if (confirmed && this.editorId) {
-      const tinyResponse = await this.saveTinyMceEditorContent(this.editorId);
-      if (tinyResponse && tinyResponse.success) {
-        if (tinyResponse.payload) {
-          this.pageQuestion.content = tinyResponse.payload;
+      const editorResponse = await saveTinyMceEditorContent(this.editorId);
+      if (editorResponse && editorResponse.success) {
+        if (editorResponse.payload) {
+          this.pageQuestion.content = editorResponse.payload;
         }
 
         await this.createQuestion();
       } else {
-          this.showSnackbar('Failed to save question content', true);
-          console.log(tinyResponse);
+          showSnackbar('Failed to save question content', true);
       }
     }
-    // // Set one is to upload quill which then follows creating the quiz
-    // const message: ModalEvent = {
-    //     title: this.isEditing ? `Editing question` : `Creating question`,
-    //     message: this.isEditing ? `Are you sure to edit question of ID ${this.id}?` : `Are you sure to create the question`,
-    //     fn: EventBus.$emit,
-    //     data: [EventList.CONSOLIDATE_UPLOADS],
-    //     selfRef: EventBus
-    // }
-
-    // EventBus.$emit(EventList.OPEN_MODAL, message);
-  }
-
-  private destroyed() {
-    EventBus.$off(EventList.QUILL_UPLOAD);
   }
 
   private created() {
@@ -383,7 +259,6 @@ export default class QuestionPage extends Vue {
       }
     }
 
-    EventBus.$on(EventList.QUILL_UPLOAD, this.handleQuillUpload);
   }
 
   /**

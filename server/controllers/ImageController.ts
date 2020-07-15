@@ -30,13 +30,20 @@ export class ImageController extends BaseController {
 
     private handleImageUpload(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
         // The request should be intercepted by the upload handler which returns the file name
-        const output: { fieldName: string, fileName: string}[] = [];
+        const output: { fieldName: string, fileName: string, location: string}[] = [];
 
         (req.files as Express.Multer.File[]).forEach((file) => {
             output.push({
                 fieldName: file.fieldname,
-                fileName: file.filename
-            })
+                fileName: file.filename,
+                // Send back URL of the uploaded image
+                // If manta is enabled, return absolute image URL on Manta
+                // Else return assign relative URL of static images path on server
+                location: Conf.storage.useManta?
+                    `${Conf.storage.mantaDetails.mantaUrl}/${Conf.storage.mantaDetails.mantaFolderName}/${file.filename}`
+                    :
+                    `/images/${file.filename}`
+            });
         });
         res.json(output);
         res.status(200);
