@@ -22,6 +22,7 @@ export class ImageController extends BaseController {
                 filename: (req: express.Request, file: any, cb: any) => {
                     const tempId = uniqid();
                     const extension = path.extname(file.originalname);
+                    // Note: path.extname returns with leading dot + extension
                     cb(null, `${tempId}${extension}`);
                 }
             })
@@ -38,9 +39,11 @@ export class ImageController extends BaseController {
                 fileName: file.filename,
                 // Send back URL of the uploaded image
                 // If manta is enabled, return absolute image URL on Manta
-                // Else return assign relative URL of static images path on server
+                // Else assign relative URL of static images path on server
+
+                // NOTE: mantaFolderName should be configured with a leading slash in the config
                 location: Conf.storage.useManta?
-                    `${Conf.storage.mantaDetails.mantaLocation}/${Conf.storage.mantaDetails.mantaFolderName}/${file.filename}`
+                    `${Conf.storage.mantaDetails.mantaLocation}${Conf.storage.mantaDetails.mantaFolderName}/${file.filename}`
                     :
                     `/images/${file.filename}`
             });

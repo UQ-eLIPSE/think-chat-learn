@@ -81,18 +81,15 @@ export function saveTinyMceEditorContent(editorId: string)
 
     return new Promise((resolve, _reject) => {
         try {
-            console.log('tinymce: ', tinymce);
             // Fetch `editor` associated with this component
             const editor = (tinymce.editors || [])[editorId];
             // If error does not exist, something is wrong since if this component exists,
             // the corresponding TinyMCE editor should also exist
-            console.log('editor: ', editor);
             if (!editor) return resolve(rejectPayload);
 
             // Call the `uploadImages` hook and pass a callback function to be executed
             // after `uploadImages` resolves.
             editor.uploadImages((response: { status: boolean; element: any }[]) => {
-                console.log('uploadImages cb:', response);
                 if (!response) return resolve(rejectPayload);
 
                 // Check for unexpected response type
