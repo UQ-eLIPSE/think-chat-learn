@@ -40,7 +40,7 @@ export class ImageController extends BaseController {
                 // If manta is enabled, return absolute image URL on Manta
                 // Else return assign relative URL of static images path on server
                 location: Conf.storage.useManta?
-                    `${Conf.storage.mantaDetails.mantaUrl}/${Conf.storage.mantaDetails.mantaFolderName}/${file.filename}`
+                    `${Conf.storage.mantaDetails.mantaLocation}/${Conf.storage.mantaDetails.mantaFolderName}/${file.filename}`
                     :
                     `/images/${file.filename}`
             });
