@@ -22,7 +22,7 @@ export class ImageController extends BaseController {
                 filename: (req: express.Request, file: any, cb: any) => {
                     const tempId = uniqid();
                     const extension = path.extname(file.originalname);
-                    cb(null, `${tempId}${extension}`);
+                    cb(null, `${tempId}.${extension}`);
                 }
             })
         })        
