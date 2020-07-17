@@ -258,7 +258,7 @@ export default class QuestionPage extends Vue {
         EventBus.$emit(EventList.OPEN_MODAL, message);
     }
 
-    private destroyed() {
+    private beforeDestroy() {
         EventBus.$off(EventList.QUILL_UPLOAD);
     }
 

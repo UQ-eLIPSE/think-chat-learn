@@ -165,6 +165,7 @@ export default class QuillEditor extends Vue {
         // Remove the quill instance so we tell bus to not upload images
         // from this component.
         this.quillInstance = null;
+        EventBus.$off(EventList.CONSOLIDATE_UPLOADS, this.handleUpload);
     }
 
     private async mounted() {
