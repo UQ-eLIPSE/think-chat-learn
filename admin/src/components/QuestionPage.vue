@@ -264,7 +264,7 @@ export default class QuestionPage extends Vue {
         EventBus.$emit(EventList.OPEN_MODAL, message);
     }
 
-    private destroyed() {
+    private beforeDestroy() {
         EventBus.$off(EventList.QUILL_UPLOAD);
         // Turn off quill event listeners
         EventBus.$off(EventList.CONSOLIDATE_UPLOADS);
