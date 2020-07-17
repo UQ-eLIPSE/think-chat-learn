@@ -188,15 +188,17 @@ export default class QuestionPage extends Vue {
                 this.uploads = [];
                 this.uploadCount = 0;
 
-                this.createQuestion();
+                
             }).catch(e => {
                 const payload: SnackEvent = {
                     message: "Image(s) could not be uploaded"
                 }
                 EventBus.$emit(EventList.PUSH_SNACKBAR, payload);
+                return;
             });
         }
-        
+
+        this.createQuestion();
     }    
 
     private createQuestion() {

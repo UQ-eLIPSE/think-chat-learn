@@ -393,13 +393,15 @@ export default class QuizPage extends Vue {
           this.uploads = [];
           this.uploadCount = 0;
 
-          this.createQuiz();
       }).catch(e => {
           const payload: SnackEvent = {
               message: "Image(s) could not be uploaded"
           }
           EventBus.$emit(EventList.PUSH_SNACKBAR, payload);
+          return;
       });
+
+      this.createQuiz();
     }
   }
 
