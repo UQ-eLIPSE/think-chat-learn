@@ -278,7 +278,7 @@ const actions: ActionTree<IState, undefined> = {
 
     async sendCriteria({ commit }: { commit: Commit }, data: ICriteria) {
         if (data._id) {
-            await API.request(API.POST, API.CRITERIA + "update/", data);
+            await API.request(API.PUT, API.CRITERIA + "update/", data);
 
             const index = state.criterias.findIndex((criteria) => {
                 return criteria._id === data._id;
@@ -292,7 +292,7 @@ const actions: ActionTree<IState, undefined> = {
 
             EventBus.$emit(EventList.PUSH_SNACKBAR, message);
         } else {
-            const id: {outgoingId: string } = await API.request(API.PUT, API.CRITERIA + "create/", data);
+            const id: {outgoingId: string } = await API.request(API.POST, API.CRITERIA + "create/", data);
             data._id = id.outgoingId;
             commit(mutationKeys.SET_CRITERIA, { criteria: data, index: state.criterias.length });
 
