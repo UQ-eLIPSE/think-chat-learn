@@ -256,7 +256,6 @@ html {
 import { Vue, Component } from "vue-property-decorator";
 import { Snackbar } from 'buefy/dist/components/snackbar'
 import { EventBus, EventList, SnackEvent, ModalEvent } from "./EventBus";
-import SideNav from "./components/SideNav.vue";
 
 // Temporary interface for the side nav
 interface SideNavItem {
@@ -297,11 +296,7 @@ const SideNavItems: SideNavItem[] = [
   }
 ]
 
-@Component({
-  components: {
-    SideNav
-  }
-})
+@Component
 export default class App extends Vue {
 
   private openDialog: boolean = false;

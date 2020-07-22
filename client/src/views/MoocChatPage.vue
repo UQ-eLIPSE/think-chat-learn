@@ -20,13 +20,13 @@
         <div class="accordion" v-if="page.type === PageType.DISCUSSION_PAGE && chatGroup">
           <dl>
             <!-- Discussion content -->
-            <dt :class="contentPanelOpen ? 'opened' : ''" v-on:click="contentPanelOpen = !contentPanelOpen" v-if="page.content !== emptyContent">
+            <dt :class="contentPanelOpen ? 'opened' : ''" v-on:click="contentPanelOpen = !contentPanelOpen" v-if="page.content">
               <div class="flex-row align-center justify-space-between">
                 <h2>{{page ? page.title : ""}}</h2>
                 <font-awesome-icon :icon="contentPanelOpen ? 'chevron-up' : 'chevron-down'" />
               </div>
             </dt>
-            <dd :class="contentPanelOpen ? 'opened' : ''" v-if="page.content !== emptyContent && contentPanelOpen">
+            <dd :class="contentPanelOpen ? 'opened' : ''" v-if="page.content && contentPanelOpen">
               <div class="content" v-html="page.content"/>
             </dd>
 
@@ -218,8 +218,6 @@ import CircularNumberLabel from "../components/CircularNumberLabel.vue";
   }
 })
 export default class MoocChatPage extends Vue {
-  // Used for Quill content areas as Quill sets empty content as the below
-  private emptyContent = "<p><br></p>";
 
   private contentPanelOpen = true;
   private questionsPanelOpen = false;
