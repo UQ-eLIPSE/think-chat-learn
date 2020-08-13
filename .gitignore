@@ -73,18 +73,12 @@ admin/public/*
 # Env values for client, admin and intermediate
 client/envs/*
 !client/envs/.gitkeep
-client/.env.*
-!client/.env.*.example
 
 admin/envs/*
 !admin/envs/.gitkeep
-admin/.env.*
-!admin/.env.*.example
 
 intermediate/envs/*
 !intermediate/envs/.gitkeep
-intermediate/.env.*
-!intermediate/.env.*.example
 
 # Script to handle question extaction
 server/utils/query.ts
@@ -109,3 +103,8 @@ temp.*
 mongodb/*
 some_location
 dist
+
+# Env files excluding example files
+.env
+.env.*
+!.env.*.example

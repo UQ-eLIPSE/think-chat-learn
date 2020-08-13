@@ -69,9 +69,6 @@ services:
       - server
       - mongodb
 
-
-      # - volsync_intermediate
-
   server:
     build:
       context: ./server
