@@ -68,11 +68,11 @@ export class MantaInterface implements multer.StorageEngine {
                 return cb(new Error(`No extension found for incoming file ${file.originalname}`));
             }
 
-            const destinationPath = `~~/${this.foldername}/${tempId}${extension}`;
+            const destinationPath = `${this.foldername}/${tempId}${extension}`;
 
             try {
                 await new Promise((resolve, reject) => {
-                    mantaInstance.mkdirp(`~~/${this.foldername}/`, (err: any, res: any) => {
+                    mantaInstance.mkdirp(`${this.foldername}/`, (err: any, res: any) => {
                         if (err) {
                             return reject(err);
                         } else {

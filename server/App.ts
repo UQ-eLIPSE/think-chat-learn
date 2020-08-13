@@ -237,6 +237,8 @@ export default class App {
             this.express.use("/admin", express.static(__dirname + Conf.folders.adminFolder));
             this.express.use("/intermediate", express.static(__dirname + Conf.folders.intermediateFolder));
         }
+
+        this.express.use("/images", express.static(Conf.storage.internalLocation));
         
         // LTI launcher page only available in test mode
         if (Conf.lti && Conf.lti.testMode) {

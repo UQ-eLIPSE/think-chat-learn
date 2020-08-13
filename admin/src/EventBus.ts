@@ -3,9 +3,7 @@ import Vue from "vue";
 
 export enum EventList {
     PUSH_SNACKBAR = "PUSH_SNACKBAR",
-    OPEN_MODAL = "OPEN MODAL",
-    QUILL_UPLOAD = "QUILL_UPLOAD",
-    CONSOLIDATE_UPLOADS = "CONSOLIDATE_UPLOADS",
+    OPEN_MODAL = "OPEN MODAL"
 }
 
 // If the error is true, then it will set a danger flag to the snackbar. Success otherwise
@@ -25,10 +23,14 @@ export interface ModalEvent {
     selfRef?: any;
 }
 
-// Allows blobs to be uploaded from Quill to a page which then allows consolidation of uploads
-export interface BlobUpload {
-    id: string;
-    blob: Blob;
-}
+export function showSnackbar(messageText: string, isError?: boolean) {
+    const message: SnackEvent = {
+      message: messageText,
+      error: !!isError
+    };
+    EventBus.$emit(EventList.PUSH_SNACKBAR, message);
+    return;
+  }
+
 
 export const EventBus = new Vue();

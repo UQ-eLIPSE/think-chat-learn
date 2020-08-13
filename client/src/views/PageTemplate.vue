@@ -20,13 +20,13 @@
         <div class="accordion" v-if="page.type === PageType.DISCUSSION_PAGE && chatGroup">
           <dl>
             <!-- Discussion content -->
-            <dt :class="contentPanelOpen ? 'opened' : ''" v-on:click="contentPanelOpen = !contentPanelOpen" v-if="page.content !== emptyContent">
+            <dt :class="contentPanelOpen ? 'opened' : ''" v-on:click="contentPanelOpen = !contentPanelOpen" v-if="page.content">
               <div class="flex-row align-center justify-space-between">
                 <h2>{{page ? page.title : ""}}</h2>
                 <font-awesome-icon :icon="contentPanelOpen ? 'chevron-up' : 'chevron-down'" />
               </div>
             </dt>
-            <dd :class="contentPanelOpen ? 'opened' : ''" v-if="page.content !== emptyContent && contentPanelOpen">
+            <dd :class="contentPanelOpen ? 'opened' : ''" v-if="page.content && contentPanelOpen">
               <div class="content" v-html="page.content"/>
             </dd>
 
@@ -218,6 +218,17 @@ import CircularNumberLabel from "../components/CircularNumberLabel.vue";
   }
 })
 export default class PageTemplate extends Vue {
+
+  private contentPanelOpen = true;
+  private questionsPanelOpen = false;
+  private responsesPanelOpen = true;
+
+  private DEFAULT_RESPONSE = "";
+  private DEFAULT_CONFIDENCE = 3;
+
+  /** Only used when its a question page that is qualitative */
+  private responseContent: string = "";
+  private confidence: number = 3;
 
   get chatMessages(): Message[] {
     return this.$store.getters.chatMessages;
@@ -413,19 +424,6 @@ export default class PageTemplate extends Vue {
 
     return false;
   }
-  // Used for Quill content areas as Quill sets empty content as the below
-  private emptyContent = "<p><br></p>";
-
-  private contentPanelOpen = true;
-  private questionsPanelOpen = false;
-  private responsesPanelOpen = true;
-
-  private DEFAULT_RESPONSE = "";
-  private DEFAULT_CONFIDENCE = 3;
-
-  /** Only used when its a question page that is qualitative */
-  private responseContent: string = "";
-  private confidence: number = 3;
 
   private toggleChat: boolean = false;
   private newMessage: boolean | null = false;
