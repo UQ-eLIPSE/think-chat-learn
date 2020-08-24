@@ -107,4 +107,4 @@ dist
 # Env files excluding example files
 *.env
 *.env.*
-!*.env.*.example
+!*.example
