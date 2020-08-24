@@ -50,9 +50,9 @@ test-build
 !client/static/marking-tool/mousoku/*
 
 # Ignore actual configuration files
-client/config/Conf.ts
-common/config/Conf.ts
-server/config/Conf.ts
+# client/config/Conf.ts
+# common/config/Conf.ts
+# server/config/Conf.ts
 
 # Config file to set up vue endpoint
 #intermediate/vue.config.js
@@ -105,6 +105,6 @@ some_location
 dist
 
 # Env files excluding example files
-.env
-.env.*
-!.env.*.example
+*.env
+*.env.*
+!*.env.*.example

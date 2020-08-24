@@ -1,5 +1,7 @@
+import './config/Config';
 import { Logger } from "../common/js/Logger";
 import App from "./App";
+
 
 // Initialise logger proxy for timestamping console output
 Logger.Init({

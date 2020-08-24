@@ -4,7 +4,7 @@ ENV BASE_DIR=/var/www/think-chat-learn
 
 WORKDIR ${BASE_DIR}/intermediate
 
-COPY package.json package-lock.json* .
+COPY package.json yarn.lock* ./
 
 # Run yarn and install packages
 RUN yarn

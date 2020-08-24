@@ -244,8 +244,6 @@ interface DropDownConfiguration {
   value: string;
 }
 
-const IMAGE_LOCATION = Conf.admin.imageLocation;
-
 @Component({
   components: {
     TinyMce

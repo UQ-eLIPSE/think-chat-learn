@@ -33,8 +33,8 @@ SERVER_FOLDER=server
 
 # SPA's
 STATIC_FOLDER=client
-ADMIN_FOLDER=admin
-INTERMEDIATE_FOLDER=intermediate
+ADMIN_RELATIVE_FOLDER=admin
+INTERMEDIATE_RELATIVE_FOLDER=intermediate
 
 # Temporary local deploy folder name
 TEMP=__deploy
@@ -74,7 +74,7 @@ echo -e "Building and deploying using node $NODE_VERSION"
 rm -rf ./$TEMP
 
 # Create local directory for deployment
-mkdir "$TEMP" "$TEMP/$STATIC_FOLDER" "$TEMP/$ADMIN_FOLDER" "$TEMP/$INTERMEDIATE_FOLDER"
+mkdir "$TEMP" "$TEMP/$STATIC_FOLDER" "$TEMP/$ADMIN_RELATIVE_FOLDER" "$TEMP/$INTERMEDIATE_RELATIVE_FOLDER"
 
 # Server
 echo -e "Building server"
@@ -92,14 +92,14 @@ cp -r ../client/dist/* "$TEMP/$STATIC_FOLDER"
 # Admin
 echo -e "Building admin SPA"
 npm run build_admin
-cp -r ../admin/dist/* "$TEMP/$ADMIN_FOLDER"
+cp -r ../admin/dist/* "$TEMP/$ADMIN_RELATIVE_FOLDER"
 
 
 # Intermediate
 echo -e "Building backup queue intermediate SPA"
 
 npm run build_intermediate
-cp -r ../intermediate/dist/* "$TEMP/$INTERMEDIATE_FOLDER"
+cp -r ../intermediate/dist/* "$TEMP/$INTERMEDIATE_RELATIVE_FOLDER"
 
 ######################################
 # RESTORE ORIGINAL LOCAL CONFIGURATION

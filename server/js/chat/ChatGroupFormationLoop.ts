@@ -1,4 +1,4 @@
-import { Conf } from "../../config/Conf";
+import Config from "../../config/Config";
 
 import { KVStore } from "../../../common/js/KVStore";
 
@@ -8,7 +8,7 @@ import { Response } from "../../../common/interfaces/DBSchema";
 
 export class ChatGroupFormationLoop {
     private static readonly CGFLInstances = new KVStore<ChatGroupFormationLoop>();
-    private static TimeBetweenChecks = Conf.chat.groups.formationIntervalMs;
+    private static TimeBetweenChecks = Config.GROUP_FORMATION_INTERVAL_MS;
 
     public static GetChatGroupFormationLoop(waitPool: WaitPool) {
         // Remember the ids are based on quiz and question ids

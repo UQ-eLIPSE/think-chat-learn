@@ -70,7 +70,8 @@ export class WebsocketManager {
 
   public open() {
     this.socketProxy = new PacSeqSocket_Client(
-      socket.connect("//" + Conf.server.url, {
+      socket.connect(Conf.server.url, {
+        // socket.connect("//" + Conf.server.url, {
         path: "/socket.io",
 
         // Permit infinite reconnects

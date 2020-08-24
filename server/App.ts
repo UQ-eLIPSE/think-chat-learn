@@ -8,7 +8,7 @@ import { Db, MongoClient } from "mongodb";
 import cors from "cors";
 
 import { Main } from "./js";
-import { Conf } from "./config/Conf";
+import Config from "./config/Config";
 // Repos
 import { UserRepository } from "./repositories/UserRepository";
 import { QuestionRepository } from "./repositories/QuestionRepository";
@@ -119,7 +119,7 @@ export default class App {
     
     private async connectDb(): Promise<Db> {
         // The conf.database variable should have the db as part of the url
-        const connection = await MongoClient.connect(Conf.database, { useNewUrlParser: true, useUnifiedTopology: true });
+        const connection = await MongoClient.connect(Config.DATABASE_URI, { useNewUrlParser: true, useUnifiedTopology: true });
         return connection.db();
     }
 
@@ -189,13 +189,13 @@ export default class App {
 
     private setupSockets(): void {
         // Generally the configuration for max sockets should be 65k to permit as many as possible
-        http.globalAgent.maxSockets = Conf.http.maxSockets;
-        const server = http.createServer(this.express).listen(Conf.portNum);
+        http.globalAgent.maxSockets = Config.HTTP_MAX_SOCKETS;
+        const server = http.createServer(this.express).listen(Config.PORT);
         const io = SocketIO(server, {
             serveClient: false,
         
-            pingInterval: Conf.socketIo.pingInterval,
-            pingTimeout: Conf.socketIo.pingTimeout
+            pingInterval: Config.SOCKET_PING_INTERVAL,
+            pingTimeout: Config.SOCKET_PING_TIMEOUT
         });
 
         // Used to set up sockets
@@ -204,7 +204,7 @@ export default class App {
 
     // For now we also open up the sockets
     private setupRoutes(): void {
-        console.log(`socket.io listening on ${Conf.portNum}`);
+        console.log(`socket.io listening on ${Config.PORT}`);
         
         // TODO: Configure cors to be more secure
         this.express.use(cors());
@@ -221,7 +221,7 @@ export default class App {
         }));
         
         // Token refresher. Only runs during login
-        this.express.use(this.authFilter("/user/login", expressJwt({ secret: Conf.jwt.SECRET })));
+        this.express.use(this.authFilter("/user/login", expressJwt({ secret: Config.JWT_SECRET })));
         this.express.use(this.authFilter("/user/login", this.refreshJWT));
         
         console.log("Setting up endpoints...");
@@ -229,25 +229,25 @@ export default class App {
         
         // If static content delivery by Express is enabled,
         // everything under URL/static/* will be statically delivered from PROJECT/build/client/*
-        if (Conf.express && Conf.express.serveStaticContent) {
+        if (Config.SERVE_STATIC_CONTENT) {
         
             // Note that express will attempt to find the file.
             // For logging in we use the api endpoints (and redirect there)
-            this.express.use("/client", express.static(__dirname + Conf.folders.clientFolder));
-            this.express.use("/admin", express.static(__dirname + Conf.folders.adminFolder));
-            this.express.use("/intermediate", express.static(__dirname + Conf.folders.intermediateFolder));
+            this.express.use("/client", express.static(__dirname + Config.CLIENT_RELATIVE_FOLDER));
+            this.express.use("/admin", express.static(__dirname + Config.ADMIN_RELATIVE_FOLDER));
+            this.express.use("/intermediate", express.static(__dirname + Config.INTERMEDIATE_RELATIVE_FOLDER));
         }
 
-        this.express.use("/images", express.static(Conf.storage.internalLocation));
+        this.express.use("/images", express.static(Config.IMAGE_UPLOAD_LOCAL_PATH));
         
         // LTI launcher page only available in test mode
-        if (Conf.lti && Conf.lti.testMode) {
+        if (Config?.LTI_TEST_MODE) {
             this.express.get("/lti-launch", function(req, res) {
                 res.render("lti-launch.ejs");
             });
         
             this.express.get("/demo-login", function(req, res) {
-                res.render("lti-launch-2.ejs", { conf: Conf });
+                res.render("lti-launch-2.ejs", { conf: Config });
             });
         }
         
@@ -318,7 +318,7 @@ export default class App {
         delete oldToken.iat;
         delete oldToken.exp;
 
-        const token = jwt.sign(oldToken, Conf.jwt.SECRET, { expiresIn: Conf.jwt.TOKEN_LIFESPAN });
+        const token = jwt.sign(oldToken, Config.JWT_SECRET, { expiresIn: Config.JWT_TOKEN_LIFESPAN });
         res.setHeader("Access-Token", token);
         res.setHeader("Access-Control-Expose-Headers", "Access-Token");
         return next();

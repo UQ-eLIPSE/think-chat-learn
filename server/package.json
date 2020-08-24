@@ -8,6 +8,7 @@
   },
   "scripts": {
     "start": "node build/server/main.js",
+    "copy:config": "copyfiles ../server.env build/server.env && copyfiles ../common.env build/common.env",
     "start_dev": "node --inspect build/server/main.js",
     "seed": "node server/util/db_seed.js",
     "m2p": "node server/util/m2p.js",
@@ -21,7 +22,7 @@
     "build_client_dev": "cd ./client && yarn run build_dev",
     "build_intermediate": "cd ./intermediate && yarn run build",
     "build_intermediate_dev": "cd ./intermediate && yarn run build_dev",
-    "build_server_main": "tsc",
+    "build_server_main": "tsc && yarn run copy:config",
     "build_server_main_watch": "tsc -w",
     "build_server_copy_static": "copyfiles \"./server/static/**\" ./build",
     "build_server": "yarn run build_server_main && yarn run build_server_copy_static",
@@ -33,6 +34,7 @@
   "dependencies": {
     "body-parser": "^1.18.3",
     "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
     "ejs": "^2.6.1",
     "express": "^4.17.1",
     "express-jwt": "^5.3.1",
@@ -67,7 +69,7 @@
     "@types/uniqid": "^4.1.3",
     "chai": "^3.5.0",
     "concat-files": "0.1.0",
-    "copyfiles": "1.0.0",
+    "copyfiles": "^2.3.0",
     "mkdirp": "0.5.1",
     "rimraf": "^2.5.3",
     "typescript": "^3.9.2"

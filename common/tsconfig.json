@@ -1,6 +1,8 @@
 {
     "compilerOptions": {
         "experimentalDecorators": true,
-        "lib": ["es6"]
+        "lib": ["es6"],
+        "esModuleInterop": true,
+        "target": "ES5"
     }
 }
