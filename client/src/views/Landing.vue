@@ -1,124 +1,65 @@
 <template>
   <div class="landing">
-    <h1>Overview</h1>
-    <div class="content-inner-container">
-      <OverviewContainer
-        numeral="1"
-        title="Respond to Scenario"
-      >
-        <ul>
-          <li>
-            <font-awesome-icon
-              class="base1"
-              icon="circle"
-            /> Read and respond to the scenario presented
-          </li>
-          <li>
-            <font-awesome-icon
-              class="base1"
-              icon="circle"
-            /> Score yourself on your confidence in explaining the concept</li>
-          <li>
-            <font-awesome-icon
-              class="base1"
-              icon="circle"
-            /> Make sure to also keep track of the timer in the left sidebar</li>
-        </ul>
-      </OverviewContainer>
-      <OverviewContainer
-        numeral="2"
-        title="Formulate answer with Group"
-      >
-        <ul>
-          <li>
-            <font-awesome-icon
-              class="base2"
-              icon="circle"
-            /> You’ll be put into a group of up to 3 students</li>
-          <li>
-            <font-awesome-icon
-              class="base2"
-              icon="circle"
-            /> Discuss the responses from you and other students</li>
-          <li>
-            <font-awesome-icon
-              class="base2"
-              icon="circle"
-            /> Your group must agree on a best response within chat limit</li>
-        </ul>
-      </OverviewContainer>
-      <OverviewContainer
-        numeral="3"
-        title="Reflect on discussion"
-      >
-        <ul>
-          <li>
-            <font-awesome-icon
-              class="base3"
-              icon="circle"
-            /> Reflect on whether your response changed, and how</li>
-          <li>
-            <font-awesome-icon
-              class="base3"
-              icon="circle"
-            /> Score yourself again on your confidence in explaining the concept
-          </li>
-        </ul>
-      </OverviewContainer>
-      <div class="spacer"></div>
-      <OverviewContainer
-        numeral="4"
-        title="Complete Survey"
-      >
-        <ul>
-          <li>
-            <font-awesome-icon
-              class="base4"
-              icon="circle"
-            /> Fill out a survey about your Think.Chat.Learn experience</li>
-          <li>
-            <font-awesome-icon
-              class="base4"
-              icon="circle"
-            /> Upon completion of the survey you'll be given an attempt id
-          </li>
-        </ul>
-      </OverviewContainer>
-    </div>
+    <h1>Quiz Sessions</h1>
+    <ul class="quiz-list-items" v-if="!selectedQuizSession">
+      <template v-for="pastSession in pastAttemptedQuizSessions">
+        <QuizSessionListItem
+          :heading="pastSession.quiz.title"
+          :subheadings="[`${new Date(pastSession.startTime)}`]"
+          :clickable="true"
+          :actionButton="getPastSessionActionButtonProp(pastSession)"
+          @click="setSelectedQuizSession(pastSession)"
+          @actionClick="setSelectedQuizSession(pastSession)"
+          :key="pastSession.userSessionId"
+        ></QuizSessionListItem>
+      </template>
+
+      <template v-for="quizSession in quizSessions">
+        <QuizSessionListItem
+          :heading="quizSession.title"
+          :subheadings="[`Starts: ${new Date(quizSession.availableStart)}`, `Ends: ${new Date(quizSession.availableEnd)}`]"
+          :clickable="false"
+          :actionButton="getSessionActionButtonProp(quizSession)"
+          @click="() => {}"
+          @actionClick="setSelectedQuizSession(quizSession)"
+          :disabled="!isQuizSessionActive(quizSession)"
+          :key="quizSession._id"
+        ></QuizSessionListItem>
+      </template>
+    </ul>
+
+    <template v-if="selectedQuizSession && pastAttemptedQuizSessions.find((q) => q._id === selectedQuizSession._id)">
+      <button @click="() => selectedQuizSession = null">&lt; Back</button>
+      <Feedback :quizSession="selectedQuizSession" />
+    </template>
     <div class="center margin-top">
       <button
         v-if="quiz && quizAvailable && !quizSession && quizSessionFetched"
         class="primary"
         tag="button"
         @click="startQuizSession()"
-      >
-        Start Session
-      </button>
+      >Start Session</button>
       <!-- TODO Style unavailable button -->
       <!-- Note button was used instead of router-link due to @click not being listened -->
       <button
         v-else-if="!quizSession"
-        class="primary"
-      >
-        The quiz is not available for Quiz {{quiz.title}}
-      </button>
-      <button
-        v-else
-        class="primary"
-        tag="button"
-      >
-        No Session Available
-      </button>
+        class="secondary"
+      >The quiz is not available for Quiz {{quiz.title}}</button>
+      <button v-else class="primary" tag="button">No Session Available</button>
     </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
 
+.quiz-list-items {
+  max-height: 50vh;
+  overflow: scroll;
+}
+
 .landing {
   margin-bottom: 175px;
   padding: 1.5em;
-
   @media only screen and (max-width: 1483px) {
     padding: 1.5em;
   }
@@ -135,10 +76,18 @@
       margin-right: 0.5em;
       vertical-align: baseline;
 
-      &.base1 { color: $light-blue; }
-      &.base2 { color: $green; }
-      &.base3 { color: $yellow; }
-      &.base4 { color: $red; }
+      &.base1 {
+        color: $light-blue;
+      }
+      &.base2 {
+        color: $green;
+      }
+      &.base3 {
+        color: $yellow;
+      }
+      &.base4 {
+        color: $red;
+      }
     }
   }
 }
@@ -150,7 +99,7 @@ import {
   IUser,
   IQuiz,
   IQuizSession,
-  IUserSession
+  IUserSession,
 } from "../../../common/interfaces/ToClientData";
 import OverviewContainer from "../components/OverviewContainer.vue";
 import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
@@ -160,13 +109,157 @@ import { WebsocketManager } from "../../../common/js/WebsocketManager";
 import { WebsocketEvents } from "../../../common/js/WebsocketEvents";
 import { EventBus } from "../EventBus";
 import { EmitterEvents } from "../emitters";
+import QuizSessionListItem from "../components/QuizSessionListItem.vue";
+import Feedback from "../components/Feedback.vue";
+import { IQuizSchedule } from "../../../common/interfaces/DBSchema";
+
+export type PastQuizSession = (IQuizSession & { quiz: Partial<IQuiz> } & {
+    overallScore?: number;
+    overallMaximumMarks?: number;
+})
 
 @Component({
   components: {
-    OverviewContainer
-  }
+    OverviewContainer,
+    QuizSessionListItem,
+  },
 })
 export default class Landing extends Vue {
+  selectedQuizSession: any | null = null;
+
+  setSelectedQuizSession(quizSession: any) {
+    this.selectedQuizSession = quizSession;
+  }
+
+  getPastSessionActionButtonProp(pastSession: PastQuizSession) {
+    if (!pastSession) return undefined;
+    return {
+      mode: "text",
+      text: pastSession.overallScore
+        ? `${pastSession.overallScore}/${pastSession.overallMaximumMarks}`
+        : "MARKING",
+    };
+  }
+
+  getSessionActionButtonProp(quizSession: any) {
+    if (!quizSession) return undefined;
+    const isActive = this.isQuizSessionActive(quizSession);
+    return isActive
+      ? {
+          mode: "green",
+          text: "LAUNCH",
+        }
+      : undefined;
+  }
+
+  isQuizSessionActive(quizSession: any) {
+    if (!quizSession || !quizSession.availableStart) return false;
+    return quizSession.availableStart < Date.now();
+  }
+
+  pastSessionClickHandler(pastSession: any) {
+    alert("hello");
+  }
+
+  quizSessionClickHandler(quizSession: any) {
+    alert("Clicked session ...");
+  }
+
+  isSelectedQuizSessionAttempted() {
+
+  }
+  get pastAttemptedQuizSessions(): PastQuizSession[] {
+    return [
+      {
+        _id: 'aspdlasdsad',
+        quizId: "5f44b6c0261ab5499566b738",
+        userSessionId: "5f44b6db261ab5499566b739----1",
+        responses: ["5f44b6eb261ab5499566b73b"],
+        startTime: 1598338780528,
+        complete: true,
+        quiz: {
+          title: "TCL Session 1",
+          course: "ENGG1234",
+          pages: [],
+          markingConfiguration: { maximumMarks: 5, allowMultipleMarkers: true },
+        },
+        overallScore: 12,
+        overallMaximumMarks: 15,
+      },
+      {
+        quizId: "5f44b6c0261ab5499566b738",
+        userSessionId: "5f44b6db261ab5499566b739----2",
+        responses: ["5f44b6eb261ab5499566b73b"],
+        startTime: 1598338780528,
+        complete: true,
+        quiz: {
+          title: "TCL Session 1",
+          course: "ENGG1234",
+          pages: [],
+          markingConfiguration: { maximumMarks: 5, allowMultipleMarkers: true },
+        },
+        overallMaximumMarks: 15,
+      },
+    ];
+  }
+
+  get quizSessions(): Partial<IQuiz>[] {
+    return [
+      {
+        _id: "abc123",
+        availableStart: new Date(Date.now() - 10000),
+        availableEnd: new Date(Date.now() + 1000000),
+        title: "TCL Session 2",
+        course: "ENGG1234",
+      },
+      {
+        _id: "xyz2322",
+        availableStart: new Date(Date.now() + Date.now()),
+        availableEnd: new Date(Date.now() + Date.now() + 50000),
+        title: "TCL Session 3",
+        course: "ENGG1234",
+      },
+      {
+        _id: "xyz23231",
+        availableStart: new Date(Date.now() + Date.now()),
+        availableEnd: new Date(Date.now() + Date.now() + 50000),
+        title: "TCL Session 3",
+        course: "ENGG1234",
+      },
+      {
+        _id: "xyz231232",
+        availableStart: new Date(Date.now() + Date.now()),
+        availableEnd: new Date(Date.now() + Date.now() + 50000),
+        title: "TCL Session 3",
+        course: "ENGG1234",
+      },
+      {
+        _id: "xyz212312332",
+        availableStart: new Date(Date.now() + Date.now()),
+        availableEnd: new Date(Date.now() + Date.now() + 50000),
+        title: "TCL Session 3",
+        course: "ENGG1234",
+      },
+      {
+        _id: "xy123123z232",
+        availableStart: new Date(Date.now() + Date.now()),
+        availableEnd: new Date(Date.now() + Date.now() + 50000),
+        title: "TCL Session 3",
+        course: "ENGG1234",
+      },
+      {
+        _id: "xyz231231232",
+        availableStart: new Date(Date.now() + Date.now()),
+        availableEnd: new Date(Date.now() + Date.now() + 50000),
+        title: "TCL Session 3",
+        course: "ENGG1234",
+      },
+    ];
+  }
+
+  isQuizSessionMarked(quizSession: any) {
+    return quizSession.overallScore;
+  }
   get user(): IUser | null {
     return this.$store.getters.user;
   }
@@ -219,7 +312,7 @@ export default class Landing extends Vue {
     const outgoingQuizSession: IQuizSession = {
       quizId: this.quiz!._id,
       userSessionId: this.userSession!._id,
-      responses: []
+      responses: [],
     };
 
     this.$store
@@ -228,7 +321,7 @@ export default class Landing extends Vue {
         this.socket!.emitData<IWSToServerData.StoreSession>(
           WebsocketEvents.OUTBOUND.STORE_QUIZ_SESSION_SOCKET,
           {
-            quizSessionId: this.quizSession!._id!
+            quizSessionId: this.quizSession!._id!,
           }
         );
         EventBus.$emit(

@@ -108,3 +108,5 @@ server/config/production/*
 __deploy
 *.Conf.ts
 temp.*
+
+.DS_Store
