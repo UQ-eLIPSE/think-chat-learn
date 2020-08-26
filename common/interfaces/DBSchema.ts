@@ -142,7 +142,9 @@ export interface ElipssMarkValue {
 export interface MarkCriteria {
   value: number | null;
   criteriaId: string;
+  feedback?: string;
 }
+
 // Depending on what needs to be done, we could theoretically just remove the enum from existence
 export interface Mark extends Document {
   marks: MarkCriteria[];

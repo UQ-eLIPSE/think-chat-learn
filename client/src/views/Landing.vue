@@ -122,6 +122,7 @@ export type PastQuizSession = (IQuizSession & { quiz: Partial<IQuiz> } & {
   components: {
     OverviewContainer,
     QuizSessionListItem,
+    Feedback
   },
 })
 export default class Landing extends Vue {
