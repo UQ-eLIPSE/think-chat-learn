@@ -206,6 +206,18 @@ export default class Feedback extends Vue {
             feedback:
               "This is some dummy text to be replaced by actual feedback. There was a good attempt at evaluating but there was something missing in your response.  There was a good attempt at evaluating but there was something missing in your response. However, There was a good attempt at evaluating but there was something missing in your response.",
           },
+          {
+            value: 3,
+            criteriaId: "5f44b66a261ab5499566b72d",
+            feedback:
+              "This is some dummy text to be replaced by actual feedback. There was a good attempt at evaluating but there was something missing in your response.  There was a good attempt at evaluating but there was something missing in your response. However, There was a good attempt at evaluating but there was something missing in your response.",
+          },
+          {
+            value: 4,
+            criteriaId: "5f44b66a261ab5499566b72e",
+            feedback:
+              "This is some dummy text to be replaced by actual feedback. There was a good attempt at evaluating but there was something missing in your response.  There was a good attempt at evaluating but there was something missing in your response. However, There was a good attempt at evaluating but there was something missing in your response.",
+          },
         ],
         feedback: "",
       };
@@ -254,9 +266,21 @@ export default class Feedback extends Vue {
   align-items: center;
 }
 
+.overall-score {
+  display: flex;
+  align-items: center;
+  > * {
+    padding: 0.5rem;
+  }
+  h3 {
+    margin: 0;
+  }
+}
+
 .feedback-header {
   justify-content: space-between;
   align-items: center;
+  padding: 1rem 0;
 }
 
 .row {
