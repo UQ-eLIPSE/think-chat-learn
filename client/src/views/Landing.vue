@@ -28,8 +28,10 @@
       </template>
     </ul>
 
-    <template v-if="selectedQuizSession && pastAttemptedQuizSessions.find((q) => q._id === selectedQuizSession._id)">
-      <button @click="() => selectedQuizSession = null">&lt; Back</button>
+    <template
+      v-if="selectedQuizSession && pastAttemptedQuizSessions.find((q) => q._id === selectedQuizSession._id)"
+    >
+      <div><button class="primary back-button" @click="() => selectedQuizSession = null">&lt; Back</button></div>
       <Feedback :quizSession="selectedQuizSession" />
     </template>
     <div class="center margin-top">
@@ -51,7 +53,6 @@
 </template>
 
 <style lang="scss" scoped>
-
 .quiz-list-items {
   max-height: 50vh;
   overflow: scroll;
@@ -91,6 +92,15 @@
     }
   }
 }
+
+.back-button {
+  min-width: 5rem;
+  width: 5rem;
+  font-size: 0.8em;
+  height: 1.5rem;
+  padding: 0 0.5rem;
+}
+
 </style>
 
 <script lang="ts">
@@ -113,16 +123,16 @@ import QuizSessionListItem from "../components/QuizSessionListItem.vue";
 import Feedback from "../components/Feedback.vue";
 import { IQuizSchedule } from "../../../common/interfaces/DBSchema";
 
-export type PastQuizSession = (IQuizSession & { quiz: Partial<IQuiz> } & {
-    overallScore?: number;
-    overallMaximumMarks?: number;
-})
+export type PastQuizSession = IQuizSession & { quiz: Partial<IQuiz> } & {
+  overallScore?: number;
+  overallMaximumMarks?: number;
+};
 
 @Component({
   components: {
     OverviewContainer,
     QuizSessionListItem,
-    Feedback
+    Feedback,
   },
 })
 export default class Landing extends Vue {
@@ -166,40 +176,77 @@ export default class Landing extends Vue {
     alert("Clicked session ...");
   }
 
-  isSelectedQuizSessionAttempted() {
-
-  }
+  isSelectedQuizSessionAttempted() {}
   get pastAttemptedQuizSessions(): PastQuizSession[] {
     return [
+      // {
+      //   _id: "aspdlasdsad",
+      //   quizId: "5f44b6c0261ab5499566b738",
+      //   userSessionId: "5f44b6db261ab5499566b739----1",
+      //   responses: ["5f44b6eb261ab5499566b73b"],
+      //   startTime: 1598338780528,
+      //   complete: true,
+      //   quiz: {
+      //     title: "TCL Session 1",
+      //     course: "ENGG1234",
+      //     pages: [],
+      //     markingConfiguration: { maximumMarks: 5, allowMultipleMarkers: true },
+      //   },
+      //   overallScore: 12,
+      //   overallMaximumMarks: 15,
+      // },
+      // {
+      //   quizId: "5f44b6c0261ab5499566b738",
+      //   userSessionId: "5f44b6db261ab5499566b739----2",
+      //   responses: ["5f44b6eb261ab5499566b73b"],
+      //   startTime: 1598338780528,
+      //   complete: true,
+      //   quiz: {
+      //     title: "TCL Session 1",
+      //     course: "ENGG1234",
+      //     pages: [],
+      //     markingConfiguration: { maximumMarks: 5, allowMultipleMarkers: true },
+      //   },
+      //   overallMaximumMarks: 15,
+      // },
       {
-        _id: 'aspdlasdsad',
+        _id: "5f4603d4c47d51831e7cac09",
         quizId: "5f44b6c0261ab5499566b738",
-        userSessionId: "5f44b6db261ab5499566b739----1",
-        responses: ["5f44b6eb261ab5499566b73b"],
-        startTime: 1598338780528,
+        userSessionId: "5f4603d3c47d51831e7cac08",
+        responses: ["5f4603e4c47d51831e7cac0a"],
+        startTime: 1598424020972,
         complete: true,
         quiz: {
-          title: "TCL Session 1",
+          _id: "5f44b6c0261ab5499566b738",
+          availableEnd: new Date("2020-08-29T04:10:00.000Z"),
+          availableStart: new Date("2020-08-06T04:09:00.000Z"),
+          title: "Test",
           course: "ENGG1234",
-          pages: [],
-          markingConfiguration: { maximumMarks: 5, allowMultipleMarkers: true },
+          pages: [
+            {
+              title: "Test",
+              content: "<p>Test</p>",
+              type: "QUESTION_ANSWER_PAGE" as any,
+              questionId: "5f44b685261ab5499566b734",
+              timeoutInMins: 0.25,
+              _id: "5f44b6c0261ab5499566b736",
+            },
+            {
+              title: "Discussion",
+              content: "",
+              type: "DISCUSSION_PAGE" as any,
+              questionId: "5f44b685261ab5499566b734",
+              timeoutInMins: 1,
+              displayResponses: true,
+              _id: "5f44b6c0261ab5499566b737",
+            },
+          ],
+          markingConfiguration: { allowMultipleMarkers: true, maximumMarks: 5 },
+          groupSize: 3,
+          rubricId: "5f44b68d261ab5499566b735",
         },
-        overallScore: 12,
-        overallMaximumMarks: 15,
-      },
-      {
-        quizId: "5f44b6c0261ab5499566b738",
-        userSessionId: "5f44b6db261ab5499566b739----2",
-        responses: ["5f44b6eb261ab5499566b73b"],
-        startTime: 1598338780528,
-        complete: true,
-        quiz: {
-          title: "TCL Session 1",
-          course: "ENGG1234",
-          pages: [],
-          markingConfiguration: { maximumMarks: 5, allowMultipleMarkers: true },
-        },
-        overallMaximumMarks: 15,
+        overallScore: 2,
+        overallMaximumMarks: 15
       },
     ];
   }
