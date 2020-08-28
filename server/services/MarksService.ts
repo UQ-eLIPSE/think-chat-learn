@@ -103,6 +103,51 @@ export class MarksService extends BaseService<Mark> {
         })
     }
 
+    public async getOverallScoreForQuizSession(quizSessionId: string): Promise<number | null> {
+        const markObjects = await this.marksRepo.collection.find({
+            quizSessionId: quizSessionId + ''
+        }).toArray();
+
+        if(!markObjects || !markObjects.length) return null;
+
+        // TODO: DECIDE WHICH SET OF MARKS TO USE. CURRENTLY USING THE FIRST RESULT ONLY
+        const markObject = markObjects[0];
+        const marks = markObject.marks || [];
+
+        return marks.reduce((total, mark) => total + (mark.value || 0), 0)
+    }
+
+    public async getOverallMaximumMarksForQuiz(quiz: Partial<IQuiz>): Promise<number | null> {
+        try {
+            if(!(quiz && quiz.rubricId &&
+                quiz.markingConfiguration &&
+                (quiz.markingConfiguration.maximumMarks || quiz.markingConfiguration.maximumMarks === 0))) {
+                throw new Error('Invalid marking values');
+            }
+
+    
+            const referredRubric = await this.rubricRepo.findOne({
+                _id: quiz.rubricId
+            });
+    
+            if (!referredRubric) {
+                throw new Error(`No rubric found of id ${quiz.rubricId}`);
+            }
+    
+            const criteria = await this.criteriaRepo.findByIdArray(referredRubric.criterias);
+
+            if(!criteria || !criteria.length) throw new Error('Criteria not set for quiz');
+
+            const markPerCriterion = quiz.markingConfiguration.maximumMarks;
+
+            return criteria.length * markPerCriterion;
+        } catch(e) {
+            console.error(e.message);
+            return null;
+        }
+        
+    }
+
     public async createOrUpdateMarks(quizSessionId: string, questionId: string, newMarks: Mark): Promise<boolean> {
         const currentMarkerMarks = await this.marksRepo.findAll({
             quizSessionId: quizSessionId

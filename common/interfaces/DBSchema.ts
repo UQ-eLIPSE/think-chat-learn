@@ -243,3 +243,5 @@ export interface IRubric extends Document {
   // Note the string ids
   criterias: string[];
 }
+
+export type PastQuizSessionData = IQuizSession & { quiz?: Partial<IQuiz> } & { overallScore?: number; overallMaximumMarks?: number };

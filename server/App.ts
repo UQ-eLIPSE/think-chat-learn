@@ -160,7 +160,7 @@ export default class App {
         this.quizController = new QuizController(this.quizService);
         this.questionController = new QuestionController(this.questionService);
         this.userSessionController = new UserSessionController(this.userSessionService);
-        this.quizSessionController = new QuizSessionController(this.quizSessionService);
+        this.quizSessionController = new QuizSessionController(this.quizSessionService, this.marksService);
         this.responseController = new ResponseController(this.responseService);
         this.chatGroupController = new ChatGroupController(this.chatGroupService);
         this.marksController = new MarksController(this.marksService);

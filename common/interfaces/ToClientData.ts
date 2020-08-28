@@ -40,6 +40,7 @@ interface GenericLogin {
 export interface LoginResponse extends GenericLogin {
   type: LoginResponseTypes.GENERIC_LOGIN;
   user: IUser;
+  // Stores course code e.g. ENGG1200_X_Y
   courseId: string;
   quizId: string | null;
   available: boolean;

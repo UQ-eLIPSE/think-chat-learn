@@ -11,6 +11,7 @@ import { IUserSession } from "../../../common/interfaces/DBSchema";
 import { LTIRoles } from "../../../common/enums/DBEnums";
 import { QuizScheduleData, LoginResponse, IntermediateLogin,
   LoginResponseTypes } from "../../../common/interfaces/ToClientData";
+import API from "../../../common/js/DB_API";
 
 @Component
 export default class Login extends Vue {
@@ -21,6 +22,15 @@ export default class Login extends Vue {
     setIdToken(q as string);
     const response = getLoginResponse() as LoginResponse | IntermediateLogin;
     await this.$store.dispatch("storeSessionToken", q);
+
+
+
+
+  console.log('Decode Login View token: ', decodeToken(q as string));
+  
+    const attemptedResponse = API.request(API.GET, API.QUIZSESSION + 'attempted', {}, null, q as string);
+    console.log(attemptedResponse);
+
     // If we have a response, fetch more data due to NGINX limitations
     const quizScheduleData: QuizScheduleData = decodeToken(await this.$store.dispatch("handleToken"));
     // If we have a response , set the appropiate data and so on

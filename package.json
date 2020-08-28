@@ -22,6 +22,7 @@
     "build_intermediate": "cd ./intermediate && npm run build",
     "build_intermediate_dev": "cd ./intermediate && npm run build_dev",
     "build_server_main": "tsc --project ./server/tsconfig.json",
+    "build_server_main_watch": "tsc -w --project ./server/tsconfig.json",
     "build_server_copy_static": "copyfiles \"./server/static/**\" ./build",
     "build_server": "npm run build_server_main && npm run build_server_copy_static",
     "build": "npm run clean && npm run build_client && npm run build_server && npm run build_admin && npm run build_intermediate",

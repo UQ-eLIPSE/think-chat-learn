@@ -1,6 +1,6 @@
 import { BaseService } from "./BaseService";
 import { QuizSessionRepository } from "../repositories/QuizSessionRepository";
-import { IQuizSession, Response } from "../../common/interfaces/DBSchema";
+import { IQuizSession, Response, PastQuizSessionData } from "../../common/interfaces/DBSchema";
 import { UserSessionRepository } from "../repositories/UserSessionRepository";
 import { QuizRepository } from "../repositories/QuizRepository";
 import { ResponseRepository } from "../repositories/ResponseRepository";
@@ -89,10 +89,10 @@ export class QuizSessionService extends BaseService<IQuizSession> {
             (checkResponses.findIndex((element) => element === null) !== -1)) {
             return false;
         }
-        
+
         return true;
     }
-    
+
     // Gets the quiz session by the combination of userId and quizId
     public async getQuizSessionbyUserQuiz(userId: string, quizId: string): Promise<IQuizSession | null> {
         // Fetch all user the user sessions
@@ -100,5 +100,37 @@ export class QuizSessionService extends BaseService<IQuizSession> {
         const quizSession = await this.quizSessionRepo.findQuizSessionByUserQuiz(
             usersessions.map((element) => { return element._id! }, []), quizId);
         return quizSession;
+    }
+
+    // Gets the quiz session by the combination of userId and course
+    async getQuizSessionsByUserCourse(userId: string, courseCode: string): Promise<IQuizSession[]> {
+        // Fetch all user the user sessions
+        try {
+            const usersessions = await this.userSessionRepo.findUserSessionsByUserCourse(userId, courseCode);
+            const quizSessions = await this.quizSessionRepo.findQuizSessionsByUserSessions(
+                (usersessions || []).map((element) => { return element._id! }, []));
+
+            return quizSessions || [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    async getAttemptedQuizSessionsDataForUserCourse(userId: string, courseCode: string): Promise<PastQuizSessionData[] | null> {
+        const quizSessions = await this.getQuizSessionsByUserCourse(userId, courseCode);
+        
+        if (!quizSessions) return [];
+
+        return Promise.all(quizSessions.map(async (quizSession) => {
+            const pastQuizSession: PastQuizSessionData = Object.assign({}, quizSession);
+
+            const quiz = await this.quizRepo.findOne({
+                _id: quizSession.quizId
+            });
+
+            pastQuizSession.quiz = quiz || undefined;
+
+            return pastQuizSession;
+        }));
     }
 }
