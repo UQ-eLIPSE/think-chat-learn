@@ -60,13 +60,19 @@ export class QuizController extends BaseController {
         try {
             const decodedToken = req.user as LoginResponse;
             const courseCode = decodedToken.courseId;
+
+            // Check if custom quiz id was passed
+            const customQuizId = decodedToken.quizId;
             if (!courseCode) return res.sendStatus(500);
 
             const quizzes = await this.quizService.getActiveQuizzesWithoutContent(courseCode);
+
             if (!quizzes) return res.sendStatus(500);
 
+            const filteredQuizzes = customQuizId? quizzes.filter((quiz) => quiz._id === customQuizId) : quizzes;
+
             return res.json({
-                quizzes
+                quizzes: filteredQuizzes
             });
         } catch (e) {
             return res.sendStatus(500);
