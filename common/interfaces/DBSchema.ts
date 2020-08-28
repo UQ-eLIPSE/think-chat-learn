@@ -244,4 +244,4 @@ export interface IRubric extends Document {
   criterias: string[];
 }
 
-export type PastQuizSessionData = IQuizSession & { quiz?: Partial<IQuiz> } & { overallScore?: number; overallMaximumMarks?: number };
+export type AttemptedQuizSessionData = IQuizSession & { quiz?: Partial<IQuiz> } & { overallScore?: number; overallMaximumMarks?: number };

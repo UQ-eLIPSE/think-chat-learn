@@ -76,6 +76,46 @@ export class QuizService extends BaseService<IQuiz | IQuizOverNetwork> {
         });
     }
 
+    /**
+     * Fetch limited content of active quizzes for a course
+     * @param courseId 
+     */
+    public async getActiveQuizzesWithoutContent(courseId: string): Promise<Omit<IQuiz, 'groupSize' | 'markingConfiguration' | 'rubricId'>[]> {
+        console.log('getActiveQuizzesWithoutContent:', courseId);
+        const allQuizzes = await this.quizRepo.findAll({
+            course: courseId
+        });
+
+        console.log('All quizzes for course: ', allQuizzes);
+        const activeQuizzes = allQuizzes.filter((quiz) => {
+            if(!quiz.availableStart || !quiz.availableEnd) return false;
+            try {
+                const startDate = new Date(quiz.availableStart);
+                const endDate = new Date(quiz.availableEnd);
+                const now = new Date(Date.now());
+                return (now > startDate) && (now < endDate);
+            } catch(e) {
+                return false;
+            }
+        });
+
+        const activeQuizzesWithoutContent = activeQuizzes.map((activeQuiz) => {
+            (activeQuiz.pages || []).forEach((page) => {
+                page.content = '';
+            });
+
+            // Prevent leaking unnecessary information for active quizzes
+            delete activeQuiz.groupSize;
+            delete activeQuiz.markingConfiguration;
+            delete activeQuiz.rubricId;
+
+            return activeQuiz;
+        });
+        
+        return activeQuizzesWithoutContent;
+    }
+
+
     public async findOne(quizId: string): Promise<IQuiz | null> {
         return this.quizRepo.findOne(quizId);
     }

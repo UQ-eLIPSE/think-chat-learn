@@ -75,17 +75,16 @@ export class QuizSessionController extends BaseController {
         }
     }
 
-    private async getAttemptedQuizSessionByUser(req: express.Request, res: express.Response, next: express.NextFunction | undefined) {
+    private async getPastQuizSessionByUserCourse(req: express.Request, res: express.Response, next: express.NextFunction | undefined) {
         // User has been validated in `checkUserId` middleware
         const decodedToken = req.user as LoginResponse;
 
-        const quizSessionsData = await this.quizSessionService.getAttemptedQuizSessionsDataForUserCourse(decodedToken.user._id!, decodedToken.courseId);
+        const quizSessionsData = await this.quizSessionService.getPastQuizSessionsDataForUserCourse(decodedToken.user._id!, decodedToken.courseId);
         if (!quizSessionsData) return res.json({
             payload: []
         });
 
         await Promise.all(await quizSessionsData.map(async (quizSessionData) => {
-            console.log('Checking quiz session for overallScore: ', quizSessionData._id);
             const overallScore = await this.marksService.getOverallScoreForQuizSession(quizSessionData._id!);
             
             if (overallScore || overallScore === 0) {
@@ -113,6 +112,6 @@ export class QuizSessionController extends BaseController {
             this.findSession.bind(this));
         this.router.post("/fetchByUserQuiz", StudentAuthenticatorMiddleware.checkUserId(), this.getQuizSessionByUserIdAndQuiz.bind(this));
         this.router.get("/quizsession-marking/:quizSessionId", isAdmin(), this.getQuizSessionById.bind(this));
-        this.router.get("/attempted", StudentAuthenticatorMiddleware.checkUserId(), this.getAttemptedQuizSessionByUser.bind(this));
+        this.router.get("/history", StudentAuthenticatorMiddleware.checkUserId(), this.getPastQuizSessionByUserCourse.bind(this));
     }
 }

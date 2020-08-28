@@ -1,9 +1,10 @@
 import { BaseService } from "./BaseService";
 import { QuizSessionRepository } from "../repositories/QuizSessionRepository";
-import { IQuizSession, Response, PastQuizSessionData } from "../../common/interfaces/DBSchema";
+import { IQuizSession, Response, AttemptedQuizSessionData } from "../../common/interfaces/DBSchema";
 import { UserSessionRepository } from "../repositories/UserSessionRepository";
 import { QuizRepository } from "../repositories/QuizRepository";
 import { ResponseRepository } from "../repositories/ResponseRepository";
+import { Utils } from "../../common/js/Utils";
 
 export class QuizSessionService extends BaseService<IQuizSession> {
 
@@ -116,13 +117,21 @@ export class QuizSessionService extends BaseService<IQuizSession> {
         }
     }
 
-    async getAttemptedQuizSessionsDataForUserCourse(userId: string, courseCode: string): Promise<PastQuizSessionData[] | null> {
+    /**
+     * Returns past quiz attempts (quiz sessions) for a specified user and course
+     * A session can be considered a 'past' session if either
+     * * Quiz session has `complete` = true OR
+     * * Current time > (Quiz end time + quiz duration)
+     * @param userId 
+     * @param courseCode 
+     */
+    async getPastQuizSessionsDataForUserCourse(userId: string, courseCode: string): Promise<AttemptedQuizSessionData[] | null> {
         const quizSessions = await this.getQuizSessionsByUserCourse(userId, courseCode);
         
         if (!quizSessions) return [];
 
-        return Promise.all(quizSessions.map(async (quizSession) => {
-            const pastQuizSession: PastQuizSessionData = Object.assign({}, quizSession);
+        const quizSessionsQuizzes = await Promise.all(quizSessions.map(async (quizSession) => {
+            const pastQuizSession: AttemptedQuizSessionData = Object.assign({}, quizSession);
 
             const quiz = await this.quizRepo.findOne({
                 _id: quizSession.quizId
@@ -132,5 +141,25 @@ export class QuizSessionService extends BaseService<IQuizSession> {
 
             return pastQuizSession;
         }));
+
+        if(!quizSessionsQuizzes || quizSessionsQuizzes.length) return [];
+
+        const pastQuizSessions = quizSessionsQuizzes.filter((quizSessionQuiz) => {
+            if(quizSessionQuiz.complete) return true;
+
+            const currentTime = Date.now();
+
+            if(quizSessionQuiz && quizSessionQuiz.quiz && quizSessionQuiz.quiz.pages && quizSessionQuiz.quiz.availableEnd) {
+                const quizDuration = (quizSessionQuiz.quiz.pages || []).reduce((totalTimeInMinutes, page) => totalTimeInMinutes + page.timeoutInMins || 0, 0);
+
+                const maxEndTime = Utils.DateTime.minToMs(quizDuration) + new Date(quizSessionQuiz.quiz.availableEnd).getTime();
+
+                return currentTime > maxEndTime;
+            }
+            
+            return false;
+        });
+
+        return pastQuizSessions;
     }
 }
