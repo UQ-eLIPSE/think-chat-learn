@@ -121,6 +121,7 @@ function checkValidTransition(to: Route, from: Route): boolean {
     (from.name === null && to.name === Names.FEEDBACK_LAUNCHER) ||
     (from.name === Names.LOGIN && to.name === Names.LANDING) ||
     (from.name === Names.LOGIN && to.name === Names.FEEDBACK_LAUNCHER) ||
+    (from.name === Names.FEEDBACK_LAUNCHER && to.name === Names.LANDING) ||
     (from.name === Names.LANDING && to.name === Names.MOOCCHAT_PAGE) ||
     (from.name === Names.MOOCCHAT_PAGE && to.name === Names.GROUP_ALLOCATION) ||
     (from.name === Names.GROUP_ALLOCATION && to.name === Names.MOOCCHAT_PAGE) ||

@@ -80,6 +80,32 @@ export class QuizController extends BaseController {
         }
     }
 
+    /**
+     * Returns active quizzes with limited content
+     * @param req 
+     * @param res 
+     * @param next 
+     */
+    private async getUpcomingQuizWithoutContentByCourse(req: express.Request, res: express.Response, next: express.NextFunction | undefined) {
+        try {
+            const decodedToken = req.user as LoginResponse;
+            const courseCode = decodedToken.courseId;
+
+            if (!courseCode) return res.sendStatus(500);
+
+            const quizzes = await this.quizService.getUpcomingQuizzesWithoutContent(courseCode);
+
+            if (!quizzes) return res.sendStatus(500);
+
+            return res.json({
+                success: true,
+                payload: quizzes || []
+            });
+        } catch (e) {
+            return res.sendStatus(500);
+        }
+    }
+
     private getQuizByCourse(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
         this.quizService.getQuizzes(req.params.courseId).then((quizzes) => {
             res.json({
@@ -96,5 +122,6 @@ export class QuizController extends BaseController {
         this.router.delete("/delete/:questionId", isAdmin(), this.deleteQuiz.bind(this));
         this.router.get("/course/:courseId", isAdmin(), this.getQuizByCourse.bind(this));
         this.router.get("/active", StudentAuthenticatorMiddleware.checkUserId(), this.getActiveQuizWithoutContentByCourse.bind(this));
+        this.router.get("/upcoming", StudentAuthenticatorMiddleware.checkUserId(), this.getUpcomingQuizWithoutContentByCourse.bind(this));
     }
 }

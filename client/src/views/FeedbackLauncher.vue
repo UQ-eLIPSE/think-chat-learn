@@ -6,10 +6,11 @@
       </span> Quiz Sessions
     </h1>
     <ul class="quiz-list-items" v-if="!selectedQuizSession">
+      <!-- <div class="title-strip blue">COMPLETED</div> -->
       <template v-for="pastSession in pastAttemptedQuizSessions">
         <QuizSessionListItem
           :heading="pastSession.quiz.title"
-          :subheadings="[`${new Date(pastSession.startTime)}`]"
+          :subheadings="[`${new Date(pastSession.startTime).toLocaleString()}`]"
           :clickable="true"
           :actionButton="getPastSessionActionButtonProp(pastSession)"
           @click="setSelectedQuizSession(pastSession)"
@@ -17,11 +18,25 @@
           :key="pastSession.userSessionId"
         ></QuizSessionListItem>
       </template>
-
+      <!-- <div class="title-strip green">AVAILABLE</div> -->
       <template v-for="quizSession in quizzes">
         <QuizSessionListItem
           :heading="quizSession.title"
-          :subheadings="[`Starts: ${new Date(quizSession.availableStart)}`, `Ends: ${new Date(quizSession.availableEnd)}`]"
+          :subheadings="[`Starts: ${new Date(quizSession.availableStart).toLocaleString()}`, `Ends: ${new Date(quizSession.availableEnd).toLocaleString()}`]"
+          :clickable="false"
+          :actionButton="getSessionActionButtonProp(quizSession)"
+          @click="() => {}"
+          @actionClick="launchActiveQuiz(quizSession._id)"
+          @actionClick2="setSelectedQuizSession(quizSession)"
+          :disabled="!isQuizSessionActive(quizSession)"
+          :key="quizSession._id"
+        ></QuizSessionListItem>
+      </template>
+      <!-- <div class="title-strip grey">UPCOMING</div> -->
+      <template v-for="quizSession in upcomingQuizzes">
+        <QuizSessionListItem
+          :heading="quizSession.title"
+          :subheadings="[`Starts: ${new Date(quizSession.availableStart).toLocaleString()}`, `Ends: ${new Date(quizSession.availableEnd).toLocaleString()}`]"
           :clickable="false"
           :actionButton="getSessionActionButtonProp(quizSession)"
           @click="() => {}"
@@ -84,6 +99,7 @@ export default class FeedbackLauncher extends Vue {
   selectedQuizSession: any | null = null;
   pastQuizSessions: PastQuizSession[] = [];
   availableQuizzes: Partial<IQuiz>[] = [];
+  upcomingQuizzes: Partial<IQuiz>[] = [];
 
   setSelectedQuizSession(quizSession: any) {
     this.selectedQuizSession = quizSession;
@@ -123,6 +139,65 @@ export default class FeedbackLauncher extends Vue {
     alert("Clicked session ...");
   }
 
+  async launchActiveQuiz(quizId: string) {
+    // Launch quiz
+    try {
+      const tokenResponse = await API.request(
+        API.POST,
+        API.USER + "/launch-quiz",
+        { quizId: quizId },
+        undefined,
+        getIdToken()
+      );
+      if (!tokenResponse || !tokenResponse.payload) {
+        console.error("JWT sign error. Please contact administrator");
+      }
+
+      setIdToken(tokenResponse.payload);
+
+      const response = getLoginResponse() as LoginResponse | IntermediateLogin;
+
+      await this.$store.dispatch("storeSessionToken", tokenResponse.payload);
+
+      // const loginResponse = decodeToken(tokenResponse.payload as string) as LoginResponse;
+
+      const quizScheduleData: QuizScheduleData = decodeToken(
+        await this.$store.dispatch("handleToken")
+      );
+      console.log('response loginResponse: ', response);
+      // If we have a response , set the appropriate data and so on
+      if (response) {
+        await this.$store.dispatch("setUser", response.user);
+        await this.$store.dispatch(
+          "setQuiz",
+          quizScheduleData.quiz
+            ? convertNetworkQuizIntoQuiz(quizScheduleData.quiz)
+            : null
+        );
+        await this.$store.dispatch("setQuestions", quizScheduleData.questions);
+        await this.$store.dispatch("setAvailability", response.available);
+        // Don't send the end time
+        const session: IUserSession = {
+          userId: response.user._id,
+          course: response.courseId,
+          startTime: Date.now(),
+        };
+        await this.$store.dispatch("createSession", session);
+
+        if (response.type === LoginResponseTypes.INTERMEDIATE_LOGIN) {
+          await this.$store.dispatch(
+            "retrieveQuizSession",
+            response.quizSessionId
+          );
+        }
+
+        this.$router.push("/");
+      }
+    } catch (e) {
+      console.error("JWT sign error. Please contact administrator");
+      return;
+    }
+  }
   // isSelectedQuizSessionAttempted() {}
   get pastAttemptedQuizSessions(): PastQuizSession[] {
     return this.pastQuizSessions;
@@ -293,12 +368,30 @@ export default class FeedbackLauncher extends Vue {
       "availableQuizzes",
       (activeQuizzes && activeQuizzes.payload) || []
     );
-    console.log("Active: ", this.availableQuizzes);
+  }
+
+  async fetchUpcomingQuizzes() {
+    const q = getIdToken();
+
+    const activeQuizzes = await API.request(
+      API.GET,
+      API.QUIZ + "upcoming",
+      {},
+      undefined,
+      q as string
+    );
+    // this.availableQuizzes = (activeQuizzes && activeQuizzes.payload) || [];
+    this.$set(
+      this,
+      "upcomingQuizzes",
+      (activeQuizzes && activeQuizzes.payload) || []
+    );
   }
 
   private async mounted() {
     await this.fetchPastSessions();
     await this.fetchActiveQuizzes();
+    await this.fetchUpcomingQuizzes();
 
     // const q = this.$route.query.q;
     // // Essentially redirects to the main page assuming login is correct
@@ -377,6 +470,23 @@ export default class FeedbackLauncher extends Vue {
 
   .feedback {
     padding: 0.5rem;
+  }
+
+  .title-strip {
+    font-size: 0.8em;
+    color: white;
+    height: 1rem;
+    &.green {
+      background-color: rgba(green, 0.5);
+    }
+
+    &.blue {
+      background: rgba(navy, 0.5);
+    }
+
+    &.grey {
+      background: grey;
+    }
   }
 }
 </style>

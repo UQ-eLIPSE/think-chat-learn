@@ -13,8 +13,6 @@
         <router-view class="router-panel" />
       </div>
     </section>
-      <div class="info"><font-awesome-icon icon="info-circle" /> If you encounter connection issues with Think.Chat.Learn, close this window/tab and relaunch Think.Chat.Learn from Blackboard. (Your progress will be saved) </div>
-
     <Footer />
   </div>
 </template>

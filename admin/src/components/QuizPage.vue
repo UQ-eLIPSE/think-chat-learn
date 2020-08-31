@@ -13,10 +13,10 @@
               <v-text-field label="Title" v-model="quizTitle" outline :rules="[existenceRule]" />
             </b-field>
           </v-flex>
-          <v-flex xs12>
+          <v-flex xs3>
             <!-- In order to create rules, we need to use Vue components instead. Menu with one item is essentially a drop down -->
             <!-- Also v-on syntax is Vue 2.6+ -->
-            <b-field label="Select the start date">
+            <b-field label="Start date">
               <v-menu
                 ref="startDateMenu"
                 v-model="startDateShow"
@@ -41,8 +41,8 @@
               </v-menu>
             </b-field>
           </v-flex>
-          <v-flex xs12>
-            <b-field label="Select a start time">
+          <v-flex xs3>
+            <b-field label="Start time">
               <v-menu
                 ref="startTimeMenu"
                 v-model="startTimeShow"
@@ -65,8 +65,8 @@
               </v-menu>
             </b-field>
           </v-flex>
-          <v-flex xs12>
-            <b-field label="Select the end date">
+          <v-flex xs3>
+            <b-field label="End date">
               <v-menu
                 ref="endDateMenu"
                 v-model="endDateShow"
@@ -90,8 +90,8 @@
               </v-menu>
             </b-field>
           </v-flex>
-          <v-flex xs12>
-            <b-field label="Select an end time">
+          <v-flex xs3>
+            <b-field label="End time">
               <v-menu
                 ref="endTimeMenu"
                 v-model="endTimeShow"

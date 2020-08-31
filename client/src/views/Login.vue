@@ -34,28 +34,12 @@ export default class Login extends Vue {
     const loginResponse = decodeToken(q as string) as LoginResponse;
 
     console.log("Decode Login View token: ", decodeToken(q as string));
+    
+    await this.$store.dispatch("setUser", response.user);
 
     this.$router.push({ name: Names.FEEDBACK_LAUNCHER });
     console.log('After router push');
-    // const attemptedResponse = await API.request(
-    //   API.GET,
-    //   API.QUIZSESSION + "history",
-    //   {},
-    //   undefined,
-    //   q as string
-    // );
 
-    // console.log("Past: ", attemptedResponse);
-    // const activeQuizzes = API.request(
-    //   API.GET,
-    //   API.QUIZ + "active",
-    //   {},
-    //   undefined,
-    //   q as string
-    // );
-    // console.log("Active: ", activeQuizzes);
-
-      
     // // If we have a response, fetch more data due to NGINX limitations
     // const quizScheduleData: QuizScheduleData = decodeToken(
     //   await this.$store.dispatch("handleToken")

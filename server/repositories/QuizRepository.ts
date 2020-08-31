@@ -15,4 +15,20 @@ export class QuizRepository extends BaseRepository<IQuiz>{
             }
         });
     }
+
+    public async findAvailableQuizzesInCourse(courseId: string) {
+        const availableQuizzes = await this.collection.find({
+            course: courseId,
+            availableStart: {
+                $lt: new Date()
+            },
+            availableEnd: {
+                $gt: new Date()
+            }
+        }).toArray();
+
+        if(!availableQuizzes) return [];
+
+        return (availableQuizzes || []).map((q) => this.convertDocumentToItem(q));
+    }
 }

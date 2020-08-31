@@ -5,6 +5,8 @@ import { UserService } from "../services/UserService";
 import { ILTIData } from "../../common/interfaces/ILTIData";
 import { Conf } from "../config/Conf";
 import { isAdmin } from "../js/auth/AdminPageAuth";
+import { StudentAuthenticatorMiddleware } from "../js/auth/StudentPageAuth";
+import { LoginResponse } from "../../common/interfaces/ToClientData";
 
 export class UserController extends BaseController {
 
@@ -76,6 +78,26 @@ export class UserController extends BaseController {
         });
     }
 
+    private async launchQuizById(req: express.Request, res: express.Response, next: express.NextFunction | undefined) {
+        console.log('Launchquizbyid');
+        const decodedToken = req.user as LoginResponse;
+        const quizId = req.body.quizId;
+        const courseId = decodedToken.courseId;
+
+        if(!quizId || !decodedToken || !courseId) return res.sendStatus(500);
+        
+        const available = await this.userService.isQuizIdActiveForUserCourse(courseId, quizId);
+
+        if(available) {
+            const token = jwt.sign(Object.assign({}, req.user, { quizId, available }), Conf.jwt.SECRET, { expiresIn: Conf.jwt.TOKEN_LIFESPAN });
+            return res.json({
+                payload: token
+            }).status(200);
+        }
+
+        return res.sendStatus(500);
+    }
+
     private getPageByIds(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
         this.userService.handlePageRequest(req.body.quizId, req.body.pageId, req.body.quizSessionId, req.body.groupId).then((output) => {
             res.json(output);
@@ -111,6 +133,7 @@ export class UserController extends BaseController {
         this.router.post("/login", this.handleLoginWrapper.bind(this), this.handleLTILogin.bind(this));
         this.router.post("/intermediate-register", this.registerIntermediate.bind(this));
         this.router.post("/me", this.refreshToken.bind(this));
+        this.router.post("/launch-quiz", StudentAuthenticatorMiddleware.checkUserId(), this.launchQuizById.bind(this));
         this.router.post("/handleToken", this.getQuizByToken.bind(this));
         this.router.post("/page", this.getPageByIds.bind(this));
         this.router.post("/reconnectData", this.getQuizQuestionForReconnect.bind(this));

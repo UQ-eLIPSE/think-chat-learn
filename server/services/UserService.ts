@@ -23,6 +23,7 @@ import { ResponseRepository } from "../repositories/ResponseRepository";
 import { CourseRepository } from "../repositories/CourseRepository";
 import { CriteriaRepository } from "../repositories/CriteriaRepository";
 import { RubricRepository } from "../repositories/RubricRepository";
+import { ObjectID } from "mongodb";
 export class UserService extends BaseService<IUser> {
 
     protected readonly userRepo: UserRepository;
@@ -511,6 +512,19 @@ export class UserService extends BaseService<IUser> {
             return output;
         }
         throw Error("Invalid login");
+    }
+
+
+    async isQuizIdActiveForUserCourse(courseId: string, quizId: string) {
+        try {
+            const quizzes = await this.quizRepo.findAvailableQuizzesInCourse(courseId)
+            const requestedQuizInQuizzes = quizzes.find((quiz) => quiz._id === quizId);
+
+            return requestedQuizInQuizzes;
+        } catch(e) {
+            console.error('Quiz active check error');
+            return false;
+        }
     }
 }
 
