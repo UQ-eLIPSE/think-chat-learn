@@ -6,8 +6,7 @@
       </span> Quiz Sessions
     </h1>
     <ul class="quiz-list-items" v-if="!selectedQuizSession">
-      <template v-for="(pastSession, i) in pastAttemptedQuizSessions">
-        <span :key="i">{{ pastSession._id }}</span>
+      <template v-for="pastSession in pastAttemptedQuizSessions">
         <QuizSessionListItem
           :heading="pastSession.quiz.title"
           :subheadings="[`${new Date(pastSession.startTime)}`]"

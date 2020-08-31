@@ -23,12 +23,18 @@
                                :value="m" />
                     </label>
                 </td>
+                <td>
+                    <textarea v-if="marks" placeholder="Comments ..."
+                        v-model="marks.marks[index].feedback"></textarea>
+                </td>
             </tr>
         </table>
-        <!-- <label> Feedback
-                                <textarea v-if="marks"
-                                          v-model="marks.mark.feedbackText"></textarea>
-                            </label> -->
+        
+        <div class="general-feedback"> <h3>General Feedback</h3>
+            <textarea v-if="marks"
+                placeholder="General feedback ..."
+                v-model="marks.feedback"></textarea>
+        </div>
 
     </div>
 </template>
@@ -75,7 +81,8 @@ export default class MarkingComponent extends Vue {
                 missingCriterias.forEach((mark) => {
                   marks!.marks.push({
                     criteriaId: mark._id!,
-                    value: 0
+                    value: 0,
+                    feedback: ''
                   });
                 });
 
@@ -263,6 +270,14 @@ export default class MarkingComponent extends Vue {
 }
 </script>
 <style scoped>
+.general-feedback {
+    padding: 0.5rem;
+
+}
+
+.general-feedback > textarea {
+    background: white;
+}
 .sidebar {
     color: white;
     text-shadow: rgb(85, 85, 85) 0.05em 0.05em 0.05em;

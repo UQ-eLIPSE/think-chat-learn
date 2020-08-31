@@ -23,7 +23,9 @@
           <tr v-for="(markRow, i) in markRows" :key="`markRow-${i}`">
             <td>{{ markRow.criterionName }}</td>
             <td class="tooltip">
-              (i)
+              <span class="icon-container">
+                <font-awesome-icon icon="info-circle" />
+              </span>
               <span class="tooltiptext">{{ markRow.criterionDescription }}</span>
             </td>
             <td>{{ markRow.score }}</td>
@@ -31,10 +33,19 @@
           </tr>
         </tbody>
       </table>
+      
       <div v-else>
         <!-- Marks not available -->
         <h1 class="faded">- Grades not available -</h1>
       </div>
+
+
+      <div class="general-feedback" v-if="marksObject && marksObject.feedback">
+        <h4 >General Feedback</h4>
+        <span>{{ marksObject.feedback }}</span>
+      </div>
+      
+      
     </template>
   </div>
 </template>
@@ -138,7 +149,7 @@ export default class Feedback extends Vue {
     // TODO: Make network request
 
     try {
-      const rubricWithCriteria = await await API.request(
+      const rubricWithCriteria = await API.request(
         API.GET,
         API.RUBRIC + `${rubricId}/criteria`,
         {},
@@ -184,10 +195,20 @@ export default class Feedback extends Vue {
    */
   async fetchMarksForQuizSessionId(
     quizSessionId: string
-  ): Promise<Mark | undefined> {
+  ): Promise<Mark | null> {
     // TODO: Make network request
 
     try {
+      const marksResponse = await API.request(
+        API.GET,
+        API.MARKS + `student/quizSession/${quizSessionId}`,
+        {},
+        undefined
+      );
+
+      if(!marksResponse || !marksResponse.payload || !marksResponse.payload.length) throw new Error('Could not fetch marks for quiz session');
+      
+      return marksResponse.payload[0];
       return {
         _id: "5f460413c47d51831e7cac0d",
         quizSessionId: "5f4603d4c47d51831e7cac09",
@@ -219,7 +240,10 @@ export default class Feedback extends Vue {
         ],
         feedback: "",
       };
-    } catch (e) {}
+    } catch (e) {
+      console.error(e.message);
+      return null;
+    }
   }
 
   async mounted() {
@@ -345,5 +369,12 @@ export default class Feedback extends Vue {
 .tooltip:hover .tooltiptext {
   visibility: visible;
   opacity: 1;
+}
+
+.general-feedback {
+  padding: 1rem 0.5rem;
+  > h4 {
+    color: $uq;
+  }
 }
 </style>

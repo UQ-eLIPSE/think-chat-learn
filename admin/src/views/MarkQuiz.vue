@@ -1,9 +1,16 @@
 <template>
   <v-container v-if="q">
-      <h3 class="text-xs-center">Quiz Title: {{ q.title }}</h3>
-      <p class="text-xs-center">Quiz ID: {{q._id}}</p>
-      <p class="text-xs-center"><b>Available Start:</b> {{ new Date(q.availableStart).toLocaleString() }}</p>
-      <p class="text-xs-center"><b>Available End:</b> {{ new Date(q.availableEnd).toLocaleString() }}</p>
+      
+      <div class="flex-row justify-space-around">
+        <h3 class="text-xs-center">Quiz Title: {{ q.title }}</h3>
+        <p class="text-xs-center">Quiz ID: {{q._id}}</p>
+      </div>
+
+      <div class="flex-row justify-space-around">
+        <p><b>Available Start:</b> {{ new Date(q.availableStart).toLocaleString() }}</p>
+        <p><b>Available End:</b> {{ new Date(q.availableEnd).toLocaleString() }}</p>
+      </div>
+      
       <v-form>
         <v-container fluid grid-list-md>
           <v-layout row wrap>
@@ -408,6 +415,20 @@ export default class MarkQuiz extends Vue {
 </script>
 <style lang="scss" scoped>
 @import "../../css/variables.scss";
+
+.flex-row {
+  display: flex;
+}
+
+.justify-space-between {
+  justify-content: space-between;
+}
+
+.justify-space-around {
+  justify-content: space-around;
+}
+
+
 .sidebar {
   color: white;
   text-shadow: rgb(85, 85, 85) 0.05em 0.05em 0.05em;
