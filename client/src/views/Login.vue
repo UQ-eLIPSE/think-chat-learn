@@ -10,6 +10,7 @@ import {
 import { convertNetworkQuizIntoQuiz } from "../../../common/js/NetworkDataUtils";
 import { IUserSession } from "../../../common/interfaces/DBSchema";
 import { LTIRoles } from "../../../common/enums/DBEnums";
+
 import {
   QuizScheduleData,
   LoginResponse,
@@ -17,6 +18,7 @@ import {
   LoginResponseTypes,
 } from "../../../common/interfaces/ToClientData";
 import API from "../../../common/js/DB_API";
+import { Names } from "../router";
 
 @Component
 export default class Login extends Vue {
@@ -33,57 +35,59 @@ export default class Login extends Vue {
 
     console.log("Decode Login View token: ", decodeToken(q as string));
 
-    const attemptedResponse = await API.request(
-      API.GET,
-      API.QUIZSESSION + "history",
-      {},
-      null,
-      q as string
-    );
+    this.$router.push({ name: Names.FEEDBACK_LAUNCHER });
+    console.log('After router push');
+    // const attemptedResponse = await API.request(
+    //   API.GET,
+    //   API.QUIZSESSION + "history",
+    //   {},
+    //   undefined,
+    //   q as string
+    // );
 
-    console.log("Past: ", attemptedResponse);
-    const activeQuizzes = API.request(
-      API.GET,
-      API.QUIZ + "active",
-      {},
-      null,
-      q as string
-    );
-    console.log("Active: ", activeQuizzes);
+    // console.log("Past: ", attemptedResponse);
+    // const activeQuizzes = API.request(
+    //   API.GET,
+    //   API.QUIZ + "active",
+    //   {},
+    //   undefined,
+    //   q as string
+    // );
+    // console.log("Active: ", activeQuizzes);
 
       
-    // If we have a response, fetch more data due to NGINX limitations
-    const quizScheduleData: QuizScheduleData = decodeToken(
-      await this.$store.dispatch("handleToken")
-    );
-    // If we have a response , set the appropriate data and so on
-    if (response) {
-      await this.$store.dispatch("setUser", response.user);
-      await this.$store.dispatch(
-        "setQuiz",
-        quizScheduleData.quiz
-          ? convertNetworkQuizIntoQuiz(quizScheduleData.quiz)
-          : null
-      );
-      await this.$store.dispatch("setQuestions", quizScheduleData.questions);
-      await this.$store.dispatch("setAvailability", response.available);
-      // Don't send the end time
-      const session: IUserSession = {
-        userId: response.user._id,
-        course: response.courseId,
-        startTime: Date.now(),
-      };
-      await this.$store.dispatch("createSession", session);
+    // // If we have a response, fetch more data due to NGINX limitations
+    // const quizScheduleData: QuizScheduleData = decodeToken(
+    //   await this.$store.dispatch("handleToken")
+    // );
+    // // If we have a response , set the appropriate data and so on
+    // if (response) {
+    //   await this.$store.dispatch("setUser", response.user);
+    //   await this.$store.dispatch(
+    //     "setQuiz",
+    //     quizScheduleData.quiz
+    //       ? convertNetworkQuizIntoQuiz(quizScheduleData.quiz)
+    //       : null
+    //   );
+    //   await this.$store.dispatch("setQuestions", quizScheduleData.questions);
+    //   await this.$store.dispatch("setAvailability", response.available);
+    //   // Don't send the end time
+    //   const session: IUserSession = {
+    //     userId: response.user._id,
+    //     course: response.courseId,
+    //     startTime: Date.now(),
+    //   };
+    //   await this.$store.dispatch("createSession", session);
 
-      if (response.type === LoginResponseTypes.INTERMEDIATE_LOGIN) {
-        await this.$store.dispatch(
-          "retrieveQuizSession",
-          response.quizSessionId
-        );
-      }
+    //   if (response.type === LoginResponseTypes.INTERMEDIATE_LOGIN) {
+    //     await this.$store.dispatch(
+    //       "retrieveQuizSession",
+    //       response.quizSessionId
+    //     );
+    //   }
 
-      this.$router.push("/");
-    }
+    //   this.$router.push("/");
+    // }
   }
 }
 </script>

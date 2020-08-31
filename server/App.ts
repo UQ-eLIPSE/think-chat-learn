@@ -153,7 +153,7 @@ export default class App {
             this.userSessionRepository, this.userRepository, this.rubricRepository, this.criteriaRepository);
         this.criteriaService = new CriteriaService(this.criteriaRepository);
         this.courseService = new CourseService(this.courseRepository);
-        this.rubricService = new RubricService(this.rubricRepository);
+        this.rubricService = new RubricService(this.rubricRepository, this.criteriaRepository);
 
         // Controllers
         this.userController = new UserController(this.userService);

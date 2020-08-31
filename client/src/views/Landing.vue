@@ -1,6 +1,6 @@
 <template>
   <div class="landing">
-    <h1>Quiz Sessions</h1>
+    <!-- <h1>Quiz Sessions</h1>
     <ul class="quiz-list-items" v-if="!selectedQuizSession">
       <template v-for="pastSession in pastAttemptedQuizSessions">
         <QuizSessionListItem
@@ -31,9 +31,11 @@
     <template
       v-if="selectedQuizSession && pastAttemptedQuizSessions.find((q) => q._id === selectedQuizSession._id)"
     >
-      <div><button class="primary back-button" @click="() => selectedQuizSession = null">&lt; Back</button></div>
+      <div>
+        <button class="primary back-button" @click="() => selectedQuizSession = null">&lt; Back</button>
+      </div>
       <Feedback :quizSession="selectedQuizSession" />
-    </template>
+    </template> -->
     <div class="center margin-top">
       <button
         v-if="quiz && quizAvailable && !quizSession && quizSessionFetched"
@@ -53,10 +55,6 @@
 </template>
 
 <style lang="scss" scoped>
-.quiz-list-items {
-  max-height: 50vh;
-  overflow: scroll;
-}
 
 .landing {
   margin-bottom: 175px;
@@ -93,14 +91,6 @@
   }
 }
 
-.back-button {
-  min-width: 5rem;
-  width: 5rem;
-  font-size: 0.8em;
-  height: 1.5rem;
-  padding: 0 0.5rem;
-}
-
 </style>
 
 <script lang="ts">
@@ -130,184 +120,11 @@ export type PastQuizSession = IQuizSession & { quiz: Partial<IQuiz> } & {
 
 @Component({
   components: {
-    OverviewContainer,
-    QuizSessionListItem,
-    Feedback,
+    OverviewContainer
   },
 })
 export default class Landing extends Vue {
-  selectedQuizSession: any | null = null;
-
-  setSelectedQuizSession(quizSession: any) {
-    this.selectedQuizSession = quizSession;
-  }
-
-  getPastSessionActionButtonProp(pastSession: PastQuizSession) {
-    if (!pastSession) return undefined;
-    return {
-      mode: "text",
-      text: pastSession.overallScore
-        ? `${pastSession.overallScore}/${pastSession.overallMaximumMarks}`
-        : "MARKING",
-    };
-  }
-
-  getSessionActionButtonProp(quizSession: any) {
-    if (!quizSession) return undefined;
-    const isActive = this.isQuizSessionActive(quizSession);
-    return isActive
-      ? {
-          mode: "green",
-          text: "LAUNCH",
-        }
-      : undefined;
-  }
-
-  isQuizSessionActive(quizSession: any) {
-    if (!quizSession || !quizSession.availableStart) return false;
-    return quizSession.availableStart < Date.now();
-  }
-
-  pastSessionClickHandler(pastSession: any) {
-    alert("hello");
-  }
-
-  quizSessionClickHandler(quizSession: any) {
-    alert("Clicked session ...");
-  }
-
-  isSelectedQuizSessionAttempted() {}
-  get pastAttemptedQuizSessions(): PastQuizSession[] {
-    return [
-      // {
-      //   _id: "aspdlasdsad",
-      //   quizId: "5f44b6c0261ab5499566b738",
-      //   userSessionId: "5f44b6db261ab5499566b739----1",
-      //   responses: ["5f44b6eb261ab5499566b73b"],
-      //   startTime: 1598338780528,
-      //   complete: true,
-      //   quiz: {
-      //     title: "TCL Session 1",
-      //     course: "ENGG1234",
-      //     pages: [],
-      //     markingConfiguration: { maximumMarks: 5, allowMultipleMarkers: true },
-      //   },
-      //   overallScore: 12,
-      //   overallMaximumMarks: 15,
-      // },
-      // {
-      //   quizId: "5f44b6c0261ab5499566b738",
-      //   userSessionId: "5f44b6db261ab5499566b739----2",
-      //   responses: ["5f44b6eb261ab5499566b73b"],
-      //   startTime: 1598338780528,
-      //   complete: true,
-      //   quiz: {
-      //     title: "TCL Session 1",
-      //     course: "ENGG1234",
-      //     pages: [],
-      //     markingConfiguration: { maximumMarks: 5, allowMultipleMarkers: true },
-      //   },
-      //   overallMaximumMarks: 15,
-      // },
-      {
-        _id: "5f4603d4c47d51831e7cac09",
-        quizId: "5f44b6c0261ab5499566b738",
-        userSessionId: "5f4603d3c47d51831e7cac08",
-        responses: ["5f4603e4c47d51831e7cac0a"],
-        startTime: 1598424020972,
-        complete: true,
-        quiz: {
-          _id: "5f44b6c0261ab5499566b738",
-          availableEnd: new Date("2020-08-29T04:10:00.000Z"),
-          availableStart: new Date("2020-08-06T04:09:00.000Z"),
-          title: "Test",
-          course: "ENGG1234",
-          pages: [
-            {
-              title: "Test",
-              content: "<p>Test</p>",
-              type: "QUESTION_ANSWER_PAGE" as any,
-              questionId: "5f44b685261ab5499566b734",
-              timeoutInMins: 0.25,
-              _id: "5f44b6c0261ab5499566b736",
-            },
-            {
-              title: "Discussion",
-              content: "",
-              type: "DISCUSSION_PAGE" as any,
-              questionId: "5f44b685261ab5499566b734",
-              timeoutInMins: 1,
-              displayResponses: true,
-              _id: "5f44b6c0261ab5499566b737",
-            },
-          ],
-          markingConfiguration: { allowMultipleMarkers: true, maximumMarks: 5 },
-          groupSize: 3,
-          rubricId: "5f44b68d261ab5499566b735",
-        },
-        overallScore: 2,
-        overallMaximumMarks: 15
-      },
-    ];
-  }
-
-  get quizSessions(): Partial<IQuiz>[] {
-    return [
-      {
-        _id: "abc123",
-        availableStart: new Date(Date.now() - 10000),
-        availableEnd: new Date(Date.now() + 1000000),
-        title: "TCL Session 2",
-        course: "ENGG1234",
-      },
-      {
-        _id: "xyz2322",
-        availableStart: new Date(Date.now() + Date.now()),
-        availableEnd: new Date(Date.now() + Date.now() + 50000),
-        title: "TCL Session 3",
-        course: "ENGG1234",
-      },
-      {
-        _id: "xyz23231",
-        availableStart: new Date(Date.now() + Date.now()),
-        availableEnd: new Date(Date.now() + Date.now() + 50000),
-        title: "TCL Session 3",
-        course: "ENGG1234",
-      },
-      {
-        _id: "xyz231232",
-        availableStart: new Date(Date.now() + Date.now()),
-        availableEnd: new Date(Date.now() + Date.now() + 50000),
-        title: "TCL Session 3",
-        course: "ENGG1234",
-      },
-      {
-        _id: "xyz212312332",
-        availableStart: new Date(Date.now() + Date.now()),
-        availableEnd: new Date(Date.now() + Date.now() + 50000),
-        title: "TCL Session 3",
-        course: "ENGG1234",
-      },
-      {
-        _id: "xy123123z232",
-        availableStart: new Date(Date.now() + Date.now()),
-        availableEnd: new Date(Date.now() + Date.now() + 50000),
-        title: "TCL Session 3",
-        course: "ENGG1234",
-      },
-      {
-        _id: "xyz231231232",
-        availableStart: new Date(Date.now() + Date.now()),
-        availableEnd: new Date(Date.now() + Date.now() + 50000),
-        title: "TCL Session 3",
-        course: "ENGG1234",
-      },
-    ];
-  }
-
-  isQuizSessionMarked(quizSession: any) {
-    return quizSession.overallScore;
-  }
+  
   get user(): IUser | null {
     return this.$store.getters.user;
   }

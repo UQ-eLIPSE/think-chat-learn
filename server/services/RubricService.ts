@@ -1,13 +1,16 @@
 import { BaseService } from "./BaseService";
-import { IRubric } from "../../common/interfaces/DBSchema";
+import { IRubric, IRubricCriteria } from "../../common/interfaces/DBSchema";
 import { RubricRepository } from "../repositories/RubricRepository";
+import { CriteriaRepository } from "../repositories/CriteriaRepository";
 export class RubricService extends BaseService<IRubric> {
 
     protected readonly rubricRepo: RubricRepository;
+    protected readonly criteriaRepo: CriteriaRepository;
 
-    constructor(_rubricRepo: RubricRepository){
+    constructor(_rubricRepo: RubricRepository, _criteriaRepo: CriteriaRepository){
         super();
         this.rubricRepo = _rubricRepo;
+        this.criteriaRepo = _criteriaRepo;
     }
 
     // Creates a criteria
@@ -55,5 +58,28 @@ export class RubricService extends BaseService<IRubric> {
         if (duplicateRubric) {
             throw new Error("Duplicate criterias detected");
         }
+    }
+
+    public async fetchCriteriaPopulatedRubricById(rubricId: string): Promise<IRubricCriteria | null> {
+
+        try {
+            const rubric = await this.rubricRepo.findOne(rubricId);
+            if(!rubric || !rubric.criterias) throw new Error('Rubric could not be found/ does not contain criteria');
+    
+            const criteriaForRubric = await this.criteriaRepo.findByIdArray(rubric.criterias);
+    
+            if(!criteriaForRubric || !criteriaForRubric.length) throw new Error('Criteria could not be found');
+    
+            delete rubric.criterias;
+    
+            const rubricWithCriteria = Object.assign({}, { criteria: criteriaForRubric }, rubric);
+    
+            return rubricWithCriteria;
+        } catch(e) {
+            console.error('Rubric error: ',  e.message);
+            return null;
+        }
+
+
     }
 }

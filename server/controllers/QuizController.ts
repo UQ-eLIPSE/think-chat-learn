@@ -72,7 +72,8 @@ export class QuizController extends BaseController {
             const filteredQuizzes = customQuizId? quizzes.filter((quiz) => quiz._id === customQuizId) : quizzes;
 
             return res.json({
-                quizzes: filteredQuizzes
+                success: true,
+                payload: filteredQuizzes
             });
         } catch (e) {
             return res.sendStatus(500);

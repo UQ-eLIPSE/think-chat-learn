@@ -84,6 +84,7 @@ export class QuizSessionController extends BaseController {
             payload: []
         });
 
+        
         await Promise.all(await quizSessionsData.map(async (quizSessionData) => {
             const overallScore = await this.marksService.getOverallScoreForQuizSession(quizSessionData._id!);
             
@@ -101,7 +102,6 @@ export class QuizSessionController extends BaseController {
             }
             return quizSessionData;
         }));
-
         return res.json({ payload: quizSessionsData });
     }
 

@@ -24,7 +24,8 @@ import {
   faChevronDown,
   faChevronUp,
   faClock,
-  faUser
+  faUser,
+  faList
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
@@ -46,7 +47,8 @@ library.add(
   faChevronDown,
   faChevronUp,
   faClock,
-  faUser
+  faUser,
+  faList
 );
 
 Vue.use(Buefy);

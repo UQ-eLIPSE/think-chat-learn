@@ -126,7 +126,6 @@ import {
   IQuizSession,
   IUserSession,
 } from "../../../common/interfaces/ToClientData";
-import OverviewContainer from "../components/OverviewContainer.vue";
 import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
 import * as IWSToServerData from "../../../common/interfaces/IWSToServerData";
 import { SocketState, TimerSettings } from "../interfaces";
@@ -174,100 +173,6 @@ export default class QuizSessionListItem extends Vue {
 
     return undefined;
   }
-  get user(): IUser | null {
-    return this.$store.getters.user;
-  }
 
-  get quiz(): IQuiz | null {
-    return this.$store.getters.quiz;
-  }
-
-  get quizSession(): IQuizSession | null {
-    return this.$store.getters.quizSession;
-  }
-
-  get userSession(): IUserSession | null {
-    return this.$store.getters.userSession;
-  }
-
-  get socketState(): SocketState {
-    return this.$store.getters.socketState;
-  }
-
-  get socket(): WebsocketManager | null {
-    return this.socketState && this.socketState.socket
-      ? this.socketState.socket
-      : null;
-  }
-
-  get quizAvailable(): boolean {
-    return this.$store.getters.quizAvailable;
-  }
-
-  get quizSessionFetched(): boolean {
-    return this.$store.getters.quizSessionFetched;
-  }
-
-  get resync(): boolean {
-    return this.$store.getters.resync;
-  }
-
-  private scrollToTop(): void {
-    window.scrollTo(0, 0);
-  }
-
-  private startQuizSession() {
-    this.scrollToTop();
-
-    if (!this.quiz || !this.userSession) {
-      return;
-    }
-
-    const outgoingQuizSession: IQuizSession = {
-      quizId: this.quiz!._id,
-      userSessionId: this.userSession!._id,
-      responses: [],
-    };
-
-    this.$store
-      .dispatch("createQuizSession", outgoingQuizSession)
-      .then(() => {
-        this.socket!.emitData<IWSToServerData.StoreSession>(
-          WebsocketEvents.OUTBOUND.STORE_QUIZ_SESSION_SOCKET,
-          {
-            quizSessionId: this.quizSession!._id!,
-          }
-        );
-        EventBus.$emit(
-          EmitterEvents.START_TIMER,
-          this.$store.getters.currentTimerSettings
-        );
-        this.$router.push("/page");
-      })
-      .catch((e: Error) => {
-        console.log(e);
-      });
-  }
-
-  private mounted() {
-    this.$store.dispatch("createSocket");
-  }
-
-  @Watch("resync")
-  private waitForResync(newVal: number, oldVal?: number) {
-    // Idea ito push to the page if it has changed also recompute the timer settings
-    this.$router.push("/page");
-
-    // New timer settings assuming it has been generated
-    const tempSettings: TimerSettings | null = this.$store.getters
-      .currentTimerSettings;
-    if (tempSettings) {
-      tempSettings.timeoutInMins = this.$store.getters.resyncAmount;
-      EventBus.$emit(
-        EmitterEvents.START_TIMER,
-        this.$store.getters.currentTimerSettings
-      );
-    }
-  }
 }
 </script>

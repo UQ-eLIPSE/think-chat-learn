@@ -35,23 +35,6 @@
         <!-- Marks not available -->
         <h1 class="faded">- Grades not available -</h1>
       </div>
-
-      <!-- <div class="table-faux">
-        <h3 class="cell-faux cell-10">Criterion</h3>
-        <h3 class="cell-faux cell-5"></h3>
-        <h3 class="cell-faux cell-10">Score</h3>
-        <h3 class="cell-faux cell-70">Feedback</h3>
-
-        <template v-for="(markRow, i) in markRows">
-          <div class="cell-faux cell-10" :key="`markRow-name-${i}`">{{ markRow.criterionName }}</div>
-          <div class="tooltip cell-faux cell-5" :key="`markRow-desc-${i}`">
-            (i)
-            <span class="tooltiptext">{{ markRow.criterionDescription }}</span>
-          </div>
-          <div class="cell-faux cell-10" :key="`markRow-score-${i}`">{{ markRow.score }}</div>
-          <div class="cell-faux cell-70" :key="`markRow-feedback-${i}`">{{ markRow.feedback }}</div>
-        </template>
-      </div>-->
     </template>
   </div>
 </template>
@@ -74,11 +57,12 @@ import { EventBus } from "../EventBus";
 import { EmitterEvents } from "../emitters";
 import { PastQuizSession } from "../views/Landing.vue";
 import { IRubric } from "../../../common/interfaces/ToClientData";
-import { ICriteria, Mark } from "../../../common/interfaces/DBSchema";
-
-export type IRubricCriteria = Omit<IRubric, "criterias"> & {
-  criteria: ICriteria[];
-};
+import {
+  ICriteria,
+  Mark,
+  IRubricCriteria,
+} from "../../../common/interfaces/DBSchema";
+import API from "../../../common/js/DB_API";
 
 @Component
 export default class Feedback extends Vue {
@@ -150,35 +134,49 @@ export default class Feedback extends Vue {
 
   async fetchRubricWithCriteria(
     rubricId: string
-  ): Promise<IRubricCriteria | undefined> {
+  ): Promise<IRubricCriteria | null> {
     // TODO: Make network request
 
     try {
-      return {
-        name: "rubric",
-        course: "ENGG1234",
-        criteria: [
-          {
-            _id: "5f44b66a261ab5499566b72c",
-            name: "evaluating",
-            description: "How well one evaluates",
-            course: "ENGG1234",
-          },
-          {
-            _id: "5f44b66a261ab5499566b72d",
-            name: "interpreting",
-            description: "How well one interprets",
-            course: "ENGG1234",
-          },
-          {
-            _id: "5f44b66a261ab5499566b72e",
-            name: "analysing",
-            description: "How well one analyses",
-            course: "ENGG1234",
-          },
-        ],
-      };
-    } catch (e) {}
+      const rubricWithCriteria = await await API.request(
+        API.GET,
+        API.RUBRIC + `${rubricId}/criteria`,
+        {},
+        undefined
+      );
+
+      if(!rubricWithCriteria || !rubricWithCriteria.payload) return null;
+      
+      return rubricWithCriteria.payload;
+
+      // return {
+      //   name: "rubric",
+      //   course: "ENGG1234",
+      //   criteria: [
+      //     {
+      //       _id: "5f44b66a261ab5499566b72c",
+      //       name: "evaluating",
+      //       description: "How well one evaluates",
+      //       course: "ENGG1234",
+      //     },
+      //     {
+      //       _id: "5f44b66a261ab5499566b72d",
+      //       name: "interpreting",
+      //       description: "How well one interprets",
+      //       course: "ENGG1234",
+      //     },
+      //     {
+      //       _id: "5f44b66a261ab5499566b72e",
+      //       name: "analysing",
+      //       description: "How well one analyses",
+      //       course: "ENGG1234",
+      //     },
+      //   ],
+      // };
+    } catch (e) {
+      console.log('Rubric fetch error');
+      return null;
+    }
   }
 
   /**
@@ -237,13 +235,12 @@ export default class Feedback extends Vue {
       // TODO: Make network requests
       const rubric:
         | IRubricCriteria
-        | undefined = await this.fetchRubricWithCriteria(
+        | null = await this.fetchRubricWithCriteria(
         this.quizSession.quiz.rubricId
       );
 
       // Check if rubric exists in database AND marksObject have been assigned to user
       if (rubric) this.rubric = rubric;
-
       // get marksObject
       const marksObject = await this.fetchMarksForQuizSessionId(
         this.quizSession._id

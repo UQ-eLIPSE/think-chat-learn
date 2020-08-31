@@ -100,14 +100,11 @@ export class QuizService extends BaseService<IQuiz | IQuizOverNetwork> {
         });
 
         const activeQuizzesWithoutContent = activeQuizzes.map((activeQuiz) => {
-            (activeQuiz.pages || []).forEach((page) => {
-                page.content = '';
-            });
-
             // Prevent leaking unnecessary information for active quizzes
             delete activeQuiz.groupSize;
             delete activeQuiz.markingConfiguration;
             delete activeQuiz.rubricId;
+            delete activeQuiz.pages;
 
             return activeQuiz;
         });

@@ -180,7 +180,7 @@ export class UserService extends BaseService<IUser> {
          * Check if a valid custom quiz id was provided and return if it is available
          * @returns { quizId: string | null, available: boolean }
          */
-        const { quizId, available } = await (async () => {
+        const { customQuizId, available } = await (async () => {
             try {
                 if (!request.custom_quizid) throw new Error('Missing custom quiz id');
 
@@ -192,11 +192,11 @@ export class UserService extends BaseService<IUser> {
                     quizSchedule.availableEnd!.getTime() >= Date.now() ? true : false;
 
                 return {
-                    quizId: quizSchedule && quizSchedule._id!, available
+                    customQuizId: quizSchedule && quizSchedule._id!, available
                 };
             } catch (e) {
                 console.error(e.message);
-                return { quizId: null, available: false };
+                return { customQuizId: null, available: false };
             }
 
         })();
@@ -226,7 +226,8 @@ export class UserService extends BaseService<IUser> {
             // quiz: quizSchedule ? convertQuizIntoNetworkQuiz(quizSchedule) : null,
             courseId: identity.course,
             // questions,
-            quizId,
+            quizId: undefined,
+            customQuizId,
             available
         };
 

@@ -127,22 +127,17 @@ export class QuizSessionService extends BaseService<IQuizSession> {
      */
     async getPastQuizSessionsDataForUserCourse(userId: string, courseCode: string): Promise<AttemptedQuizSessionData[] | null> {
         const quizSessions = await this.getQuizSessionsByUserCourse(userId, courseCode);
-        
         if (!quizSessions) return [];
-
         const quizSessionsQuizzes = await Promise.all(quizSessions.map(async (quizSession) => {
             const pastQuizSession: AttemptedQuizSessionData = Object.assign({}, quizSession);
 
-            const quiz = await this.quizRepo.findOne({
-                _id: quizSession.quizId
-            });
+            const quiz = await this.quizRepo.findOne(quizSession.quizId!);
 
             pastQuizSession.quiz = quiz || undefined;
 
             return pastQuizSession;
         }));
-
-        if(!quizSessionsQuizzes || quizSessionsQuizzes.length) return [];
+        if(!quizSessionsQuizzes || !quizSessionsQuizzes.length) return [];
 
         const pastQuizSessions = quizSessionsQuizzes.filter((quizSessionQuiz) => {
             if(quizSessionQuiz.complete) return true;
