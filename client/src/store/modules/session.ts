@@ -56,6 +56,7 @@ const state: IState = {
     quizSessionFetched: false
 };
 
+const defaultState = Object.assign({}, state);
 const mutationKeys = {
     SET_QUIZ_SESSION: "Setting a quiz session",
     ADD_RESPONSE: "Adding a response",
@@ -71,7 +72,9 @@ const mutationKeys = {
     SET_SOCKET_MESSAGES: "Setting the socket messages",
     SET_QUIZ_AVAILABILITY: "Setting quiz availability",
     // Sets a feteched message state
-    SET_FETCH_STATE: "Setting fetch state"
+    SET_FETCH_STATE: "Setting fetch state",
+    REMOVE_SOCKET_STATE: "Close socket and reset socket state",
+    RESET_STATE: "Reset session store state"
 };
 
 // Handles reconnect message fail messages by noting this on the store
@@ -474,7 +477,9 @@ const actions = {
     createSocket({ commit }: {commit: Commit}) {
         return commit(mutationKeys.CREATE_SOCKET);
     },
-
+    removeSocketState({ commit }: { commit: Commit }) {
+        return commit(mutationKeys.REMOVE_SOCKET_STATE);
+    },
     deleteSocket({ commit }: {commit: Commit}) {
         return commit(mutationKeys.DELETE_SOCKET);
     },
@@ -554,6 +559,10 @@ const actions = {
         if (isAvailable) {
             commit(mutationKeys.SET_QUIZ_AVAILABILITY);
         }
+    },
+
+    resetSessionState({ commit }: {commit: Commit}) {
+      commit(mutationKeys.RESET_STATE);
     }
 };
 
@@ -573,13 +582,24 @@ const mutations = {
     },
 
     [mutationKeys.CREATE_SOCKET](funcState: IState) {
+        if(funcState.socketState.socket) {
+            // Create socket called, need to terminate existing socket
+            funcState.socketState.socket!.close();
+            Vue.set(funcState.socketState, "socket", null);
+        }
         if (!funcState.socketState.socket) {
             Vue.set(funcState.socketState, "socket",
                     new WebsocketManager(handleReconnect, reconnectFail, reconnectAttempt));
             registerSocketEvents();
         }
     },
-
+    [mutationKeys.REMOVE_SOCKET_STATE](funcState: IState) {
+        if(funcState.socketState.socket) {
+            // Create socket called, need to terminate existing socket
+            funcState.socketState.socket!.close();
+            Vue.set(funcState.socketState, "socket", null);
+        }
+    },
     [mutationKeys.CLOSE_SOCKET](funcState: IState) {
         if (funcState.socketState.socket) {
             funcState.socketState.socket.close();
@@ -674,6 +694,9 @@ const mutations = {
 
     [mutationKeys.SET_QUIZ_AVAILABILITY](funcState: IState) {
         Vue.set(funcState, "quizAvailable", true);
+    },
+    [mutationKeys.RESET_STATE](funcState: IState) {
+        Object.assign(funcState, defaultState);
     }
 };
 

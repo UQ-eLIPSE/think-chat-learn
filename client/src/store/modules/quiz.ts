@@ -25,6 +25,8 @@ const state: IState = {
   maxIndex: 0
 };
 
+const defaultState: IState = JSON.parse(JSON.stringify(state));
+
 const mutationKeys = {
     SET_QUIZ: "Setting a quiz",
     SET_QUESTIONS: "Setting questions",
@@ -35,7 +37,8 @@ const mutationKeys = {
     DECREMENTING_CURRENT_INDEX: "Decrementing the current index",
     SET_CURRENT_INDEX: "Sets the current index",
     INCREMENTING_MAX_INDEX: "Incrementing the max index",
-    SET_MAX_INDEX: "Setting the max index"
+    SET_MAX_INDEX: "Setting the max index",
+    RESET_STATE: "Reset quiz module store state"
 };
 
 function getQuestionById(id: string): TypeQuestion | null {
@@ -143,6 +146,10 @@ const actions = {
 
           return true;
       });
+  },
+
+  resetQuizState({ commit }: {commit: Commit}) {
+    commit(mutationKeys.RESET_STATE);
   }
 };
 
@@ -210,6 +217,12 @@ const mutations = {
 
   [mutationKeys.SET_MAX_INDEX](funcState: IState, index: number) {
     Vue.set(funcState, "maxIndex", index);
+  },
+
+  [mutationKeys.RESET_STATE](funcState: IState) {
+    funcState = defaultState;
+    console.log('funcState; ', funcState);
+    // JSON.parse(JSON.stringify(funcState, defaultState);
   }
 };
 

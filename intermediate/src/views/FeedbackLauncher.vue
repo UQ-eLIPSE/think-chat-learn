@@ -6,17 +6,7 @@
       </span> Quiz Sessions
     </h1>
     <ul class="quiz-list-items" v-if="!selectedQuizSession">
-      <template v-for="pastSession in pastAttemptedQuizSessions">
-        <QuizSessionListItem
-          :heading="pastSession.quiz.title"
-          :subheadings="[`${new Date(pastSession.startTime).toLocaleString()}`]"
-          :clickable="true"
-          :actionButton="getPastSessionActionButtonProp(pastSession)"
-          @click="setSelectedQuizSession(pastSession)"
-          @actionClick="setSelectedQuizSession(pastSession)"
-          :key="pastSession.userSessionId"
-        ></QuizSessionListItem>
-      </template>
+      
       <template v-for="quizSession in quizzes">
         <QuizSessionListItem
           :heading="quizSession.title"
@@ -136,14 +126,9 @@ export default class FeedbackLauncher extends Vue {
     alert("Clicked session ...");
   }
 
-
-
-
   async launchActiveQuiz(quizId: string) {
     // Launch quiz
     try {
-      console.log('Launching quizid: ', quizId);
-
       const tokenResponse = await API.request(
         API.POST,
         API.USER + "/launch-quiz",
@@ -167,34 +152,21 @@ export default class FeedbackLauncher extends Vue {
         await this.$store.dispatch("handleToken")
       );
       console.log('response loginResponse: ', response);
-      // If we have a response , set the appropriate data and so on
       if (response) {
         await this.$store.dispatch("setUser", response.user);
-        await this.$store.dispatch(
-          "setQuiz",
-          quizScheduleData.quiz
-            ? convertNetworkQuizIntoQuiz(quizScheduleData.quiz)
-            : null
-        );
+        await this.$store.dispatch("setQuiz", quizScheduleData.quiz ?
+          convertNetworkQuizIntoQuiz(quizScheduleData.quiz) : null);
         await this.$store.dispatch("setQuestions", quizScheduleData.questions);
-        await this.$store.dispatch("setAvailability", response.available);
         // Don't send the end time
         const session: IUserSession = {
-          userId: response.user._id,
-          course: response.courseId,
-          startTime: Date.now(),
+            userId: response.user._id,
+            course: response.courseId,
+            startTime: Date.now(),
         };
+
         await this.$store.dispatch("createSession", session);
-
-        if (response.type === LoginResponseTypes.INTERMEDIATE_LOGIN) {
-          await this.$store.dispatch(
-            "retrieveQuizSession",
-            response.quizSessionId
-          );
-        }
-
         this.$router.push("/");
-      } else throw new Error('JWT error');
+      }
     } catch (e) {
       console.error("JWT sign error. Please contact administrator");
       return;
@@ -269,23 +241,6 @@ export default class FeedbackLauncher extends Vue {
   }
 
   private async mounted() {
-
-    // Check if quiz has already been selected in the backup queue panel
-    {
-        const token = getIdToken();
-        
-        if(token) {
-          const decodedToken = decodeToken(token);
-
-          console.log('Decoded Token:', decodedToken);
-          if(decodedToken.type === LoginResponseTypes.INTERMEDIATE_LOGIN) {
-            this.launchActiveQuiz(decodedToken.quizId);
-          }
-        }
-
-    }
-
-    
     await this.fetchPastSessions();
     await this.fetchActiveQuizzes();
     await this.fetchUpcomingQuizzes();
@@ -314,6 +269,5 @@ export default class FeedbackLauncher extends Vue {
   .feedback {
     padding: 0.5rem;
   }
-
 }
 </style>

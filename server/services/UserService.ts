@@ -115,32 +115,32 @@ export class UserService extends BaseService<IUser> {
             throw new Error(`No course associated with identity`);
         }
 
-        if (!request.custom_quizid) {
-            throw new Error(`No quiz provided`);
-        }
+        // if (!request.custom_quizid) {
+        //     throw new Error(`No quiz provided`);
+        // }
 
         // Fetching the quiz is done regardless. Whether or not they can create a quiz session is a different story
-        const quizSchedule = await this.quizRepo.findOne(request.custom_quizid);
+        // const quizSchedule = await this.quizRepo.findOne(request.custom_quizid);
 
-        if (!quizSchedule) {
-            throw new Error(`No scheduled quiz available`)
-        }
+        // if (!quizSchedule) {
+        //     throw new Error(`No scheduled quiz available`)
+        // }
 
 
         // TODO check for previous attempts and retrieve the questions associated with the selected quiz
         //await UserLoginFunc.CheckQuizNotPreviouslyAttempted(db, user, quizSchedule);
         // Creating the list of ids requires a set
-        const questionIds: string[] = [];
+        // const questionIds: string[] = [];
 
-        quizSchedule.pages!.forEach((element) => {
-            if (((element.type === PageType.QUESTION_ANSWER_PAGE) || (element.type === PageType.DISCUSSION_PAGE))
-                && questionIds.findIndex((id) => { return id === element.questionId; }) === -1) {
-                questionIds.push(element.questionId);
-            }
-        });
+        // quizSchedule.pages!.forEach((element) => {
+        //     if (((element.type === PageType.QUESTION_ANSWER_PAGE) || (element.type === PageType.DISCUSSION_PAGE))
+        //         && questionIds.findIndex((id) => { return id === element.questionId; }) === -1) {
+        //         questionIds.push(element.questionId);
+        //     }
+        // });
 
-        const available = Date.now() >= quizSchedule!.availableStart!.getTime() &&
-            quizSchedule.availableEnd!.getTime() >= Date.now() ? true : false;
+        // const available = Date.now() >= quizSchedule!.availableStart!.getTime() &&
+        //     quizSchedule.availableEnd!.getTime() >= Date.now() ? true : false;
 
         const tempLogin: LoginResponse = {
             type: LoginResponseTypes.GENERIC_LOGIN,
@@ -148,8 +148,9 @@ export class UserService extends BaseService<IUser> {
             // quiz: quizSchedule ? convertQuizIntoNetworkQuiz(quizSchedule) : null,
             courseId: identity.course,
             // questions,
-            quizId: quizSchedule && quizSchedule._id ? quizSchedule._id : null,
-            available
+            // quizId: quizSchedule && quizSchedule._id ? quizSchedule._id : null,
+            quizId: null,
+            available: false
         };
 
         //const tempLogin = await this.handleLogin(request);

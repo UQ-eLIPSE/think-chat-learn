@@ -58,15 +58,6 @@ import {
   IQuizSession,
   IUserSession,
 } from "../../../common/interfaces/ToClientData";
-import OverviewContainer from "../components/OverviewContainer.vue";
-import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
-import * as IWSToServerData from "../../../common/interfaces/IWSToServerData";
-import { SocketState, TimerSettings } from "../interfaces";
-import { WebsocketManager } from "../../../common/js/WebsocketManager";
-import { WebsocketEvents } from "../../../common/js/WebsocketEvents";
-import { EventBus } from "../EventBus";
-import { EmitterEvents } from "../emitters";
-import { IRubric } from "../../../common/interfaces/ToClientData";
 import {
   ICriteria,
   Mark,
@@ -275,7 +266,7 @@ export default class Feedback extends Vue {
   }
 }
 </script>
-<style lang="scss" scoped>
+<style scoped>
 .score {
   display: flex;
   padding: 0.25rem;
@@ -290,12 +281,14 @@ export default class Feedback extends Vue {
 .overall-score {
   display: flex;
   align-items: center;
-  > * {
-    padding: 0.5rem;
-  }
-  h3 {
-    margin: 0;
-  }
+}
+
+.overall-score > * {
+  padding: 0.5rem;
+}
+
+.overall-score h3 {
+  margin: 0;
 }
 
 .feedback-header {
@@ -313,17 +306,15 @@ export default class Feedback extends Vue {
   flex-flow: column;
 }
 
-.marks-table {
-  td,
-  th {
+.marks-table td, .marks-table th {
     padding: 0.5rem;
     font-size: 0.9em;
-  }
-
-  th {
-    color: $uq;
-  }
 }
+
+.marks-table th {
+  color: #49075e;
+}
+
 /* Tooltip container */
 .tooltip {
   position: relative;
@@ -373,8 +364,10 @@ export default class Feedback extends Vue {
 
 .general-feedback {
   padding: 1rem 0.5rem;
-  > h4 {
-    color: $uq;
-  }
 }
+
+.general-feedback h4 {
+  color: #49075e;
+}
+
 </style>

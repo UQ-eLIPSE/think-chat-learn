@@ -1,5 +1,8 @@
 <template>
   <div class="landing">
+      <!-- <div>
+        <button class="primary back-button" @click="clearStateAndGotoFeedback()">&lt; Back</button>
+      </div> -->
     <!-- <h1>Quiz Sessions</h1>
     <ul class="quiz-list-items" v-if="!selectedQuizSession">
       <template v-for="pastSession in pastAttemptedQuizSessions">
@@ -62,6 +65,14 @@
   @media only screen and (max-width: 1483px) {
     padding: 1.5em;
   }
+  
+  // .back-button {
+  //   min-width: 5rem;
+  //   width: 5rem;
+  //   font-size: 0.8em;
+  //   height: 1.5rem;
+  //   padding: 0 0.5rem;
+  // }
 
   .content-inner-container {
     display: flex;
@@ -100,6 +111,8 @@ import {
   IQuiz,
   IQuizSession,
   IUserSession,
+  LoginResponse,
+  IntermediateLogin,
 } from "../../../common/interfaces/ToClientData";
 import OverviewContainer from "../components/OverviewContainer.vue";
 import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
@@ -112,11 +125,8 @@ import { EmitterEvents } from "../emitters";
 import QuizSessionListItem from "../components/QuizSessionListItem.vue";
 import Feedback from "../components/Feedback.vue";
 import { IQuizSchedule } from "../../../common/interfaces/DBSchema";
-
-export type PastQuizSession = IQuizSession & { quiz: Partial<IQuiz> } & {
-  overallScore?: number;
-  overallMaximumMarks?: number;
-};
+import API from "../../../common/js/DB_API";
+import { getIdToken, setIdToken, getLoginResponse } from "../../../common/js/front_end_auth";
 
 @Component({
   components: {
@@ -125,6 +135,47 @@ export type PastQuizSession = IQuizSession & { quiz: Partial<IQuiz> } & {
 })
 export default class Landing extends Vue {
   
+  //   async resetState() {
+  //     try {
+  //     console.log('Resetting quizid: ');
+
+  //     const tokenResponse = await API.request(
+  //       API.POST,
+  //       API.USER + "/reset-quiz",
+  //       {},
+  //       undefined,
+  //       getIdToken()
+  //     );
+
+  //     if (!tokenResponse || !tokenResponse.payload) {
+  //       return console.error("JWT sign error. Please contact administrator");
+  //     }
+
+  //     setIdToken(tokenResponse.payload);
+
+  //     const response = getLoginResponse() as LoginResponse | IntermediateLogin;
+      
+  //     this.$store.dispatch("resetSessionState");
+  //     this.$store.dispatch("resetQuizState");
+      
+  //     this.$store.commit("RESET_GLOBAL_MESSAGE");
+
+  //     if (response.user) {
+  //       await this.$store.dispatch("setUser", response.user);
+  //     }
+
+  //   } catch(e) {
+
+  //   }
+  // }
+
+  // clearStateAndGotoFeedback() {
+  //   this.resetState();
+  //   this.$router.push('/feedback-launcher');
+
+  //   // Hacky way of resetting entire state of the application
+  //   // location.reload();
+  // }
   get user(): IUser | null {
     return this.$store.getters.user;
   }
