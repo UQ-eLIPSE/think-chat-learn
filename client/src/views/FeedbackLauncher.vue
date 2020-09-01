@@ -142,8 +142,6 @@ export default class FeedbackLauncher extends Vue {
   async launchActiveQuiz(quizId: string) {
     // Launch quiz
     try {
-      console.log('Launching quizid: ', quizId);
-
       const tokenResponse = await API.request(
         API.POST,
         API.USER + "/launch-quiz",
@@ -166,7 +164,7 @@ export default class FeedbackLauncher extends Vue {
       const quizScheduleData: QuizScheduleData = decodeToken(
         await this.$store.dispatch("handleToken")
       );
-      console.log('response loginResponse: ', response);
+
       // If we have a response , set the appropriate data and so on
       if (response) {
         await this.$store.dispatch("setUser", response.user);
@@ -229,7 +227,6 @@ export default class FeedbackLauncher extends Vue {
       "pastQuizSessions",
       (attemptedResponse && attemptedResponse.payload) || []
     );
-    console.log("Past: ", attemptedResponse);
   }
 
   async fetchActiveQuizzes() {

@@ -196,6 +196,13 @@
               v-model="markingConfiguration.allowMultipleMarkers"
               :label="'Allow multiple markers?'"
             ></v-checkbox>
+
+          <v-checkbox
+              v-model="staffOnly"
+              label="Staff only? (If checked, this quiz will be displayed only to course staff members)"
+          ></v-checkbox>
+          <span>Staffonly {{staffOnly}}</span>
+
             <label>Max marks: {{ markingConfiguration.maximumMarks }}</label>
           </v-flex>
           <v-flex xs12>
@@ -274,6 +281,11 @@ export default class QuizPage extends Vue {
 
   private groupSize: number = Conf.groups.defaultGroupSize;
   private markingConfiguration: DBSchema.MarkConfig = this.initMarkConfig();
+  
+  /**
+   * If true, only staff will be able to view this quiz
+   */
+  private staffOnly: boolean = false;
 
   private pagesArray: (Page & { __mountedId?: string })[] = [];
 
@@ -526,7 +538,8 @@ export default class QuizPage extends Vue {
       course: this.courseId,
       markingConfiguration: this.markingConfiguration,
       groupSize: this.groupSize,
-      rubricId: this.rubricId
+      rubricId: this.rubricId,
+      staffOnly: this.staffOnly
     };
 
     if (this.isEditing && !this.isCloning) {
@@ -616,7 +629,7 @@ export default class QuizPage extends Vue {
         this.rubricId = loadedQuiz.rubricId!;
         this.markingConfiguration =
           loadedQuiz.markingConfiguration || this.markingConfiguration;
-
+        this.staffOnly = loadedQuiz.staffOnly || false;
         this.pagesArray = loadedQuiz.pages.map(page => {
           (page as any).__mountedId = uniqueId();
           return page;

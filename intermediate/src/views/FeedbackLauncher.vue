@@ -119,7 +119,7 @@ export default class FeedbackLauncher extends Vue {
       const quizScheduleData: QuizScheduleData = decodeToken(
         await this.$store.dispatch("handleToken")
       );
-      console.log("response loginResponse: ", response);
+
       if (response) {
         await this.$store.dispatch("setUser", response.user);
         await this.$store.dispatch(
