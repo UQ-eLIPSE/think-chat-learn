@@ -45,6 +45,7 @@ export interface LoginResponse extends GenericLogin {
   quizId?: string | null;
   customQuizId?: string | null;
   available: boolean;
+  isAdmin?: boolean;
 }
 
 // Is also an admin

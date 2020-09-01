@@ -143,11 +143,17 @@ export class UserService extends BaseService<IUser> {
         const identity = UserServiceHelper.ProcessLtiObject(request);
         UserServiceHelper.CheckUserId(identity);
 
+        
         const user = await UserServiceHelper.RetrieveUser(this.userRepo, identity);
 
         if (!identity.course) {
             throw new Error(`No course associated with identity`);
         }
+
+        // Check if user that launched TCL student view is an administrator
+        // This check is required to selectively display 'isPublic' quizzes
+        const isLtiAdmin = this.isLtiAdmin(identity);
+        
 
         // Fetching the quiz is done regardless. Whether or not they can create a quiz session is a different story
 
@@ -203,7 +209,8 @@ export class UserService extends BaseService<IUser> {
             // questions,
             quizId: undefined,
             customQuizId,
-            available
+            available,
+            isAdmin: isLtiAdmin || false
         };
 
         return output;

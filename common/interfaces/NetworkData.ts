@@ -13,5 +13,5 @@ export interface IQuizOverNetwork extends Document {
     groupSize?: number;
     markingConfiguration?: MarkConfig;
     rubricId?: string;
-    staffOnly?: boolean;
+    isPublic?: boolean;
 }

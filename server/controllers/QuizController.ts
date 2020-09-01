@@ -63,9 +63,9 @@ export class QuizController extends BaseController {
 
             // Check if custom quiz id was passed
             const customQuizId = decodedToken.customQuizId;
-            if (!courseCode) return res.sendStatus(500);
+            if (!courseCode || !decodedToken || !decodedToken.user || !decodedToken.user._id) return res.sendStatus(500);
 
-            const quizzes = await this.quizService.getActiveQuizzesWithoutContent(courseCode);
+            const quizzes = await this.quizService.getActiveOrUpcomingQuizzesWithoutContent(courseCode, 'active', decodedToken.isAdmin);
 
             if (!quizzes) return res.sendStatus(500);
 
@@ -90,10 +90,10 @@ export class QuizController extends BaseController {
         try {
             const decodedToken = req.user as LoginResponse;
             const courseCode = decodedToken.courseId;
+            
+            if (!courseCode || !decodedToken || !decodedToken.user || !decodedToken.user._id) return res.sendStatus(500);
 
-            if (!courseCode) return res.sendStatus(500);
-
-            const quizzes = await this.quizService.getUpcomingQuizzesWithoutContent(courseCode);
+            const quizzes = await this.quizService.getActiveOrUpcomingQuizzesWithoutContent(courseCode, 'upcoming', decodedToken.isAdmin);
 
             if (!quizzes) return res.sendStatus(500);
 

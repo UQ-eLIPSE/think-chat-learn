@@ -118,7 +118,7 @@ export interface IQuiz extends Document {
   groupSize?: number;
   markingConfiguration?: MarkConfig;
   rubricId?: string;
-  staffOnly?: boolean;
+  isPublic?: boolean;
 }
 
 export interface MarkConfig {

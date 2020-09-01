@@ -5,15 +5,17 @@ import { ObjectId } from "bson";
 import { IQuizOverNetwork } from "../../common/interfaces/NetworkData";
 import { convertNetworkQuizIntoQuiz } from "../../common/js/NetworkDataUtils";
 import { PageType } from "../../common/enums/DBEnums";
+import { UserRepository } from "../repositories/UserRepository";
 
 export class QuizService extends BaseService<IQuiz | IQuizOverNetwork> {
 
     protected readonly quizRepo: QuizRepository;
+    protected readonly userRepo: UserRepository;
 
     constructor(_quizRepo: QuizRepository){
         super();
         this.quizRepo = _quizRepo;
-}
+    }
 
     // Creates a quiz in the DB based on the request body. 
     public async createOne(data: IQuizOverNetwork): Promise<string> {
@@ -77,27 +79,59 @@ export class QuizService extends BaseService<IQuiz | IQuizOverNetwork> {
     }
 
     /**
-     * Fetch limited content of active quizzes for a course
-     * @param courseId 
+     * Fetch limited content of active/upcoming quizzes for a course
+     * @param courseId Course code/context id e.g. ENGG1200_XXXX_XXXX
+     * @param availability 'active' OR 'upcoming'
+     * @param isAdmin Is requesting user an administrator
      */
-    public async getActiveQuizzesWithoutContent(courseId: string): Promise<Omit<IQuiz, 'groupSize' | 'markingConfiguration' | 'rubricId'>[]> {
-        const allQuizzes = await this.quizRepo.findAll({
-            course: courseId
-        });
+    public async getActiveOrUpcomingQuizzesWithoutContent(courseId: string, availability: 'active' | 'upcoming', isAdmin?: boolean)
+        : Promise<Omit<IQuiz, 'groupSize' | 'markingConfiguration' | 'rubricId' | 'pages'>[]> {
+        
+        // Query to filter all documents where isPublic is true, i.e. show all "public" quizzes
+        const nonStaffQuery = { isPublic: true };
+        
+        // Check strict equality for administrator, not just truthiness
+        const isUserAdministrator = isAdmin === true;
+
+        const queryObject = Object.assign(
+            {
+                course: courseId
+            },
+            isUserAdministrator? {} : nonStaffQuery
+        );
+
+        const allQuizzesDocuments = await this.quizRepo.collection.find(queryObject).toArray();
+
+        if(!allQuizzesDocuments || !Array.isArray(allQuizzesDocuments)) {
+            console.error('Invalid active quizzes query');
+            return [];
+        }
+
+        const allQuizzes = allQuizzesDocuments.map((q) => this.quizRepo.convertDocumentToItem(q));
+
+        const now = new Date(Date.now());
 
         const activeQuizzes = allQuizzes.filter((quiz) => {
             if(!quiz.availableStart || !quiz.availableEnd) return false;
             try {
                 const startDate = new Date(quiz.availableStart);
                 const endDate = new Date(quiz.availableEnd);
-                const now = new Date(Date.now());
-                return (now > startDate) && (now < endDate);
+
+                if(availability === 'active') {
+                    return (now > startDate) && (now < endDate);
+                }
+                
+                if(availability === 'upcoming') {
+                    return startDate > now;
+                }
+
+                return false;
             } catch(e) {
                 return false;
             }
         });
 
-        const activeQuizzesWithoutContent = activeQuizzes.map((activeQuiz) => {
+        const quizzesWithoutContent = activeQuizzes.map((activeQuiz) => {
             // Prevent leaking unnecessary information for active quizzes
             delete activeQuiz.groupSize;
             delete activeQuiz.markingConfiguration;
@@ -106,43 +140,9 @@ export class QuizService extends BaseService<IQuiz | IQuizOverNetwork> {
 
             return activeQuiz;
         });
-        
-        return activeQuizzesWithoutContent;
+
+        return quizzesWithoutContent;
     }
-
-    /**
-     * Fetch limited content of active quizzes for a course
-     * @param courseId 
-     */
-    public async getUpcomingQuizzesWithoutContent(courseId: string): Promise<Omit<IQuiz, 'groupSize' | 'markingConfiguration' | 'rubricId' | 'pages'>[]> {
-        const allQuizzes = await this.quizRepo.findAll({
-            course: courseId
-        });
-
-        const activeQuizzes = allQuizzes.filter((quiz) => {
-            if(!quiz.availableStart || !quiz.availableEnd) return false;
-            try {
-                const startDate = new Date(quiz.availableStart);
-                const now = new Date(Date.now());
-                return (startDate > now);
-            } catch(e) {
-                return false;
-            }
-        });
-
-        const activeQuizzesWithoutContent = activeQuizzes.map((activeQuiz) => {
-            // Prevent leaking unnecessary information for active quizzes
-            delete activeQuiz.groupSize;
-            delete activeQuiz.markingConfiguration;
-            delete activeQuiz.rubricId;
-            delete activeQuiz.pages;
-
-            return activeQuiz;
-        });
-        
-        return activeQuizzesWithoutContent;
-    }
-
 
     public async findOne(quizId: string): Promise<IQuiz | null> {
         return this.quizRepo.findOne(quizId);
