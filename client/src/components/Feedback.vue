@@ -159,31 +159,6 @@ export default class Feedback extends Vue {
       if(!rubricWithCriteria || !rubricWithCriteria.payload) return null;
       
       return rubricWithCriteria.payload;
-
-      // return {
-      //   name: "rubric",
-      //   course: "ENGG1234",
-      //   criteria: [
-      //     {
-      //       _id: "5f44b66a261ab5499566b72c",
-      //       name: "evaluating",
-      //       description: "How well one evaluates",
-      //       course: "ENGG1234",
-      //     },
-      //     {
-      //       _id: "5f44b66a261ab5499566b72d",
-      //       name: "interpreting",
-      //       description: "How well one interprets",
-      //       course: "ENGG1234",
-      //     },
-      //     {
-      //       _id: "5f44b66a261ab5499566b72e",
-      //       name: "analysing",
-      //       description: "How well one analyses",
-      //       course: "ENGG1234",
-      //     },
-      //   ],
-      // };
     } catch (e) {
       console.log('Rubric fetch error');
       return null;

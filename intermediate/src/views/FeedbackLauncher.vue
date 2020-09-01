@@ -5,8 +5,7 @@
         <font-awesome-icon icon="list" />
       </span> Quiz Sessions
     </h1>
-    <ul class="quiz-list-items" v-if="!selectedQuizSession">
-      
+    <ul class="quiz-list-items">
       <template v-for="quizSession in quizzes">
         <QuizSessionListItem
           :heading="quizSession.title"
@@ -33,15 +32,6 @@
         ></QuizSessionListItem>
       </template>
     </ul>
-
-    <template
-      v-if="selectedQuizSession && pastAttemptedQuizSessions.find((q) => q._id === selectedQuizSession._id)"
-    >
-      <div>
-        <button class="primary back-button" @click="() => selectedQuizSession = null">&lt; Back</button>
-      </div>
-      <Feedback class="feedback" :quizSession="selectedQuizSession" />
-    </template>
   </div>
 </template>
 
@@ -50,7 +40,6 @@ import { Vue, Component } from "vue-property-decorator";
 import API from "../../../common/js/DB_API";
 
 import QuizSessionListItem from "../components/QuizSessionListItem.vue";
-import Feedback from "../components/Feedback.vue";
 import {
   IQuizSchedule,
   IQuizSession,
@@ -79,28 +68,11 @@ export type PastQuizSession = IQuizSession & { quiz: Partial<IQuiz> } & {
 @Component({
   components: {
     QuizSessionListItem,
-    Feedback,
   },
 })
 export default class FeedbackLauncher extends Vue {
-  selectedQuizSession: any | null = null;
-  pastQuizSessions: PastQuizSession[] = [];
   availableQuizzes: Partial<IQuiz>[] = [];
   upcomingQuizzes: Partial<IQuiz>[] = [];
-
-  setSelectedQuizSession(quizSession: any) {
-    this.selectedQuizSession = quizSession;
-  }
-
-  getPastSessionActionButtonProp(pastSession: PastQuizSession) {
-    if (!pastSession) return undefined;
-    return {
-      mode: "text",
-      text: pastSession.overallScore
-        ? `${pastSession.overallScore}/${pastSession.overallMaximumMarks}`
-        : "MARKING",
-    };
-  }
 
   getSessionActionButtonProp(quizSession: any) {
     if (!quizSession) return undefined;
@@ -116,10 +88,6 @@ export default class FeedbackLauncher extends Vue {
   isQuizSessionActive(quizSession: any) {
     if (!quizSession || !quizSession.availableStart) return false;
     return new Date(quizSession.availableStart) < new Date(Date.now());
-  }
-
-  pastSessionClickHandler(pastSession: any) {
-    alert("hello");
   }
 
   quizSessionClickHandler(quizSession: any) {
@@ -151,17 +119,21 @@ export default class FeedbackLauncher extends Vue {
       const quizScheduleData: QuizScheduleData = decodeToken(
         await this.$store.dispatch("handleToken")
       );
-      console.log('response loginResponse: ', response);
+      console.log("response loginResponse: ", response);
       if (response) {
         await this.$store.dispatch("setUser", response.user);
-        await this.$store.dispatch("setQuiz", quizScheduleData.quiz ?
-          convertNetworkQuizIntoQuiz(quizScheduleData.quiz) : null);
+        await this.$store.dispatch(
+          "setQuiz",
+          quizScheduleData.quiz
+            ? convertNetworkQuizIntoQuiz(quizScheduleData.quiz)
+            : null
+        );
         await this.$store.dispatch("setQuestions", quizScheduleData.questions);
         // Don't send the end time
         const session: IUserSession = {
-            userId: response.user._id,
-            course: response.courseId,
-            startTime: Date.now(),
+          userId: response.user._id,
+          course: response.courseId,
+          startTime: Date.now(),
         };
 
         await this.$store.dispatch("createSession", session);
@@ -172,10 +144,6 @@ export default class FeedbackLauncher extends Vue {
       return;
     }
   }
-  // isSelectedQuizSessionAttempted() {}
-  get pastAttemptedQuizSessions(): PastQuizSession[] {
-    return this.pastQuizSessions;
-  }
 
   isQuizSessionMarked(quizSession: any) {
     return quizSession.overallScore;
@@ -183,25 +151,6 @@ export default class FeedbackLauncher extends Vue {
 
   get quizzes(): Partial<IQuiz>[] {
     return this.availableQuizzes || [];
-  }
-
-  async fetchPastSessions() {
-    const q = getIdToken();
-
-    const attemptedResponse = await API.request(
-      API.GET,
-      API.QUIZSESSION + "history",
-      {},
-      undefined,
-      q as string
-    );
-    // this.pastQuizSessions = (attemptedResponse && attemptedResponse.payload) || [];
-    this.$set(
-      this,
-      "pastQuizSessions",
-      (attemptedResponse && attemptedResponse.payload) || []
-    );
-    console.log("Past: ", attemptedResponse);
   }
 
   async fetchActiveQuizzes() {
@@ -241,33 +190,30 @@ export default class FeedbackLauncher extends Vue {
   }
 
   private async mounted() {
-    await this.fetchPastSessions();
     await this.fetchActiveQuizzes();
     await this.fetchUpcomingQuizzes();
   }
 }
 </script>
-<style lang="scss" scoped>
-.feedback-launcher {
-  .heading {
-    padding: 0.25rem;
-  }
+<style scoped>
+.feedback-launcher .heading {
+  padding: 0.25rem;
+}
 
-  .quiz-list-items {
-    max-height: 57vh;
-    overflow: scroll;
-  }
+.feedback-launcher .quiz-list-items {
+  max-height: 57vh;
+  overflow: scroll;
+}
 
-  .back-button {
-    min-width: 5rem;
-    width: 5rem;
-    font-size: 0.8em;
-    height: 1.5rem;
-    padding: 0 0.5rem;
-  }
+.feedback-launcher .back-button {
+  min-width: 5rem;
+  width: 5rem;
+  font-size: 0.8em;
+  height: 1.5rem;
+  padding: 0 0.5rem;
+}
 
-  .feedback {
-    padding: 0.5rem;
-  }
+.feedback-launcher .feedback {
+  padding: 0.5rem;
 }
 </style>

@@ -1,44 +1,5 @@
 <template>
   <div class="landing">
-      <!-- <div>
-        <button class="primary back-button" @click="clearStateAndGotoFeedback()">&lt; Back</button>
-      </div> -->
-    <!-- <h1>Quiz Sessions</h1>
-    <ul class="quiz-list-items" v-if="!selectedQuizSession">
-      <template v-for="pastSession in pastAttemptedQuizSessions">
-        <QuizSessionListItem
-          :heading="pastSession.quiz.title"
-          :subheadings="[`${new Date(pastSession.startTime)}`]"
-          :clickable="true"
-          :actionButton="getPastSessionActionButtonProp(pastSession)"
-          @click="setSelectedQuizSession(pastSession)"
-          @actionClick="setSelectedQuizSession(pastSession)"
-          :key="pastSession.userSessionId"
-        ></QuizSessionListItem>
-      </template>
-
-      <template v-for="quizSession in quizSessions">
-        <QuizSessionListItem
-          :heading="quizSession.title"
-          :subheadings="[`Starts: ${new Date(quizSession.availableStart)}`, `Ends: ${new Date(quizSession.availableEnd)}`]"
-          :clickable="false"
-          :actionButton="getSessionActionButtonProp(quizSession)"
-          @click="() => {}"
-          @actionClick="setSelectedQuizSession(quizSession)"
-          :disabled="!isQuizSessionActive(quizSession)"
-          :key="quizSession._id"
-        ></QuizSessionListItem>
-      </template>
-    </ul>
-
-    <template
-      v-if="selectedQuizSession && pastAttemptedQuizSessions.find((q) => q._id === selectedQuizSession._id)"
-    >
-      <div>
-        <button class="primary back-button" @click="() => selectedQuizSession = null">&lt; Back</button>
-      </div>
-      <Feedback :quizSession="selectedQuizSession" />
-    </template> -->
     <div class="center margin-top">
       <button
         v-if="quiz && quizAvailable && !quizSession && quizSessionFetched"
@@ -65,14 +26,6 @@
   @media only screen and (max-width: 1483px) {
     padding: 1.5em;
   }
-  
-  // .back-button {
-  //   min-width: 5rem;
-  //   width: 5rem;
-  //   font-size: 0.8em;
-  //   height: 1.5rem;
-  //   padding: 0 0.5rem;
-  // }
 
   .content-inner-container {
     display: flex;
@@ -110,9 +63,7 @@ import {
   IUser,
   IQuiz,
   IQuizSession,
-  IUserSession,
-  LoginResponse,
-  IntermediateLogin,
+  IUserSession
 } from "../../../common/interfaces/ToClientData";
 import OverviewContainer from "../components/OverviewContainer.vue";
 import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
@@ -135,47 +86,6 @@ import { getIdToken, setIdToken, getLoginResponse } from "../../../common/js/fro
 })
 export default class Landing extends Vue {
   
-  //   async resetState() {
-  //     try {
-  //     console.log('Resetting quizid: ');
-
-  //     const tokenResponse = await API.request(
-  //       API.POST,
-  //       API.USER + "/reset-quiz",
-  //       {},
-  //       undefined,
-  //       getIdToken()
-  //     );
-
-  //     if (!tokenResponse || !tokenResponse.payload) {
-  //       return console.error("JWT sign error. Please contact administrator");
-  //     }
-
-  //     setIdToken(tokenResponse.payload);
-
-  //     const response = getLoginResponse() as LoginResponse | IntermediateLogin;
-      
-  //     this.$store.dispatch("resetSessionState");
-  //     this.$store.dispatch("resetQuizState");
-      
-  //     this.$store.commit("RESET_GLOBAL_MESSAGE");
-
-  //     if (response.user) {
-  //       await this.$store.dispatch("setUser", response.user);
-  //     }
-
-  //   } catch(e) {
-
-  //   }
-  // }
-
-  // clearStateAndGotoFeedback() {
-  //   this.resetState();
-  //   this.$router.push('/feedback-launcher');
-
-  //   // Hacky way of resetting entire state of the application
-  //   // location.reload();
-  // }
   get user(): IUser | null {
     return this.$store.getters.user;
   }

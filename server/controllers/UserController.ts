@@ -98,19 +98,6 @@ export class UserController extends BaseController {
         return res.sendStatus(500);
     }
 
-    private async resetQuiz(req: express.Request, res: express.Response, next: express.NextFunction | undefined) {
-        
-        const decodedToken = req.user as LoginResponse;
-
-        if(!decodedToken) return res.sendStatus(500);
-        
-        const token = jwt.sign(Object.assign({}, req.user, { quizId: null, available: false }), Conf.jwt.SECRET, { expiresIn: Conf.jwt.TOKEN_LIFESPAN });
-
-        return res.json({
-            payload: token
-        });
-    }
-
     private getPageByIds(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
         this.userService.handlePageRequest(req.body.quizId, req.body.pageId, req.body.quizSessionId, req.body.groupId).then((output) => {
             res.json(output);
@@ -147,7 +134,6 @@ export class UserController extends BaseController {
         this.router.post("/intermediate-register", this.registerIntermediate.bind(this));
         this.router.post("/me", this.refreshToken.bind(this));
         this.router.post("/launch-quiz", StudentAuthenticatorMiddleware.checkUserId(), this.launchQuizById.bind(this));
-        this.router.post("/reset-quiz", StudentAuthenticatorMiddleware.checkUserId(), this.resetQuiz.bind(this));
         this.router.post("/handleToken", this.getQuizByToken.bind(this));
         this.router.post("/page", this.getPageByIds.bind(this));
         this.router.post("/reconnectData", this.getQuizQuestionForReconnect.bind(this));

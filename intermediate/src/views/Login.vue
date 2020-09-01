@@ -27,25 +27,6 @@ export default class Login extends Vue {
     await this.$store.dispatch("setUser", response.user);
 
     this.$router.push({ name: Names.FEEDBACK_LAUNCHER });
-
-    // // If we have a response, fetch more data due to NGINX limitations
-    // const quizScheduleData: QuizScheduleData = decodeToken(await this.$store.dispatch("handleToken"));
-    // // If we have a response , set the appropiate data and so on
-    // if (response) {
-    //   await this.$store.dispatch("setUser", response.user);
-    //   await this.$store.dispatch("setQuiz", quizScheduleData.quiz ?
-    //     convertNetworkQuizIntoQuiz(quizScheduleData.quiz) : null);
-    //   await this.$store.dispatch("setQuestions", quizScheduleData.questions);
-    //   // Don't send the end time
-    //   const session: IUserSession = {
-    //       userId: response.user._id,
-    //       course: response.courseId,
-    //       startTime: Date.now(),
-    //   };
-
-    //   await this.$store.dispatch("createSession", session);
-    //   this.$router.push("/");
-    // }
   }
 }
 </script>

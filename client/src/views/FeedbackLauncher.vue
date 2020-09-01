@@ -277,7 +277,6 @@ export default class FeedbackLauncher extends Vue {
         if(token) {
           const decodedToken = decodeToken(token);
 
-          console.log('Decoded Token:', decodedToken);
           if(decodedToken.type === LoginResponseTypes.INTERMEDIATE_LOGIN) {
             this.launchActiveQuiz(decodedToken.quizId);
           }
