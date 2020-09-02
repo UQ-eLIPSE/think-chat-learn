@@ -11,37 +11,50 @@
           <div class="score">{{ overallScoreString }}</div>
         </div>
       </div>
-      <h3>Grades</h3>
+      <hr />
+      <h3>Grading criteria</h3>
       <table v-if="markRows && markRows.length" class="marks-table">
         <thead>
           <th>Criterion</th>
-          <th></th>
+          <th>&nbsp;&nbsp;&nbsp;</th>
           <th>Score</th>
           <th>Feedback</th>
         </thead>
         <tbody>
           <tr v-for="(markRow, i) in markRows" :key="`markRow-${i}`">
             <td>{{ markRow.criterionName }}</td>
-            <td class="tooltip">
+            <td class="ht">
+              <span class="icon-container">
+                <font-awesome-icon icon="info-circle" />
+              </span>
+
+              <span class="tooltip">
+                {{ markRow.criterionDescription }}
+              </span>
+            </td>
+            
+            
+            
+            <!-- <td class="tooltip">
               <span class="icon-container">
                 <font-awesome-icon icon="info-circle" />
               </span>
               <span class="tooltiptext">{{ markRow.criterionDescription }}</span>
-            </td>
-            <td>{{ markRow.score }}</td>
+            </td> -->
+            <td>{{ markRow.score }}/{{ quizCriterionMaxMarksString }}</td>
             <td>{{ markRow.feedback }}</td>
           </tr>
         </tbody>
       </table>
       
-      <div v-else class="feedback-header">
+      <div v-else class="not-available">
         <!-- Marks not available -->
-        <h2 class="faded">- Grades not available -</h2>
+        <h3 class="faded">- Grades not available -</h3>
       </div>
 
 
       <div class="general-feedback" v-if="marksObject && marksObject.feedback">
-        <h4 >General Feedback</h4>
+        <div class="general-heading">General Feedback</div>
         <span>{{ marksObject.feedback }}</span>
       </div>
       
@@ -87,6 +100,12 @@ export default class Feedback extends Vue {
     return this.quizSession && this.quizSession.quiz;
   }
 
+  get quizCriterionMaxMarksString(): string {
+    return this.quiz && this.quiz.markingConfiguration && this.quiz.markingConfiguration.maximumMarks ?
+      `${this.quiz.markingConfiguration.maximumMarks}`:
+      '-';
+  }
+
   get overallScoreString() {
     if (
       this.quizSession &&
@@ -105,19 +124,12 @@ export default class Feedback extends Vue {
     score: string;
     feedback?: string;
   }[] {
-    console.log(
-      this.marksObject!,
-      this.rubric!
-      //   this.rubric.criteria,
-      //   this.marksObject.marks
-    );
     if (
       !this.marksObject ||
       !this.rubric ||
       !this.rubric.criteria ||
       !this.marksObject.marks
     ) {
-      console.log("Marks/Rubric/Criteria missing");
       return [];
     }
     const marks = this.marksObject.marks;
@@ -146,8 +158,6 @@ export default class Feedback extends Vue {
   async fetchRubricWithCriteria(
     rubricId: string
   ): Promise<IRubricCriteria | null> {
-    // TODO: Make network request
-
     try {
       const rubricWithCriteria = await API.request(
         API.GET,
@@ -184,37 +194,6 @@ export default class Feedback extends Vue {
       if(!marksResponse || !marksResponse.payload || !marksResponse.payload.length) throw new Error('Could not fetch marks for quiz session');
       
       return marksResponse.payload[0];
-      return {
-        _id: "5f460413c47d51831e7cac0d",
-        quizSessionId: "5f4603d4c47d51831e7cac09",
-        markerId: "5f44be6a0a18f3520fd76675",
-        userId: "5f44be6a0a18f3520fd76675",
-        username: "asedqweqeqwewqwenaewsqasqedweasd",
-        markerUsername: "asedqweqeqwewqwenaewsqasqedweasd",
-        timestamp: new Date("2020-08-26T06:41:23.359Z"),
-        quizId: "5f44b6c0261ab5499566b738",
-        marks: [
-          {
-            value: 2,
-            criteriaId: "5f44b66a261ab5499566b72c",
-            feedback:
-              "This is some dummy text to be replaced by actual feedback. There was a good attempt at evaluating but there was something missing in your response.  There was a good attempt at evaluating but there was something missing in your response. However, There was a good attempt at evaluating but there was something missing in your response.",
-          },
-          {
-            value: 3,
-            criteriaId: "5f44b66a261ab5499566b72d",
-            feedback:
-              "This is some dummy text to be replaced by actual feedback. There was a good attempt at evaluating but there was something missing in your response.  There was a good attempt at evaluating but there was something missing in your response. However, There was a good attempt at evaluating but there was something missing in your response.",
-          },
-          {
-            value: 4,
-            criteriaId: "5f44b66a261ab5499566b72e",
-            feedback:
-              "This is some dummy text to be replaced by actual feedback. There was a good attempt at evaluating but there was something missing in your response.  There was a good attempt at evaluating but there was something missing in your response. However, There was a good attempt at evaluating but there was something missing in your response.",
-          },
-        ],
-        feedback: "",
-      };
     } catch (e) {
       console.error(e.message);
       return null;
@@ -222,7 +201,6 @@ export default class Feedback extends Vue {
   }
 
   async mounted() {
-    console.log("Feedback : mounted(): ", this.quizSession);
     if (
       this.quizSession &&
       this.quizSession._id &&
@@ -251,6 +229,7 @@ export default class Feedback extends Vue {
 }
 </script>
 <style lang="scss" scoped>
+
 .score {
   display: flex;
   padding: 0.25rem;
@@ -276,12 +255,24 @@ export default class Feedback extends Vue {
 .feedback-header {
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 0;
+  margin-bottom: 1rem;
+  padding-bottom: 0.25rem;
+}
+
+.feedback hr {
+  width: 70%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.not-available {
+  padding: 2rem;
 
   .faded {
-    color: rgba(150, 150, 150, 0.5);
+    color: rgba(150, 150, 150, 0.5);  
     font-style: italic;
   }
+    
 }
 
 .row {
@@ -301,7 +292,7 @@ export default class Feedback extends Vue {
   }
 
   th {
-    color: $uq;
+    color: #256;
   }
 }
 /* Tooltip container */
@@ -311,50 +302,41 @@ export default class Feedback extends Vue {
   border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
 }
 
-/* Tooltip text */
-.tooltip .tooltiptext {
-  visibility: hidden;
-  width: 120px;
-  background-color: #555;
-  color: #fff;
-  text-align: center;
-  padding: 5px 0;
-  border-radius: 6px;
-
-  /* Position the tooltip text */
-  position: absolute;
-  z-index: 1;
-  bottom: 125%;
-  left: 50%;
-  margin-left: -60px;
-
-  /* Fade in tooltip */
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-/* Tooltip arrow */
-.tooltip .tooltiptext::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  margin-left: -5px;
-  border-width: 5px;
-  border-style: solid;
-  border-color: #555 transparent transparent transparent;
-}
-
-/* Show the tooltip text when you mouse over the tooltip container */
-.tooltip:hover .tooltiptext {
-  visibility: visible;
-  opacity: 1;
-}
 
 .general-feedback {
   padding: 1rem 0.5rem;
-  > h4 {
-    color: $uq;
+  font-size: 0.9rem;
+  > .general-heading {
+    font-weight: bold;
+    color: #256;
+    padding: 0.25rem 0;
   }
 }
+
+/* Tooltip text */
+
+
+.ht:hover {
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.ht:hover .tooltip {
+    display: block;
+}
+
+.tooltip {
+    display: none;
+    background: rgba(1, 0, 0, 0.95);
+    color: white;
+    margin-left: 28px; /* moves the tooltip to the right */
+    margin-top: 15px; /* moves it down */
+    position: absolute;
+    z-index: 1000;
+    padding: 0.5rem;
+    border: 0.01em transparent;
+    border-radius: 2px;
+}
+
+
 </style>

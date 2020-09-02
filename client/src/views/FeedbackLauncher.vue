@@ -306,15 +306,13 @@ export default class FeedbackLauncher extends Vue {
 </script>
 <style lang="scss" scoped>
 .feedback-launcher {
-  padding: 0.5rem;
-  // background: #f9fbfc;
   .feedback-launcher-heading {
     display: flex;
-    padding: 0.25rem 0 0.25rem 0.25rem;
+    padding: 1rem 0.25rem;
+    background: rgba(1, 0, 0, 0.02);
     border-radius: 5px;
-    margin-bottom: 0.1em;
+    margin-bottom: 0em;
     box-shadow: 0 4px 6px -6px rgba(0, 0, 0, 0.15);
-
     > * {
       padding: 0 0.2rem;
     }
@@ -337,10 +335,14 @@ export default class FeedbackLauncher extends Vue {
   .back-button-container {
     cursor: pointer;
     padding-right: 0.8rem;
+
+    &:hover {
+      background: rgba(1, 0, 0, 0.05);
+    }
   }
 
   .feedback {
-    padding: 0.5rem;
+    padding: 1rem;
   }
 
 }
