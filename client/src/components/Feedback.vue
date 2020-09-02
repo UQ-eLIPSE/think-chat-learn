@@ -5,6 +5,20 @@
         <div class="col quiz-info">
           <h2>{{quiz.title}}</h2>
           <span>{{ new Date(quizSession.startTime).toLocaleString() }}</span>
+          
+        </div>
+        <div class="attempt-id row">
+          <h3>Attempt ID</h3>
+          <td class="ht">
+              <span class="icon-container">
+                <font-awesome-icon icon="info-circle" />
+              </span>
+
+              <span class="tooltip">
+                If you need to discuss your <b>Think.Chat.Learn</b> session,<br />
+        please provide this ID in your communications.</span>
+            </td>  
+          {{ attemptId }}
         </div>
         <div class="row overall-score">
           <h3>Overall Score</h3>
@@ -28,37 +42,25 @@
                 <font-awesome-icon icon="info-circle" />
               </span>
 
-              <span class="tooltip">
-                {{ markRow.criterionDescription }}
-              </span>
+              <span class="tooltip">{{ markRow.criterionDescription }}</span>
             </td>
-            
-            
-            
-            <!-- <td class="tooltip">
-              <span class="icon-container">
-                <font-awesome-icon icon="info-circle" />
-              </span>
-              <span class="tooltiptext">{{ markRow.criterionDescription }}</span>
-            </td> -->
+
+           
             <td>{{ markRow.score }}/{{ quizCriterionMaxMarksString }}</td>
             <td>{{ markRow.feedback }}</td>
           </tr>
         </tbody>
       </table>
-      
+
       <div v-else class="not-available">
         <!-- Marks not available -->
         <h3 class="faded">- Grades not available -</h3>
       </div>
 
-
       <div class="general-feedback" v-if="marksObject && marksObject.feedback">
         <div class="general-heading">General Feedback</div>
         <span>{{ marksObject.feedback }}</span>
       </div>
-      
-      
     </template>
   </div>
 </template>
@@ -96,14 +98,30 @@ export default class Feedback extends Vue {
   private responses!: any;
   private rubric: IRubricCriteria | null = null;
 
+  get attemptId() {
+    if (this.quizSession && this.quizSession._id) {
+      // Beautify ID by splitting into 4 segments for displaying
+      const reg = this.quizSession._id.match(/.{1,4}/g);
+
+      if (!reg) {
+        return this.quizSession._id;
+      }
+
+      return reg.join(" ");
+    }
+
+    return "N/A";
+  }
   get quiz() {
     return this.quizSession && this.quizSession.quiz;
   }
 
   get quizCriterionMaxMarksString(): string {
-    return this.quiz && this.quiz.markingConfiguration && this.quiz.markingConfiguration.maximumMarks ?
-      `${this.quiz.markingConfiguration.maximumMarks}`:
-      '-';
+    return this.quiz &&
+      this.quiz.markingConfiguration &&
+      this.quiz.markingConfiguration.maximumMarks
+      ? `${this.quiz.markingConfiguration.maximumMarks}`
+      : "-";
   }
 
   get overallScoreString() {
@@ -166,11 +184,11 @@ export default class Feedback extends Vue {
         undefined
       );
 
-      if(!rubricWithCriteria || !rubricWithCriteria.payload) return null;
-      
+      if (!rubricWithCriteria || !rubricWithCriteria.payload) return null;
+
       return rubricWithCriteria.payload;
     } catch (e) {
-      console.log('Rubric fetch error');
+      console.log("Rubric fetch error");
       return null;
     }
   }
@@ -191,8 +209,13 @@ export default class Feedback extends Vue {
         undefined
       );
 
-      if(!marksResponse || !marksResponse.payload || !marksResponse.payload.length) throw new Error('Could not fetch marks for quiz session');
-      
+      if (
+        !marksResponse ||
+        !marksResponse.payload ||
+        !marksResponse.payload.length
+      )
+        throw new Error("Could not fetch marks for quiz session");
+
       return marksResponse.payload[0];
     } catch (e) {
       console.error(e.message);
@@ -210,9 +233,7 @@ export default class Feedback extends Vue {
     ) {
       // get rubric with pre-loaded criteria
       // TODO: Make network requests
-      const rubric:
-        | IRubricCriteria
-        | null = await this.fetchRubricWithCriteria(
+      const rubric: IRubricCriteria | null = await this.fetchRubricWithCriteria(
         this.quizSession.quiz.rubricId
       );
 
@@ -229,7 +250,6 @@ export default class Feedback extends Vue {
 }
 </script>
 <style lang="scss" scoped>
-
 .score {
   display: flex;
   padding: 0.25rem;
@@ -241,7 +261,7 @@ export default class Feedback extends Vue {
   align-items: center;
 }
 
-.overall-score {
+.overall-score, .attempt-id {
   display: flex;
   align-items: center;
   > * {
@@ -269,10 +289,9 @@ export default class Feedback extends Vue {
   padding: 2rem;
 
   .faded {
-    color: rgba(150, 150, 150, 0.5);  
+    color: rgba(150, 150, 150, 0.5);
     font-style: italic;
   }
-    
 }
 
 .row {
@@ -302,7 +321,6 @@ export default class Feedback extends Vue {
   border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
 }
 
-
 .general-feedback {
   padding: 1rem 0.5rem;
   font-size: 0.9rem;
@@ -315,28 +333,25 @@ export default class Feedback extends Vue {
 
 /* Tooltip text */
 
-
 .ht:hover {
   cursor: pointer;
   opacity: 0.8;
 }
 
 .ht:hover .tooltip {
-    display: block;
+  display: block;
 }
 
 .tooltip {
-    display: none;
-    background: rgba(1, 0, 0, 0.95);
-    color: white;
-    margin-left: 28px; /* moves the tooltip to the right */
-    margin-top: 15px; /* moves it down */
-    position: absolute;
-    z-index: 1000;
-    padding: 0.5rem;
-    border: 0.01em transparent;
-    border-radius: 2px;
+  display: none;
+  background: rgba(1, 0, 0, 0.95);
+  color: white;
+  margin-left: 28px; /* moves the tooltip to the right */
+  margin-top: 15px; /* moves it down */
+  position: absolute;
+  z-index: 1000;
+  padding: 0.5rem;
+  border: 0.01em transparent;
+  border-radius: 2px;
 }
-
-
 </style>
