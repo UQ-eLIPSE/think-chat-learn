@@ -1,9 +1,12 @@
 <template>
   <div class="feedback-launcher">
-    <h1 class="heading">
+    <h1 class="feedback-launcher-heading">
+      <div v-if="isPastQuizSessionSelected" title="Back to quiz sessions" @click="() => selectedQuizSession = null" class="back-button-container icon-container">
+          <font-awesome-icon icon="arrow-left" />
+      </div>
       <span class="icon-container">
-        <font-awesome-icon icon="list" />
-      </span> Quiz Sessions
+        <font-awesome-icon :icon="pageIcon" />
+      </span> {{ pageTitle }}
     </h1>
     <ul class="quiz-list-items" v-if="!selectedQuizSession">
       <template v-for="pastSession in pastAttemptedQuizSessions">
@@ -45,11 +48,8 @@
     </ul>
 
     <template
-      v-if="selectedQuizSession && pastAttemptedQuizSessions.find((q) => q._id === selectedQuizSession._id)"
+      v-if="isPastQuizSessionSelected"
     >
-      <div>
-        <button class="primary back-button" @click="() => selectedQuizSession = null">&lt; Back</button>
-      </div>
       <Feedback class="feedback" :quizSession="selectedQuizSession" />
     </template>
   </div>
@@ -98,6 +98,19 @@ export default class FeedbackLauncher extends Vue {
   availableQuizzes: Partial<IQuiz>[] = [];
   upcomingQuizzes: Partial<IQuiz>[] = [];
 
+  get isPastQuizSessionSelected() {
+    return this.selectedQuizSession && this.pastAttemptedQuizSessions.find((q) => q._id === this.selectedQuizSession._id);
+  }
+
+  get pageTitle() {
+    return this.selectedQuizSession &&
+      this.selectedQuizSession.quiz ? "Grades and Feedback" : "Quiz Sessions";
+  }
+
+  get pageIcon() {
+    return this.selectedQuizSession &&
+      this.selectedQuizSession.quiz ? "comments" : "list";
+  }
   setSelectedQuizSession(quizSession: any) {
     this.selectedQuizSession = quizSession;
   }
@@ -293,8 +306,19 @@ export default class FeedbackLauncher extends Vue {
 </script>
 <style lang="scss" scoped>
 .feedback-launcher {
-  .heading {
-    padding: 0.25rem;
+  padding: 0.5rem;
+  // background: #f9fbfc;
+  .feedback-launcher-heading {
+    display: flex;
+    padding: 0.25rem 0 0.25rem 0.25rem;
+    border-radius: 5px;
+    margin-bottom: 0.1em;
+    box-shadow: 0 4px 6px -6px rgba(0, 0, 0, 0.15);
+
+    > * {
+      padding: 0 0.2rem;
+    }
+
   }
 
   .quiz-list-items {
@@ -308,6 +332,11 @@ export default class FeedbackLauncher extends Vue {
     font-size: 0.8em;
     height: 1.5rem;
     padding: 0 0.5rem;
+  }
+
+  .back-button-container {
+    cursor: pointer;
+    padding-right: 0.8rem;
   }
 
   .feedback {

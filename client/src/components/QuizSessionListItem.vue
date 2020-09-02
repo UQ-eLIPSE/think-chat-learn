@@ -27,7 +27,8 @@
   display: flex;
   justify-content: space-between;
   padding: 0.5rem 1rem;
-  border: 0.01rem solid rgba(215, 209, 204, 0.28);
+  border-bottom: 0.01rem solid rgba(215, 209, 204, 0.28);
+  background: white;
 
   &.clickable {
     cursor: pointer;
@@ -88,42 +89,6 @@
 
   .icon-container {
     padding-left: 0.1rem;
-  }
-}
-
-.landing {
-  margin-bottom: 175px;
-  padding: 1.5em;
-
-  @media only screen and (max-width: 1483px) {
-    padding: 1.5em;
-  }
-
-  .content-inner-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  li {
-    svg {
-      font-size: 13px;
-      margin-right: 0.5em;
-      vertical-align: baseline;
-
-      &.base1 {
-        color: $light-blue;
-      }
-      &.base2 {
-        color: $green;
-      }
-      &.base3 {
-        color: $yellow;
-      }
-      &.base4 {
-        color: $red;
-      }
-    }
   }
 }
 </style>

@@ -36,7 +36,7 @@
       
       <div v-else class="feedback-header">
         <!-- Marks not available -->
-        <h1 class="faded">- Grades not available -</h1>
+        <h2 class="faded">- Grades not available -</h2>
       </div>
 
 
@@ -280,6 +280,7 @@ export default class Feedback extends Vue {
 
   .faded {
     color: rgba(150, 150, 150, 0.5);
+    font-style: italic;
   }
 }
 
