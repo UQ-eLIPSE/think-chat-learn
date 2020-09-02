@@ -42,6 +42,7 @@ export interface LoginResponse extends GenericLogin {
   user: IUser;
   // Stores course code e.g. ENGG1200_X_Y
   courseId: string;
+  courseTitle?: string;
   quizId?: string | null;
   customQuizId?: string | null;
   available: boolean;
@@ -53,6 +54,7 @@ export interface BackupLoginResponse extends GenericLogin {
   type: LoginResponseTypes.BACKUP_LOGIN;
   user: IUser;
   courseId: string;
+  courseTitle?: string;
   quizId?: string | null;
   customQuizId?: string | null;
   isAdmin: boolean;
@@ -63,6 +65,7 @@ export interface IntermediateLogin extends GenericLogin {
   type: LoginResponseTypes.INTERMEDIATE_LOGIN;
   user: IUser;
   courseId: string;
+  courseTitle?: string;
   quizId?: string | null;
   customQuizId?: string | null;
   quizSessionId: string | null;
@@ -88,6 +91,7 @@ export interface AdminLoginResponse extends GenericLogin {
   type: LoginResponseTypes.ADMIN_LOGIN;
   user: IUser;
   courseId: string;
+  courseTitle?: string;
   isAdmin: boolean;
 }
 

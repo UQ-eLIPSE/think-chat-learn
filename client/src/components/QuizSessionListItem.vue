@@ -10,7 +10,13 @@
         v-if="actionButton && actionButton.text"
         :class="actionButtonClasses"
         @click.stop="actionClickHandler"
-      >{{ actionButton.text }}</button>
+      >
+      {{ actionButton.text }}
+        <span v-if="actionButton && actionButton.icon" class="icon-container">
+          <font-awesome-icon :icon="actionButton.icon" />
+        </span>
+      </button>
+      
     </div>
   </div>
 </template>
@@ -79,6 +85,10 @@
   .disable {
     opacity: 0.2;
   }
+
+  .icon-container {
+    padding-left: 0.1rem;
+  }
 }
 
 .landing {
@@ -139,7 +149,7 @@ export default class QuizSessionListItem extends Vue {
   @Prop({ default: undefined }) private heading!: string;
   @Prop({ default: undefined }) private subheadings!: string[];
   @Prop({ default: undefined }) private actionButton!:
-    | { mode: "green" | "purple"; text: string }
+    | { mode: "green" | "purple"; text: string, icon?: string }
     | undefined;
   @Prop({ default: false }) private disabled!: boolean;
   @Prop({ default: false }) private clickable!: boolean;

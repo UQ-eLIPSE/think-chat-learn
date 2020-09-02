@@ -1,16 +1,16 @@
 <template>
   <div class="landing">
     <div class="center margin-top">
-      <button
+      <!-- <button
         v-if="quiz && quizAvailable && !quizSession && quizSessionFetched"
         class="primary"
         tag="button"
         @click="startQuizSession()"
-      >Start Session</button>
+      >Start Session</button> -->
       <!-- TODO Style unavailable button -->
       <!-- Note button was used instead of router-link due to @click not being listened -->
       <button
-        v-else-if="!quizSession"
+        v-if="isSessionUnavailable"
         class="secondary"
       >The quiz is not available for Quiz {{quiz.title}}</button>
       <button v-else class="primary" tag="button">No Session Available</button>
@@ -86,6 +86,14 @@ import { getIdToken, setIdToken, getLoginResponse } from "../../../common/js/fro
 })
 export default class Landing extends Vue {
   
+  get canStartSession() {
+    return !!(this.quiz && this.quizAvailable && !this.quizSession && this.quizSessionFetched);
+  }
+
+  get isSessionUnavailable() {
+    return !this.quizSession;
+  }
+
   get user(): IUser | null {
     return this.$store.getters.user;
   }
@@ -179,6 +187,13 @@ export default class Landing extends Vue {
         EmitterEvents.START_TIMER,
         this.$store.getters.currentTimerSettings
       );
+    }
+  }
+
+  @Watch("canStartSession")
+  private startSessionWatchHandler(newVal: boolean, oldVal?: boolean) {
+    if(!oldVal && newVal) {
+      this.startQuizSession();
     }
   }
 }

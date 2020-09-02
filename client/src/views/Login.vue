@@ -34,7 +34,7 @@ export default class Login extends Vue {
     const loginResponse = decodeToken(q as string) as LoginResponse;
 
     await this.$store.dispatch("setUser", response.user);
-
+    await this.$store.dispatch("setUserCourseTitle", response.courseTitle);
     this.$router.push({ name: Names.FEEDBACK_LAUNCHER });
   }
 }

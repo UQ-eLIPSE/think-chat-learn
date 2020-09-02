@@ -109,6 +109,7 @@ export default class FeedbackLauncher extends Vue {
       text: pastSession.overallScore
         ? `${pastSession.overallScore}/${pastSession.overallMaximumMarks}`
         : "MARKING",
+      icon: ""
     };
   }
 
@@ -119,6 +120,7 @@ export default class FeedbackLauncher extends Vue {
       ? {
           mode: "green",
           text: "LAUNCH",
+          icon: ""
         }
       : undefined;
   }
@@ -168,6 +170,7 @@ export default class FeedbackLauncher extends Vue {
       // If we have a response , set the appropriate data and so on
       if (response) {
         await this.$store.dispatch("setUser", response.user);
+        await this.$store.dispatch("setUserCourseTitle", response.courseTitle);
         await this.$store.dispatch(
           "setQuiz",
           quizScheduleData.quiz
@@ -190,7 +193,7 @@ export default class FeedbackLauncher extends Vue {
             response.quizSessionId
           );
         }
-
+        
         this.$router.push("/");
       } else throw new Error('JWT error');
     } catch (e) {

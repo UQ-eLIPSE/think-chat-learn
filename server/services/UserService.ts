@@ -123,6 +123,7 @@ export class UserService extends BaseService<IUser> {
             // questions,
             // quizId: quizSchedule && quizSchedule._id ? quizSchedule._id : null,
             quizId: null,
+            courseTitle: identity.courseTitle || "",
             available: false
         };
 
@@ -132,6 +133,7 @@ export class UserService extends BaseService<IUser> {
             user: tempLogin.user,
             quizId: tempLogin.quizId,
             courseId: tempLogin.courseId,
+            courseTitle: tempLogin.courseTitle || "",
             isAdmin: true
         }
 
@@ -206,6 +208,7 @@ export class UserService extends BaseService<IUser> {
             user,
             // quiz: quizSchedule ? convertQuizIntoNetworkQuiz(quizSchedule) : null,
             courseId: identity.course,
+            courseTitle: identity.courseTitle || "",
             // questions,
             quizId: undefined,
             customQuizId,
@@ -290,6 +293,7 @@ export class UserService extends BaseService<IUser> {
             type: LoginResponseTypes.ADMIN_LOGIN,
             user,
             courseId: identity.course,
+            courseTitle: identity.courseTitle || "",
             //questions,
             isAdmin: true
         }

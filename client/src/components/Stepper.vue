@@ -65,7 +65,7 @@
 
 .stepper {
   margin: 0 auto;
-  padding: 1.875em;
+  padding: 1.375em;
   .active-status {
     border: 3px solid $baseLight4;
     box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.35);

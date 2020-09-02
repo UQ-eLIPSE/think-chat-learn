@@ -34,7 +34,7 @@
         </tbody>
       </table>
       
-      <div v-else>
+      <div v-else class="feedback-header">
         <!-- Marks not available -->
         <h1 class="faded">- Grades not available -</h1>
       </div>
@@ -277,6 +277,10 @@ export default class Feedback extends Vue {
   justify-content: space-between;
   align-items: center;
   padding: 1rem 0;
+
+  .faded {
+    color: rgba(150, 150, 150, 0.5);
+  }
 }
 
 .row {
