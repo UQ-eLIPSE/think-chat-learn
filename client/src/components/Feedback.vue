@@ -292,7 +292,7 @@ export default class Feedback extends Vue {
 }
 
 .not-available {
-  padding: 2rem;
+  padding-top: 1rem;
 
   .faded {
     color: rgba(150, 150, 150, 0.5);

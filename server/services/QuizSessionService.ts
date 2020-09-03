@@ -145,10 +145,12 @@ export class QuizSessionService extends BaseService<IQuizSession> {
             const currentTime = Date.now();
 
             if(quizSessionQuiz && quizSessionQuiz.quiz && quizSessionQuiz.startTime &&
-                quizSessionQuiz.quiz.pages && quizSessionQuiz.quiz.availableEnd) {
+                quizSessionQuiz.quiz.pages) {
 
                 const quizDuration = (quizSessionQuiz.quiz.pages || []).reduce(
-                    (totalTimeInMinutes, page) => totalTimeInMinutes + page.timeoutInMins || 0
+                    // For some reason, `timeoutInMins` typings, system-wide are `number` but is actually a string in the database
+                    // TODO: Investigate the actual type and usages of `timeoutInMins`
+                    (totalTimeInMinutes, page) => totalTimeInMinutes + parseFloat(`${page.timeoutInMins || 0}`)
                 , 0);
 
                 // Expected end time of the quiz session is (quiz session start time) + (total quiz duration)
