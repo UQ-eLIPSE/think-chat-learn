@@ -79,7 +79,6 @@ export class UserController extends BaseController {
     }
 
     private async launchQuizById(req: express.Request, res: express.Response, next: express.NextFunction | undefined) {
-        console.log('Launchquizbyid');
         const decodedToken = req.user as LoginResponse;
         const quizId = req.body.quizId;
         const courseId = decodedToken.courseId;

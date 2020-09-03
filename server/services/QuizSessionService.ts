@@ -144,10 +144,15 @@ export class QuizSessionService extends BaseService<IQuizSession> {
 
             const currentTime = Date.now();
 
-            if(quizSessionQuiz && quizSessionQuiz.quiz && quizSessionQuiz.quiz.pages && quizSessionQuiz.quiz.availableEnd) {
-                const quizDuration = (quizSessionQuiz.quiz.pages || []).reduce((totalTimeInMinutes, page) => totalTimeInMinutes + page.timeoutInMins || 0, 0);
+            if(quizSessionQuiz && quizSessionQuiz.quiz && quizSessionQuiz.startTime &&
+                quizSessionQuiz.quiz.pages && quizSessionQuiz.quiz.availableEnd) {
 
-                const maxEndTime = Utils.DateTime.minToMs(quizDuration) + new Date(quizSessionQuiz.quiz.availableEnd).getTime();
+                const quizDuration = (quizSessionQuiz.quiz.pages || []).reduce(
+                    (totalTimeInMinutes, page) => totalTimeInMinutes + page.timeoutInMins || 0
+                , 0);
+
+                // Expected end time of the quiz session is (quiz session start time) + (total quiz duration)
+                const maxEndTime = Utils.DateTime.minToMs(quizDuration) + new Date(quizSessionQuiz.startTime!).getTime();
 
                 return currentTime > maxEndTime;
             }

@@ -1,25 +1,16 @@
 <template>
   <div class="feedback">
     <template v-if="quizSession && quiz">
-      <div class="row feedback-header">
+      <div class="row row-wrap feedback-header">
         <div class="col quiz-info">
           <h2>{{quiz.title}}</h2>
           <span>{{ new Date(quizSession.startTime).toLocaleString() }}</span>
           
         </div>
-        <div class="attempt-id row">
-          <h3>Attempt ID</h3>
-          <td class="ht">
-              <span class="icon-container">
-                <font-awesome-icon icon="info-circle" />
-              </span>
 
-              <span class="tooltip">
-                If you need to discuss your <b>Think.Chat.Learn</b> session,<br />
-        please provide this ID in your communications.</span>
-            </td>  
-          {{ attemptId }}
-        </div>
+        
+
+        
         <div class="row overall-score">
           <h3>Overall Score</h3>
           <div class="score">{{ overallScoreString }}</div>
@@ -62,6 +53,21 @@
         <span>{{ marksObject.feedback }}</span>
       </div>
     </template>
+    <hr />
+    <div class="attempt-id row">
+          <h3>Attempt ID</h3>
+          <td class="ht">
+              <span class="icon-container">
+                <font-awesome-icon icon="info-circle" />
+              </span>
+
+              <span class="tooltip">
+                If you need to discuss your <b>Think.Chat.Learn</b> session,<br />
+        please provide this ID in your communications.</span>
+            </td>  
+          {{ attemptId }}
+        </div>
+
   </div>
 </template>
 
@@ -296,6 +302,10 @@ export default class Feedback extends Vue {
 
 .row {
   display: flex;
+}
+
+.row-wrap {
+  flex-wrap: wrap;
 }
 
 .col {
