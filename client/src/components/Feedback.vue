@@ -5,12 +5,8 @@
         <div class="col quiz-info">
           <h2>{{quiz.title}}</h2>
           <span>{{ new Date(quizSession.startTime).toLocaleString() }}</span>
-          
         </div>
 
-        
-
-        
         <div class="row overall-score">
           <h3>Overall Score</h3>
           <div class="score">{{ overallScoreString }}</div>
@@ -36,7 +32,6 @@
               <span class="tooltip">{{ markRow.criterionDescription }}</span>
             </td>
 
-           
             <td>{{ markRow.score }}/{{ quizCriterionMaxMarksString }}</td>
             <td>{{ markRow.feedback }}</td>
           </tr>
@@ -54,20 +49,26 @@
       </div>
     </template>
     <hr />
-    <div class="attempt-id row">
-          <h3>Attempt ID</h3>
-          <td class="ht">
-              <span class="icon-container">
-                <font-awesome-icon icon="info-circle" />
-              </span>
 
-              <span class="tooltip">
-                If you need to discuss your <b>Think.Chat.Learn</b> session,<br />
-        please provide this ID in your communications.</span>
-            </td>  
-          {{ attemptId }}
-        </div>
+    <div v-if="quizSession && quiz" class="quiz-attempt">
+      <h3>Quiz Attempt</h3>
+      <div class="attempt-id row">
+        <h3>Attempt ID</h3>
+        <td class="ht">
+          <span class="icon-container">
+            <font-awesome-icon icon="info-circle" />
+          </span>
 
+          <span class="tooltip">
+            If you need to discuss your
+            <b>Think.Chat.Learn</b> session,
+            <br />please provide this ID in your communications.
+          </span>
+        </td>
+        {{ attemptId }}
+      </div>
+    </div>
+    <QuizSessionViewer :quizSession="quizSession" />
   </div>
 </template>
 
@@ -95,8 +96,13 @@ import {
   AttemptedQuizSessionData,
 } from "../../../common/interfaces/DBSchema";
 import API from "../../../common/js/DB_API";
+import QuizSessionViewer from "./QuizSessionViewer.vue";
 
-@Component
+@Component({
+  components: {
+    QuizSessionViewer
+  }
+})
 export default class Feedback extends Vue {
   @Prop({ default: undefined, required: true })
   private quizSession!: AttemptedQuizSessionData;
@@ -267,7 +273,8 @@ export default class Feedback extends Vue {
   align-items: center;
 }
 
-.overall-score, .attempt-id {
+.overall-score,
+.attempt-id {
   display: flex;
   align-items: center;
   > * {
@@ -289,6 +296,10 @@ export default class Feedback extends Vue {
   width: 70%;
   margin-left: auto;
   margin-right: auto;
+}
+
+.feedback h3 {
+  font-weight: bold;
 }
 
 .not-available {
@@ -324,12 +335,6 @@ export default class Feedback extends Vue {
     color: #256;
   }
 }
-/* Tooltip container */
-.tooltip {
-  position: relative;
-  display: inline-block;
-  border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
-}
 
 .general-feedback {
   padding: 1rem 0.5rem;
@@ -341,7 +346,7 @@ export default class Feedback extends Vue {
   }
 }
 
-/* Tooltip text */
+/* Tooltip CSS */
 
 .ht:hover {
   cursor: pointer;
