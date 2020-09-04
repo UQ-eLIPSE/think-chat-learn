@@ -51,7 +51,7 @@
     <hr />
 
     <div v-if="quizSession && quiz" class="quiz-attempt">
-      <h3>Quiz Attempt</h3>
+      <h3>Your Quiz Session</h3>
       <div class="attempt-id row">
         <h3>Attempt ID</h3>
         <td class="ht">
