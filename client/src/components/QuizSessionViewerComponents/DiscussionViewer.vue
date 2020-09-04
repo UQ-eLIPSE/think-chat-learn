@@ -1,98 +1,94 @@
 <template>
-    <div class="flex-col question-wrapper">
-    <h2>{{ title }}</h2>
-    <div class="flex-row">
-      <div class="flex-col question-content">
-        <div v-html="questionPageContent"></div>
-        <div v-html="questionContent"></div>
-      </div>
-      <div class="flex-col response">
-        <h3>Your Response</h3>
-        <b-input class="response-content"
-          :disabled="true"
-          type="textarea"
-          v-model="responseWithContents" />
-
-        <div class="confidence flex-row">
-          <h3>Confidence: {{confidence}}/5 </h3>
-        </div>
-      </div>
+  <div class="chat-messages" v-if="messages && messages.length > 0 && quizSessionId">
+    <div class="message-container">
+      <ChatMessage
+        v-for="m in messages"
+        :key="m._id"
+        :selected="messageBelongsTocurrentQuizSessionId(m)"
+        :numeral="getNumeralFromQuizSessionId(m.quizSessionId)"
+        :content="m.content"
+      />
     </div>
-    </div>
+  </div>
 </template>
 <script lang="ts">
 import { Vue, Component, Watch, Prop } from "vue-property-decorator";
-import { Page, IQuestion, IResponse, IQuestionAnswerPage, IResponseQualitative, IResponseMCQ } from "../../../../common/interfaces/DBSchema";
+import {
+  Page,
+  IQuestion,
+  IResponse,
+  IQuestionAnswerPage,
+  IResponseQualitative,
+  IResponseMCQ,
+  IChatGroup,
+  IDiscussionPage,
+  IChatMessage,
+} from "../../../../common/interfaces/DBSchema";
 import InfoViewer from "./InfoViewer.vue";
 import { QuestionType } from "../../../../common/enums/DBEnums";
+import ChatMessage from "../Chat/ChatMessage.vue";
 
 @Component({
   components: {
-    InfoViewer
-  }
+    InfoViewer,
+    ChatMessage
+  },
 })
 export default class DiscussionViewer extends Vue {
-  @Prop({ default: undefined, required: true }) questionPage!: IQuestionAnswerPage;
-  @Prop({ default: undefined, required: true }) question!: IQuestion;
-  @Prop({ default: undefined, required: true }) responseWithContent!: IResponse;
+  @Prop({ default: undefined, required: true })
+  page!: IDiscussionPage;
+  @Prop({ default: undefined, required: true }) quizSessionId!: string;
+  @Prop({ default: undefined, required: true }) chatGroup!: IChatGroup;
 
-  get questionPageContent() {
-    return this.questionPage && this.questionPage.content ? this.questionPage.content: '';
+  getNumeralFromQuizSessionId(quizSessionId: string) {
+    if (!this.chatGroup || !this.chatGroup.quizSessionIds || !Array.isArray(this.chatGroup.quizSessionIds)) return 1;
+    const ind = this.chatGroup.quizSessionIds.indexOf(quizSessionId);
+    if (ind === -1) return 1;
+    return ind + 1;
   }
 
-  get questionContent() {
-    return (this.question && this.question.content) || "";
+  messageBelongsTocurrentQuizSessionId(message: IChatMessage) {
+          console.log('Selected: ', message.quizSessionId, this.quizSessionId);
+    if (!this.quizSessionId || !message || !message.quizSessionId) return false;
+
+    return message.quizSessionId === this.quizSessionId;
   }
 
-  get title() {
-    return (this.question && this.question.title) || "";
-  }
-
-  get responseWithContents() {
-    if(!this.responseWithContent || !this.responseWithContent.type) return "";
-    switch(this.responseWithContent.type) {
-      case QuestionType.QUALITATIVE:
-        return (this.responseWithContent as IResponseQualitative).content || "";
-      case QuestionType.MCQ:
-        // TODO: Once MCQ's are implemented in the system, replace optionId with actual option
-        return (this.responseWithContent as IResponseMCQ).optionId || "";
-      default:
-        return "";
-    }
-  }
-
-  get confidence() {
-    return (this.responseWithContent && this.responseWithContent.confidence) || "";
+  get messages() {
+    return (this.chatGroup && this.chatGroup.messages) || [];
   }
 }
 </script>
 
 <style scoped lang="scss">
-.content {
-    // background-color: #fafafa;
-    flex: 0.5;
-}
-
 .flex-row {
-    display: flex;
+  display: flex;
 }
 
 .flex-col {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
-.response-content {
-  font-size: 0.8em;
+.chat {
+  background-color: #f7f8f8;
+  box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.15);
+  /* max-height: 30vh; */
+  width: 100%;
+  overflow: auto;
+
+  .message-container {
+    max-height: 100%;
+    overflow: auto;
+    padding: 15px;
+  }
 }
 
-.question-content, .response {
-  flex: 0.5;
+.chat-messages {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  max-height: 30vh;
+  overflow: scroll;
 }
-
-.confidence {
-  align-items: center;
-  >*  { margin: 0.5rem; padding: 0.25rem };
-}
-
 </style>
