@@ -1,10 +1,14 @@
 import { BaseService } from "./BaseService";
 import { QuizSessionRepository } from "../repositories/QuizSessionRepository";
-import { IQuizSession, Response, AttemptedQuizSessionData } from "../../common/interfaces/DBSchema";
+import { IQuizSession, Response, AttemptedQuizSessionData, TypeQuestion, IResponse } from "../../common/interfaces/DBSchema";
 import { UserSessionRepository } from "../repositories/UserSessionRepository";
 import { QuizRepository } from "../repositories/QuizRepository";
 import { ResponseRepository } from "../repositories/ResponseRepository";
 import { Utils } from "../../common/js/Utils";
+import { PageType } from "../../common/enums/DBEnums";
+import { QuestionRepository } from "../repositories/QuestionRepository";
+import { ObjectID } from "mongodb";
+import { IQuestionAnswerPage } from "../../common/interfaces/ToClientData";
 
 export class QuizSessionService extends BaseService<IQuizSession> {
 
@@ -12,9 +16,10 @@ export class QuizSessionService extends BaseService<IQuizSession> {
     protected readonly quizRepo: QuizRepository;
     protected readonly userSessionRepo: UserSessionRepository;
     protected readonly responseRepo: ResponseRepository;
+    protected readonly questionRepo: QuestionRepository;
 
     constructor(_quizSessionRepo: QuizSessionRepository, _userSessionRepo: UserSessionRepository,
-        _quizRepo: QuizRepository, _responseRepo: ResponseRepository) {
+        _quizRepo: QuizRepository, _responseRepo: ResponseRepository, _questionRepo: QuestionRepository) {
 
         super();
 
@@ -22,6 +27,7 @@ export class QuizSessionService extends BaseService<IQuizSession> {
         this.userSessionRepo = _userSessionRepo;
         this.quizRepo = _quizRepo;
         this.responseRepo = _responseRepo;
+        this.questionRepo = _questionRepo;
     }
 
     // Creates a user session assuming the body is valid
@@ -161,6 +167,24 @@ export class QuizSessionService extends BaseService<IQuizSession> {
             
             return false;
         });
+
+        // Populate responsesWithContent and questions
+        await Promise.all(pastQuizSessions.map(async (session) => {
+            const responseIds = session.responses || [];
+
+            if (session && session.quiz && session.quiz.pages) {
+                const validQuestionIds = (session.quiz.pages || [])
+                    .filter((p) => p.type === PageType.QUESTION_ANSWER_PAGE).map((questionPage: IQuestionAnswerPage) => questionPage.questionId).filter((x) => !!x) as string[];
+
+                const questions = await this.questionRepo.findByIdArray(validQuestionIds);
+                session.questions = questions && questions.length? questions: []; 
+            }
+
+            if(responseIds && responseIds.length) {
+                const responses = await this.responseRepo.findByIdArray(responseIds);
+                session.responsesWithContent = responses && responses.length ? responses : [];
+            }
+        }));
 
         return pastQuizSessions;
     }

@@ -4,7 +4,8 @@
     <div v-for="(page, i) in pages" :key="page._id">
       <Collapsible :title="`#${i+1} ${page.title}`" :label="pageTypeTitle(page)">
         <QuestionViewer v-if="page.type === PageTypes.QUESTION_ANSWER_PAGE"
-          :questionPage="page" :responseContent="getQuestionResponseContent(page)" />
+          :questionPage="page"
+          :question="getQuestionForPage(page)" :responseWithContent="getQuestionResponseWithContent(page)" />
         <div v-if="page.type === PageTypes.DISCUSSION_PAGE">Discussion</div>
         <InfoViewer v-if="page.type === PageTypes.INFO_PAGE"
           :contentLeft="[page.content]"  />
@@ -20,7 +21,7 @@
 import { Vue, Component, Watch, Prop } from "vue-property-decorator";
 
 import API from "../../../common/js/DB_API";
-import { AttemptedQuizSessionData, Page, IResponse, IQuestionAnswerPage, IQuestionQualitative } from "../../../common/interfaces/DBSchema";
+import { AttemptedQuizSessionData, Page, IResponse, IQuestionAnswerPage, IQuestionQualitative, IQuestion, IResponseQualitative } from "../../../common/interfaces/DBSchema";
 import Collapsible from './Collapsible.vue';
 import { PageType, QuestionType } from "../../../common/enums/DBEnums";
 import InfoViewer from "./QuizSessionViewerComponents/InfoViewer.vue";
@@ -35,9 +36,7 @@ import { getIdToken } from "../../../common/js/front_end_auth";
   }
 })
 export default class QuizSessionViewer extends Vue {
-  @Prop({ default: undefined, required: true })
-  private quizSession!: AttemptedQuizSessionData;
-  private quizSessionResponses!: IResponse[];
+  @Prop({ default: undefined, required: true }) private quizSession!: AttemptedQuizSessionData;
 
   get pages() {
     return this.quiz && this.quiz.pages? this.quiz.pages || [] : [];
@@ -49,6 +48,27 @@ export default class QuizSessionViewer extends Vue {
 
   get quiz() {
     return this.quizSession && this.quizSession.quiz;
+  }
+
+  get questions() {
+    return (this.quizSession && this.quizSession.questions) || [];
+  }
+
+  get responsesWithContent() {
+    return (this.quizSession && this.quizSession.responsesWithContent) || [];
+  }
+
+  getQuestionForPage(page: IQuestionAnswerPage): IQuestion | undefined {
+    if(!page || !page.questionId) return undefined;
+    const question = this.questions.find((q) => q._id === page.questionId);
+    return question;
+  }
+
+  getQuestionResponseWithContent(page: IQuestionAnswerPage): IResponse | undefined {
+    if(!page || !page.questionId) return undefined;
+    const questionId = page.questionId;
+    
+    return this.responsesWithContent.find((r) => r.questionId === page.questionId);
   }
 
   get quizCriterionMaxMarksString(): string {
@@ -85,41 +105,6 @@ export default class QuizSessionViewer extends Vue {
     }
   }
 
-  get responses() {
-    return this.quizSessionResponses || [];
-  }
-
-  async fetchQuizSessionResponses() {
-    if(!this.quizSession || !this.quizSession._id) this.quizSessionResponses = [];
-
-    try {
-      const result = await API.request(API.GET, `${API.RESPONSE}/quizSession/${this.quizSession._id}`, {}, undefined, getIdToken());  
-      if(result && result.data && result.data.length) {
-        this.quizSessionResponses = result.data;
-      }
-
-      this.quizSessionResponses = [];
-    } catch(e) {
-      console.error('Responses could not be fetched');
-      this.quizSessionResponses = [];
-    }
-  }
-
-  getQuestionResponseContent(page: IQuestionAnswerPage) {
-    if(!page || this.quizSessionResponses || !Array.isArray(this.quizSessionResponses)) return "";
-
-    const questionResponse = this.quizSessionResponses.find((response) => response.questionId === page.questionId);
-    
-    if(!questionResponse) return "";
-
-    if(questionResponse.type === QuestionType.QUALITATIVE) {
-      return questionResponse as IQuestionQualitative
-    }
-  }
-
-  async mounted() {
-    await this.fetchQuizSessionResponses()
-  }
 }
 </script>
 <style lang="scss" scoped>

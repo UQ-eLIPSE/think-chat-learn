@@ -245,7 +245,11 @@ export interface IRubric extends Document {
   criterias: string[];
 }
 
-export type AttemptedQuizSessionData = IQuizSession & { quiz?: Partial<IQuiz> } & { overallScore?: number; overallMaximumMarks?: number };
+export type AttemptedQuizSessionData = IQuizSession &
+  { quiz?: Partial<IQuiz> } &
+  { overallScore?: number; overallMaximumMarks?: number } &
+  { responsesWithContent?: IResponse[] } &
+  { questions?: IQuestion[] };
 
 export type IRubricCriteria = Omit<IRubric, "criterias"> & {
   criteria: ICriteria[];
