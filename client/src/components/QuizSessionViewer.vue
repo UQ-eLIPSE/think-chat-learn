@@ -21,7 +21,7 @@
 import { Vue, Component, Watch, Prop } from "vue-property-decorator";
 
 import API from "../../../common/js/DB_API";
-import { AttemptedQuizSessionData, Page, IResponse, IQuestionAnswerPage, IQuestionQualitative, IQuestion, IResponseQualitative } from "../../../common/interfaces/DBSchema";
+import { AttemptedQuizSessionData, Page, IResponse, IQuestionAnswerPage, IQuestionQualitative, IQuestion, IResponseQualitative, IChatGroup } from "../../../common/interfaces/DBSchema";
 import Collapsible from './Collapsible.vue';
 import { PageType, QuestionType } from "../../../common/enums/DBEnums";
 import InfoViewer from "./QuizSessionViewerComponents/InfoViewer.vue";
@@ -37,6 +37,7 @@ import { getIdToken } from "../../../common/js/front_end_auth";
 })
 export default class QuizSessionViewer extends Vue {
   @Prop({ default: undefined, required: true }) private quizSession!: AttemptedQuizSessionData;
+  private chatGroup: IChatGroup | null = null;
 
   get pages() {
     return this.quiz && this.quiz.pages? this.quiz.pages || [] : [];
@@ -103,6 +104,25 @@ export default class QuizSessionViewer extends Vue {
       default:
         return "";
     }
+  }
+
+  async fetchChatGroupForQuizSession() {
+    if(!this.quizSession || !this.quizSession._id) return null;
+    try {
+      const chatGroup = await API.request(API.GET, API.CHATGROUP + `quizSession/${this.quizSession._id}`, {}, undefined, getIdToken());
+      if(chatGroup && chatGroup.success && chatGroup.payload) {
+        this.chatGroup = chatGroup.payload;
+      }
+
+      this.chatGroup = null;
+    } catch(e) {
+      this.chatGroup = null;
+      console.error('Could not fetch chat group');
+    }
+  }
+  
+  async mounted() {
+    await this.fetchChatGroupForQuizSession();
   }
 
 }
