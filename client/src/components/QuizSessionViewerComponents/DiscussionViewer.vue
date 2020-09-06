@@ -48,7 +48,6 @@ export default class DiscussionViewer extends Vue {
   }
 
   messageBelongsTocurrentQuizSessionId(message: IChatMessage) {
-          console.log('Selected: ', message.quizSessionId, this.quizSessionId);
     if (!this.quizSessionId || !message || !message.quizSessionId) return false;
 
     return message.quizSessionId === this.quizSessionId;
