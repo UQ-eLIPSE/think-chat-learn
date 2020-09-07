@@ -48,7 +48,7 @@ abstract class Config {
     if (!ExpectedConfig[key] || !ExpectedConfig[key].type || !key) return false;
 
     // If configuration is optional and falsy
-    if (ExpectedConfig[key].optional && !actualValue) return true;
+    if ((ExpectedConfig[key] as any).optional && !actualValue) return true;
 
     // If configuration is not optional and falsy
     if (!actualValue) return false;
@@ -108,75 +108,21 @@ export const NODE_ENVS = {
   development: 'development',
   production: 'production',
   testing: 'testing'
-};
-
-
-
-/**
- * Maps `Configuration` interface types to `ExpectedConfig`.
- * Makes sure that static types provided by Typescript and runtime
- * types defined in `ExpectedConfig` are consistent with each other.
- */
-type MappedConfigType<I, K extends keyof I> = {
-  type: I[K] extends number ? 'number' : I[K] extends string ?
-  'string' :
-  I[K] extends string ? 'string' :
-  I[K] extends boolean ? 'boolean' : never;
-  optional?: boolean;
-};
-
-export interface ServerConfiguration {
-  NODE_ENV: string;
-  SERVER_URL: string;
-  ENDPOINT_URL: string;
-  ADMIN_URL: string;
-  CLIENT_URL: string;
-  INTERMEDIATE_URL: string;
-  PORT: number;
-  DATABASE_URI: string;
-
-  LTI_TEST_MODE: boolean;
-  LTI_METHOD: string;
-  LTI_CONSUME_URL: string;
-  LTI_CONSUMER_KEY: string;
-  LTI_SHARED_SECRET: string;
-
-  JWT_SECRET: string;
-  JWT_TOKEN_LIFESPAN: string;
-
-  HTTP_MAX_SOCKETS: number;
-
-  SOCKET_PING_INTERVAL: number;
-  SOCKET_PING_TIMEOUT: number;
-
-  SERVE_STATIC_CONTENT: boolean;
-  CLIENT_RELATIVE_FOLDER: string;
-  ADMIN_RELATIVE_FOLDER: string;
-  INTERMEDIATE_RELATIVE_FOLDER: string;
-
-  MANTA_ENABLED: boolean;
-  MANTA_URL: string;
-  MANTA_KEY_LOCATION: string;
-  MANTA_KEY_ID: string;
-  MANTA_USER: string;
-  MANTA_SUBUSER: string;
-  MANTA_ROLES: string;
-  MANTA_FOLDER_PATH: string;
-  IMAGE_UPLOAD_LOCAL_PATH: string;
-
-  GROUP_DESIRED_SIZE: number;
-  GROUP_FORMATION_INTERVAL_MS: number;
-  PAGE_SLACK: number;
-}
+} as const;
 
 /**
  * Contains the .env variables are expected in the .env file and their respective types
  * Used for runtime configuration type checking
- * E.g. If PORT is set as `abc`, this will help identify that error
+ * 
+ * Note: `as const` is known as a "const assertion". This feature was added in TypeScript 3.4.
+ * Essentially, using `as const` does the following:
+ * * No literal types in the literal expression are widened
+ * * Object literals will get readonly properties.
+ * 
+ * This is used to map expected configuration types to server configuration type used system-wide
+ * 
  */
-export const ExpectedConfig
-  : { [key in keyof ServerConfiguration]: MappedConfigType<ServerConfiguration, key> }
-  = {
+export const ExpectedConfig = {
   NODE_ENV: { type: 'string' },
 
   SERVER_URL: { type: 'string' },
@@ -219,30 +165,35 @@ export const ExpectedConfig
   GROUP_DESIRED_SIZE: { type: 'number' },
   GROUP_FORMATION_INTERVAL_MS: { type: 'number' },
   PAGE_SLACK: { type: 'number' },
-};
+} as const;
 
-export interface CommonConfiguration {
+/**
+ * Extracts config types from `ExpectedConfig`.
+ */
+type MappedConfigType<I, K extends keyof I, V extends I[K] & {type: string, optional?: boolean }> = V['type'] extends  'number' ?  number :
+  V['type'] extends 'string' ? string :
+  V['type'] extends 'boolean' ? boolean : never;
 
-}
+
+export type ServerConfiguration = {[key in keyof typeof ExpectedConfig]: MappedConfigType<typeof ExpectedConfig, key, typeof ExpectedConfig[key]>};
+
 // Load dotenv without type checking
 
 // Load configuration
 const configRes = Config.get(__dirname + '/../../server.env');
 
-console.log('###### SERVER CONFIG: ', configRes.payload);
+
 const commonDotEnv = dotenv.config({
-  // path: __dirname +  '/../../common.env'
   path: __dirname +  '/../../common.env'
 });
 if (!commonDotEnv) throw new Error('.env file could not be parsed');
 if (commonDotEnv.error) throw new Error(commonDotEnv.error.message);
 if (!commonDotEnv.parsed) throw new Error('.env file could not be parsed');
 
-console.log('#######################SERVER COMMON CONFIG ERR: ###################', commonDotEnv.parsed);
-console.log('#######################SERVER COMMON CONFIG: ###################', commonDotEnv.parsed);
 if (!configRes || !configRes.success || !configRes.payload) {
   console.error(configRes.message);
   process.exit(1);
 }
 
+export type CommonConfiguration = {};
 export default { ...configRes.payload, ...commonDotEnv.parsed } as ServerConfiguration & CommonConfiguration;

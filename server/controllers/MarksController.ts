@@ -25,22 +25,26 @@ export class MarksController extends BaseController {
         });
     }
 
-    private getMarksByQuizId(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
+    private getMarksByQuizId(req: express.Request, res: express.Response, next: express.NextFunction | undefined) {
 
         const quizId = (typeof req.query.q === "string")? req.query.q: null;
         const c = (typeof req.query.c === "string")? req.query.c: null;
         const p = (typeof req.query.p === "string")? req.query.p: null;
-        if(!c || !p) res.sendStatus(400);
+        if(!c || !p) return res.sendStatus(400);
 
         const currentPage = parseInt(c as string);
         const perPage = parseInt(p as string);
         if (!quizId || !currentPage || !perPage) throw new Error('Pagination Parameters not supplied');
         this.marksService.getMarksForQuizPaginated(quizId, currentPage, perPage).then((result) => {
-            res.json(result).status(200);
+            return res.json(result).status(200);
         }).catch((e) => {
             console.log(e);
-            res.sendStatus(400);
+            return res.sendStatus(400);
         });
+
+
+        // Fall-through case
+        return res.sendStatus(500);
     }
 
     private createOrUpdateMarks(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
