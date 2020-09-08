@@ -1,114 +1,6 @@
 import dotenv from 'dotenv';
-
-/**
- * Utility Class for configuration parsing
- */
-abstract class Config {
-  /**
-   * Return the configuration object as loaded from the `.env` file
-   * @param envFilePath Path of .env file to be loaded and parsed
-   */
-  static get(envFilePath?: string): { success: boolean, payload: ServerConfiguration | null, message?: string } {
-    try {
-      const dotEnv = dotenv.config({
-        path: envFilePath
-      });
-      if (!dotEnv) throw new Error('.env file could not be parsed');
-      if (dotEnv.error) throw new Error(dotEnv.error.message);
-      if (!dotEnv.parsed) throw new Error('.env file could not be parsed');
-      if (!Config.isConfigValid(dotEnv.parsed)) throw new Error('Configuration error => .env file');
-      return {
-        success: true,
-        payload: Config.generateConfigObject(dotEnv.parsed),
-        message: 'Configuration loaded successfully'
-      };
-    } catch (e) {
-      return {
-        success: false,
-        message: e.message,
-        payload: null
-      };
-    }
-  }
-
-  static isValidEnv(env: any): boolean {
-    return (
-      env === NODE_ENVS.development ||
-      env === NODE_ENVS.production ||
-      env === NODE_ENVS.testing
-    );
-  }
-
-  /**
-   *
-   * @param key name of the config variable
-   * @param actualValue value parsed from the .env file / custom
-   */
-  static _testIfConfigTypeMatches(key: keyof ServerConfiguration, actualValue: string): boolean {
-    if (!ExpectedConfig[key] || !ExpectedConfig[key].type || !key) return false;
-
-    // If configuration is optional and falsy
-    if ((ExpectedConfig[key] as any).optional && !actualValue) return true;
-
-    // If configuration is not optional and falsy
-    if (!actualValue) return false;
-
-    switch (ExpectedConfig[key].type) {
-      case 'number':
-        return typeof parseFloat(actualValue) === ExpectedConfig[key].type;
-      case 'string':
-        return typeof actualValue === ExpectedConfig[key].type;
-      case 'boolean':
-        const isBoolean = actualValue === 'true' || actualValue === 'false';
-        return isBoolean;
-      default:
-        return false;
-    }
-  }
-
-  static isConfigValid(parsedConfig: dotenv.DotenvParseOutput): boolean {
-    return (Object.keys(ExpectedConfig) as Array<keyof ServerConfiguration>).every((config) => {
-      if (!Config._testIfConfigTypeMatches(config, parsedConfig[config])) {
-        console.error(`Config error: ${config} does not match expected type ${ExpectedConfig[config].type}`);
-      }
-      return Config._testIfConfigTypeMatches(config, parsedConfig[config]);
-    });
-  }
-
-  static generateConfigObject(parsedConfiguration: dotenv.DotenvParseOutput): ServerConfiguration {
-    return Object.keys(parsedConfiguration).reduce((compiledConfig, configKey) => {
-      const ExpectedConfigObject = ExpectedConfig[configKey as keyof ServerConfiguration];
-      if (!ExpectedConfigObject || !ExpectedConfigObject.type) return compiledConfig;
-      switch (ExpectedConfigObject.type) {
-        case 'number':
-          return Object.assign(compiledConfig, { [configKey]: parseFloat(parsedConfiguration[configKey]) });
-        case 'string':
-          return Object.assign(compiledConfig, { [configKey]: parsedConfiguration[configKey] });
-        case 'boolean':
-          const value = parsedConfiguration[configKey] === 'true' ? true : false;
-          return Object.assign(compiledConfig, { [configKey]: value });
-        default:
-          return compiledConfig;
-      }
-    }, {} as ServerConfiguration);
-  }
-}
-
-
-
-/**
- * 
- * #########################################
- * ============ Types and Enums ============
- * #########################################
- * 
- */
-
-export const NODE_ENVS = {
-  development: 'development',
-  production: 'production',
-  testing: 'testing'
-} as const;
+import ConfigValidator, { MappedConfigType } from '../../common/util/ConfigValidator';
+import { ExpectedCommonConfig } from '../../common/config/Config';
 
 /**
  * Contains the .env variables are expected in the .env file and their respective types
@@ -122,7 +14,7 @@ export const NODE_ENVS = {
  * This is used to map expected configuration types to server configuration type used system-wide
  * 
  */
-export const ExpectedConfig = {
+export const ExpectedServerConfig = {
   NODE_ENV: { type: 'string' },
 
   SERVER_URL: { type: 'string' },
@@ -167,33 +59,42 @@ export const ExpectedConfig = {
   PAGE_SLACK: { type: 'number' },
 } as const;
 
-/**
- * Extracts config types from `ExpectedConfig`.
- */
-type MappedConfigType<I, K extends keyof I, V extends I[K] & {type: string, optional?: boolean }> = V['type'] extends  'number' ?  number :
-  V['type'] extends 'string' ? string :
-  V['type'] extends 'boolean' ? boolean : never;
+export type ServerConfiguration = {[key in keyof typeof ExpectedServerConfig]: MappedConfigType<typeof ExpectedServerConfig, key, typeof ExpectedServerConfig[key]>};
+export type CommonConfiguration = {[key in keyof typeof ExpectedCommonConfig]: MappedConfigType<typeof ExpectedCommonConfig, key, typeof ExpectedCommonConfig[key]>};
 
+export function readConfigFiles() {
+  try {
+    const serverDotEnv = dotenv.config({
+      path: __dirname +  '/../../server.env'
+    });
+  
+    const commonDotEnv = dotenv.config({
+      path: __dirname +  '/../../common.env'
+    });
+  
+    if(!serverDotEnv || !commonDotEnv) throw new Error('server.env could not be parsed');
+  
+    const serverConfig: ServerConfiguration = ConfigValidator
+      .validateAndParseConfigWithExpectedConfig<typeof ExpectedServerConfig, ServerConfiguration>(serverDotEnv.parsed, ExpectedServerConfig);
+  
+    const commonConfig: CommonConfiguration = ConfigValidator
+      .validateAndParseConfigWithExpectedConfig<typeof ExpectedCommonConfig, CommonConfiguration>(commonDotEnv.parsed, ExpectedCommonConfig);
+  
+    return { success: true, payload: { ...serverConfig, ...commonConfig } };
+  } catch(e) {
+    return { success: false, message: e.message }
+  }
+}
 
-export type ServerConfiguration = {[key in keyof typeof ExpectedConfig]: MappedConfigType<typeof ExpectedConfig, key, typeof ExpectedConfig[key]>};
+const configParsedResponse = readConfigFiles();
 
-// Load dotenv without type checking
-
-// Load configuration
-const configRes = Config.get(__dirname + '/../../server.env');
-
-
-const commonDotEnv = dotenv.config({
-  path: __dirname +  '/../../common.env'
-});
-if (!commonDotEnv) throw new Error('.env file could not be parsed');
-if (commonDotEnv.error) throw new Error(commonDotEnv.error.message);
-if (!commonDotEnv.parsed) throw new Error('.env file could not be parsed');
-
-if (!configRes || !configRes.success || !configRes.payload) {
-  console.error(configRes.message);
+if(!configParsedResponse || !configParsedResponse.success || !configParsedResponse.payload) {
+  console.error('\n\n========== Configuration error encountered ==========',
+    '\nPlease fix specified error(s):\n\t', configParsedResponse.message,
+    '\n=====================================================\n\n');
   process.exit(1);
 }
 
-export type CommonConfiguration = {};
-export default { ...configRes.payload, ...commonDotEnv.parsed } as ServerConfiguration & CommonConfiguration;
+
+console.log('\n========== Configuration loaded ==========\n');
+export default configParsedResponse.payload;
