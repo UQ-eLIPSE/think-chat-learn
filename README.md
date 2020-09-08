@@ -19,13 +19,10 @@ MongoDB v4.x
 1. Clone repo `think-chat-learn`
 2. Setup configuration files (See "Development Configuration" section below)
 
-### Install components
-Installation is automatically handled by `Dockerfile`s present in `/client`, `/intermediate`, `/server`, `/admin`
-
 #### Development configuration
-Set up environment and configuration files (Examples files included in repository.)
-    /server/config/Conf.ts (make a copy of /server/config/Conf.ts.example)
-    /common/config/Conf.ts
+Set up the following environment files (Examples files included in repository.)
+    server.env
+    common.env
 
 #### Production configuration
 Production configuration on `Confluence`.
@@ -33,7 +30,7 @@ Production configuration on `Confluence`.
 ## Building and Running locally
 
 ### Docker
-(Make sure Development configuration is set up before proceeding)
+(Make sure "Development configuration" is set up before proceeding)
 
 From project root, run `docker-compose up`
 
