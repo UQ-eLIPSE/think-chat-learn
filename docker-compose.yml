@@ -1,8 +1,6 @@
 version: '3.7'
 services:
   client:
-    env_file:
-      - ./client/.env.development
     build:
       context: ./client
       dockerfile: Dockerfile
@@ -11,7 +9,7 @@ services:
       - ./client:/var/www/think-chat-learn/client
       - ./common:/var/www/think-chat-learn/common
       - ./common.env:/var/www/think-chat-learn/common.env
-      - ./client.env:/var/www/think-chat-learn/client.env
+      # - ./client.env:/var/www/think-chat-learn/client.env
     expose:
       - "3000"
     ports:
@@ -26,8 +24,6 @@ services:
       - mongodb
 
   admin:
-    env_file:
-      - ./admin/.env.development
     build:
       context: ./admin
       dockerfile: Dockerfile
@@ -36,7 +32,7 @@ services:
       - ./admin:/var/www/think-chat-learn/admin
       - ./common:/var/www/think-chat-learn/common
       - ./common.env:/var/www/think-chat-learn/common.env
-      - ./admin.env:/var/www/think-chat-learn/admin.env
+      # - ./admin.env:/var/www/think-chat-learn/admin.env
     expose:
       - "4000"
     ports:
@@ -51,8 +47,6 @@ services:
       - mongodb
 
   intermediate:
-    env_file:
-      - ./intermediate/.env.development
     build:
       context: ./intermediate
       dockerfile: Dockerfile
@@ -61,7 +55,7 @@ services:
       - ./intermediate:/var/www/think-chat-learn/intermediate
       - ./common:/var/www/think-chat-learn/common
       - ./common.env:/var/www/think-chat-learn/common.env
-      - ./intermediate.env:/var/www/think-chat-learn/intermediate.env
+      # - ./intermediate.env:/var/www/think-chat-learn/intermediate.env
     expose:
       - "5000"
     ports:
