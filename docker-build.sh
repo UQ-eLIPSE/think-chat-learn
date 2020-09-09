@@ -61,16 +61,6 @@ On: $(date)\n"
 ######################################
 # BACK UP ORIGINAL LOCAL CONFIGURATION
 ######################################
-cd "$DOCKER_ROOT"
-# Copy local config before building (if exists)
-[ -f "./server/config/Conf.ts" ] && cp ./server/config/Conf.ts ./server/config/temp.Conf.ts
-[ -f "./common/config/Conf.ts" ] && cp ./common/config/Conf.ts ./common/config/temp.Conf.ts
-
-cd "$DOCKER_ROOT"
-# Set environment files based on deployment address
-
-cp "server/config/production/$SERVER" server/config/Conf.ts
-cp "common/config/production/$SERVER" common/config/Conf.ts
 
 ##############
 # INSTALL DEPS
@@ -92,16 +82,17 @@ echo -e "Building and deploying using node $NODE_VERSION"
 # rm -rf $TEMP/
 
 # Create local directory for deployment
-mkdir "$TEMP/$CLIENT_FOLDER" "$TEMP/$ADMIN_FOLDER" "$TEMP/$INTERMEDIATE_FOLDER"
+mkdir "$TEMP/$CLIENT_FOLDER" "$TEMP/$ADMIN_FOLDER" "$TEMP/$INTERMEDIATE_FOLDER" "$TEMP/$SERVER_FOLDER"
 
 # Server
 echo -e "Building server"
 
 cd "$DOCKER_ROOT/$SERVER_FOLDER"
 yarn run build_server_main
-cp -r build/* "$TEMP/"
+cp -r build/* "$TEMP/$SERVER_FOLDER"
 # Need this on production ?
-cp ./server/package.json "$TEMP/server/package.json"
+
+cp "$DOCKER_ROOT/$SERVER_FOLDER/package.json" "$TEMP/$SERVER_FOLDER/server/package.json"
 
 # Client
 echo -e "Building client SPA"
@@ -131,10 +122,6 @@ cp -r dist/* "$TEMP/$INTERMEDIATE_FOLDER/"
 # (since build process is complete)
 ######################################
 cd "$DOCKER_ROOT"
-echo -e "\nRestore all original local config ...\n"
-
-mv ./server/config/temp.Conf.ts ./server/config/Conf.ts
-mv ./common/config/temp.Conf.ts ./common/config/Conf.ts
 
 echo -e "Logging deployment information"
 echo -e "$CURRENT_COMMIT" > $TEMP/README.txt

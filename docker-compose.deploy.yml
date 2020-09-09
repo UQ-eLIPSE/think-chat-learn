@@ -11,8 +11,10 @@ services:
       - ./admin:/var/www/think-chat-learn/admin
       - ./client:/var/www/think-chat-learn/client
       - ./__deploy:/var/www/think-chat-learn/__deploy
-      - ./build.sh:/var/www/think-chat-learn/build.sh
-    command: ["/bin/bash", "-c", "cd /var/www/think-chat-learn && chmod +x build.sh && ./build.sh"]
+      - ./docker-build.sh:/var/www/think-chat-learn/docker-build.sh
+      - ./common.env:/var/www/think-chat-learn/common.env
+      - ./server.env:/var/www/think-chat-learn/server.env
+    command: ["/bin/bash", "-c", "cd /var/www/think-chat-learn && chmod +x docker-build.sh && ./docker-build.sh"]
     environment: 
       - DOCKER_ROOT=/var/www/think-chat-learn
       - TCL_USER=${TCL_USER}
