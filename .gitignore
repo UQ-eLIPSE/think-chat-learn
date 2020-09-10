@@ -81,7 +81,7 @@ intermediate/envs/*
 !intermediate/envs/.gitkeep
 
 # Script to handle question extaction
-server/utils/query.ts
+# server/utils/query.ts
 output.tsv
 
 # Config files for production zones
