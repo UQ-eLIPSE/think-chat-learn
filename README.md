@@ -14,7 +14,7 @@
 ## Local Development
 
 ### Requirements (development)
-Docker (recommended memory for Docker: 4GB)
+* Docker (recommended memory for Docker: 4GB)
 
 ### Steps to set up locally
 
@@ -47,7 +47,7 @@ Docker (recommended memory for Docker: 4GB)
 * Manta key available in `/var/www`
 
 ### Local Requirements
-* Docker
+* Docker (recommended memory for Docker: 4GB)
 
 
 ### Deploy using script

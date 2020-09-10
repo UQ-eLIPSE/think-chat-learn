@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+####### BUILDS APPLICATION
+
+
 # Quit on error and if unset variables are referenced
 set -eu
 
