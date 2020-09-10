@@ -14,7 +14,7 @@
 ## Local Development
 
 ### Requirements (development)
-Docker
+Docker (recommended memory for Docker: 4GB)
 
 ### Steps to set up locally
 
@@ -25,7 +25,17 @@ Docker
 
 3. Run `docker-compose up` from project root
 
+
 ---
+
+## Log into TCL
+### Log in through LTI connector
+1. Go to https://ltilib.uqcloud.net/connector/ and set the URL as `http://localhost:<PORT_NUMBER>/user/login`
+2. To access the instructor view, make sure the role is "instructor"
+3. If you need to access a specific quiz, another parameter with key `custom_quizid` and value `<quiz_id>` needs to be added to the LTI form.
+
+---
+
 ## Deployment
 
 ### Server Pre-Requisites (production)
@@ -52,11 +62,9 @@ Docker
     * Note: If no `KEYFILE` is provided, password will have to be entered for the user interactively
 
 
+
 ---
-## Usage
-### Logging in through LTI connector
-1. Go to https://ltilib.uqcloud.net/connector/ and set the URL as `http://localhost:<PORT_NUMBER>/user/login`
-2. If you need to access a specific quiz, another parameter with key `custom_quizid` and value `<quiz_id>` needs to be added to the LTI form.
+## Appendix
 
 ### End to End Testing with Cypress
 Run `yarn test` from `client`, `admin` or `intermediate` folders to run cypress test suite.
