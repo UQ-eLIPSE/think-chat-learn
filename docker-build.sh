@@ -89,10 +89,10 @@ echo -e "Building server"
 
 cd "$DOCKER_ROOT/$SERVER_FOLDER"
 yarn run build_server_main
-cp -r build/* "$TEMP/$SERVER_FOLDER"
+cp -r build/* "$TEMP/"
 # Need this on production ?
 
-cp "$DOCKER_ROOT/$SERVER_FOLDER/package.json" "$TEMP/$SERVER_FOLDER/server/package.json"
+cp "$DOCKER_ROOT/$SERVER_FOLDER/package.json" "$TEMP/$SERVER_FOLDER/package.json"
 
 # Client
 echo -e "Building client SPA"

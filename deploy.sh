@@ -59,7 +59,7 @@ else
   # # Copy built files to server
   echo -e "Copying built files to server"
   scp -i "$SSH_KEYFILE" -r $TEMP/* $USER@$SERVER:$REMOTE_ROOT/  
-  ssh -i "$SSH_KEYFILE" $USER@$SERVER -t "cd $REMOTE_ROOT/server/server && yarn"
+  ssh -i "$SSH_KEYFILE" $USER@$SERVER -t "cd $REMOTE_ROOT/server && yarn"
 fi
 # Remove existing directories on the server
 # echo -e "Removing existing directories on $SERVER"
