@@ -28,11 +28,13 @@ Docker
 ---
 ## Deployment
 
-### Server Requirements (production)
-* Node v12.x
-* MongoDB v4.x
-* Nginx
-* Systemd services
+### Server Pre-Requisites (production)
+* Packages should be present
+    * Node v12.x
+    * MongoDB v4.x
+* Nginx configuration
+* SystemD service setup
+* Manta key available in `/var/www`
 
 ### Local Requirements
 * Docker
