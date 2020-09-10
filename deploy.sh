@@ -97,4 +97,4 @@ else
   ssh -i "$SSH_KEYFILE" $USER@$SERVER -t "cd $REMOTE_ROOT/server && yarn"
 fi
 
-echo -e "App is ready to be deployed. To deploy, run sudo systemctl daemon-reload && sudo service <service-name> restart"
+echo -e "\n\n######################\n# App is ready to be deployed.\n# To deploy, run sudo systemctl daemon-reload && sudo service tcl restart\n######################"
