@@ -85,16 +85,16 @@ export const API: IApi = {
   DELETE: "delete",
   PUT: "put",
 
-  QUIZ: "/quiz",
-  USER: "/user",
-  QUESTION: "/question",
-  USERSESSION: "/usersession",
-  QUIZSESSION: "/quizsession",
-  RESPONSE: "/response",
-  CHATGROUP: "/chatgroup",
-  MARKS: "/marks",
-  CRITERIA: "/criteria",
-  RUBRIC: "/rubric"
+  QUIZ: "quiz",
+  USER: "user",
+  QUESTION: "question",
+  USERSESSION: "usersession",
+  QUIZSESSION: "quizsession",
+  RESPONSE: "response",
+  CHATGROUP: "chatgroup",
+  MARKS: "marks",
+  CRITERIA: "criteria",
+  RUBRIC: "rubric"
 };
 
 export default API;
