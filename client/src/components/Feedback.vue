@@ -329,7 +329,7 @@ export default class Feedback extends Vue {
   width: 50%;
   margin: 1rem 0.5rem;
   border: 1px solid #cfcfcf;
-  
+
   td,
   th {
     padding: 0.5rem;
@@ -344,11 +344,15 @@ export default class Feedback extends Vue {
   td {
       border-bottom: 1px solid #cfcfcf;
   }
+
+  @media screen and (max-width: 768px){
+    width: fit-content;
+  }
 }
 
 .general-feedback {
   padding: 1rem 0.5rem;
-  font-size: 0.9rem;
+  font-size: 0.9em;
   text-align: justify;
   width: 45%;
 
