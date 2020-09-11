@@ -58,30 +58,24 @@
     * common.env (get values from Confluence)
 
 3. Run deploy script
-    * ```TCL_USER=root TCL_SERVER=<zone_name>.zones.eait.uq.edu.au KEYFILE=~/.ssh/id_rsa ./deploy.sh```
-    * Note: If no `KEYFILE` is provided, password will have to be entered for the user interactively
+    * Run `./deploy -h` for help
+        * Usage:
+            * ```USER=root ZONE=<zone_name>.zones.eait.uq.edu.au KEYFILE=~/.ssh/id_rsa ./deploy.sh```
+                * Note: If no `KEYFILE` is provided, password will have to be entered for the user interactively
 
 
 
 ---
 ## Appendix
 
-### End to End Testing with Cypress
-Run `yarn test` from `client`, `admin` or `intermediate` folders to run cypress test suite.
+### Testing
 
-### Deploying on production / test zone
-
-Deployment steps and configurations on `Confluence`.
-
-
-## Testing
-
-### Server
+#### Server
 * `jest` package is used for testing the server.
 * Run command in server container `server-app` (`docker-compose` should be running)
     * `docker exec -it server-app /bin/bash -c "yarn test"`
 
-### Client-side Vue Apps (`client`, `admin`, `intermediate`) using Cypress
+#### Client-side Vue Apps (`client`, `admin`, `intermediate`) using Cypress
 
-#### ** Running Cypress E2E testing with Docker seems problematic and will require additional investigation (it requires X11 and complicated dependencies)
+##### ** Running Cypress E2E testing with Docker seems problematic and will require additional investigation (it requires X11 and complicated dependencies)
 
