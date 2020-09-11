@@ -14,38 +14,39 @@
       </div>
       <hr />
       <h3>Grading criteria</h3>
-      <table v-if="markRows && markRows.length" class="marks-table">
-        <thead>
-          <th>Criterion</th>
-          <th>&nbsp;&nbsp;&nbsp;</th>
-          <th>Score</th>
-          <th>Feedback</th>
-        </thead>
-        <tbody>
-          <tr v-for="(markRow, i) in markRows" :key="`markRow-${i}`">
-            <td>{{ markRow.criterionName }}</td>
-            <td class="ht">
-              <span class="icon-container">
-                <font-awesome-icon icon="info-circle" />
-              </span>
+      <div class="flex-row justify-space-between">
+        <table v-if="markRows && markRows.length" class="marks-table">
+          <thead>
+            <th>&nbsp;&nbsp;&nbsp;</th>
+            <th>Criterion</th>
+            <th>Score</th>
+            <th>Feedback</th>
+          </thead>
+          <tbody>
+            <tr v-for="(markRow, i) in markRows" :key="`markRow-${i}`">
+              <td class="ht">
+                <span class="icon-container">
+                  <font-awesome-icon icon="info-circle" />
+                </span>
 
-              <span class="tooltip">{{ markRow.criterionDescription }}</span>
-            </td>
+                <span class="tooltip">{{ markRow.criterionDescription }}</span>
+              </td>
+              <td>{{ markRow.criterionName }}</td>
+              <td>{{ markRow.score }}/{{ quizCriterionMaxMarksString }}</td>
+              <td>{{ markRow.feedback }}</td>
+            </tr>
+          </tbody>
+        </table>
 
-            <td>{{ markRow.score }}/{{ quizCriterionMaxMarksString }}</td>
-            <td>{{ markRow.feedback }}</td>
-          </tr>
-        </tbody>
-      </table>
+        <div v-else class="not-available">
+          <!-- Marks not available -->
+          <h3 class="faded">- Grades not available -</h3>
+        </div>
 
-      <div v-else class="not-available">
-        <!-- Marks not available -->
-        <h3 class="faded">- Grades not available -</h3>
-      </div>
-
-      <div class="general-feedback" v-if="marksObject && marksObject.feedback">
-        <div class="general-heading">General Feedback</div>
-        <span>{{ marksObject.feedback }}</span>
+        <div class="general-feedback" v-if="marksObject && marksObject.feedback">
+          <div class="general-heading">General Feedback</div>
+          <span>{{ marksObject.feedback }}</span>
+        </div>
       </div>
     </template>
     <hr />
@@ -325,6 +326,9 @@ export default class Feedback extends Vue {
 }
 
 .marks-table {
+  width: 50%;
+  margin: 1rem 0.5rem;
+
   td,
   th {
     padding: 0.5rem;
@@ -339,10 +343,17 @@ export default class Feedback extends Vue {
 .general-feedback {
   padding: 1rem 0.5rem;
   font-size: 0.9rem;
+  text-align: justify;
+  width: 45%;
+
+  @media screen and (max-width: 768px){
+    width: 100%;
+  }
+
   > .general-heading {
     font-weight: bold;
     color: #256;
-    padding: 0.25rem 0;
+    padding: 0.25rem 0 0.75rem 0;
   }
 }
 

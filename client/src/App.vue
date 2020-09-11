@@ -125,7 +125,7 @@ html {
         bottom: 0;
         box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.15);
         left: 0;
-        max-width: 1920px;
+        max-width: 1441px;
         margin: 1em auto 1em auto;
         width: 85%;
 
