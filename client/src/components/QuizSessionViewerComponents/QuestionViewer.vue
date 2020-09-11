@@ -80,6 +80,7 @@ export default class QuestionViewer extends Vue {
 .flex-col {
     display: flex;
     flex-direction: column;
+    padding-right: 2rem;
 }
 
 .response-content {
