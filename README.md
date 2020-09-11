@@ -76,8 +76,12 @@ Deployment steps and configurations on `Confluence`.
 
 ## Testing
 
-### E2E using Cypress
+### Server
+* `jest` package is used for testing the server.
+* Run command in server container `server-app` (`docker-compose` should be running)
+    * `docker exec -it server-app /bin/bash -c "yarn test"`
 
-Navigate to the FE app docker containers `client`, `admin` or `intermediate`. To test: -
+### Client-side Vue Apps (`client`, `admin`, `intermediate`) using Cypress
 
-`yarn run test:e2e`
+#### ** Running Cypress E2E testing with Docker seems problematic and will require additional investigation (it requires X11 and complicated dependencies)
+
