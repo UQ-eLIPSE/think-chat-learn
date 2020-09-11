@@ -38,13 +38,14 @@
 
 ## Deployment
 
-### Server Pre-Requisites (production)
+### Deployment Server Pre-Requisites
 * Packages should be present
     * Node v12.x
+    * yarn
     * MongoDB v4.x
 * Nginx configuration
-* SystemD service setup
-* Manta key available in `/var/www`
+* Systemd service setup
+* Manta key available in `/var/www/`
 
 ### Local Requirements
 * Docker (recommended memory for Docker: 4GB)
@@ -52,7 +53,10 @@
 
 ### Deploy using script
 
-1. Clone repo `think-chat-learn` and checkout desired branch
+**TCL deployment script is run locally. The script builds locally, then built files are copied to the desired server.**
+
+
+1. Clone repo `think-chat-learn` locally and checkout desired branch
 2. Setup configuration files
     * server.env (get values from Confluence)
     * common.env (get values from Confluence)
@@ -72,7 +76,7 @@
 
 #### Server
 * `jest` package is used for testing the server.
-* Run command in server container `server-app` (`docker-compose` should be running)
+* Run command in server container (`docker-compose` should be running)
     * `docker exec -it server-app /bin/bash -c "yarn test"`
 
 #### Client-side Vue Apps (`client`, `admin`, `intermediate`) using Cypress
