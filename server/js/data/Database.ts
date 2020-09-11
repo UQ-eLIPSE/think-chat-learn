@@ -11,7 +11,7 @@ export abstract class Database<CollectionData> {
 
 
     public  static async Connect(url: string) {
-        const client = await mongodb.MongoClient.connect(url, { useNewUrlParser: true });
+        const client = await mongodb.MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
         
         return client.db();
 

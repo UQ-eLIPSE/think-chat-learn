@@ -50,9 +50,9 @@ test-build
 !client/static/marking-tool/mousoku/*
 
 # Ignore actual configuration files
-client/config/Conf.ts
-common/config/Conf.ts
-server/config/Conf.ts
+# client/config/Conf.ts
+# common/config/Conf.ts
+# server/config/Conf.ts
 
 # Config file to set up vue endpoint
 #intermediate/vue.config.js
@@ -73,21 +73,15 @@ admin/public/*
 # Env values for client, admin and intermediate
 client/envs/*
 !client/envs/.gitkeep
-client/.env.*
-!client/.env.*.example
 
 admin/envs/*
 !admin/envs/.gitkeep
-admin/.env.*
-!admin/.env.*.example
 
 intermediate/envs/*
 !intermediate/envs/.gitkeep
-intermediate/.env.*
-!intermediate/.env.*.example
 
 # Script to handle question extaction
-server/utils/query.ts
+# server/utils/query.ts
 output.tsv
 
 # Config files for production zones
@@ -101,6 +95,7 @@ server/config/production/*
 
 # Temporary deploy folder
 __deploy
+!__deploy/.gitkeep
 *.Conf.ts
 temp.*
 
@@ -108,3 +103,10 @@ temp.*
 mongodb/*
 some_location
 dist
+
+# Env files excluding example files
+*.env
+*.env.*
+!*.example
+
+.DS_Store

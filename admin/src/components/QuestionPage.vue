@@ -100,7 +100,6 @@ import TinyMce from "./TinyMce.vue";
 import uniqueId from "../util/uniqueId";
 import { showSnackbar } from '../EventBus';
 import { saveTinyMceEditorContent } from '../util/TinyMceUtils';
-import { Conf as CommonConf } from '../../../common/config/Conf';
 
 interface DropDownConfiguration {
   text: string;
@@ -124,7 +123,6 @@ const defaultQuestion: IQuestionQualitative = {
   content: ""
 };
 
-const IMAGE_LOCATION = CommonConf.admin.imageLocation;
 
 @Component({
   components: {

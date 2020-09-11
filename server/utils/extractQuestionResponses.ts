@@ -1,5 +1,5 @@
 import { Db, MongoClient } from "mongodb";
-import { Conf } from "../config/Conf";
+import Config from "../config/Config";
 import { Query } from "./query";
 import fs from "fs";
 
@@ -27,7 +27,7 @@ const QUESTION_HEADERS = ["Question ID", "Question", "Answer", "Possible Points"
 const BLANK_FIELDS = 2;
 class ExtractQuestions {
     private static async connectDb() {
-        const connection = await MongoClient.connect(Conf.database, { useNewUrlParser: true });
+        const connection = await MongoClient.connect(Config.DATABASE_URI, { useNewUrlParser: true, useUnifiedTopology: true });
         const db = await connection.db();
         return db;
     }

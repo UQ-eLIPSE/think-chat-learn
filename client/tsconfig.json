@@ -8,6 +8,7 @@
     "sourceMap": true,
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
+    "esModuleInterop": true,
     "baseUrl": "./",
     "paths": {
       "@/*": [
@@ -15,7 +16,7 @@
       ]
     }
   },
-  "include": ["../common/**/*"],
+  "include": ["src"],
   "exclude": [
     "node_modules"
   ]
