@@ -328,7 +328,8 @@ export default class Feedback extends Vue {
 .marks-table {
   width: 50%;
   margin: 1rem 0.5rem;
-
+  border: 1px solid #cfcfcf;
+  
   td,
   th {
     padding: 0.5rem;
@@ -337,6 +338,11 @@ export default class Feedback extends Vue {
 
   th {
     color: #256;
+    background-color: rgba(#256, 0.2);
+  }
+
+  td {
+      border-bottom: 1px solid #cfcfcf;
   }
 }
 
