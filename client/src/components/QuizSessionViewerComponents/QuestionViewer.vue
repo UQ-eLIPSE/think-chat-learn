@@ -1,7 +1,7 @@
 <template>
     <div class="flex-col question-wrapper">
     <h2>{{ title }}</h2>
-    <div class="flex-row">
+    <div class="flex-row justify-space-between">
       <div class="flex-col question-content">
         <div v-html="questionPageContent"></div>
         <div v-html="questionContent"></div>
@@ -86,8 +86,23 @@ export default class QuestionViewer extends Vue {
   font-size: 0.8em;
 }
 
+.question-content {
+  height: 450px;
+  overflow: scroll;
+}
+
+.response {
+   @media screen and (max-width: 768px){
+    width: 100%;
+  }
+}
+
 .question-content, .response {
   flex: 0.5;
+  margin: 1rem;
+  @media screen and (max-width: 768px){
+    flex: unset
+  }
 }
 
 .confidence {

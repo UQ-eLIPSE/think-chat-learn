@@ -87,7 +87,28 @@ export default class DiscussionViewer extends Vue {
   display: flex;
   flex-shrink: 0;
   flex-direction: column;
-  max-height: 30vh;
+  max-height: 70vh;
+  height: 450px;
+  min-height: 450px;
   overflow: scroll;
+  resize: vertical;
+}
+</style>
+
+<style lang="scss">
+@mixin coloredBackground($color) {
+  background-color: rgba($color, 0.1);
+  border-width: 1px;
+}
+
+.chat-message .message{
+  border-width: 1px;
+
+  &.selected {
+    &.base1 { @include coloredBackground($light-blue); }
+    &.base2 { @include coloredBackground($green); }
+    &.base3 { @include coloredBackground($yellow); }
+    &.base4 { @include coloredBackground($red); }
+  }
 }
 </style>
