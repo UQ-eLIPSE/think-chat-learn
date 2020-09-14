@@ -133,6 +133,14 @@ export class QuizService extends BaseService<IQuiz | IQuizOverNetwork> {
             } catch(e) {
                 return false;
             }
+        }).sort((a, b) => {
+            if(!a || !a.availableStart || !b || !b.availableStart) return 0;
+            const startDateA = new Date(a.availableStart);
+            const startDateB = new Date(b.availableStart);
+            
+            if(startDateA < startDateB) return -1;
+            else if(startDateA > startDateB) return 1;
+            else return 0;
         });
 
         const quizzesWithoutContent = activeQuizzes.map((activeQuiz) => {
