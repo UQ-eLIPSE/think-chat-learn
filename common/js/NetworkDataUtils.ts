@@ -12,7 +12,8 @@ export function convertNetworkQuizIntoQuiz(quiz: IQuizOverNetwork): IQuiz {
         markingConfiguration: quiz.markingConfiguration,
         groupSize: quiz.groupSize,
         rubricId: quiz.rubricId,
-        isPublic: quiz.isPublic || false
+        isPublic: quiz.isPublic || false,
+        marksPublic: quiz.marksPublic || false
     };
 
     return output;
@@ -34,7 +35,9 @@ export function convertQuizIntoNetworkQuiz(quiz: IQuiz): IQuizOverNetwork {
         markingConfiguration: quiz.markingConfiguration,
         groupSize: quiz.groupSize,
         rubricId: quiz.rubricId,
-        isPublic: quiz.isPublic || false
+        isPublic: quiz.isPublic || false,
+        marksPublic: quiz.marksPublic || false,
+
     };
 
     return output;

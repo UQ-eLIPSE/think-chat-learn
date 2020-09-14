@@ -165,7 +165,7 @@ export class UserService extends BaseService<IUser> {
          */
         const { customQuizId, available } = await (async () => {
             try {
-                if (!request.custom_quizid) throw new Error('Missing custom quiz id');
+                if (!request.custom_quizid) throw new Error();
 
                 const quizSchedule = await this.quizRepo.findOne(request.custom_quizid);
 

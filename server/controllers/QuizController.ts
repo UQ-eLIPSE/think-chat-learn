@@ -40,6 +40,33 @@ export class QuizController extends BaseController {
         });
     }
 
+    /**
+     * Updates quiz marks visibility i.e. whether marks for a quiz schedule are available to students
+     * @param req 
+     * @param res 
+     */
+    private async updateQuizMarksVisibility(req: express.Request, res: express.Response) {
+        try {
+            const { marksPublic, quizScheduleId } = req.body;
+            if (marksPublic === undefined || quizScheduleId === undefined || typeof quizScheduleId !== "string") {
+                throw new Error("Invalid parameters supplied for updating marks visiblity");
+            }
+            
+            const result = await this.quizService.updateQuizMarksVisibility(quizScheduleId, marksPublic);
+
+            if(!result) throw new Error();
+
+            return res.json({
+                success: true
+            }).status(200);
+        } catch (e) {
+            console.error('Quiz marks visibility update error:', e);
+            return res.json({
+                success: false
+            }).status(500);
+        }
+    }
+
     private deleteQuiz(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
         this.quizService.deleteOne(req.params.questionId).then((outcome) => {
             res.json({
@@ -123,5 +150,6 @@ export class QuizController extends BaseController {
         this.router.get("/course/:courseId", isAdmin(), this.getQuizByCourse.bind(this));
         this.router.get("/active", StudentAuthenticatorMiddleware.checkUserId(), this.getActiveQuizWithoutContentByCourse.bind(this));
         this.router.get("/upcoming", StudentAuthenticatorMiddleware.checkUserId(), this.getUpcomingQuizWithoutContentByCourse.bind(this));
+        this.router.put("/marks-visibility", isAdmin(), this.updateQuizMarksVisibility.bind(this));
     }
 }

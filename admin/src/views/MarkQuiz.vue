@@ -6,6 +6,13 @@
         <p class="text-xs-center">Quiz ID: {{q._id}}</p>
       </div>
 
+      <v-checkbox
+        v-if="marksPublic !== null"
+        :input-value="marksPublic"
+        @click.stop.prevent="toggleMarksVisibility"
+        label="Publish Marks? (If checked, marks will be displayed to students)"
+      ></v-checkbox>
+      
       <div class="flex-row justify-space-around">
         <p><b>Available Start:</b> {{ new Date(q.availableStart).toLocaleString() }}</p>
         <p><b>Available End:</b> {{ new Date(q.availableEnd).toLocaleString() }}</p>
@@ -89,6 +96,21 @@ interface DropDownConfiguration {
 export default class MarkQuiz extends Vue {
   private displayQuestionContent: boolean = false;
 
+  get marksPublic(): boolean | null | undefined {
+    if(!this.q) return null;
+    return this.q.marksPublic;
+  }
+
+  async toggleMarksVisibility() {
+    // Check if marksPublic is not invalid
+    if(this.marksPublic !== null && this.q && this.q._id) {
+      await this.$store.dispatch('updateQuizMarksVisibility', {
+        quizScheduleId: this.q._id,
+        marksPublic: !(!!this.marksPublic) 
+      });
+    }
+  }
+
   @Watch('selectedGroupId')
   async chatGroupIdChangeHandler() {
     const chatGroup = this.selectedGroup;
@@ -99,6 +121,7 @@ export default class MarkQuiz extends Vue {
     }
 
   }
+
   goToChatgroup(chatGroupIndex: number, questionIndex: number, quizSessionIndex: number) {
     if (!this.chatGroups) return;
     if (!this.chatGroups[chatGroupIndex]) {

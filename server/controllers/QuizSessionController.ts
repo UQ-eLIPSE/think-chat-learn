@@ -86,6 +86,8 @@ export class QuizSessionController extends BaseController {
 
         
         await Promise.all(await quizSessionsData.map(async (quizSessionData) => {
+            // If marks aren't public for the quiz, return null regardless of whether marks were assigned
+            if(quizSessionData.quiz && !quizSessionData.quiz.marksPublic) return null;
             const overallScore = await this.marksService.getOverallScoreForQuizSession(quizSessionData._id!);
             
             if (overallScore || overallScore === 0) {

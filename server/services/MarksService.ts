@@ -97,10 +97,29 @@ export class MarksService extends BaseService<Mark> {
     }
 
     public async getMarksForQuizSession(quizSessionId: string): Promise<Mark[]> {
+        // Check if quiz marks are public
+        if(!quizSessionId) return [];
+
+        const quizSession = await this.quizSessionRepo.findOne(quizSessionId);
+        if(!quizSession || !quizSession.quizId) {
+            console.error('Invalid quiz session / quiz id in quiz session');
+            return [];
+        };
+
+        const quiz = await this.quizRepo.findOne(quizSession.quizId);
+
+        // Quiz could not be found
+        if(!quiz) {
+            console.error('Quiz could not be found');
+            return [];
+        }
+
+        // If quiz marks have not been made public, DO NOT return marks to the user
+        if(!quiz.marksPublic) return [];
 
         return this.marksRepo.findAll({
             quizSessionId: quizSessionId
-        })
+        });
     }
 
     public async getOverallScoreForQuizSession(quizSessionId: string): Promise<number | null> {

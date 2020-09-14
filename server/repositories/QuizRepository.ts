@@ -31,4 +31,20 @@ export class QuizRepository extends BaseRepository<IQuiz>{
 
         return (availableQuizzes || []).map((q) => this.convertDocumentToItem(q));
     }
+
+    public async updateQuizMarksVisibility(quizScheduleId: string, marksPublic: boolean) {
+        const response = await this.collection.findOneAndUpdate(
+            {
+                _id: new mongodb.ObjectID(quizScheduleId)
+            },
+            {
+                $set: 
+                    {
+                        marksPublic: !!marksPublic
+                    }
+            }
+        );
+
+        return response && response.ok;
+    }
 }

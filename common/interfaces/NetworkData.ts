@@ -14,4 +14,5 @@ export interface IQuizOverNetwork extends Document {
     markingConfiguration?: MarkConfig;
     rubricId?: string;
     isPublic?: boolean;
+    marksPublic?: boolean;
 }

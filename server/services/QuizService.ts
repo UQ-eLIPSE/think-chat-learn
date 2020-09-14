@@ -63,6 +63,10 @@ export class QuizService extends BaseService<IQuiz | IQuizOverNetwork> {
         return this.quizRepo.updateOne(convertNetworkQuizIntoQuiz(data));
     }
 
+    public async updateQuizMarksVisibility(quizScheduleId: string, marksPublic: boolean) {
+        return await this.quizRepo.updateQuizMarksVisibility(quizScheduleId, marksPublic);
+    }
+
     // Deletes a quiz based on the incoming id
     public async deleteOne(id: string) {
         return this.quizRepo.deleteOne(id);
