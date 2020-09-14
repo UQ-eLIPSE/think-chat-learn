@@ -5,7 +5,7 @@
             Quiz Marks</h1>
         <ul class="marking container">
 
-            <div class="quiz-item"
+            <div class="card-container quiz-item"
                  v-for="q in quizzes"
                  :key="q._id">
 
@@ -15,10 +15,9 @@
                 <span><b>Available End:</b> {{ new Date(q.availableEnd).toLocaleString() }}</span>
 
                 <div class="controls">
-                    <router-link tag="button"
-                                 id="mark-quiz"
+                    <router-link tag="button" class="primary-cl"
                                  :to="{ name: 'mark-quiz', params: { id: q._id } }">Start marking</router-link>
-                    <router-link tag="button"
+                    <router-link tag="button" class="uq"
                                  id="view-marks"
                                  :to="{ name: 'view-mark-quiz', params: { id: q._id } }">View marks</router-link>
                 </div>
@@ -30,7 +29,7 @@
 </template>
 
 <style lang="scss" scoped>
-@import "../../css/partial/variables";
+@import "../../css/app.scss";
 
 .marking,
 .marking-section {
@@ -41,13 +40,8 @@
 }
 
 .quiz-item {
-    padding: 1.5rem 2rem;
-    width: 100%;
     display: flex;
     flex-direction: column;
-    border: 1px solid $grey;
-    margin: 0.5rem 0;
-    border-radius: 10px;
 }
 
 .controls {
@@ -63,14 +57,6 @@
 .quiz-item:active,
 .quiz-item:focus {
     background: rgba(1, 0, 0, 0.05);
-}
-
-#mark-quiz{
-    @include transparent-color($uq, $hover: true);
-}
-
-#view-marks{
-    @include transparent-color($primary, $hover: true);
 }
 
 </style>

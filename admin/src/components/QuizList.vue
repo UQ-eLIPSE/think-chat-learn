@@ -2,14 +2,14 @@
     <div class="container">
         <h1 class="moochat-name">Quiz Sessions List</h1>
         <router-link tag="button"
-                     class="primary"
+                     class="primary-cl"
                      to="/quizPage">Add Quiz</router-link>
         <v-container fluid grid-list-md>
             <v-layout row wrap>
                 <v-flex v-for="quiz in quizzes"
                     :key="quiz._id"
                     xs12>
-                    <v-card>
+                    <div class='card-container'>
                         <v-card-title><h3>Quiz Title: {{quiz.title}}</h3></v-card-title>
                         <div class="date-text">
                             <span><b>ID: {{quiz._id}}</b></span>
@@ -18,26 +18,28 @@
                             <span><b>Start Datetime:</b> {{quiz.availableStart.toLocaleString()}} - <b>End Datetime:</b> {{quiz.availableEnd.toLocaleString()}}</span>
                         </div>
                         <div class="controls">
-                            <v-btn type="button"
-                                    class="primary"
-                                    @click="editQuiz(quiz._id)">Edit</v-btn>
-                            <v-btn type="button"
-                                    class="primary"
-                                    @click="deleteQuiz(quiz._id)">Delete</v-btn>
-                            <v-btn type="button"
-                                    class="primary"
-                                    @click="cloneQuiz(quiz._id)">Create copy</v-btn>
+                            <button type="button"
+                                    class="primary-cl"
+                                    @click="editQuiz(quiz._id)">Edit</button>
+                            <button type="button"
+                                    class="uq"
+                                    @click="deleteQuiz(quiz._id)">Delete</button>
+                            <button type="button"
+                                    class="purple-cl"
+                                    @click="cloneQuiz(quiz._id)">Create copy</button>
                         </div>
-                    </v-card>
+                    </div>
                 </v-flex>
             </v-layout>
         </v-container>
     </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@import "../../css/app.scss";
+
 .quiz {
-    border-bottom: 1px solid black;
+    border-bottom: 1px solid $black;
 }
 
 .date-text {
@@ -48,6 +50,11 @@
 .controls {
     display: flex;
 }
+
+button {
+    margin-right: 0.5rem;
+}
+
 </style>
 
 <script lang="ts">
