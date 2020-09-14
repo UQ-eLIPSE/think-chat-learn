@@ -13,7 +13,7 @@
                         <v-card-title>
                             
                             <h3>Quiz Title: {{quiz.title}}</h3>
-                            <div class="visibility" :class="getVisibilityClasses(quiz)">{{ quiz.isPublic? 'PUBLIC':'PRIVATE' }}</div>
+                            <div class="visibility" :class="getVisibilityClasses(quiz)">{{ quiz.isPublic? 'PUBLIC':'STAFF ONLY' }}</div>
                         </v-card-title>
                         <div class="date-text">
                             <span><b>ID: {{quiz._id}}</b></span>
