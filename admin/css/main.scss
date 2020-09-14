@@ -3,6 +3,7 @@
 
 /**
  * MOOCchat
+ * IF THIS IS NOT USED PLEASE DELETE THIS !!!
  */
 
 /********** Colours **********/
@@ -41,6 +42,29 @@ $baseDark3: #e8a004;
 $baseLight4: #ff7659;
 $baseDark4: #e26a51;
 
+// Standards
+$uq: #51247a;
+$purple: #962a8b;
+$red: #e62645;
+$orange: #eb602b;
+$yellow: #fbb000;
+$light-blue: #00a2c7;
+$blue: #4085c6;
+$green: #2ea836;
+$elipse-blue: #4a5b6d;
+
+// Neutrals
+$grey: #d7d1cc;
+$dark-grey: #999490;
+$darker-grey: #333;
+$border-grey: #e8e3e0;
+$shadow-grey: #e1e1e1;
+$light-grey: #f3eded;
+
+// Basics
+$white: #ffffff;
+$black: #00000029;
+
 $input-bg-colour: #fff;
 $input-disabled-bg-colour: #ccc;
 
@@ -68,25 +92,22 @@ $thin-border-width: 0.05rem;
 }
 
 @mixin button($bg-colour) {
-  $reference-colour: $bg-colour;
-
-  background: $reference-colour;
-  border-color: darken($reference-colour, 10%);
-  border-width: 0 0 2px 0;
-  border-style: solid;
-
-  color: fg-on-bg($reference-colour);
+  background: rgba($bg-colour, 0.2);
+  color: $bg-colour;
 
   font-size: inherit;
-  font-weight: inherit;
+  font-weight: 600;
   margin: 0;
   padding: 0.6em 1em;
 
-  border-radius: 0.3em;
+  border-radius: 5px;
+  min-height: 40px;
+  text-transform: uppercase;
 }
 
 @mixin button-hover($std-bg-colour) {
-  background: lighten($std-bg-colour, 5%);
+  background: $std-bg-colour;
+  color: fg-on-bg($std-bg-colour);
 }
 
 @mixin button-active($std-bg-colour) {

@@ -1,4 +1,5 @@
 <template>
+    <v-container>
     <div class="marking-section">
         <h1>
             Quiz Marks</h1>
@@ -15,21 +16,21 @@
 
                 <div class="controls">
                     <router-link tag="button"
-                                 class="primary"
+                                 id="mark-quiz"
                                  :to="{ name: 'mark-quiz', params: { id: q._id } }">Start marking</router-link>
                     <router-link tag="button"
                                  id="view-marks"
-                                 class="primary"
                                  :to="{ name: 'view-mark-quiz', params: { id: q._id } }">View marks</router-link>
                 </div>
             </div>
             <!-- <router-view /> -->
         </ul>
     </div>
+    </v-container>
 </template>
 
 <style lang="scss" scoped>
-@import "../../css/variables.scss";
+@import "../../css/partial/variables";
 
 .marking,
 .marking-section {
@@ -40,15 +41,17 @@
 }
 
 .quiz-item {
-    padding: 0.5rem;
+    padding: 1.5rem 2rem;
     width: 100%;
     display: flex;
     flex-direction: column;
-    border: 0.1rem solid rgba(1, 0, 0, 0.1);
+    border: 1px solid $grey;
     margin: 0.5rem 0;
+    border-radius: 10px;
 }
 
 .controls {
+    margin-top: 2rem;
     display: flex;
 }
 
@@ -61,6 +64,15 @@
 .quiz-item:focus {
     background: rgba(1, 0, 0, 0.05);
 }
+
+#mark-quiz{
+    @include transparent-color($uq, $hover: true);
+}
+
+#view-marks{
+    @include transparent-color($primary, $hover: true);
+}
+
 </style>
 
 <script lang="ts">

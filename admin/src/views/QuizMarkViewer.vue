@@ -319,7 +319,7 @@ export default class QuizMarkViewer extends Vue {
 }
 </script>
 <style lang="scss" scoped>
-@import "../../css/variables.scss";
+@import "../../css/partial/variables";
 .pagination {
     margin: 1rem 0;
 }

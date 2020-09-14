@@ -407,7 +407,7 @@ export default class MarkQuiz extends Vue {
 }
 </script>
 <style lang="scss" scoped>
-@import "../../css/variables.scss";
+@import "../../css/partial/variables";
 .sidebar {
   color: white;
   text-shadow: rgb(85, 85, 85) 0.05em 0.05em 0.05em;
