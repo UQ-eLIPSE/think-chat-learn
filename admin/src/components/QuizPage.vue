@@ -113,6 +113,12 @@
                 </v-time-picker>
               </v-menu>
             </b-field>
+
+          </v-flex>
+          <v-flex xs12>
+            <v-checkbox
+              v-model="isPublic"
+              label="Public? (If checked, this quiz will be displayed to students)"></v-checkbox>
           </v-flex>
           <!-- Temporary wrapper for the page labels -->
           <v-flex xs12>
@@ -196,11 +202,6 @@
               v-model="markingConfiguration.allowMultipleMarkers"
               :label="'Allow multiple markers?'"
             ></v-checkbox>
-
-          <v-checkbox
-              v-model="isPublic"
-              label="Public? (If checked, this quiz will be displayed to students)"
-          ></v-checkbox>
             <label>Max marks: {{ markingConfiguration.maximumMarks }}</label>
           </v-flex>
           <v-flex xs12>
