@@ -24,13 +24,14 @@
           </thead>
           <tbody>
             <tr v-for="(markRow, i) in markRows" :key="`markRow-${i}`">
-              <td class="ht">
+              <td class="ht" v-if="markRow.criterionDescription">
                 <span class="icon-container">
                   <font-awesome-icon icon="info-circle" />
                 </span>
 
                 <span class="tooltip">{{ markRow.criterionDescription }}</span>
               </td>
+              <td v-else><span></span></td>
               <td>{{ markRow.criterionName }}</td>
               <td>{{ markRow.score }}/{{ quizCriterionMaxMarksString }}</td>
               <td>{{ markRow.feedback }}</td>

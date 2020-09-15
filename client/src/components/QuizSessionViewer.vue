@@ -1,6 +1,7 @@
 <template>
   <div class="quiz-session-viewer">
-    <div v-for="(page, i) in pages" :key="page._id">
+    <!-- Only display pages that are not discussion pages -->
+    <div v-for="(page, i) in pagesWithoutDiscussionPages" :key="page._id">
       <Collapsible :title="`#${i+1} ${page.title}`" :label="pageTypeTitle(page)">
         <QuestionViewer
           v-if="page.type === PageTypes.QUESTION_ANSWER_PAGE"
@@ -8,12 +9,13 @@
           :question="getQuestionForPage(page)"
           :responseWithContent="getQuestionResponseWithContent(page)"
         />
-        <DiscussionViewer
+        <!-- Discussion Viewer disabled as per stakeholder's request -->
+        <!-- <DiscussionViewer
           v-if="page.type === PageTypes.DISCUSSION_PAGE"
           :page="page"
           :chatGroup="chatGroup"
           :quizSessionId="quizSession._id"
-        />
+        /> -->
         <InfoViewer v-if="page.type === PageTypes.INFO_PAGE" :contentLeft="[page.content]" />
         <div></div>
       </Collapsible>
@@ -57,6 +59,10 @@ export default class QuizSessionViewer extends Vue {
 
   get pages() {
     return this.quiz && this.quiz.pages ? this.quiz.pages || [] : [];
+  }
+
+  get pagesWithoutDiscussionPages() {
+    return this.pages.filter((p) => p.type !== this.PageTypes.DISCUSSION_PAGE);
   }
 
   get PageTypes() {
@@ -126,6 +132,10 @@ export default class QuizSessionViewer extends Vue {
     }
   }
 
+/**
+ * Chat group data disabled
+ */
+/*
   async fetchChatGroupForQuizSession() {
     if (!this.quizSession || !this.quizSession._id) return null;
     try {
@@ -144,10 +154,12 @@ export default class QuizSessionViewer extends Vue {
       console.error("Could not fetch chat group");
     }
   }
-
+  
   async mounted() {
     await this.fetchChatGroupForQuizSession();
   }
+*/
+
 }
 </script>
 <style lang="scss" scoped>
