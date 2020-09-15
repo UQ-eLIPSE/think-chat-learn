@@ -17,22 +17,16 @@
       <div class="flex-row justify-space-between">
         <table v-if="markRows && markRows.length" class="marks-table">
           <thead>
-            <th>&nbsp;&nbsp;&nbsp;</th>
             <th>Criterion</th>
             <th>Score</th>
             <th>Feedback</th>
           </thead>
           <tbody>
             <tr v-for="(markRow, i) in markRows" :key="`markRow-${i}`">
-              <td class="ht" v-if="markRow.criterionDescription && typeof markRow.criterionDescription === 'string' && markRow.criterionDescription.trim().length > 0">
-                <span class="icon-container">
-                  <font-awesome-icon icon="info-circle" />
-                </span>
-
+              <td class="ht" :data-content="markRow.criterionDescription && typeof markRow.criterionDescription === 'string' && markRow.criterionDescription.trim().length > 0">
+                {{ markRow.criterionName }}
                 <span class="tooltip">{{ markRow.criterionDescription }}</span>
               </td>
-              <td v-else><span></span></td>
-              <td>{{ markRow.criterionName }}</td>
               <td>{{ markRow.score }}/{{ quizCriterionMaxMarksString }}</td>
               <td>{{ markRow.feedback }}</td>
             </tr>
@@ -370,12 +364,12 @@ export default class Feedback extends Vue {
 
 /* Tooltip CSS */
 
-.ht:hover {
+.ht[data-content=true]:hover {
   cursor: pointer;
   opacity: 0.8;
 }
 
-.ht:hover .tooltip {
+.ht[data-content=true]:hover .tooltip {
   display: block;
 }
 
