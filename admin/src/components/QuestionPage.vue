@@ -4,17 +4,16 @@
       <h1 class="moocchat-title">Question Editor</h1>
       <v-container fluid grid-list-md>
         <v-layout row wrap>
-          <v-flex xs12>
+          <v-flex xs6>
             <b-field label="Set the title of the question">
               <v-text-field
-                label="Question Title"
                 v-model="pageQuestion.title"
                 :rules="[existenceRule]"
-                outline
+                outline single-line
               />
             </b-field>
           </v-flex>
-          <v-flex xs12>
+          <v-flex xs6>
             <b-field label="Set the question type">
               <v-overflow-btn
                 :items="questionTypeDropDown"
