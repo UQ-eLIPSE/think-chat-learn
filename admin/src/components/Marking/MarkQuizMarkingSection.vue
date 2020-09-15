@@ -10,9 +10,9 @@
           <h3 v-else-if="c.type === ContentType.CHAT" >Chat content for discussion -  {{c.questionTitle}}</h3>
         </v-flex>
         <v-flex xs6 :key="`button-${index}`" text-xs-right>
-          <v-btn @click="toggleVisibility(index)">
-            {{ c.visible ? "Hide " : "Show " }} <v-icon right>{{c.visible ? "visibility_off" : "visibility"}}</v-icon>
-          </v-btn>
+          <button type="button" class="button-min purple-cl" @click="toggleVisibility(index)">
+            {{ c.visible ? "Hide " : "Show " }} <!-- <v-icon small color="purple" right>{{c.visible ? "visibility_off" : "visibility"}}</v-icon> -->
+          </button>
         </v-flex>        
         <v-flex xs12 :key="`content-${index}`">
           <div v-if="c.type === ContentType.PAGE && c.visible" class="page-container">
@@ -229,7 +229,7 @@ export default class MarkQuizMarkingSection extends Vue {
 }
 </script>
 <style lang="scss" scoped>
-@import "../../../css/variables.scss";
+@import "../../../css/app.scss";
 .sidebar {
   color: white;
   text-shadow: rgb(85, 85, 85) 0.05em 0.05em 0.05em;
