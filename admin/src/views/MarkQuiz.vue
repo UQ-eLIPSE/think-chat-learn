@@ -19,13 +19,13 @@
             </v-flex>
             <v-flex xs12>
               <div class="step-navigation">
-                <v-btn type="button"
-                        class="primary"
+                <button type="button"
+                        class="primary-cl"
                         @click.prevent="previous">
-                  &lt; Previous</v-btn>
-                <v-btn type="button"
-                        class="primary"
-                        @click.prevent="next">Next &gt;</v-btn>
+                  &lt; Previous</button>
+                <button type="button"
+                        class="uq"
+                        @click.prevent="next">Next &gt;</button>
               </div>
               <div class="group-mark"
                   v-if="selectedGroup">
@@ -407,7 +407,7 @@ export default class MarkQuiz extends Vue {
 }
 </script>
 <style lang="scss" scoped>
-@import "../../css/partial/variables";
+@import "../../css/app.scss";
 .sidebar {
   color: white;
   text-shadow: rgb(85, 85, 85) 0.05em 0.05em 0.05em;

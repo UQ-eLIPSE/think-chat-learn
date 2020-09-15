@@ -62,10 +62,11 @@
 
           <!-- Note for now, qualitative questions only need be known that it is a qualitative for its definition -->
           <v-flex xs12>
-            <v-btn
+            <button
               type="button"
+              class="primary-cl"
               @click="submitQuestion()"
-            >{{ isEditing ? "Edit Question" : "Create Question" }}</v-btn>
+            >{{ isEditing ? "Edit Question" : "Create Question" }}</button>
           </v-flex>
         </v-layout>
       </v-container>
@@ -73,7 +74,8 @@
   </v-container>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@import "../../css/app.scss";
 .container {
   width: 100%;
 }

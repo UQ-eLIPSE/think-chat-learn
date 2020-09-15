@@ -11,9 +11,11 @@ button {
     font-weight: 600;
     text-transform: uppercase;
 
-    min-height: 40px;
+    height: 40px;
     min-width: 150px;
     padding: 0 30px;
+
+    margin: 5px;
 
     &.primary {
       background-color: $primary;

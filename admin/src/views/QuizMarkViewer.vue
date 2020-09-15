@@ -17,7 +17,7 @@
                 </b-select>
             </b-field>
 
-            <button class="primary"
+            <button class="green-cl"
                     type="button"
                     @click="exportToCsv">Export marks to CSV</button>
         </div>
@@ -319,7 +319,7 @@ export default class QuizMarkViewer extends Vue {
 }
 </script>
 <style lang="scss" scoped>
-@import "../../css/partial/variables";
+@import "../../css/app.scss";
 .pagination {
     margin: 1rem 0;
 }
@@ -330,6 +330,7 @@ export default class QuizMarkViewer extends Vue {
 
 .marks-table {
     border-collapse: collapse;
+    width: 100%;
 }
 
 .marks-table td,
