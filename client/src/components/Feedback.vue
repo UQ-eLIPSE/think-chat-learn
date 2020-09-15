@@ -24,7 +24,7 @@
           </thead>
           <tbody>
             <tr v-for="(markRow, i) in markRows" :key="`markRow-${i}`">
-              <td class="ht" v-if="markRow.criterionDescription">
+              <td class="ht" v-if="markRow.criterionDescription && typeof markRow.criterionDescription === 'string' && markRow.criterionDescription.trim().length > 0">
                 <span class="icon-container">
                   <font-awesome-icon icon="info-circle" />
                 </span>
