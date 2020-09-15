@@ -22,4 +22,11 @@ button {
       height: 40px;
       width: 100%;
     }
+
+    &.button-min {
+      font-size: 0.8em;
+      padding: 0 15px;
+      min-width: 75px;
+      height: 20px;
+    }
 }

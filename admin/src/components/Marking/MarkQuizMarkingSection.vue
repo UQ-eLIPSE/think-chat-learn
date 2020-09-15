@@ -10,7 +10,7 @@
           <h3 v-else-if="c.type === ContentType.CHAT" >Chat content for discussion -  {{c.questionTitle}}</h3>
         </v-flex>
         <v-flex xs6 :key="`button-${index}`" text-xs-right>
-          <button class="purple-cl" @click="toggleVisibility(index)">
+          <button type="button" class="button-min purple-cl" @click="toggleVisibility(index)">
             {{ c.visible ? "Hide " : "Show " }} <!-- <v-icon small color="purple" right>{{c.visible ? "visibility_off" : "visibility"}}</v-icon> -->
           </button>
         </v-flex>        
