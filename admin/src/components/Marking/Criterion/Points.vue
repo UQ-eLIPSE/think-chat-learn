@@ -19,7 +19,7 @@ import { Vue, Component, Prop } from "vue-property-decorator";
 export default class Points extends Vue {
 
   @Prop({ required: true, default: () => 5 }) private totalPoints!: number;
-  @Prop({ required: true, default: () => 5 }) private currentPoints!: number;
+  @Prop({ required: true, default: () => 0 }) private currentPoints!: number;
   
   private hoverPoint: number | undefined | null = null;
 
