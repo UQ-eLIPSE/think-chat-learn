@@ -1,37 +1,38 @@
 <template>
   <v-container v-if="q">
-      <h3 class="text-xs-center">Quiz Title: {{ q.title }}</h3>
-      <p class="text-xs-center">Quiz ID: {{q._id}}</p>
-      <p class="text-xs-center"><b>Available Start:</b> {{ new Date(q.availableStart).toLocaleString() }}</p>
-      <p class="text-xs-center"><b>Available End:</b> {{ new Date(q.availableEnd).toLocaleString() }}</p>
-      <v-form>
-        <v-container fluid grid-list-md>
+    <h3 class="text-xs-center">Quiz Title: {{ q.title }}</h3>
+    <p class="text-xs-center">Quiz ID: {{q._id}}</p>
+    <p class="text-xs-center"><b>Available Start:</b> {{ new Date(q.availableStart).toLocaleString() }}</p>
+    <p class="text-xs-center"><b>Available End:</b> {{ new Date(q.availableEnd).toLocaleString() }}</p>
+    <v-form>
+      <v-container fluid grid-list-md>
+        <div class="form-control">
           <v-layout row wrap>
-
-            <v-flex xs6>
-              <b-field label="Select the Group">
-                <div class="form-control select-field">
-                  <select v-model="selectedGroupId">
-                    <option v-for="option in chatGroupsDropDown" :key="option.text" :value="option.value">
-                      {{option.text}}
-                    </option>
-                  </select>
-                </div>
-              </b-field>
-            </v-flex>
-
-            <v-flex xs6>
-              <b-field label="Select the User">
-                <div class="form-control select-field">
-                  <select v-model="currentQuizSessionId">
-                    <option v-for="option in currentGroupQuizSessionDropDown" :key="option.text" :value="option.value">
-                      {{option.text}}
-                    </option>
-                  </select>
-                </div>
-              </b-field>
-            </v-flex>
             
+              <v-flex xs6>
+                <b-field label="Select the Group">
+                  <div class="select-field">
+                    <select v-model="selectedGroupId">
+                      <option v-for="option in chatGroupsDropDown" :key="option.text" :value="option.value">
+                        {{option.text}}
+                      </option>
+                    </select>
+                  </div>
+                </b-field>
+              </v-flex>
+
+              <v-flex xs6>
+                <b-field label="Select the User">
+                  <div class="select-field">
+                    <select v-model="currentQuizSessionId">
+                      <option v-for="option in currentGroupQuizSessionDropDown" :key="option.text" :value="option.value">
+                        {{option.text}}
+                      </option>
+                    </select>
+                  </div>
+                </b-field>
+              </v-flex>
+
             <v-flex xs12>
               <div class="step-navigation">
                 <button type="button"
@@ -64,8 +65,9 @@
               </div>
             </v-flex>            
           </v-layout>
-        </v-container>
-      </v-form>
+        </div>
+      </v-container>
+    </v-form>
   </v-container>
   <div v-else>Select a group from the dropdown list</div>
 </template>
