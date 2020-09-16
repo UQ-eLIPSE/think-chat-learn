@@ -6,9 +6,10 @@
     </div>
     <div class="comments-icon" :class="commentClasses">
       <font-awesome-icon icon="comment-dots" size="2x" @click.prevent="commentsVisible = !commentsVisible"></font-awesome-icon>
-      <div v-show="commentsVisible" class="comments-box">
-        <textarea value="avs" />
-        <font-awesome-icon size="2x" icon="check" @click.prevent="commentsVisible = false"></font-awesome-icon>
+      <div v-show="commentsVisible" class="comments-box card-container">
+        <textarea />
+        <!-- <button type="button" class="primary-cl min-button">Save</button> -->
+        <font-awesome-icon icon="chevron-down" @click.prevent="commentsVisible = false"></font-awesome-icon>
       </div>
     </div>
   </div>
@@ -49,6 +50,7 @@ export default class Criterion extends Vue {
 </script>
 <style lang="scss" scoped>
 @import "../../../../css/partial/variables";
+@import "../../../../css/partial/containers";
 
 .criterion {
   display: flex;
@@ -91,15 +93,15 @@ export default class Criterion extends Vue {
       align-items: center;
       position: absolute;
       right: 0;
-      top: -100px;
+      top: 30px;
       width: 200px;
       height: 90px;
-      background: transparentize($color: $white, $amount: 0.1);
-      border: 0.01em solid $primary;
+      // background: transparentize($color: $white, $amount: 0.1);
+      // border: 0.01em solid $primary;
       
       z-index: 999999;
-      padding: 0.5rem;
-      border-radius: 5px;
+      // padding: 0.5rem;
+      // border-radius: 5px;
 
       textarea {
         width: 100%;

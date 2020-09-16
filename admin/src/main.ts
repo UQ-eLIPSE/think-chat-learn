@@ -59,12 +59,13 @@ import "tinymce/themes/silver/theme";
 import "katex/dist/katex.min.css";
 
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faCommentDots, faCheck } from '@fortawesome/free-solid-svg-icons';
+import { faCommentDots, faCheck, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 library.add(
   faCommentDots,
-  faCheck
+  faCheck,
+  faChevronDown
 );
 
 Vue.component('font-awesome-icon', FontAwesomeIcon);

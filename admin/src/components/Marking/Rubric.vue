@@ -16,6 +16,7 @@
       <textarea />
       <!-- <textarea v-model="mark.feedback" /> -->
     </div>
+    <button type="button" class="primary-cl save-marks" @click.prevent="saveMarksHandler">Save</button>
   </div>
 </template>
 
@@ -90,6 +91,10 @@ export default class Rubric extends Vue {
       };
     });
   }
+
+  saveMarksHandler() {
+      this.$emit("saved");
+  }
 }
 </script>
 <style lang="scss" scoped>
@@ -99,13 +104,17 @@ export default class Rubric extends Vue {
   display: flex;
   flex-direction: column;
   background: $white;
-  width: 210px;
+  width: 220px;
   align-items: center;
   border: 0.01em solid transparent;
   border-radius: 10px;
   .rubric-heading {
     color: $uq;
-    margin: 0.5rem;
+  }
+
+  &.card-container {
+      width: 220px;
+      padding: 1.5rem;
   }
 
   .rubric-criterion {
@@ -139,6 +148,11 @@ export default class Rubric extends Vue {
         outline: none;
       }
     }
+  }
+
+  .save-marks {
+      width: 100%;
+      margin-top: 1rem;
   }
 }
 
