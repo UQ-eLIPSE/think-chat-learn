@@ -4,17 +4,16 @@
       <h1 class="moocchat-title">Question Editor</h1>
       <v-container fluid grid-list-md>
         <v-layout row wrap>
-          <v-flex xs12>
+          <v-flex xs6>
             <b-field label="Set the title of the question">
               <v-text-field
-                label="Question Title"
                 v-model="pageQuestion.title"
                 :rules="[existenceRule]"
-                outline
+                outline single-line
               />
             </b-field>
           </v-flex>
-          <v-flex xs12>
+          <v-flex xs6>
             <b-field label="Set the question type">
               <v-overflow-btn
                 :items="questionTypeDropDown"
@@ -62,10 +61,11 @@
 
           <!-- Note for now, qualitative questions only need be known that it is a qualitative for its definition -->
           <v-flex xs12>
-            <v-btn
+            <button
               type="button"
+              class="primary-cl"
               @click="submitQuestion()"
-            >{{ isEditing ? "Edit Question" : "Create Question" }}</v-btn>
+            >{{ isEditing ? "Edit Question" : "Create Question" }}</button>
           </v-flex>
         </v-layout>
       </v-container>
@@ -73,7 +73,8 @@
   </v-container>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@import "../../css/app.scss";
 .container {
   width: 100%;
 }

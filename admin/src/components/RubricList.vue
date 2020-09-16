@@ -1,30 +1,40 @@
 <template>
     <v-container>
         <h1 class="moocchat-name">Rubric List</h1>
-        <router-link tag="button" class="primary" to="/rubricEditor">Add Rubric</router-link>
+        <router-link tag="button" class="primary-cl" to="/rubricEditor">Add Rubric</router-link>
         <v-container fluid grid-list-md>
             <v-layout row wrap>
                 <v-flex v-for="rubric in rubrics"
                     :key="rubric._id"
                     xs12>
-                    <v-card>
+                    <div class="card-container">
                         <v-card-title><h3>Rubric Name: {{rubric.name}}</h3></v-card-title>
                         <div class="controls">
-                            <v-btn type="button"
-                                    class="primary"
-                                    @click="editRubric(rubric._id)">Edit</v-btn>
-                            <v-btn type="button"
-                                    class="primary"
-                                    @click="deleteRubric(rubric._id)">Delete</v-btn>
+                            <button type="button"
+                                    class="primary-cl"
+                                    @click="editRubric(rubric._id)">Edit</button>
+                            <button type="button"
+                                    class="purple-cl"
+                                    @click="deleteRubric(rubric._id)">Delete</button>
                         </div>
-                    </v-card>
+                    </div>
                 </v-flex>
             </v-layout>
         </v-container>
     </v-container>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@import "../../css/app.scss";
+
+.controls {
+    margin-top: 1rem;
+}
+
+button {
+    margin-right: 0.5rem;
+}
+
 </style>
 
 <script lang="ts">

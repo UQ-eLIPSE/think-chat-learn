@@ -11,25 +11,26 @@
                         </b-field>
                     </v-flex>
                     <v-flex v-for="(setCriteria, index) in mountedCriteriasId" :key="index" class="criteria" xs12>
-                        <v-card>
+                        <div class="card-container">
                             <v-card-title>
                                 <b-field :label="`Choose Criteria ${index + 1}`"/>
                             </v-card-title>
                             <!-- Since we can't actually set the criteria directly, we assign it key-wise instead -->
                             <!-- Also note that the name would not change, meanining re-render logic isn't affected -->
                             <v-overflow-btn :items="criteriaDropDown" v-model="mountedCriteriasId[index]" :rules="[existenceRule, duplicateRule]" outline/>
-                            <v-btn type="button" @click="deleteCriteria(index)">Remove Criteria</v-btn>
-                        </v-card>
+                            <button type="button" class="red-cl" @click="deleteCriteria(index)">Remove Criteria</button>
+                        </div>
                     </v-flex>
-                    <v-btn type="button" @click="appendRubric()">Add Criteria</v-btn>
-                    <v-btn type="button" @click="sendRubric()">{{id ? "Edit Rubric" : "Create Rubric"}}</v-btn>
+                    <button type="button" class="primary-cl" @click="appendRubric()">Add Criteria</button>
+                    <button type="button" class="purple-cl" @click="sendRubric()">{{id ? "Edit Rubric" : "Create Rubric"}}</button>
                 </v-layout>
             </v-container>
         </v-form>
     </v-container>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@import "../../css/app.scss";
 </style>
 
 <script lang="ts">
