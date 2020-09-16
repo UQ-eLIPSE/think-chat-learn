@@ -7,16 +7,31 @@
       <v-form>
         <v-container fluid grid-list-md>
           <v-layout row wrap>
+
             <v-flex xs6>
               <b-field label="Select the Group">
-                <v-overflow-btn :items="chatGroupsDropDown" v-model="selectedGroupId" outline/>
+                <div class="form-control select-field">
+                  <select v-model="selectedGroupId">
+                    <option v-for="option in chatGroupsDropDown" :key="option.text" :value="option.value">
+                      {{option.text}}
+                    </option>
+                  </select>
+                </div>
               </b-field>
             </v-flex>
+
             <v-flex xs6>
               <b-field label="Select the User">
-                <v-overflow-btn :items="currentGroupQuizSessionDropDown" v-model="currentQuizSessionId" outline/>
+                <div class="form-control select-field">
+                  <select v-model="currentQuizSessionId">
+                    <option v-for="option in currentGroupQuizSessionDropDown" :key="option.text" :value="option.value">
+                      {{option.text}}
+                    </option>
+                  </select>
+                </div>
               </b-field>
             </v-flex>
+            
             <v-flex xs12>
               <div class="step-navigation">
                 <button type="button"
