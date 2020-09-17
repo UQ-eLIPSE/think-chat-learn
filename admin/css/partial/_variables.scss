@@ -70,7 +70,7 @@ $black: #00000029;
   }
 }
 
-//Color classes
+//Function to generate color list by numeral
 @for $i from 1 through 10 {
   .base-cl-#{$i} {
     @if($i == 1){
@@ -85,6 +85,7 @@ $black: #00000029;
   }
 }
 
+//Color classes
 .primary-cl{
     @include transparent-color($primary, true);
 }
