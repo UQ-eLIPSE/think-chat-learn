@@ -99,7 +99,7 @@ export class MarksService extends BaseService<Mark> {
     /**
      * 
      * @param quizSessionId 
-     * @param checkPublic If `true`, fetch marks only id quiz marks are public
+     * @param checkPublic If `true`, fetch marks only if quiz marks are public
      */
     public async getMarksForQuizSession(quizSessionId: string, checkPublic?: boolean): Promise<Mark[]> {
         // Check if quiz marks are public
