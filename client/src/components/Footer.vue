@@ -15,7 +15,7 @@ footer {
   background-color: $uq;
   bottom: 0;
   display: flex;
-  height: 75px;
+  height: 45px;
   left: 0;
   padding: 0 3em;
   position: inherit;
@@ -26,14 +26,14 @@ footer {
   }
 
   a {
-    width: 9em;
+    width: 6em;
 
     &:first-child {
       margin-right: 2em;
     }
     &:last-child {
       margin-left: auto;
-      width: 8em;
+      width: 4.5em;
     }
   }
 }

@@ -4,6 +4,7 @@ import { MarksService } from "../services/MarksService";
 import { SocketSession } from "../js/websocket/SocketSession";
 import { StudentAuthenticatorMiddleware } from "../js/auth/StudentPageAuth";
 import { isAdmin } from "../js/auth/AdminPageAuth";
+import { LoginResponse } from "../../common/interfaces/ToClientData";
 
 export class MarksController extends BaseController {
 
@@ -22,6 +23,30 @@ export class MarksController extends BaseController {
         }).catch((e) => {
             console.log(e);
             res.sendStatus(400);
+        });
+    }
+
+    private getMarksByQuizSessionForCurrentUser(req: express.Request, res: express.Response, next: express.NextFunction | undefined): any {
+        const decodedToken = req.user as LoginResponse;
+        if(!decodedToken || !decodedToken.user || !decodedToken.user._id) return res.sendStatus(401);
+
+        if (!req.params.quizSessionId) throw new Error('Parameters not supplied');
+
+        this.marksService.getMarksForQuizSession(req.params.quizSessionId).then((result) => {
+            
+            // Filter only current user's marks
+            const currentUserMarks = (result || []).filter((marksObject) => {
+                if(marksObject && (marksObject.userId === decodedToken.user._id)) {
+                    return true;
+                }
+
+                return false;
+            });
+
+            return res.json({ payload: currentUserMarks || [] }).status(200);
+        }).catch((e) => {
+            console.log(e);
+            return res.sendStatus(400);
         });
     }
 
@@ -66,5 +91,6 @@ export class MarksController extends BaseController {
         this.router.get("/quizSessionId/:quizSessionId", isAdmin(), this.getMarksByQuizSession.bind(this));
         this.router.post("/createOrUpdate/quizSessionId/:quizSessionId/questionId/:questionId", isAdmin(), this.createOrUpdateMarks.bind(this));
         this.router.post("/multiple/createOrUpdate/quizSessionId/:quizSessionId/questionId/:questionId", isAdmin(), this.createOrUpdateMarksMultiple.bind(this));
+        this.router.get("/student/quizSession/:quizSessionId", StudentAuthenticatorMiddleware.checkUserId(), this.getMarksByQuizSessionForCurrentUser.bind(this));
     }
 }

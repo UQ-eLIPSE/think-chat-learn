@@ -6,11 +6,15 @@ a {
   align-items: center;
   background-color: $white;
   display: flex;
-  flex-flow: row wrap;
+  // flex-flow: row wrap;
   height: 70px;
   justify-content: space-between;
   padding: 0.75em 6.25em;
   width: 100%;
+
+  > * {
+    padding: 0 0.5rem;
+  }
 
   @media only screen and (max-width: 475px) {
     flex-direction: column;
