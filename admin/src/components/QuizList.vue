@@ -9,8 +9,11 @@
                 <v-flex v-for="quiz in quizzes"
                     :key="quiz._id"
                     xs12>
-                    <div class='card-container'>
-                        <v-card-title><h3>Quiz Title: {{quiz.title}}</h3></v-card-title>
+                    <div class='card-container quiz-card'>
+                        <v-card-title>
+                            <h3>Quiz Title: {{quiz.title}}</h3>
+                            <div class="visibility" :class="getVisibilityClasses(quiz)">{{ quiz.isPublic? 'PUBLIC':'STAFF ONLY' }}</div>
+                        </v-card-title>
                         <div class="date-text">
                             <span><b>ID: {{quiz._id}}</b></span>
                         </div>
@@ -51,6 +54,34 @@
     display: flex;
 }
 
+.visibility {
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 0.25rem;
+    font-size: 0.7em;
+    font-weight: bold;
+    text-transform: uppercase;
+    border: 0.01em solid transparent;
+}
+
+.visibility-public {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+
+.visibility-private {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+
+.quiz-card {
+    position: relative;
+}
+
+
 button {
     margin-right: 0.5rem;
 }
@@ -83,6 +114,15 @@ export default class QuizList extends Vue {
 
     get quizzes(): IQuiz[] {
         return this.$store.getters.quizzes;
+    }
+
+    getVisibilityClasses(quiz: IQuiz) {
+        if(!quiz) return {};
+        return {
+            'visibility-public': quiz.isPublic,
+            'visibility-private': !quiz.isPublic
+
+        }
     }
 }
 </script>

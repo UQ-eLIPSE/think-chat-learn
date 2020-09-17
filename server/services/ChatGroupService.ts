@@ -5,15 +5,21 @@ import { ObjectId } from "bson";
 import * as IWStoClientData from "../../common/interfaces/IWSToClientData";
 import { ResponseRepository } from "../repositories/ResponseRepository";
 import { ChatGroupResync } from "../../common/interfaces/HTTPToClientData";
+import { QuizSessionRepository } from "../repositories/QuizSessionRepository";
+import { UserSessionRepository } from "../repositories/UserSessionRepository";
 export class ChatGroupService extends BaseService<IChatGroup> {
 
     protected readonly chatGroupRepo: ChatGroupRepository;
     protected readonly responseRepo: ResponseRepository;
+    protected readonly quizSessionRepo: QuizSessionRepository;
+    protected readonly userSessionRepo: UserSessionRepository;
 
-    constructor(_chatGroupRepo: ChatGroupRepository, _responseRepo: ResponseRepository){
+    constructor(_chatGroupRepo: ChatGroupRepository, _responseRepo: ResponseRepository, _quizSessionRepo: QuizSessionRepository, _userSessionRepo: UserSessionRepository){
         super();
         this.chatGroupRepo = _chatGroupRepo;
         this.responseRepo = _responseRepo;
+        this.quizSessionRepo = _quizSessionRepo;
+        this.userSessionRepo = _userSessionRepo;
 }
 
     // Creates a chat group (only ran/endpoint is from the server)
@@ -68,6 +74,36 @@ export class ChatGroupService extends BaseService<IChatGroup> {
     public async findChatGroupBySessionId(quizSessionId: string): Promise<IChatGroup | null> {
         const group = await this.chatGroupRepo.findChatGroupsByIds(quizSessionId);
         return group && group.length ? group[0] : null;
+    }
+
+    /**
+     * Verifies that a quiz session ID belongs to requesting userId and returns chat group if successful
+     * @param quizSessionId 
+     * @param userId 
+     */
+    public async getChatGroupByQuizSessionIdAndUser(quizSessionId: string, userId: string) {
+        try {
+            if(!quizSessionId) throw new Error('Quiz session ID is invalid');
+
+            const quizSession = await this.quizSessionRepo.findOne(quizSessionId);
+            if(!quizSession || !quizSession._id || !quizSession.userSessionId) {
+                throw new Error('Could not find quiz/user session');
+            };
+
+            const userSession = await this.userSessionRepo.findOne(quizSession.userSessionId);
+            if(!userSession) {
+                throw new Error('Could not find user session');
+            };
+
+            if(userSession.userId === userId) {
+                // The requesting user is legitimate, return chat group responses
+                const chatGroup = await this.findChatGroupBySessionId(quizSessionId);
+                return chatGroup || null;
+            } else throw new Error('User is not authorised to view content');
+        } catch(e) {
+            console.error(e.message);
+            return null;
+        }
     }
 
     // An attempt to reconstruct the chat group

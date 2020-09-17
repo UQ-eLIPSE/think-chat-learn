@@ -7,18 +7,21 @@ export interface IState {
     user: IUser | null;
     session: IUserSession |null;
     token: string | null;
+    courseTitle?: string;
 }
 
 const state: IState = {
     user: null,
     session: null,
-    token: null
+    token: null,
+    courseTitle: ""
 };
 
 const mutationKeys = {
   SET_USER: "Setting User",
   SET_SESSION: "Setting a session",
-  STORE_TOKEN: "Storing token"
+  STORE_TOKEN: "Storing token",
+  SET_USER_COURSE_TITLE: "Setting user's course's title"
 };
 
 const getters = {
@@ -31,11 +34,18 @@ const getters = {
 
     token: (): string | null => {
         return state.token;
+    },
+    userCourseTitle: (): string => {
+        return state.courseTitle || "";
     }
 };
 const actions = {
     setUser({ commit }: {commit: Commit}, user: IUser) {
         return commit(mutationKeys.SET_USER, user);
+    },
+
+    setUserCourseTitle({ commit }: {commit: Commit}, courseTitle?: string) {
+        return commit(mutationKeys.SET_USER_COURSE_TITLE, courseTitle);
     },
 
     refreshToken() {
@@ -80,6 +90,9 @@ const mutations = {
 
     [mutationKeys.STORE_TOKEN](funcState: IState, data: string) {
         Vue.set(funcState, "token", data);
+    },
+    [mutationKeys.SET_USER_COURSE_TITLE](funcState: IState, data: string) {
+        Vue.set(funcState, "courseTitle", data || "");
     }
 };
 
