@@ -13,8 +13,11 @@
     </div>
     <div class="general-feedback">
       <h5>General feedback</h5>
-      <textarea />
-      <!-- <textarea v-model="mark.feedback" /> -->
+      <div class="form-control">
+        <div class="editable-field">
+          <textarea />
+        </div>
+      </div>
     </div>
     <button type="button" class="primary-cl save-marks" @click.prevent="saveMarksHandler">Save</button>
   </div>
@@ -110,6 +113,7 @@ export default class Rubric extends Vue {
   border-radius: 10px;
   .rubric-heading {
     color: $uq;
+    align-self: flex-start;
   }
 
   &.card-container {
@@ -133,20 +137,21 @@ export default class Rubric extends Vue {
     h5 {
       color: $dark-grey;
       font-weight: bold;
+      margin-bottom: 0.5rem;
     }
 
     textarea {
-      border: 0.01em solid $border-grey;
       width: 100%;
       height: 85%;
-      overflow: scroll;
-      padding: 0.5rem;
-      border-radius: 5px;
-      &:hover,
-      &:focus,
-      &:active {
-        outline: none;
-      }
+      // border: 0.01em solid $border-grey;
+      // overflow: scroll;
+      // padding: 0.5rem;
+      // border-radius: 5px;
+      // &:hover,
+      // &:focus,
+      // &:active {
+      //   outline: none;
+      // }
     }
   }
 
