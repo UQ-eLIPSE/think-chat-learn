@@ -1,32 +1,31 @@
 @import "./variables";
 
 button {
-    border: none;
-    border-radius: 5px;
-    color: $white;
-    cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  color: $white;
+  cursor: pointer;
 
-    font-family: "Open Sans", sans-serif;
-    font-size: 1em;
-    font-weight: 600;
-    text-transform: uppercase;
+  font-family: "Open Sans", sans-serif;
+  font-size: 1em;
+  font-weight: 600;
+  text-transform: uppercase;
 
+  height: 40px;
+  min-width: 150px;
+  padding: 0 30px;
+  margin: 5px;
+
+  &.secondary {
+    background-color: $baseLight3;
     height: 40px;
-    min-width: 150px;
-    padding: 0 30px;
+    width: 100%;
+  }
 
-    margin: 5px;
-
-    &.secondary {
-      background-color: $baseLight3;
-      height: 40px;
-      width: 100%;
-    }
-
-    &.button-min {
-      font-size: 0.8em;
-      padding: 0 15px;
-      min-width: 75px;
-      height: 20px;
-    }
+  &.button-min {
+    font-size: 0.8em;
+    padding: 0 15px;
+    min-width: 75px;
+    height: 20px;
+  }
 }
