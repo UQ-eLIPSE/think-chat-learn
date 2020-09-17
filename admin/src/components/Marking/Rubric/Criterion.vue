@@ -5,9 +5,19 @@
       <Points @marked="markedHandler" :totalPoints="maximumMarks" :currentPoints="mark.value" />
     </div>
     <div class="comments-icon" :class="commentClasses">
-      <font-awesome-icon icon="comment-dots" size="2x" title="Add Comment" @click.prevent="toggleComments()"></font-awesome-icon>
+      <font-awesome-icon
+        :class="mark && mark.feedback ? 'glow': ''"
+        icon="comment-dots"
+        size="2x"
+        title="Add Comment"
+        @click.prevent="toggleComments()"
+      ></font-awesome-icon>
       <div v-show="commentsVisible" class="comments-box flex-row">
-        <textarea v-if="mark && typeof mark.feedback === 'string'" v-model="mark.feedback" placeholder="Comment ..." />
+        <textarea
+          v-if="mark && typeof mark.feedback === 'string'"
+          v-model="mark.feedback"
+          placeholder="Comment ..."
+        />
         <i class="icon-chevron-down" @click.prevent="commentsVisible = false" />
       </div>
     </div>
@@ -46,7 +56,7 @@ export default class Criterion extends Vue {
 
   get commentClasses() {
     return {
-      filled: this.mark && (this.mark as any).feedback,
+      filled: this.mark && (this.mark as any).feedback
     };
   }
 
@@ -95,6 +105,10 @@ export default class Criterion extends Vue {
       }
     }
 
+    .glow {
+      // TODO: Add glow if comment exists
+    }
+
     .comments-box {
       display: flex;
       align-items: center;
@@ -105,11 +119,12 @@ export default class Criterion extends Vue {
       height: 90px;
       background: transparentize($color: $white, $amount: 0.1);
       border: 0.01em solid $primary;
-      
+
       z-index: 999999;
       padding: 0.5rem;
       border-radius: 5px;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);      .comment-header {
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+      .comment-header {
         width: 100%;
       }
 
