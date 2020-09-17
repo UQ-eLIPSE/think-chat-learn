@@ -1,6 +1,5 @@
 <template>
   <v-container class="marking-section" fluid grid-list-md>
-    <Rubric username="s3234456" :criteria="undefined" :mark="undefined" :maximumMarks="5" />
     <!-- Highly unlikely we need to re-render. Index as key is fine -->
     <v-layout row wrap>
       <!-- Use template due to strict formatting of Vuetify's grid system of container -> layout -> flex -->
@@ -67,7 +66,6 @@ import { PageType } from "../../../../common/enums/DBEnums";
 import ChatMessage from './ChatMessage.vue';
 import MarkingComponent from './MarkingComponent.vue';
 import { CurrentMarkingContext } from "../../store/modules/quiz";
-import Rubric from "./Rubric.vue";
 
 // Since we are dumping the entire page here, we need to know what content there is to render
 enum ContentType {
@@ -104,8 +102,7 @@ type GenericContent = PageContent | ResponseContent | ChatContent;
 @Component({
   components: {
     ChatMessage,
-    MarkingComponent,
-    Rubric
+    MarkingComponent
   }
 })
 export default class MarkQuizMarkingSection extends Vue {

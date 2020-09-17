@@ -32,7 +32,7 @@ export class MarksController extends BaseController {
 
         if (!req.params.quizSessionId) throw new Error('Parameters not supplied');
 
-        this.marksService.getMarksForQuizSession(req.params.quizSessionId).then((result) => {
+        this.marksService.getMarksForQuizSession(req.params.quizSessionId, true).then((result) => {
             
             // Filter only current user's marks
             const currentUserMarks = (result || []).filter((marksObject) => {

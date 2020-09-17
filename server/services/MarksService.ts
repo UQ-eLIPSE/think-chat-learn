@@ -96,7 +96,7 @@ export class MarksService extends BaseService<Mark> {
         return this.marksRepo.findOne(_id);
     }
 
-    public async getMarksForQuizSession(quizSessionId: string): Promise<Mark[]> {
+    public async getMarksForQuizSession(quizSessionId: string, checkPublic?: boolean): Promise<Mark[]> {
         // Check if quiz marks are public
         if(!quizSessionId) return [];
 
@@ -115,7 +115,7 @@ export class MarksService extends BaseService<Mark> {
         }
 
         // If quiz marks have not been made public, DO NOT return marks to the user
-        if(!quiz.marksPublic) return [];
+        if(checkPublic && !quiz.marksPublic) return [];
 
         return this.marksRepo.findAll({
             quizSessionId: quizSessionId

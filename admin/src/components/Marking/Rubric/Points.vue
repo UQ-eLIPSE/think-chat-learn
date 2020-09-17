@@ -39,7 +39,7 @@ export default class Points extends Vue {
   }
 
   clickHandler(point: number) {
-    console.log("Mark changed to :", point);
+    this.$emit("marked", point);
   }
 }
 </script>

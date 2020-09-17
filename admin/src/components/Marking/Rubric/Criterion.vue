@@ -2,12 +2,12 @@
   <div class="criterion flex-row">
     <div class="criterion-container flex-col">
       <span class="criterion-title">{{ criterionName }}</span>
-      <Points :totalPoints="maximumMarks" :currentPoints="mark.value" />
+      <Points @marked="markedHandler" :totalPoints="maximumMarks" :currentPoints="mark.value" />
     </div>
     <div class="comments-icon" :class="commentClasses">
       <font-awesome-icon icon="comment-dots" size="2x" title="Add Comment" @click.prevent="toggleComments()"></font-awesome-icon>
       <div v-show="commentsVisible" class="comments-box flex-row">
-        <textarea placeholder="Comment ..." />
+        <textarea v-if="mark && typeof mark.feedback === 'string'" v-model="mark.feedback" placeholder="Comment ..." />
         <i class="icon-chevron-down" @click.prevent="commentsVisible = false" />
       </div>
     </div>
@@ -35,6 +35,10 @@ export default class Criterion extends Vue {
   @Prop({}) private mark!: MarkCriteria;
 
   private commentsVisible: boolean = false;
+
+  markedHandler(point: number) {
+    this.mark.value = point;
+  }
 
   get criterionName() {
     return (this.criterion && this.criterion.name) || "";

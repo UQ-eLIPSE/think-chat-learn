@@ -15,7 +15,7 @@
       <h5>General feedback</h5>
       <div class="form-control">
         <div class="editable-field">
-          <textarea />
+          <textarea v-if="mark && typeof mark.feedback === 'string'" v-model="mark.feedback" />
         </div>
       </div>
     </div>
@@ -31,8 +31,8 @@ import {
   ICriteria,
   Mark,
   MarkCriteria,
-} from "../../../../common/interfaces/DBSchema";
-import Criterion from "./Criterion/Criterion.vue";
+} from "../../../../../common/interfaces/DBSchema";
+import Criterion from "./Criterion.vue";
 
 @Component({
   components: {
@@ -46,39 +46,13 @@ export default class Rubric extends Vue {
   @Prop({}) private maximumMarks!: number;
 
   get criterionList(): ICriteria[] {
-    return [
-      {
-        _id: "1",
-        name: "Evaluating and Interpreting",
-        course: "ENGG1200",
-      },
-      {
-        _id: "2",
-        name: "Depth of Reflection",
-        course: "ENGG1200",
-      },
-      {
-        _id: "3",
-        name: "Depth of Reflection and a long name",
-        course: "ENGG1200",
-      },
-    ];
+    return this.criteria || [];
   }
 
   get marksList(): MarkCriteria[] {
     return this.mark && this.mark.marks
       ? this.mark.marks || []
-      : [
-          {
-            value: 2,
-            criteriaId: "1",
-            feedback: "abcdefghi",
-          } as any,
-          {
-            value: 4,
-            criteriaId: "2",
-          },
-        ];
+      : [];
   }
 
   get criteriaMarkObjects(): {
@@ -101,8 +75,8 @@ export default class Rubric extends Vue {
 }
 </script>
 <style lang="scss" scoped>
-@import "../../../css/partial/variables";
-@import "../../../css/partial/containers";
+@import "../../../../css/partial/variables";
+@import "../../../../css/partial/containers";
 .rubric {
   display: flex;
   flex-direction: column;
