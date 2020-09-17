@@ -96,6 +96,11 @@ export class MarksService extends BaseService<Mark> {
         return this.marksRepo.findOne(_id);
     }
 
+    /**
+     * 
+     * @param quizSessionId 
+     * @param checkPublic If `true`, fetch marks only if quiz marks are public
+     */
     public async getMarksForQuizSession(quizSessionId: string, checkPublic?: boolean): Promise<Mark[]> {
         // Check if quiz marks are public
         if(!quizSessionId) return [];
