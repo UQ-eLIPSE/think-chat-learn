@@ -1,0 +1,17 @@
+@import "./variables";
+
+/*Custom component styling*/
+
+
+/*Override Vuetify styling*/
+.text-field-ce{
+    .v-input__slot{
+        border: 2px solid $grey;
+    }
+
+    .v-text-field__slot{
+      input{
+        //color: $purple !important;
+      }
+    }
+}

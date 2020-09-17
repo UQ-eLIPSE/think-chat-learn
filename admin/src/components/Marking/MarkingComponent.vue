@@ -1,11 +1,6 @@
 <template>
     <div class="marking-rubric">
         <h3>Rubric</h3>
-        <div class="save-controls">
-            <button type="button"
-                    class="primary"
-                    @click.prevent="saveMarks">Save Marks</button>
-        </div>
         <table class="marks-table"
                v-if="marks">
             <tr v-for="(c, index) in associatedCriterias"
@@ -34,6 +29,11 @@
             <textarea v-if="marks"
                 placeholder="General feedback ..."
                 v-model="marks.feedback"></textarea>
+        </div>
+        <div class="save-controls">
+            <button type="button"
+                    class="primary-cl"
+                    @click.prevent="saveMarks">Save Marks</button>
         </div>
 
     </div>
@@ -268,8 +268,12 @@ export default class MarkingComponent extends Vue {
 
 
 }
+
 </script>
-<style scoped>
+
+<style scoped lang="scss">
+@import "../../../css/app.scss";
+
 .general-feedback {
     padding: 0.5rem;
 
@@ -278,6 +282,7 @@ export default class MarkingComponent extends Vue {
 .general-feedback > textarea {
     background: white;
 }
+
 .sidebar {
     color: white;
     text-shadow: rgb(85, 85, 85) 0.05em 0.05em 0.05em;

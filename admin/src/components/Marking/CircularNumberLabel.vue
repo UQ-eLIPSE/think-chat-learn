@@ -3,7 +3,7 @@
 </template>
 
 <style lang="scss" scoped>
-@import "../../../css/variables.scss";
+@import "../../../css/partial/variables";
 
 label {
   border-radius: 50%;

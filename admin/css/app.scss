@@ -1,0 +1,136 @@
+@import "partial/variables";
+@import "partial/button";
+@import "partial/containers";
+@import "partial/form";
+@import "partial/table";
+
+#app {
+    // font-family: "Roboto-Light", sans-serif;
+    // -webkit-font-smoothing: antialiased;
+    // -moz-osx-font-smoothing: grayscale;
+    // height: 100vh !important;
+    width: 100vw;
+    // overflow: hidden;
+    overflow: auto;
+  
+    display: flex;
+    flex-direction: row;
+    // flex-wrap: nowrap;
+  }
+  
+  .z-index-zero {
+    z-index: 0 !important;
+  }
+  
+  #routerpanel {
+    // overflow-y: scroll;
+    // width: calc(100% - 20rem);
+    // max-height: 100%;
+    // overflow: scroll;
+    //width: calc(100% - 20rem);
+  }
+  
+  select {
+    padding: 0.5rem;
+    font-size: 1rem;
+  }
+  
+  html {
+    background-color: #f9fbfc;
+    body {
+      font-family: "Open Sans", sans-serif !important;
+      color: #333;
+      margin: 0;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+  
+      #app {
+        height: 100%;
+      }
+  
+      .center {
+        text-align: center;
+      }
+  
+      .margin-top {
+        margin-top: 2em;
+      }
+  
+      h1 {
+        color: $primary;
+        font-size: 1.875em;
+        font-weight: 600;
+        line-height: 45px;
+        margin-bottom: 0.5em;
+      }
+  
+      h2 {
+        color: $primary;
+        font-size: 1.875em;
+        font-weight: 600;
+        margin-bottom: 0.5em;
+      }
+  
+      h3 {
+        color: $primary;
+        font-size: 1.25em;
+        font-weight: 600;
+        margin-bottom: 0.5em;
+      }
+  
+      a {
+        color: $text;
+        cursor: pointer;
+        text-decoration: none;
+  
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+  
+      section {
+        background-color: $mainBg;
+        height: 100%;
+        padding-top: 25px;
+  
+        @media (min-width: 1685px) {
+          height: calc(100vh - 171px);
+        }
+      }
+  
+      //Vuetify overrides
+      .v-toolbar {
+        &.uq {
+          background-color: $uq;
+        }
+  
+        .title{
+          color: $white;
+        }
+      }
+      
+      // Countdown Timer styling
+      .vuejs-countdown {
+        background-color: rgba(96, 175, 161, 0.1);
+        border: 3px solid $baseDark1;
+        border-radius: 5px;
+        color: $baseDark1;
+        font-size: 20px;
+        height: 50px;
+        margin: 0 auto;
+        text-align: center;
+        width: 250px;
+        li {
+          &:first-child {
+            display: none;
+          }
+          p {
+            &.text {
+              display: none;
+            }
+          }
+        }
+      }
+    }
+  }

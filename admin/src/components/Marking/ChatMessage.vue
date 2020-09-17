@@ -28,7 +28,7 @@ export default class ChatMessage extends Vue {
 }
 </script>
 <style lang="scss" scoped>
-@import "../../../css/variables.scss";
+@import "../../../css/partial/variables";
 
 .chat-message {
   margin-bottom: 10px;

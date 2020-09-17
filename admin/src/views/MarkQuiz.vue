@@ -33,13 +33,13 @@
             </v-flex>
             <v-flex xs12>
               <div class="step-navigation">
-                <v-btn type="button"
-                        class="primary"
+                <button type="button"
+                        class="primary-cl"
                         @click.prevent="previous">
-                  &lt; Previous</v-btn>
-                <v-btn type="button"
-                        class="primary"
-                        @click.prevent="next">Next &gt;</v-btn>
+                  &lt; Previous</button>
+                <button type="button"
+                        class="uq"
+                        @click.prevent="next">Next &gt;</button>
               </div>
               <div class="group-mark"
                   v-if="selectedGroup">
@@ -437,7 +437,8 @@ export default class MarkQuiz extends Vue {
 }
 </script>
 <style lang="scss" scoped>
-@import "../../css/variables.scss";
+
+@import "../../css/app.scss";
 
 .flex-row {
   display: flex;
@@ -450,6 +451,7 @@ export default class MarkQuiz extends Vue {
 .justify-space-around {
   justify-content: space-around;
 }
+
 
 
 .sidebar {
