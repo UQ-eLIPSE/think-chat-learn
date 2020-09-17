@@ -1,17 +1,132 @@
 @import "./variables";
+@import "./icons";
+@import "./fonts";
+
+/*Usage example:*/
+/**
+* <div class="form-control"> //Apply custom styling
+*   <div class="editable-field"> //Apply icon append/prepend
+*     <input type="text"> //HTML Element
+*   </div>
+* </div>
+*/
 
 /*Custom component styling*/
+/*==========================================================*/
 
+@mixin form-icon-position($isAfter: true) {
+  top: 12px;
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
 
-/*Override Vuetify styling*/
-.text-field-ce{
-    .v-input__slot{
-        border: 2px solid $grey;
-    }
+  @if($isAfter){
+    right: 15px;
+  } @else {
+    left: 15px;
+  }
+}
 
-    .v-text-field__slot{
-      input{
-        //color: $purple !important;
+/*Custom defaul HTML element - wrap forms element with form-control to apply custom styling*/
+/*--------------------------------------------------------*/
+.form-control {
+  position: relative;
+
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    
+    @include font-style(1, 1.5, 400, $darker-grey);
+
+    border: 1px solid $grey;
+    border-radius: 5px;
+
+    box-sizing: border-box;
+    margin: 0 0 0.5rem;
+    width: 100%;
+    height: 40px;
+
+    -webkit-appearance: none;
+    appearance: none;
+    color: $darker-grey;
+    background-color: $white;
+
+    &:focus {
+      border: 2px solid $purple;
+      outline: none;
+      position: relative;
+
+      &::placeholder {
+        color: transparent;
       }
     }
+
+    &::placeholder {
+      color: $grey;
+    }
+  }
+
+  input[type="search"] {
+    padding: 0 15px 0 40px;
+  }
+
+  input[type="text"],
+  textarea {
+    padding: 0 15px;
+  }
+
+  textarea {
+    display: flex;
+    flex-flow: column;
+    height: 200px;
+    resize: none;
+    overflow-y: scroll;
+    padding: 15px;
+  }
+}
+
+/*Append/Prepend icon accordingly to the form element type*/
+/*--------------------------------------------------------*/
+//Icon append for <input type="text"> and <textarea>
+.editable-field{
+  position: relative;
+  
+  &:before {
+    @include icon;
+    @include form-icon-position($isAfter: true);
+    
+    color: $grey;
+    content: $icon-pencil;
+  }
+}
+
+//Icon append for <select>
+.select-field {
+  position: relative;
+
+  &:after {
+    @include icon;
+    @include form-icon-position($isAfter: true);
+    
+    color: $grey;
+    content: $icon-chevron-down;
+  }
+
+  select {
+    cursor: pointer;
+    word-break: normal;
+  }
+}
+
+//Icon append for <input type="search">
+.search-field {
+  position: relative;
+  
+  &:before {
+    @include icon;
+    @include form-icon-position($isAfter: false);
+    
+    color: $grey;
+    content: $icon-search;
+  }
 }
