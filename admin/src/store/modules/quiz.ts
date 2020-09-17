@@ -58,6 +58,7 @@ const mutationKeys = {
     SET_QUIZZES: "Setting a collection of quizzes",
     DELETE_QUIZ: "Deleting a quiz",
     EDIT_QUIZ: "Editing a quiz",
+    EDIT_QUIZ_MARKS_VISIBILITY: "Edit marks visiblity for a quiz",
     SET_CRITERIAS: "Setting the criterias",
     SET_CRITERIA: "Setting a criteria",
     DELETE_CRITERIA: "Deleting a criteria",
@@ -204,7 +205,25 @@ const actions: ActionTree<IState, undefined> = {
             }
         });
     },
+    async updateQuizMarksVisibility({ commit }: { commit: Commit }, data: { quizScheduleId: string, marksPublic: boolean }) {
+        try {
+            if(!data || !data.quizScheduleId) throw new Error('Invalid quiz quizScheduleId supplied');
+            const response = await API.request(API.PUT, API.QUIZ + 'marks-visibility', data);
+            if(response && response.success) {
+                commit(mutationKeys.EDIT_QUIZ_MARKS_VISIBILITY, data);
 
+                EventBus.$emit(EventList.PUSH_SNACKBAR, {
+                    message: data.marksPublic? `Marks are visible to students`:
+                    `Marks will not be displayed to students`
+                });
+            }
+        } catch(e) {
+            EventBus.$emit(EventList.PUSH_SNACKBAR, {
+                message: `Marks visibility settings could not be updated`,
+                error: true
+            });
+        }
+    },
     getQuizzes(context, courseId: string) {
         API.request(API.GET, API.QUIZ + "course/" + courseId, {}).then((output: IQuizOverNetwork[]) => {
             context.commit(mutationKeys.SET_QUIZZES, convertNetworkQuizzesIntoQuizzes(output));
@@ -390,6 +409,15 @@ const mutations = {
 
         if (index !== -1) {
             Vue.set(funcState.quiz, index, data);
+        }
+    },
+    [mutationKeys.EDIT_QUIZ_MARKS_VISIBILITY](funcState: IState, data: { quizScheduleId: string, marksPublic: boolean }) {
+        const index = funcState.quiz.findIndex((element) => {
+            return element._id === data.quizScheduleId;
+        });
+
+        if (index !== -1) {
+            Vue.set(funcState.quiz[index], 'marksPublic', !!data.marksPublic);
         }
     },
     [mutationKeys.SET_COURSE](funcState: IState, course: string) {

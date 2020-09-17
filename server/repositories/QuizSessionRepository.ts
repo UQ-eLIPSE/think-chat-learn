@@ -2,6 +2,10 @@ import { BaseRepository } from "./BaseRepository";
 import { IQuizSession } from "../../common/interfaces/DBSchema";
 
 export class QuizSessionRepository extends BaseRepository<IQuizSession>{
+
+    /**
+     * TODO: Is this method invalid ? Since there isn't a 1-1 mapping between quiz session and user session ?
+     */
     async findQuizSessionByUserId(userSessionId: string): Promise<IQuizSession | null> {
 
         /**
@@ -22,5 +26,15 @@ export class QuizSessionRepository extends BaseRepository<IQuizSession>{
             quizId
         });
         return result;
+    }
+
+    async findQuizSessionsByUserSessions(userSessionIds: string[]): Promise<IQuizSession[] | null> {
+        let result = await this.collection.find({
+            userSessionId: {
+                $in: userSessionIds
+            }
+        }).toArray();
+
+        return (result || []).map((quizSession) => this.convertDocumentToItem(quizSession));
     }
 }

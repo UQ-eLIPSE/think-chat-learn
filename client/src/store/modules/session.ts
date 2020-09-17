@@ -474,7 +474,6 @@ const actions = {
     createSocket({ commit }: {commit: Commit}) {
         return commit(mutationKeys.CREATE_SOCKET);
     },
-
     deleteSocket({ commit }: {commit: Commit}) {
         return commit(mutationKeys.DELETE_SOCKET);
     },
@@ -579,7 +578,6 @@ const mutations = {
             registerSocketEvents();
         }
     },
-
     [mutationKeys.CLOSE_SOCKET](funcState: IState) {
         if (funcState.socketState.socket) {
             funcState.socketState.socket.close();
