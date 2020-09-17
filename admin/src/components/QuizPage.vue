@@ -17,7 +17,7 @@
           <v-flex xs3>
             <!-- In order to create rules, we need to use Vue components instead. Menu with one item is essentially a drop down -->
             <!-- Also v-on syntax is Vue 2.6+ -->
-            <b-field label="Select the start date">
+            <b-field label="Start date">
               <v-menu
                 ref="startDateMenu"
                 v-model="startDateShow"
@@ -43,7 +43,7 @@
             </b-field>
           </v-flex>
           <v-flex xs3>
-            <b-field label="Select a start time">
+            <b-field label="Start time">
               <v-menu
                 ref="startTimeMenu"
                 v-model="startTimeShow"
@@ -67,7 +67,7 @@
             </b-field>
           </v-flex>
           <v-flex xs3>
-            <b-field label="Select the end date">
+            <b-field label="End date">
               <v-menu
                 ref="endDateMenu"
                 v-model="endDateShow"
@@ -92,7 +92,7 @@
             </b-field>
           </v-flex>
           <v-flex xs3>
-            <b-field label="Select an end time">
+            <b-field label="End time">
               <v-menu
                 ref="endTimeMenu"
                 v-model="endTimeShow"
@@ -114,6 +114,12 @@
                 </v-time-picker>
               </v-menu>
             </b-field>
+
+          </v-flex>
+          <v-flex xs12>
+            <v-checkbox
+              v-model="isPublic"
+              label="Public? (If checked, this quiz will be displayed to students)"></v-checkbox>
           </v-flex>
           <!-- Temporary wrapper for the page labels -->
           <v-flex xs12>
@@ -260,6 +266,7 @@ import API from "../../../common/js/DB_API";
 import uniqueId from "../util/uniqueId";
 import { saveTinyMceEditorContent } from "../util/TinyMceUtils";
 
+
 interface DropDownConfiguration {
   text: string;
   value: string;
@@ -294,6 +301,11 @@ export default class QuizPage extends Vue {
 
   private groupSize: number = Conf.groups.defaultGroupSize;
   private markingConfiguration: DBSchema.MarkConfig = this.initMarkConfig();
+  
+  /**
+   * If true, students will be able to view this quiz. Otherwise, it will be displayed only to course staff members
+   */
+  private isPublic: boolean = true;
 
   private pagesArray: (Page & { __mountedId?: string })[] = [];
 
@@ -546,7 +558,8 @@ export default class QuizPage extends Vue {
       course: this.courseId,
       markingConfiguration: this.markingConfiguration,
       groupSize: this.groupSize,
-      rubricId: this.rubricId
+      rubricId: this.rubricId,
+      isPublic: this.isPublic
     };
 
     if (this.isEditing && !this.isCloning) {
@@ -636,7 +649,7 @@ export default class QuizPage extends Vue {
         this.rubricId = loadedQuiz.rubricId!;
         this.markingConfiguration =
           loadedQuiz.markingConfiguration || this.markingConfiguration;
-
+        this.isPublic = loadedQuiz.isPublic || false;
         this.pagesArray = loadedQuiz.pages.map(page => {
           (page as any).__mountedId = uniqueId();
           return page;

@@ -1,9 +1,14 @@
 import { BaseService } from "./BaseService";
 import { QuizSessionRepository } from "../repositories/QuizSessionRepository";
-import { IQuizSession, Response } from "../../common/interfaces/DBSchema";
+import { IQuizSession, Response, AttemptedQuizSessionData, TypeQuestion, IResponse } from "../../common/interfaces/DBSchema";
 import { UserSessionRepository } from "../repositories/UserSessionRepository";
 import { QuizRepository } from "../repositories/QuizRepository";
 import { ResponseRepository } from "../repositories/ResponseRepository";
+import { Utils } from "../../common/js/Utils";
+import { PageType } from "../../common/enums/DBEnums";
+import { QuestionRepository } from "../repositories/QuestionRepository";
+import { ObjectID } from "mongodb";
+import { IQuestionAnswerPage } from "../../common/interfaces/ToClientData";
 
 export class QuizSessionService extends BaseService<IQuizSession> {
 
@@ -11,9 +16,10 @@ export class QuizSessionService extends BaseService<IQuizSession> {
     protected readonly quizRepo: QuizRepository;
     protected readonly userSessionRepo: UserSessionRepository;
     protected readonly responseRepo: ResponseRepository;
+    protected readonly questionRepo: QuestionRepository;
 
     constructor(_quizSessionRepo: QuizSessionRepository, _userSessionRepo: UserSessionRepository,
-        _quizRepo: QuizRepository, _responseRepo: ResponseRepository) {
+        _quizRepo: QuizRepository, _responseRepo: ResponseRepository, _questionRepo: QuestionRepository) {
 
         super();
 
@@ -21,6 +27,7 @@ export class QuizSessionService extends BaseService<IQuizSession> {
         this.userSessionRepo = _userSessionRepo;
         this.quizRepo = _quizRepo;
         this.responseRepo = _responseRepo;
+        this.questionRepo = _questionRepo;
     }
 
     // Creates a user session assuming the body is valid
@@ -89,10 +96,10 @@ export class QuizSessionService extends BaseService<IQuizSession> {
             (checkResponses.findIndex((element) => element === null) !== -1)) {
             return false;
         }
-        
+
         return true;
     }
-    
+
     // Gets the quiz session by the combination of userId and quizId
     public async getQuizSessionbyUserQuiz(userId: string, quizId: string): Promise<IQuizSession | null> {
         // Fetch all user the user sessions
@@ -100,5 +107,85 @@ export class QuizSessionService extends BaseService<IQuizSession> {
         const quizSession = await this.quizSessionRepo.findQuizSessionByUserQuiz(
             usersessions.map((element) => { return element._id! }, []), quizId);
         return quizSession;
+    }
+
+    // Gets the quiz session by the combination of userId and course
+    async getQuizSessionsByUserCourse(userId: string, courseCode: string): Promise<IQuizSession[]> {
+        // Fetch all user the user sessions
+        try {
+            const usersessions = await this.userSessionRepo.findUserSessionsByUserCourse(userId, courseCode);
+            const quizSessions = await this.quizSessionRepo.findQuizSessionsByUserSessions(
+                (usersessions || []).map((element) => { return element._id! }, []));
+
+            return quizSessions || [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    /**
+     * Returns past quiz attempts (quiz sessions) for a specified user and course
+     * A session can be considered a 'past' session if either
+     * * Quiz session has `complete` = true OR
+     * * Current time > (Quiz end time + quiz duration)
+     * @param userId 
+     * @param courseCode 
+     */
+    async getPastQuizSessionsDataForUserCourse(userId: string, courseCode: string): Promise<AttemptedQuizSessionData[] | null> {
+        const quizSessions = await this.getQuizSessionsByUserCourse(userId, courseCode);
+        if (!quizSessions) return [];
+        const quizSessionsQuizzes = await Promise.all(quizSessions.map(async (quizSession) => {
+            const pastQuizSession: AttemptedQuizSessionData = Object.assign({}, quizSession);
+
+            const quiz = await this.quizRepo.findOne(quizSession.quizId!);
+
+            pastQuizSession.quiz = quiz || undefined;
+
+            return pastQuizSession;
+        }));
+        if(!quizSessionsQuizzes || !quizSessionsQuizzes.length) return [];
+
+        const pastQuizSessions = quizSessionsQuizzes.filter((quizSessionQuiz) => {
+            if(quizSessionQuiz.complete) return true;
+
+            const currentTime = Date.now();
+
+            if(quizSessionQuiz && quizSessionQuiz.quiz && quizSessionQuiz.startTime &&
+                quizSessionQuiz.quiz.pages) {
+
+                const quizDuration = (quizSessionQuiz.quiz.pages || []).reduce(
+                    // For some reason, `timeoutInMins` typings, system-wide are `number` but is actually a string in the database
+                    // TODO: Investigate the actual type and usages of `timeoutInMins`
+                    (totalTimeInMinutes, page) => totalTimeInMinutes + parseFloat(`${page.timeoutInMins || 0}`)
+                , 0);
+
+                // Expected end time of the quiz session is (quiz session start time) + (total quiz duration)
+                const maxEndTime = Utils.DateTime.minToMs(quizDuration) + new Date(quizSessionQuiz.startTime!).getTime();
+
+                return currentTime > maxEndTime;
+            }
+            
+            return false;
+        });
+
+        // Populate responsesWithContent and questions
+        await Promise.all(pastQuizSessions.map(async (session) => {
+            const responseIds = session.responses || [];
+
+            if (session && session.quiz && session.quiz.pages) {
+                const validQuestionIds = (session.quiz.pages || [])
+                    .filter((p) => p.type === PageType.QUESTION_ANSWER_PAGE).map((questionPage: IQuestionAnswerPage) => questionPage.questionId).filter((x) => !!x) as string[];
+
+                const questions = await this.questionRepo.findByIdArray(validQuestionIds);
+                session.questions = questions && questions.length? questions: []; 
+            }
+
+            if(responseIds && responseIds.length) {
+                const responses = await this.responseRepo.findByIdArray(responseIds);
+                session.responsesWithContent = responses && responses.length ? responses : [];
+            }
+        }));
+
+        return pastQuizSessions;
     }
 }

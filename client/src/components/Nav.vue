@@ -3,6 +3,7 @@
     <a class="logo" href="/client/#/">
       <img src="@/assets/images/think-chat-learn-logo.svg" alt="Think.Chat.Learn" title="Think.Chat.Learn" />
     </a>
+    <h2 v-if="userCourseTitle">{{ userCourseTitle }}</h2>
     <span class="userAvatar uq-static">
       <span class="icon-container">
         <font-awesome-icon icon="user" />
@@ -55,6 +56,10 @@ import Timer from "./Timer.vue";
 export default class Header extends Vue {
   get user(): IUser | null {
     return this.$store.getters.user;
+  }
+
+  get userCourseTitle(): string {
+    return this.$store.getters.userCourseTitle;
   }
 }
 </script>

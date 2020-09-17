@@ -1,7 +1,7 @@
 <template>
   <div class="chat-message">
     <CircularNumberLabel :numeral="numeral" />
-    <div class="message" :class="`base${+numeral}`">
+    <div class="message" :class="`base${+numeral} ${selected?'selected':''}`">
       <span>{{ content }}</span>
       <template v-if="isTyping">
         <Spinner />
@@ -49,6 +49,11 @@
       margin-left: 15px;
       white-space: pre-wrap;
     }
+
+    &.selected {
+      border-width: 4px;
+    }
+
   }
 }
 </style>
@@ -69,5 +74,6 @@ export default class ChatMessage extends Vue {
   @Prop({}) private content!: string;
   @Prop({}) private numeral!: number;
   @Prop({ default: false }) private isTyping!: boolean;
+  @Prop({ required: false, default: false }) private selected!: boolean;
 }
 </script>

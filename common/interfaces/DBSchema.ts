@@ -118,6 +118,8 @@ export interface IQuiz extends Document {
   groupSize?: number;
   markingConfiguration?: MarkConfig;
   rubricId?: string;
+  isPublic?: boolean;
+  marksPublic?: boolean;
 }
 
 export interface MarkConfig {
@@ -142,7 +144,9 @@ export interface ElipssMarkValue {
 export interface MarkCriteria {
   value: number | null;
   criteriaId: string;
+  feedback?: string;
 }
+
 // Depending on what needs to be done, we could theoretically just remove the enum from existence
 export interface Mark extends Document {
   marks: MarkCriteria[];
@@ -241,3 +245,13 @@ export interface IRubric extends Document {
   // Note the string ids
   criterias: string[];
 }
+
+export type AttemptedQuizSessionData = IQuizSession &
+  { quiz?: Partial<IQuiz> } &
+  { overallScore?: number; overallMaximumMarks?: number } &
+  { responsesWithContent?: IResponse[] } &
+  { questions?: IQuestion[] };
+
+export type IRubricCriteria = Omit<IRubric, "criterias"> & {
+  criteria: ICriteria[];
+};

@@ -43,7 +43,7 @@ class ExtractQuestions {
 
         const userSessionService = new UserSessionService(userSessionRepository);
         const quizSessionService = new QuizSessionService(quizSessionRepository, userSessionRepository,
-            quizRepository, responseRepository);
+            quizRepository, responseRepository, questionRepository);
         const responseService = new ResponseService(responseRepository, quizSessionRepository, quizRepository);
         const questionService = new QuestionService(questionRepository);
 
