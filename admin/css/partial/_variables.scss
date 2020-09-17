@@ -20,6 +20,7 @@ $orange: #eb602b;
 $yellow: #fbb000;
 $light-blue: #00a2c7;
 $blue: #4085c6;
+$light-green:  #99b204;
 $green: #2ea836;
 $elipse-blue: #4a5b6d;
 
@@ -53,7 +54,37 @@ $black: #00000029;
     color: $white;
 }
 
+@mixin brightness-color($color){
+  background-color: $color;
+  &.light-cl {
+    background-color: lighten($color, 5%);
+  }
+  &.dark-cl {
+    background-color: darken($color, 5%);
+  }
+  &.transparent-cl {
+    background-color: rgba($color, 0.1);
+  }
+  &.border-cl {
+    border: 1px solid $color;
+  }
+}
+
 //Color classes
+@for $i from 1 through 10 {
+  .base-cl-#{$i} {
+    @if($i == 1){
+      @include brightness-color($light-blue);
+    } @else if ($i == 2){
+      @include brightness-color($light-green);
+    } @else if ($i == 3){
+      @include brightness-color($yellow);
+    } @else if ($i == 4){
+      @include brightness-color($orange);
+    }
+  }
+}
+
 .primary-cl{
     @include transparent-color($primary, true);
 }
@@ -73,6 +104,7 @@ $black: #00000029;
 .uq-solid {
   @include solid-color($uq);
 }
+
 .purple-cl {
   @include transparent-color($purple, true);
 }
@@ -82,6 +114,7 @@ $black: #00000029;
 .purple-cl-solid {
   @include solid-color($purple);
 }
+
 .red-cl {
   @include transparent-color($red, true);
 }
@@ -91,6 +124,7 @@ $black: #00000029;
 .red-cl-solid {
   @include solid-color($red);
 }
+
 .orange-cl {
   @include transparent-color($orange, true);
 }
@@ -100,6 +134,7 @@ $black: #00000029;
 .orange-cl-solid {
   @include solid-color($orange);
 }
+
 .yellow-cl {
   @include transparent-color($yellow, true);
 }
@@ -109,6 +144,7 @@ $black: #00000029;
 .yellow-cl-solid {
   @include solid-color($yellow);
 }
+
 .light-blue-cl {
   @include transparent-color($light-blue, true);
 }
@@ -118,6 +154,7 @@ $black: #00000029;
 .light-blue-cl-solid {
   @include solid-color($light-blue);
 }
+
 .blue-cl {
   @include transparent-color($blue, true);
 }
@@ -127,6 +164,7 @@ $black: #00000029;
 .blue-cl-solid {
   @include solid-color($blue);
 }
+
 .green-cl {
   @include transparent-color($green, true);
 }
@@ -136,6 +174,7 @@ $black: #00000029;
 .green-cl-solid {
   @include solid-color($green);
 }
+
 .grey-cl {
   @include transparent-color($grey, true);
 }
@@ -145,6 +184,7 @@ $black: #00000029;
 .grey-cl-solid {
   @include solid-color($grey);
 }
+
 .dark-grey-cl {
   @include transparent-color($dark-grey, true);
 }
@@ -156,10 +196,10 @@ $black: #00000029;
 }
 
 //Icons list
-$icon-file-csv-solid: "\e903";
-$icon-user-graduate-solid: "\e900";
-$icon-dice-d20-solid: "\e901";
-$icon-file-invoice-solid: "\e902";
+$icon-file-csv-solid: "\e904";
+$icon-user-graduate-solid: "\e901";
+$icon-dice-d20-solid: "\e902";
+$icon-file-invoice-solid: "\e903";
 $icon-plus: "\f067";
 $icon-minus: "\f068";
 $icon-search: "\f002";
@@ -204,3 +244,4 @@ $icon-pie-chart: "\f200";
 $icon-user-plus: "\f234";
 $icon-user-times: "\f235";
 $icon-window-restore: "\f2d2";
+$icon-chat: "\e900";
