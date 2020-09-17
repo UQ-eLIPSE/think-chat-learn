@@ -5,11 +5,10 @@
       <Points :totalPoints="maximumMarks" :currentPoints="mark.value" />
     </div>
     <div class="comments-icon" :class="commentClasses">
-      <font-awesome-icon icon="comment-dots" size="2x" @click.prevent="commentsVisible = !commentsVisible"></font-awesome-icon>
-      <div v-show="commentsVisible" class="comments-box card-container">
-        <textarea />
-        <!-- <button type="button" class="primary-cl min-button">Save</button> -->
-        <font-awesome-icon icon="chevron-down" @click.prevent="commentsVisible = false"></font-awesome-icon>
+      <font-awesome-icon icon="comment-dots" size="2x" title="Add Comment" @click.prevent="toggleComments()"></font-awesome-icon>
+      <div v-show="commentsVisible" class="comments-box flex-row">
+        <textarea placeholder="Comment ..." />
+        <i class="icon-chevron-down" @click.prevent="commentsVisible = false" />
       </div>
     </div>
   </div>
@@ -45,6 +44,10 @@ export default class Criterion extends Vue {
     return {
       filled: this.mark && (this.mark as any).feedback,
     };
+  }
+
+  toggleComments() {
+    this.commentsVisible = !this.commentsVisible;
   }
 }
 </script>
@@ -93,21 +96,24 @@ export default class Criterion extends Vue {
       align-items: center;
       position: absolute;
       right: 0;
-      top: 30px;
+      top: -100px;
       width: 200px;
       height: 90px;
-      // background: transparentize($color: $white, $amount: 0.1);
-      // border: 0.01em solid $primary;
+      background: transparentize($color: $white, $amount: 0.1);
+      border: 0.01em solid $primary;
       
       z-index: 999999;
-      // padding: 0.5rem;
-      // border-radius: 5px;
+      padding: 0.5rem;
+      border-radius: 5px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);      .comment-header {
+        width: 100%;
+      }
 
       textarea {
         width: 100%;
         height: 100%;
         overflow: scroll;
-
+        border: none;
         &:hover,
         &:focus,
         &:active {
@@ -119,6 +125,7 @@ export default class Criterion extends Vue {
       svg {
         margin-left: auto;
         margin-right: 0;
+        align-self: flex-start;
       }
     }
   }
@@ -126,6 +133,10 @@ export default class Criterion extends Vue {
 
 .flex-row {
   display: flex;
+}
+
+.justify-space-between {
+  justify-content: space-between;
 }
 
 .flex-col {
