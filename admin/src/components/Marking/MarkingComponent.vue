@@ -69,7 +69,13 @@ export default class MarkingComponent extends Vue {
             const marker = this.marker;
             let marks: Schema.Mark | null = null;
             if (Array.isArray(quizSessionIdMarks)) {
-                marks = quizSessionIdMarks.find((mark) => mark.markerId === marker._id);
+                if(this.markingConfig && this.markingConfig.allowMultipleMarkers) {
+                    // If multiple markers are enabled, find the mark for the current marker
+                    marks = quizSessionIdMarks.find((mark) => mark.markerId === marker._id);
+                } else {
+                    // If multiple marking is not enabled, use the mark returned regardless of the marker
+                    marks = quizSessionIdMarks[0];
+                }
                 if (!marks) throw new Error();
                 // If there are any missing marks, add default values or negative values?
                 const missingCriterias = this.associatedCriterias.filter((criteria) => {
@@ -103,7 +109,8 @@ export default class MarkingComponent extends Vue {
         const defaultMarks = this.associatedCriterias.reduce((arr: Schema.MarkCriteria[], value) => {
           arr.push({
             value: 0,
-            criteriaId: value._id!
+            criteriaId: value._id!,
+            feedback: ""
           });
           return arr;
         }, []);
