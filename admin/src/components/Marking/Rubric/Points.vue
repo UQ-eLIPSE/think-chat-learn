@@ -25,12 +25,15 @@ export default class Points extends Vue {
 
   pointClasses(point: number) {
     // Check if hovering
-    if(this.hoverPoint) {
-      return {
-            colored: this.hoverPoint ? point <= this.hoverPoint : false,
+    // Ignore hover effects for now
+    // if(this.hoverPoint) {
+    //   return {
+    //         colored: this.hoverPoint ? point <= this.hoverPoint : false,
 
-      };
-    } else if(this.currentPoints) {
+    //   };
+    // }
+   
+   if(this.currentPoints) {
       return {
         colored: point <= this.currentPoints
       }
