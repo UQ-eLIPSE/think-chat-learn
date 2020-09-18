@@ -443,7 +443,6 @@ export default class MarkQuiz extends Vue {
   }
 
   setCurrentQuizSessionId(quizSessionId: string) {
-    console.log('CLicked');
     this.currentQuizSessionId = quizSessionId;
   }
   // async beforeRouteUpdate(to: any, from: any, next: any) {
