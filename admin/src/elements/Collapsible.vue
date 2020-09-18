@@ -8,7 +8,7 @@
       <h4>{{ title }}</h4>
       <div class="flex-row">
         <span class="label" v-if="label">{{ label }}</span>
-        <font-awesome-icon :icon="open? 'chevron-up' : 'chevron-down'" />
+        <i :class="open? 'chevron-up' : 'chevron-down'"/>
       </div>
     </div>
 

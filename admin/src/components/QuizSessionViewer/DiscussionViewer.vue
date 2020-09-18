@@ -26,7 +26,7 @@ import {
 } from "../../../../common/interfaces/DBSchema";
 import InfoViewer from "./InfoViewer.vue";
 import { QuestionType } from "../../../../common/enums/DBEnums";
-import ChatMessage from "../Chat/ChatMessage.vue";
+import ChatMessage from "../Marking/ChatMessage.vue";
 
 @Component({
   components: {
@@ -105,10 +105,10 @@ export default class DiscussionViewer extends Vue {
   border-width: 1px;
 
   &.selected {
-    &.base1 { @include coloredBackground($light-blue); }
-    &.base2 { @include coloredBackground($green); }
-    &.base3 { @include coloredBackground($yellow); }
-    &.base4 { @include coloredBackground($red); }
+    &.base1 { @include coloredBackground(blue); }
+    &.base2 { @include coloredBackground(green); }
+    &.base3 { @include coloredBackground(yellow); }
+    &.base4 { @include coloredBackground(red); }
   }
 }
 </style>

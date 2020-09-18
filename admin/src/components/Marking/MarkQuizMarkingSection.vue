@@ -1,6 +1,36 @@
 <template>
+<div class="marking-quiz-marking-section">
+ <div v-for="(page, i) in pages" :key="page._id">
+    <Collapsible :title="`#${i+1} ${page.title}`" label="">
+        <QuestionViewer
+          v-if="page.type === PageTypes.QUESTION_ANSWER_PAGE"
+          :questionPage="page"
+          :question="getQuestionForPage(page)"
+          :responseWithContent="getQuestionResponseForPage(page)"
+        />
+        <!-- Discussion Viewer disabled as per stakeholder's request -->
+        <DiscussionViewer
+          v-if="page.type === PageTypes.DISCUSSION_PAGE"
+          :page="page"
+          :chatGroup="currentChatGroup"
+          :quizSessionId="currentQuizSessionId"
+        />
+        <InfoViewer v-if="page.type === PageTypes.INFO_PAGE" :contentLeft="[page.content]" />
+        <div></div>
+    </Collapsible>
+ </div>
+ <MarkingComponent class="marking-component"></MarkingComponent>
+</div>
+</template>
+ 
+<script lang="ts">
+
+/**
   <v-container class="marking-section" fluid grid-list-md>
     <!-- Highly unlikely we need to re-render. Index as key is fine -->
+   
+
+
     <v-layout row wrap>
       <!-- Use template due to strict formatting of Vuetify's grid system of container -> layout -> flex -->
       <template v-for="(c, index) in content">
@@ -55,9 +85,8 @@
       </v-flex>
     </v-layout>
   </v-container>
-</template>
 
-<script lang="ts">
+ */
 import { Vue, Component, Prop } from "vue-property-decorator";
 import { IQuiz, QuizScheduleDataAdmin, Page, IDiscussionPage, IQuestion,
   IQuestionAnswerPage, IQuizSession, IUserSession, IUser, IChatGroup,
@@ -66,7 +95,10 @@ import { PageType } from "../../../../common/enums/DBEnums";
 import ChatMessage from './ChatMessage.vue';
 import MarkingComponent from './MarkingComponent.vue';
 import { CurrentMarkingContext } from "../../store/modules/quiz";
-
+import Collapsible from "../../elements/Collapsible.vue";
+import QuestionViewer from "../QuizSessionViewer/QuestionViewer.vue";
+import DiscussionViewer from "../QuizSessionViewer/DiscussionViewer.vue";
+import InfoViewer from "../QuizSessionViewer/InfoViewer.vue";
 // Since we are dumping the entire page here, we need to know what content there is to render
 enum ContentType {
   PAGE = "PAGE",
@@ -102,12 +134,20 @@ type GenericContent = PageContent | ResponseContent | ChatContent;
 @Component({
   components: {
     ChatMessage,
-    MarkingComponent
+    MarkingComponent,
+    Collapsible,
+    QuestionViewer,
+    DiscussionViewer,
+    InfoViewer
   }
 })
 export default class MarkQuizMarkingSection extends Vue {
 
   private content: GenericContent[] = [];
+
+  get PageTypes() {
+    return PageType;
+  }
 
   get ContentType() {
     return ContentType;
@@ -145,10 +185,17 @@ export default class MarkQuizMarkingSection extends Vue {
   get currentChatGroup() {
     return this.$store.getters.currentChatGroup;
   }
+
   responseBelongsTocurrentQuizSessionInfoObject(qid: string): boolean {
     if (!this.currentQuizSessionInfoObject || !this.currentQuizSessionInfoObject.quizSession) return false;
     return (this.currentQuizSessionInfoObject.quizSession._id === qid);
   }
+
+  get currentQuizSessionId() {
+    if (!this.currentQuizSessionInfoObject || !this.currentQuizSessionInfoObject.quizSession) return undefined;
+    return this.currentQuizSessionInfoObject.quizSession._id;
+  }
+
   getNumeralFromQuizSessionId(qid: string) {
     if (!this.currentChatGroup || !this.currentChatGroup.quizSessionIds) return 1;
     const ind = this.currentChatGroup.quizSessionIds.indexOf(qid);
@@ -168,6 +215,35 @@ export default class MarkQuizMarkingSection extends Vue {
   private mounted() {
     this.content = this.initializeContent();
   }
+
+
+
+
+  chatGroup() {
+
+  }
+
+  quizSessionId() {
+
+  }
+
+  get pages() {
+    return this.currentQuiz.pages || [];
+  }
+
+
+  getQuestionResponseForPage(page: IQuestionAnswerPage) {
+    if(!this.currentQuizSessionId) return undefined;
+    const allResponsesForQuestion = this.currentChatGroupResponsesMap[page.questionId] || [];
+    return allResponsesForQuestion.find((r) => r && r.quizSessionId && r.quizSessionId === this.currentQuizSessionId);
+  }
+
+  getQuestionForPage(page: IQuestionAnswerPage) {
+    if(!this.currentQuizSessionInfoObject) return undefined;
+    return this.getQuestionById(page.questionId);
+  }
+
+
 
   // This generates the order in which the quiz will be rendered.
   // Don't use computed as we toggle the visibility
