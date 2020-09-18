@@ -4,8 +4,8 @@
       <span class="criterion-title">{{ criterionName }}</span>
       <Points @marked="markedHandler" :totalPoints="maximumMarks" :currentPoints="mark.value" />
     </div>
-    <div class="comments-icon" :class="commentClasses">
-      <div class="circular-icon">
+    <div class="comments-icon">
+      <div class="circular-icon" :class="commentClasses">
         <i class="icon-chat" title="Add Comment" @click.prevent="toggleComments()" />
       </div>
 
@@ -15,7 +15,7 @@
           v-model="mark.feedback"
           placeholder="Comment ..."
         />
-        <div class="circular-icon">
+        <div class="circular-icon comment-close">
           <i class="icon-chevron-down" @click.prevent="commentsVisible = false" />
         </div>
       </div>
@@ -92,9 +92,16 @@ export default class Criterion extends Vue {
     position: relative;
     font-size: 1.4em;
 
+    .comment-close {
+      align-self: flex-start;
+    }
     .circular-icon:hover {
       background: rgba(1, 0, 0, 0.09);
     }
+
+    // .circular-icon.filled {
+    //   background: transparentize($color: $primary, $amount: 0.9);
+    // }
 
     i,
     svg {
@@ -141,13 +148,6 @@ export default class Criterion extends Vue {
         &:active {
           outline: none;
         }
-      }
-
-      i,
-      svg {
-        margin-left: auto;
-        margin-right: 0;
-        align-self: flex-start;
       }
     }
   }
