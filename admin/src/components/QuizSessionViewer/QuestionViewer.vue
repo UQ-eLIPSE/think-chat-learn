@@ -87,7 +87,7 @@ export default class QuestionViewer extends Vue {
 }
 
 .question-content {
-  height: 450px;
+  max-height: 450px;
   overflow: scroll;
 }
 

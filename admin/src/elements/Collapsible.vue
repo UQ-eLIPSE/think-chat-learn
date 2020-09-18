@@ -8,7 +8,7 @@
       <h4>{{ title }}</h4>
       <div class="flex-row">
         <span class="label" v-if="label">{{ label }}</span>
-        <i :class="open? 'chevron-up' : 'chevron-down'"/>
+        <i :class="open? 'icon-chevron-up' : 'icon-chevron-down'"/>
       </div>
     </div>
 
@@ -25,7 +25,7 @@ export default class Collapsible extends Vue {
   @Prop({ default: "", required: false }) title!: string;
   @Prop({ default: "", required: false }) label!: string;
   @Prop({ default: "white", required: false }) backgroundColor!: string;
-  @Prop({ default: "rgba(1, 0, 0, 0.05)", required: false })
+  @Prop({ default: "#fff", required: false })
   headerBackgroundColor!: string;
 
   private open = false;

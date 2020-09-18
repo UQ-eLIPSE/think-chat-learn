@@ -1,7 +1,7 @@
 <template>
 <div class="marking-quiz-marking-section">
- <div v-for="(page, i) in pages" :key="page._id">
-    <Collapsible :title="`#${i+1} ${page.title}`" label="">
+ <div v-for="page in pages" :key="page._id">
+    <Collapsible :title="`${page.title}`" :label="pageTypeTitle(page)">
         <QuestionViewer
           v-if="page.type === PageTypes.QUESTION_ANSWER_PAGE"
           :questionPage="page"
@@ -99,6 +99,7 @@ import Collapsible from "../../elements/Collapsible.vue";
 import QuestionViewer from "../QuizSessionViewer/QuestionViewer.vue";
 import DiscussionViewer from "../QuizSessionViewer/DiscussionViewer.vue";
 import InfoViewer from "../QuizSessionViewer/InfoViewer.vue";
+import { IResponse } from "../../../../common/interfaces/DBSchema";
 // Since we are dumping the entire page here, we need to know what content there is to render
 enum ContentType {
   PAGE = "PAGE",
@@ -151,6 +152,20 @@ export default class MarkQuizMarkingSection extends Vue {
 
   get ContentType() {
     return ContentType;
+  }
+
+  pageTypeTitle(page: Page | undefined) {
+    if (!page || !page.type) return "";
+    switch (page.type) {
+      case PageType.DISCUSSION_PAGE:
+        return "Discussion";
+      case PageType.INFO_PAGE:
+        return "Information";
+      case PageType.QUESTION_ANSWER_PAGE:
+        return "Question";
+      default:
+        return "";
+    }
   }
 
   get PageType() {
@@ -234,7 +249,7 @@ export default class MarkQuizMarkingSection extends Vue {
 
   getQuestionResponseForPage(page: IQuestionAnswerPage) {
     if(!this.currentQuizSessionId) return undefined;
-    const allResponsesForQuestion = this.currentChatGroupResponsesMap[page.questionId] || [];
+    const allResponsesForQuestion: IResponse[] = this.currentChatGroupResponsesMap[page.questionId] || [];
     return allResponsesForQuestion.find((r) => r && r.quizSessionId && r.quizSessionId === this.currentQuizSessionId);
   }
 
@@ -338,7 +353,7 @@ export default class MarkQuizMarkingSection extends Vue {
 }
 
 .marking-section>* {
-  margin: 1rem 0;
+  margin: 0.5rem 0;
 }
 
 .chat {
