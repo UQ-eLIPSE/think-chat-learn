@@ -95,6 +95,7 @@ export default class Criterion extends Vue {
     .comment-close {
       align-self: flex-start;
     }
+
     .circular-icon:hover {
       background: rgba(1, 0, 0, 0.09);
     }
@@ -108,6 +109,7 @@ export default class Criterion extends Vue {
       cursor: pointer;
       border-radius: 50%;
       background: transparent;
+      color: $primary;
     }
 
     &.filled {
