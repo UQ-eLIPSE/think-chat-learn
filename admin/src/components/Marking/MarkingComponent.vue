@@ -1,42 +1,6 @@
 <template>
     <div class="marking-rubric">
         <Rubric @saved="saveMarks" :username="username" :criteria="associatedCriterias" :mark="marks" :maximumMarks="markingConfig.maximumMarks" />
-        <!-- <h3>Rubric</h3>
-        <table class="marks-table"
-               v-if="marks">
-            <tr v-for="(c, index) in associatedCriterias"
-                class="values-row"
-                :key="c._id">
-
-                <td class="category-data"> {{c.name}}</td>
-                <td v-for="m in possibleMarkValues"
-                    :key="m">
-                    <label> {{ m }}
-                        <input type="radio"
-                               v-if="marks"
-                               class="number-mark"
-                               v-model="marks.marks[index].value"
-                               :value="m" />
-                    </label>
-                </td>
-                <td>
-                    <textarea v-if="marks" placeholder="Comments ..."
-                        v-model="marks.marks[index].feedback"></textarea>
-                </td>
-            </tr>
-        </table>
-        
-        <div class="general-feedback"> <h3>General Feedback</h3>
-            <textarea v-if="marks"
-                placeholder="General feedback ..."
-                v-model="marks.feedback"></textarea>
-        </div>
-        <div class="save-controls">
-            <button type="button"
-                    class="primary-cl"
-                    @click.prevent="saveMarks">Save Marks</button>
-        </div> -->
-
     </div>
 </template>
 
