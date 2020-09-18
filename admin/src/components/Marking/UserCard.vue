@@ -23,8 +23,8 @@ import CircularNumberLabel from "./CircularNumberLabel.vue";
 })
 
 export default class UserCard extends Vue {
-  @Prop({required: true}) private studentId!: string;
-  @Prop({}) private numeral!: number;
+  @Prop({required: true, default: ""}) private studentId!: string;
+  @Prop({required: true}) private numeral!: number;
   @Prop({required: true, default: false}) private marked!: boolean;
   @Prop({required: true, default: false}) private selected!: boolean;
 }
@@ -43,20 +43,20 @@ export default class UserCard extends Vue {
   height: fit-content;
 
   label {
-      @include font-style(1.5, auto, 500, $white);
+    @include font-style(1.5, auto, 500, $white);
 
-      border-radius: 10px;
-      border: 0;
+    border-radius: 10px;
+    border: 0;
 
-      width: 30px;
-      height: 30px;
-      margin: 0 0.5em 0 0;
+    width: 30px;
+    height: 30px;
+    margin: 0 0.5em 0 0;
 
-      position: relative;
+    position: relative;
   }
 
   p {
-      margin: 0 0.5em 0 0;
+    margin: 0 0.5em 0 0;
   }
 
   &.selected{
