@@ -11,9 +11,6 @@
     "build_dev_watch": "vue-cli-service build --mode development --watch"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^1.2.30",
-    "@fortawesome/free-solid-svg-icons": "^5.14.0",
-    "@fortawesome/vue-fontawesome": "^2.0.0",
     "buefy": "^0.7.7",
     "jwt-decode": "^2.2.0",
     "katex": "^0.10.2",

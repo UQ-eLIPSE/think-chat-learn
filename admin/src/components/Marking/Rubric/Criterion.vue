@@ -5,20 +5,19 @@
       <Points @marked="markedHandler" :totalPoints="maximumMarks" :currentPoints="mark.value" />
     </div>
     <div class="comments-icon" :class="commentClasses">
-      <font-awesome-icon
-        :class="mark && mark.feedback ? 'glow': ''"
-        icon="comment-dots"
-        size="2x"
-        title="Add Comment"
-        @click.prevent="toggleComments()"
-      ></font-awesome-icon>
+      <div class="circular-icon">
+        <i class="icon-chat" title="Add Comment" @click.prevent="toggleComments()" />
+      </div>
+
       <div v-show="commentsVisible" class="comments-box flex-row">
         <textarea
           v-if="mark && typeof mark.feedback === 'string'"
           v-model="mark.feedback"
           placeholder="Comment ..."
         />
-        <i class="icon-chevron-down" @click.prevent="commentsVisible = false" />
+        <div class="circular-icon">
+          <i class="icon-chevron-down" @click.prevent="commentsVisible = false" />
+        </div>
       </div>
     </div>
   </div>
@@ -56,7 +55,7 @@ export default class Criterion extends Vue {
 
   get commentClasses() {
     return {
-      filled: this.mark && (this.mark as any).feedback
+      filled: this.mark && this.mark.feedback,
     };
   }
 
@@ -88,14 +87,20 @@ export default class Criterion extends Vue {
   }
 
   .comments-icon {
-    flex: 0.2;
+    display: flex;
     align-self: flex-end;
     position: relative;
+    font-size: 1.4em;
+
+    .circular-icon:hover {
+      background: rgba(1, 0, 0, 0.09);
+    }
 
     i,
     svg {
-      color: $primary;
       cursor: pointer;
+      border-radius: 50%;
+      background: transparent;
     }
 
     &.filled {
@@ -103,10 +108,6 @@ export default class Criterion extends Vue {
       svg {
         color: $primary;
       }
-    }
-
-    .glow {
-      // TODO: Add glow if comment exists
     }
 
     .comments-box {
@@ -119,7 +120,7 @@ export default class Criterion extends Vue {
       height: 90px;
       background: transparentize($color: $white, $amount: 0.1);
       border: 0.01em solid $primary;
-
+      justify-content: space-between;
       z-index: 999999;
       padding: 0.5rem;
       border-radius: 5px;
@@ -133,6 +134,8 @@ export default class Criterion extends Vue {
         height: 100%;
         overflow: scroll;
         border: none;
+        font-size: 0.875em;
+
         &:hover,
         &:focus,
         &:active {

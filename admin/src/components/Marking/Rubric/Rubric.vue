@@ -85,6 +85,8 @@ export default class Rubric extends Vue {
   align-items: center;
   border: 0.01em solid transparent;
   border-radius: 10px;
+  text-overflow: ellipsis;
+
   .rubric-heading {
     color: $uq;
     align-self: flex-start;
@@ -117,6 +119,7 @@ export default class Rubric extends Vue {
     textarea {
       width: 100%;
       height: 85%;
+      font-size: 0.875em;
       // border: 0.01em solid $border-grey;
       // overflow: scroll;
       // padding: 0.5rem;

@@ -301,7 +301,6 @@ export default class MarkingComponent extends Vue {
 
 .general-feedback {
     padding: 0.5rem;
-
 }
 
 .general-feedback > textarea {
