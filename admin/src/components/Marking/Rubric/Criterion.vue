@@ -141,7 +141,7 @@ export default class Criterion extends Vue {
       textarea {
         width: 100%;
         height: 100%;
-        overflow: scroll;
+        overflow: auto;
         border: none;
         font-size: 0.875em;
 
