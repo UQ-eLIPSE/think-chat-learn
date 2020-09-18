@@ -1,7 +1,11 @@
 <template>
   <div :class="`squircular-icon ${selected? 'uq-solid selected': ''}`">
     <p>{{ numeral }}</p>
-    <span v-if="marked" class="circular-icon marked green-cl"></span>
+    <span v-if="marked" class="marked">
+      <div :class="`circular-icon  ${selected? 'green-cl-solid': 'green-cl-static'}`">
+        <i class="icon-check"/>
+      </div>
+    </span>
   </div>
 </template>
 
@@ -25,6 +29,7 @@ export default class PageNumber extends Vue {
 <style lang="scss" scoped>
 @import "../../../css/partial/variables";
 @import "../../../css/partial/fonts";
+@import "../../../css/partial/icons";
 
 p {
   @include font-style(0.875em, auto, 500, $dark-grey);
@@ -36,6 +41,15 @@ p {
 
 .selected p{
   color: $white;
+}
+
+.marked{
+  position: absolute;
+  right: 2px;
+  top: 2px;
+  .circular-icon{
+    @include icon-wrapper-shape(50%, 11, 0.6);
+  }
 }
 
 </style>
