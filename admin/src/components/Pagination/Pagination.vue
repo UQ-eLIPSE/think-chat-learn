@@ -59,7 +59,7 @@
     @Prop ({required: true, default: 0}) private numPageButtons!: number;
     @Prop ({required: true, default: (p: number) => {}}) private changePageAction!: (p: number) => void;
 
-    calculatePageArray(currentPage: number, totalPages: number, numPagedivnks) {
+    calculatePageArray(currentPage: number, totalPages: number, numPagedivnks: number) {
       const pageArray = [];
       if (totalPages < numPagedivnks) {
         numPagedivnks = totalPages;
