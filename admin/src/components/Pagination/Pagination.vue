@@ -120,6 +120,13 @@
   @include icon-wrapper-shape(33.3%, 25, 1.3);
 }
 
+.start-btn,
+.end-btn,
+.previous-btn,
+.next-btn{
+  cursor: pointer;
+}
+
 .squircular-icon:not(:last-of-type){
   margin-right: 5px;
 }
