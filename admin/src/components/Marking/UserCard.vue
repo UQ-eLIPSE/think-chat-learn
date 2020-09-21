@@ -41,7 +41,8 @@ export default class UserCard extends Vue {
   width: fit-content;
   padding: 12px 16px;
   height: fit-content;
-
+  cursor: pointer;
+  
   label {
     @include font-style(1.5, auto, 500, $white);
 

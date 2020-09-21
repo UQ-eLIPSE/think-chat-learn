@@ -27,17 +27,17 @@
                 </b-field>
               </v-flex>
 
-              <v-flex xs6>
-                <b-field label="Select the User">
-                  <div class="select-field">
-                    <select v-model="currentQuizSessionId">
-                      <option v-for="option in currentGroupQuizSessionDropDown" :key="option.text" :value="option.value">
-                        {{option.text}}
-                      </option>
-                    </select>
-                  </div>
-                </b-field>
-              </v-flex>
+            <div class="users">
+              <template v-for="(user, i) in currentGroupQuizSessionDropDown">
+                <UserCard v-if="user && user.text && user.value"
+                  :key="`${user.text}-user`"
+                  :studentId="user.text"
+                  @click.native="setCurrentQuizSessionId(user.value)"
+                  :numeral="i + 1"
+                  :marked="false"
+                  :selected="currentQuizSessionId === user.value"/>
+              </template>
+            </div>
 
             <v-flex xs12>
               <div class="step-navigation">
@@ -85,6 +85,7 @@ import { IQuiz, QuizScheduleDataAdmin, Page, IDiscussionPage, IQuestionAnswerPag
 import { PageType } from "../../../common/enums/DBEnums";
 import MarkQuizMarkingSection from '../components/Marking/MarkQuizMarkingSection.vue';
 import { API } from "../../../common/js/DB_API";
+import UserCard from "../components/Marking/UserCard.vue";
 
 Component.registerHooks([
   'beforeRouteEnter',
@@ -99,7 +100,8 @@ interface DropDownConfiguration {
 
 @Component({
   components: {
-    MarkQuizMarkingSection
+    MarkQuizMarkingSection,
+    UserCard
   }
 })
 export default class MarkQuiz extends Vue {
@@ -440,6 +442,9 @@ export default class MarkQuiz extends Vue {
     });
   }
 
+  setCurrentQuizSessionId(quizSessionId: string) {
+    this.currentQuizSessionId = quizSessionId;
+  }
   // async beforeRouteUpdate(to: any, from: any, next: any) {
   //   await this.fetchAllQuizSessionInfo(this);
   // }
@@ -525,5 +530,16 @@ export default class MarkQuiz extends Vue {
   font-size: 1.5em;
   color: #51247a; 
   font-weight: 400;
+}
+
+.users {
+  display: flex;
+  width: 80%;
+  flex-wrap: wrap;
+
+  > * {
+    margin: 0 0.25rem;
+  }
+
 }
 </style>
