@@ -157,7 +157,7 @@ export default class MarkQuiz extends Vue {
   //Choosing group chat from pagination
   changeGroupChat(groupId: number){
     if (this.chatGroups.length <= 0) return;
-    if (groupId === -1) {
+    if (!groupId) {
       this.goToChatgroup(0, 0, 0);
     } else if (this.chatGroups.length > 1 && groupId > 0) {
       this.goToChatgroup(groupId - 1, 0, 0);
