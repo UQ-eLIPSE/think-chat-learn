@@ -52,14 +52,9 @@ import {
   IResponseQualitative,
   IResponseMCQ,
 } from "../../../../common/interfaces/DBSchema";
-import InfoViewer from "./InfoViewer.vue";
 import { QuestionType } from "../../../../common/enums/DBEnums";
 
-@Component({
-  components: {
-    InfoViewer,
-  },
-})
+@Component
 export default class QuestionViewer extends Vue {
   @Prop({ default: undefined, required: true })
   questionPage!: IQuestionAnswerPage;

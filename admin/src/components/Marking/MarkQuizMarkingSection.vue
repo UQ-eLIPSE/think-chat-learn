@@ -8,7 +8,6 @@
           :question="getQuestionForPage(page)"
           :responseWithContent="getQuestionResponseForPage(page)"
         />
-        <!-- Discussion Viewer disabled as per stakeholder's request -->
         <DiscussionViewer
           v-if="page.type === PageTypes.DISCUSSION_PAGE"
           :page="page"
