@@ -10,13 +10,14 @@
         <i class="icon-chevron-left"></i>
       </div>
 
-      <div v-for="p in pageArray" :key="p">
-        <div @click="changePageAction(p)">
+      <template v-for="(p, i) in pageArray">
+        <div @click="changePageAction(p)" :key="`${i}-page`">
           <PageNumber :numeral="p" 
                       :marked="isGroupMarking && groupList && p <= groupList.length ? groupList[p-1].marked : false" 
                       :selected="p === currentPage"/>
         </div>
-      </div>
+      </template>
+
       <div class="squircular-icon uq next-btn" @click="nextPage()">
         <i class="icon-chevron-right"></i>
       </div>
@@ -61,7 +62,7 @@
 
     /**Props for group marking, which will display check icon on marked group*/
     @Prop ({required: false, default: false}) private isGroupMarking!: boolean;
-    @Prop ({required: false, default: []}) private groupList!: IPageNumber[];
+    @Prop ({required: false, default: () => []}) private groupList!: IPageNumber[];
 
     calculatePageArray(currentPage: number, totalPages: number, numVisiblePageButtons: number) {
       const pageArray = [];
