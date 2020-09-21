@@ -25,8 +25,7 @@ export default class Collapsible extends Vue {
   @Prop({ default: "", required: false }) title!: string;
   @Prop({ default: "", required: false }) label!: string;
   @Prop({ default: "white", required: false }) backgroundColor!: string;
-  @Prop({ default: "#fff", required: false })
-  headerBackgroundColor!: string;
+  @Prop({ default: "#fff", required: false }) headerBackgroundColor!: string;
 
   private open = false;
 

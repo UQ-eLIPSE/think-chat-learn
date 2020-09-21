@@ -99,25 +99,30 @@ export default class MarkQuizMarkingSection extends Vue {
     }
   }
 
+  /**
+   * Returns quiz session info object (see type) for current user being marked
+   */
   get currentQuizSessionInfoObject(): QuizSessionDataObject | undefined {
     return this.$store.getters.currentQuizSessionInfoObject;
   }
 
-  get currentMarkingContext(): CurrentMarkingContext {
-    return this.$store.getters.currentMarkingContext;
-  }
-
+  /**
+   * Returns a questionId to question response array map per chat group
+   */
   get currentChatGroupResponsesMap() {
     return this.$store.getters.currentChatGroupResponsesMap || [];
   }
-  get currentChatGroupQuestionMessageMap() {
-    return this.$store.getters.currentChatGroupQuestionMessageMap || [];
-  }
 
+  /**
+   * Current chat group selected to be marked
+   */
   get currentChatGroup() {
     return this.$store.getters.currentChatGroup;
   }
 
+  /**
+   * Quiz session id of the user currently being marked
+   */
   get currentQuizSessionId() {
     if (!this.currentQuizSessionInfoObject || !this.currentQuizSessionInfoObject.quizSession) return undefined;
     return this.currentQuizSessionInfoObject.quizSession._id;
