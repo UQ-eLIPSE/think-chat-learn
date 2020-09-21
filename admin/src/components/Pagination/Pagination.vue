@@ -12,7 +12,9 @@
 
       <div v-for="p in pageArray" :key="p">
         <div @click="changePageAction(p)">
-          <PageNumber :numeral="p" :marked="false" :selected="p === currentPage"/>
+          <PageNumber :numeral="p" 
+                      :marked="isGroupMarking && pageArrayList && p <= pageArrayList.length ? pageArrayList[p-1].marked : false" 
+                      :selected="p === currentPage"/>
         </div>
       </div>
       <div class="squircular-icon uq next-btn" @click="nextPage()">
@@ -51,7 +53,6 @@
   })
 
   //Migrated pagination component from International Admin
-  /** @TODO Replace current number type to IPageNumber when marked props can be populated*/
 
   export default class Pagination extends Vue {
     @Prop ({required: true, default: 1}) private currentPage!: number;
@@ -59,15 +60,18 @@
     @Prop ({required: true, default: 0}) private numPageButtons!: number;
     @Prop ({required: true, default: (p: number) => {}}) private changePageAction!: (p: number) => void;
 
-    calculatePageArray(currentPage: number, totalPages: number, numPagedivnks: number) {
+    @Prop ({required: false, default: false}) private isGroupMarking!: boolean;
+    @Prop ({required: false, default: []}) private pageNumberList!: IPageNumber[];
+
+    calculatePageArray(currentPage: number, totalPages: number, numVisiblePageButtons: number) {
       const pageArray = [];
-      if (totalPages < numPagedivnks) {
-        numPagedivnks = totalPages;
+      if (totalPages < numVisiblePageButtons) {
+        numVisiblePageButtons = totalPages;
       }
 
-      const startPage = Math.min(Math.max(currentPage - ~~(numPagedivnks / 2), 1), totalPages - numPagedivnks + 1);
+      const startPage = Math.min(Math.max(currentPage - ~~(numVisiblePageButtons / 2), 1), totalPages - numVisiblePageButtons + 1);
 
-      for (let i = 0; i < numPagedivnks; i++) {
+      for (let i = 0; i < numVisiblePageButtons; i++) {
         pageArray.push(startPage + i);
       }
 
