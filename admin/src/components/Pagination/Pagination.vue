@@ -13,7 +13,7 @@
       <div v-for="p in pageArray" :key="p">
         <div @click="changePageAction(p)">
           <PageNumber :numeral="p" 
-                      :marked="isGroupMarking && pageArrayList && p <= pageArrayList.length ? pageArrayList[p-1].marked : false" 
+                      :marked="isGroupMarking && groupList && p <= groupList.length ? groupList[p-1].marked : false" 
                       :selected="p === currentPage"/>
         </div>
       </div>
@@ -34,7 +34,7 @@
   import PageNumber, {IPageNumber} from "./PageNumber.vue";
 
   /**---------------------------------
-   * Usage: <Pagination :currentPage="currentPage" :totalPages="5" :numPageButtons="11" :changePageAction="changePage"/>
+   * Usage: <Pagination :currentPage="currentPage" :totalPages="11" :numPageButtons="5" @pageChanged="changePage"/>
    * <script lang="ts">
    * class Example {
    *  ...
@@ -58,10 +58,10 @@
     @Prop ({required: true, default: 1}) private currentPage!: number;
     @Prop ({required: true, default: 1}) private totalPages!: number;
     @Prop ({required: true, default: 0}) private numPageButtons!: number;
-    @Prop ({required: true, default: (p: number) => {}}) private changePageAction!: (p: number) => void;
 
+    /**Props for group marking, which will display check icon on marked group*/
     @Prop ({required: false, default: false}) private isGroupMarking!: boolean;
-    @Prop ({required: false, default: []}) private pageNumberList!: IPageNumber[];
+    @Prop ({required: false, default: []}) private groupList!: IPageNumber[];
 
     calculatePageArray(currentPage: number, totalPages: number, numVisiblePageButtons: number) {
       const pageArray = [];
@@ -85,22 +85,26 @@
 
     nextPage() {
       if (this.currentPage < this.totalPages) {
-        this.changePageAction(this.currentPage + 1);
+        this.$emit('pageChanged', this.currentPage + 1);
       }
     }
 
     previousPage() {
       if (this.currentPage > 1) {
-        this.changePageAction(this.currentPage - 1);
+        this.$emit('pageChanged', this.currentPage - 1);
       }
     }
 
     lastPage() {
-      this.changePageAction(this.totalPages);
+      this.$emit('pageChanged', this.totalPages);
     }
 
     firstPage() {
-      this.changePageAction(1);
+      this.$emit('pageChanged', this.totalPages);
+    }
+
+    changePageAction(page: number) {
+      this.$emit('pageChanged', page);
     }
 
   }
