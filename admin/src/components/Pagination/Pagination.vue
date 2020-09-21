@@ -100,7 +100,7 @@
     }
 
     firstPage() {
-      this.$emit('pageChanged', this.totalPages);
+      this.$emit('pageChanged', 1);
     }
 
     changePageAction(page: number) {

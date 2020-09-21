@@ -31,6 +31,10 @@ export default class PageNumber extends Vue {
 @import "../../../css/partial/fonts";
 @import "../../../css/partial/icons";
 
+.squircular-icon{
+  cursor: pointer;
+}
+
 p {
   @include font-style(0.875em, auto, 500, $dark-grey);
   transform: translate(-50%, -50%);
