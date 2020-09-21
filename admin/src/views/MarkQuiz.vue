@@ -15,17 +15,12 @@
         <div class="form-control">
           <v-layout row wrap>
             
-              <v-flex xs6>
-                <b-field label="Select the Group">
-                  <div class="select-field">
-                    <select v-model="selectedGroupId">
-                      <option v-for="option in chatGroupsDropDown" :key="option.text" :value="option.value">
-                        {{option.text}}
-                      </option>
-                    </select>
-                  </div>
-                </b-field>
-              </v-flex>
+            <div class="groups">
+              <Pagination :currentPage="(selectedGroupIndex + 1)" 
+                          :totalPages="chatGroupsDropDown.length" 
+                          :numPageButtons="numVisiblePagesButton" 
+                          @pageChanged="changeGroupChat"/>
+            </div>
 
             <div class="users">
               <template v-for="(user, i) in currentGroupQuizSessionDropDown">
@@ -40,15 +35,6 @@
             </div>
 
             <v-flex xs12>
-              <div class="step-navigation">
-                <button type="button"
-                        class="primary-cl"
-                        @click.prevent="previous">
-                  &lt; Previous</button>
-                <button type="button"
-                        class="uq"
-                        @click.prevent="next">Next &gt;</button>
-              </div>
               <div class="group-mark"
                   v-if="selectedGroup">
 
@@ -86,6 +72,7 @@ import { PageType } from "../../../common/enums/DBEnums";
 import MarkQuizMarkingSection from '../components/Marking/MarkQuizMarkingSection.vue';
 import { API } from "../../../common/js/DB_API";
 import UserCard from "../components/Marking/UserCard.vue";
+import Pagination from "../components/Pagination/Pagination.vue";
 
 Component.registerHooks([
   'beforeRouteEnter',
@@ -101,11 +88,13 @@ interface DropDownConfiguration {
 @Component({
   components: {
     MarkQuizMarkingSection,
-    UserCard
+    UserCard,
+    Pagination
   }
 })
 export default class MarkQuiz extends Vue {
   private displayQuestionContent: boolean = false;
+  private numVisiblePagesButton: number = 7;
 
   get marksPublic(): boolean | null | undefined {
     if(!this.q) return null;
@@ -158,89 +147,24 @@ export default class MarkQuiz extends Vue {
     else this.currentQuizSessionId = this.currentGroupQuizSessionInfoObjects[index].quizSession._id;
   }
 
-  next() {
-    // Check from lowest level to highest level
-    // Check if next user/quiz session available
-    if (this.currentGroupQuizSessionInfoObjects.length > 0) {
-      const quizSessionIndex = this.currentGroupQuizSessionInfoObjects.findIndex((s: any) => s.quizSession._id === this.currentQuizSessionId);
-      if (quizSessionIndex === -1) {
-        this.goToQuizSession(0);
-        return;
-      } else if (this.currentGroupQuizSessionInfoObjects.length > 1 && quizSessionIndex < this.currentGroupQuizSessionInfoObjects.length - 1) {
-        // More than one quiz session exists, can move to the next one
-        this.goToQuizSession(quizSessionIndex + 1);
-        return;
-      }
-    }
-    if (this.orderedDiscussionPageQuestionIds.length > 0) {
-      // Check if next question available
-      const questionIndex = this.orderedDiscussionPageQuestionIds.indexOf(this.selectedQuestionId);
-      if (questionIndex === -1) {
-        this.goToQuestion(0, 0);
-        return;
-      } else if (this.orderedDiscussionPageQuestionIds.length > 1 && questionIndex < this.orderedDiscussionPageQuestionIds.length - 1) {
-        this.goToQuestion(questionIndex + 1, 0);
-        return;
-      }
-    }
-
-    if (this.chatGroups.length > 0) {
-      const chatGroupIndex = this.chatGroups.findIndex((cg: IChatGroup) => cg._id === this.selectedGroupId);
-      if (chatGroupIndex === -1) {
-        this.goToChatgroup(0, 0, 0);
-        return;
-      } else if (this.chatGroups.length > 1 && chatGroupIndex < this.chatGroups.length - 1) {
-        this.goToChatgroup(chatGroupIndex + 1, 0, 0);
-        return;
-      }
-    }
-  }
-
   get isCurrentUserSelectedAndInGroup() {
     if (!this.currentQuizSessionId || !this.currentGroupQuizSessionInfoObjects) return false;
     const existsInGroup = this.currentGroupQuizSessionInfoObjects.findIndex(o => o.quizSession._id === this.currentQuizSessionId)
     if (existsInGroup !== -1) return true;
     return false;
   }
-  previous() {
-    // Check from lowest level to highest level
-    // Check if next user/quiz session available
-    if (this.currentGroupQuizSessionInfoObjects.length > 0) {
-      const quizSessionIndex = this.currentGroupQuizSessionInfoObjects.findIndex((s: any) => s.quizSession._id === this.currentQuizSessionId);
-      if (quizSessionIndex === -1) {
-        this.goToQuizSession(0);
-        return;
-      } else if (this.currentGroupQuizSessionInfoObjects.length > 1 && quizSessionIndex > 0) {
-        // More than one quiz session exists, can move to the next one
-        this.goToQuizSession(quizSessionIndex - 1);
-        return;
-      }
-    }
-    if (this.orderedDiscussionPageQuestionIds.length > 0) {
-      // Check if next question available
-      const questionIndex = this.orderedDiscussionPageQuestionIds.indexOf(this.selectedQuestionId);
-      if (questionIndex === -1) {
-        this.goToQuestion(0, 0);
-        return;
-      } else if (this.orderedDiscussionPageQuestionIds.length > 1 && questionIndex > 0) {
-        this.goToQuestion(questionIndex - 1, 0);
-        this.goToQuizSession(this.currentGroupQuizSessionInfoObjects.length - 1);
-        return;
-      }
-    }
 
-    if (this.chatGroups.length > 0) {
-      const chatGroupIndex = this.chatGroups.findIndex((cg: IChatGroup) => cg._id === this.selectedGroupId);
-      if (chatGroupIndex === -1) {
-        this.goToChatgroup(0, 0, 0);
-        return;
-      } else if (this.chatGroups.length > 1 && chatGroupIndex > 0) {
-        this.goToChatgroup(chatGroupIndex - 1, 0, 0);
-        this.goToQuestion(this.orderedDiscussionPageQuestionIds.length - 1, this.currentGroupQuizSessionInfoObjects.length - 1);
-        return;
-      }
+  //Choosing group chat from pagination
+  changeGroupChat(groupId: number){
+    if (this.chatGroups.length <= 0) return;
+    if (!groupId) {
+      this.goToChatgroup(0, 0, 0);
+    } else if (this.chatGroups.length > 1 && groupId > 0) {
+      this.goToChatgroup(groupId - 1, 0, 0);
+      this.goToQuestion(this.orderedDiscussionPageQuestionIds.length - 1, this.currentGroupQuizSessionInfoObjects.length - 1);
     }
   }
+
   get markingState() {
     return this.$store.getters.currentMarkingContext;
   }
@@ -317,6 +241,12 @@ export default class MarkQuiz extends Vue {
     return this.chatGroups.find((g: any) => g._id === this.selectedGroupId);
   }
 
+  get selectedGroupIndex(): number {
+    if (!this.chatGroups || !this.selectedGroupId) return -1;
+    const found = this.chatGroups.findIndex((g: any, idx: number) => g._id === this.selectedGroupId);
+    return found !== -1 ? found: 0;
+  }
+
 
   get orderedDiscussionPageQuestionIds() {
     if (!this.q || !this.q.pages) return [];
@@ -353,6 +283,7 @@ export default class MarkQuiz extends Vue {
   get quizSessionInfoMap() {
     return this.$store.getters.quizSessionInfoMap;
   }
+
   // get groupQuizSessions() {
   //   // if (!this.selectedGroup || !this.quizSessionMap) return [];
   //   // const users = Object.keys(this.quizSessionMap).filter((qid) => this.selectedGroup!.quizSessionIds!.indexOf(qid) !== -1).map((quizSessionId) => {
