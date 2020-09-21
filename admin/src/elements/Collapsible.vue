@@ -49,6 +49,7 @@ export default class Collapsible extends Vue {
 </script>
 
 <style lang="scss" scoped>
+@import "../../css/partial/variables.scss";
 .collapsible {
   .collapsible-header {
     border-top: 0.01em double rgba(1, 0, 0, 0.1);
@@ -81,9 +82,9 @@ export default class Collapsible extends Vue {
 }
 
 .label {
-  font-size: 0.7em;
-  font-weight: bold;
+  font-size: 0.6em;
   text-transform: uppercase;
   padding-right: 0.5rem;
+  color: $grey;
 }
 </style>

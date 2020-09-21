@@ -1,5 +1,5 @@
 <template>
-  <div :class="chat-message">
+  <div class="chat-message">
     <CircularNumberLabel :numeral="numeral" />
     <div class="message"
          :class="`base-cl-${numeral} border-cl transparent-cl ${selected?'selected':''}`">
