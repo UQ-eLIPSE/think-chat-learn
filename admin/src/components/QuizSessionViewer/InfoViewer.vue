@@ -22,7 +22,6 @@ export default class InfoViewer extends Vue {
 
 <style scoped lang="scss">
 .content {
-    // background-color: #fafafa;
     flex: 0.5;
 }
 

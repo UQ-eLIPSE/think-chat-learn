@@ -105,7 +105,6 @@ export default class QuestionViewer extends Vue {
 <style scoped lang="scss">
 @import "../../../css/partial/variables.scss";
 .content {
-  // background-color: #fafafa;
   flex: 0.5;
 }
 
