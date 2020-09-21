@@ -142,6 +142,9 @@ const getters: GetterTree<IState, undefined> = {
         if(!currentChatGroupQuestionMessageMap[state.currentMarkingContext.currentChatGroupId]) return [];
         return currentChatGroupQuestionMessageMap[state.currentMarkingContext.currentChatGroupId][state.currentMarkingContext.currentQuestionId] || [];
     },
+    /**
+     * Returns a questionId to question response array map per chat group
+     */
     currentChatGroupResponsesMap: (state, getters): { [questionId: string]: Response[] } => {
         const currentChatGroup:  IChatGroup | undefined = getters.currentChatGroup;
         if(!currentChatGroup || !state.quizSessionInfoMap) return {};
