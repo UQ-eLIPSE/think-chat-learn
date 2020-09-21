@@ -159,11 +159,9 @@ export default class MarkQuiz extends Vue {
     if (this.chatGroups.length <= 0) return;
     if (groupId === -1) {
       this.goToChatgroup(0, 0, 0);
-      return;
     } else if (this.chatGroups.length > 1 && groupId > 0) {
       this.goToChatgroup(groupId - 1, 0, 0);
       this.goToQuestion(this.orderedDiscussionPageQuestionIds.length - 1, this.currentGroupQuizSessionInfoObjects.length - 1);
-      return;
     }
   }
 
