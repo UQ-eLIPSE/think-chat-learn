@@ -1,5 +1,6 @@
 <template>
-  <label :class="`base${+numeral}`"> {{ numeral }} </label>
+  <label :class="`base-cl-${numeral} border-cl`"> {{ numeral }} </label>
+  
 </template>
 
 <style lang="scss" scoped>
@@ -19,23 +20,6 @@ label {
   text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.15);
   top: 0;
   width: 60px;
-
-  &.base1 {
-    background-color: $baseLight1;
-    border: 3px solid $baseDark1;
-  }
-  &.base2 {
-    background-color: $baseLight2;
-    border: 3px solid $baseDark2;
-  }
-  &.base3 {
-    background-color: $baseLight3;
-    border: 3px solid $baseDark3;
-  }
-  &.base4 {
-    background-color: $baseLight4;
-    border: 3px solid $baseDark4;
-  }
 }
 </style>
 
