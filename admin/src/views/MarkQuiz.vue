@@ -35,15 +35,6 @@
             </div>
 
             <v-flex xs12>
-              <div class="step-navigation">
-                <button type="button"
-                        class="primary-cl"
-                        @click.prevent="previous">
-                  &lt; Previous</button>
-                <button type="button"
-                        class="uq"
-                        @click.prevent="next">Next &gt;</button>
-              </div>
               <div class="group-mark"
                   v-if="selectedGroup">
 
@@ -156,89 +147,11 @@ export default class MarkQuiz extends Vue {
     else this.currentQuizSessionId = this.currentGroupQuizSessionInfoObjects[index].quizSession._id;
   }
 
-  next() {
-    // Check from lowest level to highest level
-    // Check if next user/quiz session available
-    if (this.currentGroupQuizSessionInfoObjects.length > 0) {
-      const quizSessionIndex = this.currentGroupQuizSessionInfoObjects.findIndex((s: any) => s.quizSession._id === this.currentQuizSessionId);
-      if (quizSessionIndex === -1) {
-        this.goToQuizSession(0);
-        return;
-      } else if (this.currentGroupQuizSessionInfoObjects.length > 1 && quizSessionIndex < this.currentGroupQuizSessionInfoObjects.length - 1) {
-        // More than one quiz session exists, can move to the next one
-        this.goToQuizSession(quizSessionIndex + 1);
-        return;
-      }
-    }
-    if (this.orderedDiscussionPageQuestionIds.length > 0) {
-      // Check if next question available
-      const questionIndex = this.orderedDiscussionPageQuestionIds.indexOf(this.selectedQuestionId);
-      if (questionIndex === -1) {
-        this.goToQuestion(0, 0);
-        return;
-      } else if (this.orderedDiscussionPageQuestionIds.length > 1 && questionIndex < this.orderedDiscussionPageQuestionIds.length - 1) {
-        this.goToQuestion(questionIndex + 1, 0);
-        return;
-      }
-    }
-
-    if (this.chatGroups.length > 0) {
-      const chatGroupIndex = this.chatGroups.findIndex((cg: IChatGroup) => cg._id === this.selectedGroupId);
-      if (chatGroupIndex === -1) {
-        this.goToChatgroup(0, 0, 0);
-        return;
-      } else if (this.chatGroups.length > 1 && chatGroupIndex < this.chatGroups.length - 1) {
-        this.goToChatgroup(chatGroupIndex + 1, 0, 0);
-        return;
-      }
-    }
-  }
-
   get isCurrentUserSelectedAndInGroup() {
     if (!this.currentQuizSessionId || !this.currentGroupQuizSessionInfoObjects) return false;
     const existsInGroup = this.currentGroupQuizSessionInfoObjects.findIndex(o => o.quizSession._id === this.currentQuizSessionId)
     if (existsInGroup !== -1) return true;
     return false;
-  }
-
-  previous() {
-    // Check from lowest level to highest level
-    // Check if next user/quiz session available
-    if (this.currentGroupQuizSessionInfoObjects.length > 0) {
-      const quizSessionIndex = this.currentGroupQuizSessionInfoObjects.findIndex((s: any) => s.quizSession._id === this.currentQuizSessionId);
-      if (quizSessionIndex === -1) {
-        this.goToQuizSession(0);
-        return;
-      } else if (this.currentGroupQuizSessionInfoObjects.length > 1 && quizSessionIndex > 0) {
-        // More than one quiz session exists, can move to the next one
-        this.goToQuizSession(quizSessionIndex - 1);
-        return;
-      }
-    }
-    if (this.orderedDiscussionPageQuestionIds.length > 0) {
-      // Check if next question available
-      const questionIndex = this.orderedDiscussionPageQuestionIds.indexOf(this.selectedQuestionId);
-      if (questionIndex === -1) {
-        this.goToQuestion(0, 0);
-        return;
-      } else if (this.orderedDiscussionPageQuestionIds.length > 1 && questionIndex > 0) {
-        this.goToQuestion(questionIndex - 1, 0);
-        this.goToQuizSession(this.currentGroupQuizSessionInfoObjects.length - 1);
-        return;
-      }
-    }
-
-    if (this.chatGroups.length > 0) {
-      const chatGroupIndex = this.chatGroups.findIndex((cg: IChatGroup) => cg._id === this.selectedGroupId);
-      if (chatGroupIndex === -1) {
-        this.goToChatgroup(0, 0, 0);
-        return;
-      } else if (this.chatGroups.length > 1 && chatGroupIndex > 0) {
-        this.goToChatgroup(chatGroupIndex - 1, 0, 0);
-        this.goToQuestion(this.orderedDiscussionPageQuestionIds.length - 1, this.currentGroupQuizSessionInfoObjects.length - 1);
-        return;
-      }
-    }
   }
 
   //Choosing group chat from pagination
