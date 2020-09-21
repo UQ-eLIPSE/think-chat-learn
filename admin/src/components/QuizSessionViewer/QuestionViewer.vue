@@ -1,43 +1,81 @@
 <template>
-    <div class="flex-col question-wrapper">
+  <div class="flex-col question-wrapper">
     <h2>{{ title }}</h2>
-    <div class="flex-row justify-space-between">
-      <div class="flex-col question-content">
+
+    <button
+      type="button"
+      class="button-min toggle-question"
+      @click.prevent="questionContentVisible = !questionContentVisible"
+    >
+      <span>{{ questionContentVisible? 'Hide question': 'Show question' }}</span>
+      <div class="circular-icon">
+          <i
+            :class="questionContentVisible? 'icon-chevron-left':'icon-chevron-right'"
+            title="Toggle Question"
+          />
+        </div>
+        
+    </button>
+
+    <div
+      class="flex-row justify-space-between"
+      :class="{ 'content-invisible': !questionContentVisible }"
+    >
+      <div class="flex-col question-content" v-show="questionContentVisible">
         <div v-html="questionPageContent"></div>
         <div v-html="questionContent"></div>
       </div>
+
       <div class="flex-col response">
         <h3>Your Response</h3>
-        <b-input class="response-content"
+        <b-input
+          class="response-content"
           :disabled="true"
           type="textarea"
-          v-model="responseWithContents" />
+          v-model="responseWithContents"
+        />
 
         <div class="confidence flex-row">
-          <h3>Confidence: {{confidence}}/5 </h3>
+          <h3>Confidence: {{confidence}}/5</h3>
         </div>
       </div>
     </div>
-    </div>
+  </div>
 </template>
 <script lang="ts">
 import { Vue, Component, Watch, Prop } from "vue-property-decorator";
-import { Page, IQuestion, IResponse, IQuestionAnswerPage, IResponseQualitative, IResponseMCQ } from "../../../../common/interfaces/DBSchema";
+import {
+  Page,
+  IQuestion,
+  IResponse,
+  IQuestionAnswerPage,
+  IResponseQualitative,
+  IResponseMCQ,
+} from "../../../../common/interfaces/DBSchema";
 import InfoViewer from "./InfoViewer.vue";
 import { QuestionType } from "../../../../common/enums/DBEnums";
 
 @Component({
   components: {
-    InfoViewer
-  }
+    InfoViewer,
+  },
 })
 export default class QuestionViewer extends Vue {
-  @Prop({ default: undefined, required: true }) questionPage!: IQuestionAnswerPage;
+  @Prop({ default: undefined, required: true })
+  questionPage!: IQuestionAnswerPage;
   @Prop({ default: undefined, required: true }) question!: IQuestion;
   @Prop({ default: undefined, required: true }) responseWithContent!: IResponse;
 
+  /**
+   * Controls if question content is visible
+   * Will not be displayed by default
+   */
+  questionContentVisible: boolean = false;
+
   get questionPageContent() {
-    return this.questionPage && this.questionPage.content ? this.questionPage.content: '';
+    return this.questionPage && this.questionPage.content
+      ? this.questionPage.content
+      : "";
   }
 
   get questionContent() {
@@ -49,8 +87,8 @@ export default class QuestionViewer extends Vue {
   }
 
   get responseWithContents() {
-    if(!this.responseWithContent || !this.responseWithContent.type) return "";
-    switch(this.responseWithContent.type) {
+    if (!this.responseWithContent || !this.responseWithContent.type) return "";
+    switch (this.responseWithContent.type) {
       case QuestionType.QUALITATIVE:
         return (this.responseWithContent as IResponseQualitative).content || "";
       case QuestionType.MCQ:
@@ -62,24 +100,27 @@ export default class QuestionViewer extends Vue {
   }
 
   get confidence() {
-    return (this.responseWithContent && this.responseWithContent.confidence) || "";
+    return (
+      (this.responseWithContent && this.responseWithContent.confidence) || ""
+    );
   }
 }
 </script>
 
 <style scoped lang="scss">
+@import "../../../css/partial/variables.scss";
 .content {
-    // background-color: #fafafa;
-    flex: 0.5;
+  // background-color: #fafafa;
+  flex: 0.5;
 }
 
 .flex-row {
-    display: flex;
+  display: flex;
 }
 
 .flex-col {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .response-content {
@@ -92,22 +133,53 @@ export default class QuestionViewer extends Vue {
 }
 
 .response {
-   @media screen and (max-width: 768px){
+  @media screen and (max-width: 768px) {
     width: 100%;
   }
 }
 
-.question-content, .response {
+.question-content,
+.response {
   flex: 0.5;
   margin: 1rem;
-  @media screen and (max-width: 768px){
-    flex: unset
+  @media screen and (max-width: 768px) {
+    flex: unset;
   }
+}
+
+.content-invisible {
+  .response {
+    flex: 1;
+  }
+
+  .question-content {
+    flex: 0.1;
+  }
+}
+
+.question-close {
+  cursor: pointer;
 }
 
 .confidence {
   align-items: center;
-  >*  { margin: 0.5rem; padding: 0.25rem };
+  > * {
+    margin: 0.5rem;
+    padding: 0.25rem;
+  }
 }
 
+.toggle-question {
+  display: flex;
+  align-items: center;
+  padding-left: 0;
+  font-size: 0.7em;
+  text-transform: uppercase;
+  color: $primary;
+  font-weight: bold;
+
+  &:active, &:focus, &:hover {
+    outline: none;
+  }
+}
 </style>

@@ -95,20 +95,3 @@ export default class DiscussionViewer extends Vue {
 }
 </style>
 
-<style lang="scss">
-@mixin coloredBackground($color) {
-  background-color: rgba($color, 0.1);
-  border-width: 1px;
-}
-
-.chat-message .message{
-  border-width: 1px;
-
-  &.selected {
-    &.base1 { @include coloredBackground(blue); }
-    &.base2 { @include coloredBackground(green); }
-    &.base3 { @include coloredBackground(yellow); }
-    &.base4 { @include coloredBackground(red); }
-  }
-}
-</style>
