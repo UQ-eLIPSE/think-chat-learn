@@ -4,7 +4,10 @@
     <p class="text-xs-center">Quiz ID: {{q._id}}</p>
     <p class="text-xs-center"><b>Available Start:</b> {{ new Date(q.availableStart).toLocaleString() }}</p>
     <p class="text-xs-center"><b>Available End:</b> {{ new Date(q.availableEnd).toLocaleString() }}</p>
+    
+    <!-- DEMO SEARCH. TO BE REPLACED WITH ACTUAL SEARCH COMPONENT -->
     <input v-model="searchText" @input="checkOrFetchUserMap()" placeholder="Search student ..." />
+
     <div v-for="(r, i) in searchResults" :key="i + 'searchresult'" @click="searchResultClickHandler(r)">{{ JSON.stringify(r) }}</div>
     <v-checkbox
         v-if="marksPublic !== null"
