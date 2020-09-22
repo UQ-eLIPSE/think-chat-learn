@@ -24,13 +24,16 @@ export type CurrentMarkingContext = {
 
 type MarksQuestionUserMap = { [quizSessionId: string]: { [questionId: string]: { [markerId: string]: Mark } } };
 
-type QuizSessionToUserInfoMap = {
+/**
+ * Search map for mapping quiz session id to user string
+ */
+export type QuizSessionToUserInfoMap = {
     [quizSessionId: string]: string
 };
 
 type QuizSessionUserSearchMap =
     { 
-        [quizId: string]: QuizSessionToUserInfoMap
+        [quizScheduleId: string]: QuizSessionToUserInfoMap
     };
 
 
@@ -43,6 +46,10 @@ export interface IState {
     marksQuestionUserMap: MarksQuestionUserMap;
     criterias: ICriteria[];
     rubrics: IRubric[];
+    /**
+     * A map which stores search maps by quiz schedule id.
+     * Each search map is used to search for users by username, first name or last name for a particular quiz schedule Id.
+    */
     quizSessionUserSearchMap: QuizSessionUserSearchMap;
 }
 
@@ -60,6 +67,10 @@ const state: IState = {
         currentMarks: null
     },
     marksQuestionUserMap: {},
+    /**
+     * A map which stores search maps by quiz id.
+     * Each search map is used to search for users by username, first name or last name for a particular quiz schedule Id.
+    */
     quizSessionUserSearchMap: {},
     criterias: [],
     rubrics: [],
@@ -79,7 +90,7 @@ const mutationKeys = {
     DELETE_RUBRIC: "Deleting a rubric",
     SET_COURSE: "setCourse",
     SET_CHATGROUPS: "setChatGroups",
-    SET_SEARCH_QUIZ_SESSIONS: "Sets the quiz to quiz session information map for search functionality"
+    SET_SEARCH_QUIZ_SESSIONS: "Sets quiz search map"
 };
 
 const getters: GetterTree<IState, undefined> = {
@@ -421,11 +432,7 @@ const actions: ActionTree<IState, undefined> = {
         const response = await API.request(API.GET, API.QUIZSESSION + `searchmap/${quizScheduleId}`, {}, undefined);
   
         if(response && response.success && response.payload) {
-            const reversedMap = Object.keys(response.payload).reduce((newMap, quizSessionId) => {
-                newMap[response.payload[quizSessionId]] = quizSessionId;
-                return newMap;
-            }, {} as {[key: string]: string });
-            commit(mutationKeys.SET_SEARCH_QUIZ_SESSIONS, { quizScheduleId, payload: reversedMap });
+            commit(mutationKeys.SET_SEARCH_QUIZ_SESSIONS, { quizScheduleId, payload: response.payload });
         }
     }
 };

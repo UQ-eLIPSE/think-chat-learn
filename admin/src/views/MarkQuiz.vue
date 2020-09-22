@@ -75,6 +75,7 @@ import MarkQuizMarkingSection from '../components/Marking/MarkQuizMarkingSection
 import { API } from "../../../common/js/DB_API";
 import UserCard from "../components/Marking/UserCard.vue";
 import Pagination from "../components/Pagination/Pagination.vue";
+import { QuizSessionToUserInfoMap } from "../store/modules/quiz";
 
 Component.registerHooks([
   'beforeRouteEnter',
@@ -395,38 +396,46 @@ export default class MarkQuiz extends Vue {
   }
 
   /**
-   * 
-   * @param r A string in t
+   * Handler for user search item click
+   * @param r A string in the format ["quizSessionId", "<username>,<firstname>,<lastname>"]
    */
-  searchResultClickHandler(r: string) {
-    const quizSessionId = r[1];
-    const chatGroupIndex = this.chatGroups.findIndex((group) => (group.quizSessionIds || []).includes(quizSessionId));
-    if(chatGroupIndex < 0) {
-      this.searchText = '';
-      return;
-    }
+  searchResultClickHandler(r: [string, string]) {
+    
+    try {
+      if(!r || !r[0]) throw new Error('Invalid search for quiz session id');
 
-    const chatGroup = this.chatGroups[chatGroupIndex];
-    if(!chatGroup) {
-      this.searchText = '';
-      return;
-    }
-    const userIndexInChatGroup = (chatGroup.quizSessionIds || []).findIndex((g) => g === quizSessionId);
+      // Get the quiz session ID
+      const quizSessionId = r[0];
+      
+      const chatGroupIndex = this.chatGroups.findIndex((group) => (group.quizSessionIds || []).includes(quizSessionId));
+      if(chatGroupIndex < 0) {
+        throw new Error('Chat group not found');
+      }
 
-    if(userIndexInChatGroup < 0) {
-      this.searchText = '';
-      return;
-    }
+      const chatGroup = this.chatGroups[chatGroupIndex];
+      if(!chatGroup) {
+        throw new Error('Chat group not found');
+      }
 
-    // Navigate to group and user
-    this.goToChatgroup(chatGroupIndex, 0, userIndexInChatGroup);
-    this.searchText = '';
+      const userIndexInChatGroup = (chatGroup.quizSessionIds || []).findIndex((g) => g === quizSessionId);
+
+      if(userIndexInChatGroup < 0) {
+        throw new Error('User not found in chat group');
+      }
+
+      // Navigate to group and user
+      this.goToChatgroup(chatGroupIndex, 0, userIndexInChatGroup);
+      this.searchText = '';
+    } catch(e) {
+      console.error(e.message);
+      this.searchText = '';
+    }
   }
 
   /**
    * Returns the search map for the current quiz
    */
-  get currentSearchMap() {
+  get currentSearchMap(): QuizSessionToUserInfoMap {
     return this.$store.getters.currentSearchMap;
   }
 
@@ -435,17 +444,16 @@ export default class MarkQuiz extends Vue {
   }
 
   /**
+   * Return user search results based on the value of `searchText`
    * A computed value which uses value of `searchText` to return matching users and quiz sessions from the store for the current quiz
    */
   get searchResults() {
     if(this.searchText.trim().length === 0) return [];
     const searchTerm = this.searchText.trim().toLowerCase();
 
-    const currentSearchMap = this.currentSearchMap;
-
-    return (Object.keys(currentSearchMap) || []).filter((userString) => {
-      return userString.includes(searchTerm);
-    }).map((u) => [u, currentSearchMap[u]]);
+    return (Object.entries(this.currentSearchMap) || []).filter((quizSessionKeyValue) => {
+      return quizSessionKeyValue && quizSessionKeyValue[1] && quizSessionKeyValue[1].includes(searchTerm);
+    });
   }
 
 }
