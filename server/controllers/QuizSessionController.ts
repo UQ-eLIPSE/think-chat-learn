@@ -107,6 +107,39 @@ export class QuizSessionController extends BaseController {
         return res.json({ payload: quizSessionsData });
     }
 
+    rd(n: number) {
+        return Math.floor(Math.random() * n);
+    }
+    /**
+     * Used for search mechanism
+     * Returns in the format
+     * { "<quizSessionId>": "<username>,<firstname>,<lastname>" }
+     * @param req 
+     * @param res 
+     * @param next 
+     */
+    private async getQuizSessionUserMap(req: express.Request, res: express.Response, next: express.NextFunction | undefined) {
+        try {
+            if(!req.params.quizScheduleId) throw new Error('Missing quiz schedule id');
+            const result = await this.quizSessionService.getQuizSessionUserMap(req.params.quizScheduleId);
+            if(!result || !result.success || !result.payload) {
+                throw new Error('Quiz session map could not be created');
+            }
+            // Fake data generation, mock for 1000 users
+            // for(let i = 0; i < 1000; i++) {
+            //     result.payload[`5f60625abfd6970999ba${this.rd(9)}${this.rd(9)}${this.rd(9)}${this.rd(9)}`] =
+            //         `s4441${this.rd(100)},John${this.rd(1000)}, Doe${this.rd(1000)}`.toLowerCase()
+            // };
+
+            return res.json(result);
+        } catch(e) {
+            console.error(e);
+            return res.json({
+                success: false
+            }).status(500);
+        }
+    }
+
     public setupRoutes() {
         this.router.post("/create", StudentAuthenticatorMiddleware.checkUserId(), StudentAuthenticatorMiddleware.checkQuizSessionId(), this.createQuizSession.bind(this));
         this.router.get("/quizsession/:quizSessionId", StudentAuthenticatorMiddleware.checkUserId(), this.getQuizSessionById.bind(this));
@@ -115,5 +148,6 @@ export class QuizSessionController extends BaseController {
         this.router.post("/fetchByUserQuiz", StudentAuthenticatorMiddleware.checkUserId(), this.getQuizSessionByUserIdAndQuiz.bind(this));
         this.router.get("/quizsession-marking/:quizSessionId", isAdmin(), this.getQuizSessionById.bind(this));
         this.router.get("/history", StudentAuthenticatorMiddleware.checkUserId(), this.getPastQuizSessionByUserCourse.bind(this));
+        this.router.get("/usermap/:quizScheduleId", isAdmin(), this.getQuizSessionUserMap.bind(this));
     }
 }

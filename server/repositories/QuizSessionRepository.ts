@@ -37,4 +37,12 @@ export class QuizSessionRepository extends BaseRepository<IQuizSession>{
 
         return (result || []).map((quizSession) => this.convertDocumentToItem(quizSession));
     }
+
+    async findQuizSessionsByQuizId(quizScheduleId: string) {
+        const result = await this.collection.find({
+            quizId: quizScheduleId
+        }).toArray();
+
+        return (result || []).map((quizSession) => this.convertDocumentToItem(quizSession));
+    }
 }

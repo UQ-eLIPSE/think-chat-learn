@@ -20,7 +20,7 @@ export class ChatGroupService extends BaseService<IChatGroup> {
         this.responseRepo = _responseRepo;
         this.quizSessionRepo = _quizSessionRepo;
         this.userSessionRepo = _userSessionRepo;
-}
+    }
 
     // Creates a chat group (only ran/endpoint is from the server)
     public async createOne(data: IChatGroup): Promise<string> {

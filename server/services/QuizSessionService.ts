@@ -9,6 +9,7 @@ import { PageType } from "../../common/enums/DBEnums";
 import { QuestionRepository } from "../repositories/QuestionRepository";
 import { ObjectID } from "mongodb";
 import { IQuestionAnswerPage } from "../../common/interfaces/ToClientData";
+import { UserRepository } from "../repositories/UserRepository";
 
 export class QuizSessionService extends BaseService<IQuizSession> {
 
@@ -17,9 +18,10 @@ export class QuizSessionService extends BaseService<IQuizSession> {
     protected readonly userSessionRepo: UserSessionRepository;
     protected readonly responseRepo: ResponseRepository;
     protected readonly questionRepo: QuestionRepository;
+    protected readonly userRepo: UserRepository;
 
     constructor(_quizSessionRepo: QuizSessionRepository, _userSessionRepo: UserSessionRepository,
-        _quizRepo: QuizRepository, _responseRepo: ResponseRepository, _questionRepo: QuestionRepository) {
+        _quizRepo: QuizRepository, _responseRepo: ResponseRepository, _questionRepo: QuestionRepository, _userRepo: UserRepository) {
 
         super();
 
@@ -28,6 +30,7 @@ export class QuizSessionService extends BaseService<IQuizSession> {
         this.quizRepo = _quizRepo;
         this.responseRepo = _responseRepo;
         this.questionRepo = _questionRepo;
+        this.userRepo = _userRepo;
     }
 
     // Creates a user session assuming the body is valid
@@ -187,5 +190,55 @@ export class QuizSessionService extends BaseService<IQuizSession> {
         }));
 
         return pastQuizSessions;
+    }
+
+    /**
+     * Used for searching quiz sessions by username
+     * Returns payload of { quizSessionId: "(lowercase) <username>,<first name>,<last name>""}
+     * @param quizScheduleId 
+     */
+    public async getQuizSessionUserMap(quizScheduleId: string): Promise<{ success: boolean, payload?: any, message?: string }> {
+        try {
+            const quizSessions = await this.quizSessionRepo.findQuizSessionsByQuizId(quizScheduleId);
+
+            if(!quizSessions || !Array.isArray(quizSessions)) throw new Error("No valid quiz sessions found for quiz id");
+
+            const userSessionIds = quizSessions.map((q) => q.userSessionId).filter((x) => x) as string[];
+
+            const userSessions = await this.userSessionRepo.findByIdArray(userSessionIds);
+
+            if(!userSessions || !Array.isArray(userSessions)) throw new Error("No valid user sessions found for quiz id");
+
+            const userIds = userSessions.map((u) => u.userId).filter((x) => x) as string[];
+
+            const users = await this.userRepo.findByIdArray(userIds);
+
+            if(!users || !Array.isArray(users)) throw new Error("No valid users found for quiz id");
+
+          
+            const quizSessionUserMap = quizSessions.reduce((userMap, quizSession) => {
+                if(userMap[quizSession._id as string]) return userMap;
+
+                const userSessionId = quizSession.userSessionId;
+                const userSession = userSessions.find((s) => s._id === userSessionId);
+                if(!userSession) return userMap;
+                const user = users.find((u) => u._id === userSession.userId);
+                if(!user) return userMap;
+                userMap[quizSession._id as string] = `${user?.username},${user.firstName},${user.lastName}`.toLowerCase();
+
+                return userMap;
+            }, {} as {[key: string]: string});
+
+            return {
+                success: true,
+                payload: quizSessionUserMap
+            };
+
+        } catch(e) {
+            return {
+                success: false,
+                message: e.message
+            }
+        }
     }
 }

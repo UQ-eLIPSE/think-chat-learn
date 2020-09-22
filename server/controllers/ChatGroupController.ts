@@ -27,7 +27,10 @@ export class ChatGroupController extends BaseController {
 
     private getChatGroups(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
         this.chatGroupService.getChatGroups(req.query.quizid).then((result) => {
-            res.json(result);
+            res.json((result || []).map((r) => {
+                // if(r && r.messages) delete r.messages;
+                return r;
+            }));
         }).catch((e) => {
             res.sendStatus(400);
         });

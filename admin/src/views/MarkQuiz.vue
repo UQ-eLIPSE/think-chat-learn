@@ -4,6 +4,8 @@
     <p class="text-xs-center">Quiz ID: {{q._id}}</p>
     <p class="text-xs-center"><b>Available Start:</b> {{ new Date(q.availableStart).toLocaleString() }}</p>
     <p class="text-xs-center"><b>Available End:</b> {{ new Date(q.availableEnd).toLocaleString() }}</p>
+    <input v-model="searchText" placeholder="Search student ..." />
+    <div v-for="(r, i) in searchResults" :key="i + 'searchresult'">{{ JSON.stringify(r) }}</div>
     <v-checkbox
         v-if="marksPublic !== null"
         :input-value="marksPublic"
@@ -95,10 +97,21 @@ interface DropDownConfiguration {
 export default class MarkQuiz extends Vue {
   private displayQuestionContent: boolean = false;
   private numVisiblePagesButton: number = 7;
+  private searchText: string = '';
+  private userMap: any = {};
 
   get marksPublic(): boolean | null | undefined {
     if(!this.q) return null;
     return this.q.marksPublic;
+  }
+
+  get searchResults() {
+    console.log('Getting search result ...');
+    if(this.searchText.trim().length === 0) return [];
+    const searchTerm = this.searchText.trim().toLowerCase();
+    return (Object.keys(this.userMap) || []).filter((userString) => {
+      return userString.includes(searchTerm);
+    }).map((u) => [u, this.userMap[u]]).filter((truthy) => truthy);
   }
 
   async toggleMarksVisibility() {
@@ -324,7 +337,18 @@ export default class MarkQuiz extends Vue {
   }
 
 
-
+  async fetchUserSearchMap(vm: any) {
+    if (!vm.$route.params.id) return;
+    const response = await API.request(API.GET, API.QUIZSESSION + `usermap/${vm.$route.params.id}`, {}, undefined);
+  
+    if(response && response.success && response.payload) {
+      const reversedMap = Object.keys(response.payload).reduce((newMap, quizSessionId) => {
+        newMap[response.payload[quizSessionId]] = quizSessionId;
+        return newMap;
+      }, {} as {[key: string]: string })
+      this.userMap = reversedMap;
+    }
+  }
 
   async fetchAllQuizSessionInfo(vm: any) {
     if (!vm.$route.params.id) return;
@@ -369,7 +393,7 @@ export default class MarkQuiz extends Vue {
   async beforeRouteEnter(to: any, from: any, next: any) {
     next(async (vm: any) => {
       await vm.fetchAllQuizSessionInfo(vm);
-
+      await vm.fetchUserSearchMap(vm);
     });
   }
 
