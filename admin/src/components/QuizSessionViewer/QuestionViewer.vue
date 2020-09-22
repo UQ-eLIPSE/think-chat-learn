@@ -27,7 +27,7 @@
       </div>
 
       <div class="flex-col response">
-        <h3>Your Response</h3>
+        <h3>Response</h3>
         <b-input
           class="response-content"
           :disabled="true"

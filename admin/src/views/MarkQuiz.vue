@@ -42,11 +42,11 @@
         </v-flex>
       </v-layout>
 
-      <v-container fluid grid-list-md class="pa-0 mt-3">
+      <v-container fluid grid-list-md class="pa-0 mt-2">
         <div class="form-control">
           <v-layout row>
             <!--Main panel-->
-            <div class="card-container mr-3">
+            <div class="card-container mr-3 ">
               
               <!--List of students in group-->
               <v-layout row class="users">
@@ -75,7 +75,7 @@
                       <div v-html="selectedQuestion.content"></div>
                     </div>
 
-                    <span class="info" v-if="!isCurrentUserSelectedAndInGroup">Please select a user</span>
+                    <span v-if="!isCurrentUserSelectedAndInGroup"><p>Please select a user</p></span>
                     <MarkQuizMarkingSection v-if="selectedGroup && selectedQuestion && isCurrentUserSelectedAndInGroup"/>
                   </div>
                 </div>
@@ -426,10 +426,12 @@ export default class MarkQuiz extends Vue {
 
 .marking-section {
   overflow-y: auto;
+  max-height: 70vh;
 }
 
 .marking-rubric{
   position: sticky;
+  top: 16px;
 }
 
 .quiz-info{
