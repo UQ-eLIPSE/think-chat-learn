@@ -10,13 +10,14 @@
         <v-layout row wrap>
           <v-flex xs12>
             <b-field label="Set the quiz title">
-              <v-text-field label="Title" v-model="quizTitle" outline :rules="[existenceRule]" />
+              <v-text-field label="Title" class="text-field-ce"
+                            v-model="quizTitle" outline :rules="[existenceRule]" />
             </b-field>
           </v-flex>
-          <v-flex xs12>
+          <v-flex xs3>
             <!-- In order to create rules, we need to use Vue components instead. Menu with one item is essentially a drop down -->
             <!-- Also v-on syntax is Vue 2.6+ -->
-            <b-field label="Select the start date">
+            <b-field label="Start date">
               <v-menu
                 ref="startDateMenu"
                 v-model="startDateShow"
@@ -41,8 +42,8 @@
               </v-menu>
             </b-field>
           </v-flex>
-          <v-flex xs12>
-            <b-field label="Select a start time">
+          <v-flex xs3>
+            <b-field label="Start time">
               <v-menu
                 ref="startTimeMenu"
                 v-model="startTimeShow"
@@ -65,8 +66,8 @@
               </v-menu>
             </b-field>
           </v-flex>
-          <v-flex xs12>
-            <b-field label="Select the end date">
+          <v-flex xs3>
+            <b-field label="End date">
               <v-menu
                 ref="endDateMenu"
                 v-model="endDateShow"
@@ -90,8 +91,8 @@
               </v-menu>
             </b-field>
           </v-flex>
-          <v-flex xs12>
-            <b-field label="Select an end time">
+          <v-flex xs3>
+            <b-field label="End time">
               <v-menu
                 ref="endTimeMenu"
                 v-model="endTimeShow"
@@ -113,94 +114,120 @@
                 </v-time-picker>
               </v-menu>
             </b-field>
+
+          </v-flex>
+          <v-flex xs12>
+            <v-checkbox
+              v-model="isPublic"
+              label="Public? (If checked, this quiz will be displayed to students)"></v-checkbox>
           </v-flex>
           <!-- Temporary wrapper for the page labels -->
           <v-flex xs12>
             <b-field label="Create and configure the pages" />
           </v-flex>
+
           <v-flex v-for="(page, index) in pages" :key="page.__mountedId" xs12>
-            <b-field label="Set the page title">
-              <v-text-field label="Title" v-model="page.title" outline :rules="[existenceRule]" />
-            </b-field>
-            <b-field label="Set the page type">
-              <!-- Only one rule applys to the discussion page rule -->
-              <v-overflow-btn
-                :items="pageTypeDropDown"
-                v-model="page.type"
-                outline
-                :rules="[discussionPageRule]"
-              />
-            </b-field>
-            <!-- Business logic for rendering based on page type -->
-            <v-checkbox
-              v-if="(page.type === PageType.DISCUSSION_PAGE)"
-              v-model="page.displayResponses"
-              :label="'Display Responses from question?'"
-            ></v-checkbox>
-            <!-- TODO make this a proper select box once Questions and Answers are implemented -->
-            <b-field
-              v-if="(page.type === PageType.QUESTION_ANSWER_PAGE) || (page.type === PageType.DISCUSSION_PAGE)"
-              label="Set the associate question for the page"
-            >
-              <v-overflow-btn
-                :items="questionDropDown"
-                v-model="page.questionId"
-                outline
-                :rules="page.type === PageType.QUESTION_ANSWER_PAGE ? [existenceRule, duplicateQuestionPageRule] : [existenceRule, duplicateDiscussionPageRule]"
-              />
-            </b-field>
-            <select v-model="page.surveryId" v-else-if="page.type === PageType.SURVEY_PAGE">
-              <option>Some Default survey</option>
-            </select>
-            <b-field label="Page content">
-                <TinyMce :id="`tmce-${page.__mountedId}`" v-model="page.content" />
-            </b-field>
-            <b-field label="Set the timeout in minutes">
-              <v-text-field label="Timeout" v-model="page.timeoutInMins" outline type="number" />
-            </b-field>
+            <div class="card-container">
+              <v-layout row wrap>
+                <v-flex xs4>
+                  <b-field label="Set the page title">
+                    <v-text-field label="Title" v-model="page.title" outline :rules="[existenceRule]" />
+                  </b-field>
+                </v-flex>
+
+                <v-flex xs4>
+                  <b-field label="Set the page type">
+                    <!-- Only one rule applys to the discussion page rule -->
+                    <v-overflow-btn
+                      :items="pageTypeDropDown"
+                      v-model="page.type"
+                      outline
+                      :rules="[discussionPageRule]"
+                    />
+                  </b-field>
+                </v-flex>
+
+                <v-flex xs4>
+                  <!-- TODO make this a proper select box once Questions and Answers are implemented -->
+                  <b-field
+                    v-if="(page.type === PageType.QUESTION_ANSWER_PAGE) || (page.type === PageType.DISCUSSION_PAGE)"
+                    label="Set the associate question for the page"
+                  >
+                    <v-overflow-btn
+                      :items="questionDropDown"
+                      v-model="page.questionId"
+                      outline
+                      :rules="page.type === PageType.QUESTION_ANSWER_PAGE ? [existenceRule, duplicateQuestionPageRule] : [existenceRule, duplicateDiscussionPageRule]"
+                    />
+                  </b-field>
+                  
+                  <select v-model="page.surveryId" v-else-if="page.type === PageType.SURVEY_PAGE">
+                    <option>Some Default survey</option>
+                  </select>
+                </v-flex>
+              
+                <!-- Business logic for rendering based on page type -->
+                <v-checkbox
+                  v-if="(page.type === PageType.DISCUSSION_PAGE)"
+                  v-model="page.displayResponses"
+                  :label="'Display Responses from question?'"
+                ></v-checkbox>
+              </v-layout>
+
+              <b-field label="Page content">
+                  <TinyMce :id="`tmce-${page.__mountedId}`" v-model="page.content" />
+              </b-field>
+              <b-field label="Set the timeout in minutes">
+                <v-text-field label="Timeout" v-model="page.timeoutInMins" outline type="number" />
+              </b-field>
+            </div>
             <div class="p-controls">
-              <v-btn type="button" @click="up(index)">Move up</v-btn>
-              <v-btn type="button" @click="down(index)">Move down</v-btn>
-              <v-btn type="button" @click="deletePage(index)">Delete page</v-btn>
+              <button type="button" class="primary-cl" @click="up(index)">Move up</button>
+              <button type="button" class="uq" @click="down(index)">Move down</button>
+              <button type="button" class="purple-cl" @click="deletePage(index)">Delete page</button>
             </div>
           </v-flex>
 
           <v-flex xs12>
             <v-container class="controls">
-              <v-btn type="button" @click="createPage()">Create new page</v-btn>
+              <button class="primary-cl" type="button" @click="createPage()">Create new page</button>
             </v-container>
           </v-flex>
 
-          <v-flex xs12>
-            <b-field label="Set the associated Rubric">
-              <v-overflow-btn
-                :items="rubricDropDown"
-                v-model="rubricId"
-                outline
-                :rules="[existenceRule]"
-              />
-            </b-field>
-          </v-flex>
-          <v-flex xs12>
-            <b-field label="Set up group size" />
-            <v-text-field
-              placeholder="##"
-              mask="##"
-              v-model.number="groupSize"
-              :rules="[existenceRule]"
-            ></v-text-field>
-          </v-flex>
-          <v-flex xs12>
-            <b-field label="Set up the marking configurations" />
-            <v-checkbox
-              v-model="markingConfiguration.allowMultipleMarkers"
-              :label="'Allow multiple markers?'"
-            ></v-checkbox>
-            <label>Max marks: {{ markingConfiguration.maximumMarks }}</label>
-          </v-flex>
+          <div class="card-container">
+            <v-layout row wrap>
+              <v-flex xs6>
+                <b-field label="Set the associated Rubric">
+                  <v-select
+                    :items="rubricDropDown"
+                    v-model="rubricId"
+                    outline single-line
+                    :rules="[existenceRule]"
+                  />
+                </b-field>
+              </v-flex>
+              <v-flex xs6>
+                <b-field label="Set up group size" />
+                <v-text-field
+                  mask="##"
+                  outline single-line
+                  v-model.number="groupSize"
+                  :rules="[existenceRule]"
+                ></v-text-field>
+              </v-flex>
+              <v-flex xs12>
+                <b-field label="Set up the marking configurations" />
+                <v-checkbox
+                  v-model="markingConfiguration.allowMultipleMarkers"
+                  :label="'Allow multiple markers?'"
+                ></v-checkbox>
+                <label>Max marks: {{ markingConfiguration.maximumMarks }}</label>
+              </v-flex>
+            </v-layout>
+          </div>
           <v-flex xs12>
             <v-container class="controls">
-              <v-btn type="button" class="primary" @click="submitQuiz()">{{ pageAction }}</v-btn>
+              <button type="button" class="primary-cl" @click="submitQuiz()">{{ pageAction }}</button>
             </v-container>
           </v-flex>
         </v-layout>
@@ -239,6 +266,7 @@ import API from "../../../common/js/DB_API";
 import uniqueId from "../util/uniqueId";
 import { saveTinyMceEditorContent } from "../util/TinyMceUtils";
 
+
 interface DropDownConfiguration {
   text: string;
   value: string;
@@ -273,6 +301,11 @@ export default class QuizPage extends Vue {
 
   private groupSize: number = Conf.groups.defaultGroupSize;
   private markingConfiguration: DBSchema.MarkConfig = this.initMarkConfig();
+  
+  /**
+   * If true, students will be able to view this quiz. Otherwise, it will be displayed only to course staff members
+   */
+  private isPublic: boolean = true;
 
   private pagesArray: (Page & { __mountedId?: string })[] = [];
 
@@ -525,7 +558,8 @@ export default class QuizPage extends Vue {
       course: this.courseId,
       markingConfiguration: this.markingConfiguration,
       groupSize: this.groupSize,
-      rubricId: this.rubricId
+      rubricId: this.rubricId,
+      isPublic: this.isPublic
     };
 
     if (this.isEditing && !this.isCloning) {
@@ -615,7 +649,7 @@ export default class QuizPage extends Vue {
         this.rubricId = loadedQuiz.rubricId!;
         this.markingConfiguration =
           loadedQuiz.markingConfiguration || this.markingConfiguration;
-
+        this.isPublic = loadedQuiz.isPublic || false;
         this.pagesArray = loadedQuiz.pages.map(page => {
           (page as any).__mountedId = uniqueId();
           return page;
@@ -754,7 +788,8 @@ export default class QuizPage extends Vue {
 }
 </script>
 
-<style scoped lang="css">
+<style scoped lang="scss">
+@import "../../css/app.scss";
 .p {
   display: flex;
   flex-direction: column;

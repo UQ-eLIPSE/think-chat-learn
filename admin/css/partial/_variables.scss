@@ -1,0 +1,248 @@
+// Color Variables
+$text: #515456;
+$primary: #225566;
+$mainBg: #f9fbfc;
+
+$baseLight1: #6dc7b7;
+$baseDark1: #60afa1;
+$baseLight2: #99b204;
+$baseDark2: #869b03;
+$baseLight3: #ffae00;
+$baseDark3: #e8a004;
+$baseLight4: #ff7659;
+$baseDark4: #e26a51;
+
+// Standards
+$uq: #51247a;
+$purple: #962a8b;
+$red: #e62645;
+$orange: #eb602b;
+$yellow: #fbb000;
+$light-blue: #00a2c7;
+$blue: #4085c6;
+$light-green:  #99b204;
+$green: #2ea836;
+$elipse-blue: #4a5b6d;
+
+// Neutrals
+$grey: #d7d1cc;
+$dark-grey: #999490;
+$darker-grey: #333;
+$border-grey: #e8e3e0;
+$shadow-grey: #e1e1e1;
+$light-grey: #f3eded;
+
+// Basics
+$white: #ffffff;
+$black: #00000029;
+
+//mixins
+@mixin transparent-color($color, $hover: true) {
+    background-color: rgba($color, 0.15);
+    color: $color;
+  
+    @if ($hover) {
+      &:hover {
+        background-color: rgba($color, 1);
+        color: $white;
+      }
+    }
+}
+
+@mixin solid-color($color) {
+    background-color: $color;
+    color: $white;
+}
+
+@mixin brightness-color($color){
+  background-color: $color;
+  &.light-cl {
+    background-color: lighten($color, 5%);
+  }
+  &.dark-cl {
+    background-color: darken($color, 5%);
+  }
+  &.transparent-cl {
+    background-color: rgba($color, 0.1);
+  }
+  &.border-cl {
+    border: 1px solid $color;
+  }
+}
+
+//Function to generate color list by numeral
+@for $i from 1 through 10 {
+  .base-cl-#{$i} {
+    @if($i == 1){
+      @include brightness-color($light-blue);
+    } @else if ($i == 2){
+      @include brightness-color($light-green);
+    } @else if ($i == 3){
+      @include brightness-color($yellow);
+    } @else if ($i == 4){
+      @include brightness-color($orange);
+    }
+  }
+}
+
+//Color classes
+.primary-cl{
+    @include transparent-color($primary, true);
+}
+.primary-cl-static{
+    @include transparent-color($primary, false);
+}
+.primary-cl-solid{
+    @include solid-color($primary);
+}
+
+.uq {
+  @include transparent-color($uq, true);
+}
+.uq-static {
+  @include transparent-color($uq, false);
+}
+.uq-solid {
+  @include solid-color($uq);
+}
+
+.purple-cl {
+  @include transparent-color($purple, true);
+}
+.purple-cl-static {
+  @include transparent-color($purple, false);
+}
+.purple-cl-solid {
+  @include solid-color($purple);
+}
+
+.red-cl {
+  @include transparent-color($red, true);
+}
+.red-cl-static {
+  @include transparent-color($red, false);
+}
+.red-cl-solid {
+  @include solid-color($red);
+}
+
+.orange-cl {
+  @include transparent-color($orange, true);
+}
+.orange-cl-static {
+  @include transparent-color($orange, false);
+}
+.orange-cl-solid {
+  @include solid-color($orange);
+}
+
+.yellow-cl {
+  @include transparent-color($yellow, true);
+}
+.yellow-cl-static {
+  @include transparent-color($yellow, false);
+}
+.yellow-cl-solid {
+  @include solid-color($yellow);
+}
+
+.light-blue-cl {
+  @include transparent-color($light-blue, true);
+}
+.light-blue-cl-static {
+  @include transparent-color($light-blue, false);
+}
+.light-blue-cl-solid {
+  @include solid-color($light-blue);
+}
+
+.blue-cl {
+  @include transparent-color($blue, true);
+}
+.blue-cl-static {
+  @include transparent-color($blue, false);
+}
+.blue-cl-solid {
+  @include solid-color($blue);
+}
+
+.green-cl {
+  @include transparent-color($green, true);
+}
+.green-cl-static {
+  @include transparent-color($green, false);
+}
+.green-cl-solid {
+  @include solid-color($green);
+}
+
+.grey-cl {
+  @include transparent-color($grey, true);
+}
+.grey-cl-static {
+  @include transparent-color($grey, false);
+}
+.grey-cl-solid {
+  @include solid-color($grey);
+}
+
+.dark-grey-cl {
+  @include transparent-color($dark-grey, true);
+}
+.dark-grey-cl-static {
+  @include transparent-color($dark-grey, false);
+}
+.dark-grey-cl-solid {
+  @include solid-color($dark-grey);
+}
+
+//Icons list
+$icon-file-csv-solid: "\e904";
+$icon-user-graduate-solid: "\e901";
+$icon-dice-d20-solid: "\e902";
+$icon-file-invoice-solid: "\e903";
+$icon-plus: "\f067";
+$icon-minus: "\f068";
+$icon-search: "\f002";
+$icon-user: "\f007";
+$icon-check: "\f00c";
+$icon-close: "\f00d";
+$icon-remove: "\f00d";
+$icon-times: "\f00d";
+$icon-refresh: "\f021";
+$icon-pencil: "\f040";
+$icon-chevron-left: "\f053";
+$icon-chevron-right: "\f054";
+$icon-plus-circle: "\f055";
+$icon-minus-circle: "\f056";
+$icon-times-circle: "\f057";
+$icon-arrow-left: "\f060";
+$icon-arrow-right: "\f061";
+$icon-eye: "\f06e";
+$icon-chevron-up: "\f077";
+$icon-chevron-down: "\f078";
+$icon-sign-out: "\f08b";
+$icon-sign-in: "\f090";
+$icon-group: "\f0c0";
+$icon-users: "\f0c0";
+$icon-bars: "\f0c9";
+$icon-navicon: "\f0c9";
+$icon-reorder: "\f0c9";
+$icon-cloud-upload: "\f0ee";
+$icon-bell: "\f0f3";
+$icon-angle-double-left: "\f100";
+$icon-angle-double-right: "\f101";
+$icon-ellipsis-h: "\f141";
+$icon-ellipsis-v: "\f142";
+$icon-bank: "\f19c";
+$icon-institution: "\f19c";
+$icon-university: "\f19c";
+$icon-circle-o-notch: "\f1ce";
+$icon-paper-plane: "\f1d8";
+$icon-send: "\f1d8";
+$icon-history: "\f1da";
+$icon-pie-chart: "\f200";
+$icon-user-plus: "\f234";
+$icon-user-times: "\f235";
+$icon-window-restore: "\f2d2";
+$icon-chat: "\e900";

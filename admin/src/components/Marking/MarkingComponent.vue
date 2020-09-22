@@ -1,35 +1,6 @@
 <template>
     <div class="marking-rubric">
-        <h3>Rubric</h3>
-        <div class="save-controls">
-            <button type="button"
-                    class="primary"
-                    @click.prevent="saveMarks">Save Marks</button>
-        </div>
-        <table class="marks-table"
-               v-if="marks">
-            <tr v-for="(c, index) in associatedCriterias"
-                class="values-row"
-                :key="c._id">
-
-                <td class="category-data"> {{c.name}}</td>
-                <td v-for="m in possibleMarkValues"
-                    :key="m">
-                    <label> {{ m }}
-                        <input type="radio"
-                               v-if="marks"
-                               class="number-mark"
-                               v-model="marks.marks[index].value"
-                               :value="m" />
-                    </label>
-                </td>
-            </tr>
-        </table>
-        <!-- <label> Feedback
-                                <textarea v-if="marks"
-                                          v-model="marks.mark.feedbackText"></textarea>
-                            </label> -->
-
+        <Rubric @saved="saveMarks" :username="username" :criteria="associatedCriterias" :mark="marks" :maximumMarks="markingConfig.maximumMarks" />
     </div>
 </template>
 
@@ -40,18 +11,35 @@ import { PageType } from "../../../../common/enums/DBEnums";
 import * as Schema from "../../../../common/interfaces/DBSchema";
 import { API } from "../../../../common/js/DB_API";
 import { EventBus, EventList, SnackEvent } from "../../EventBus";
+import Rubric from "./Rubric/Rubric.vue";
 
 Component.registerHooks([
     'updated',
     'created'
 ])
 
-@Component({})
+@Component({
+    components: {
+        Rubric
+    }
+})
 export default class MarkingComponent extends Vue {
     private marks: Schema.Mark | undefined | null = null;
 
     get currentMarkingContext() {
         return this.$store.getters.currentMarkingContext;
+    }
+
+    get currentUserSessionInfo() {
+        if (this.currentMarkingContext.currentQuizSessionId) {
+        return this.$store.getters.quizSessionInfoMap[this.currentMarkingContext.currentQuizSessionId];
+        }
+
+        return null;
+    }
+
+    get username() {
+        return (this.currentUserSessionInfo && this.currentUserSessionInfo.user && this.currentUserSessionInfo.user.username) || "";
     }
 
     async fetchMarksForQuestion() {
@@ -63,7 +51,13 @@ export default class MarkingComponent extends Vue {
             const marker = this.marker;
             let marks: Schema.Mark | null = null;
             if (Array.isArray(quizSessionIdMarks)) {
-                marks = quizSessionIdMarks.find((mark) => mark.markerId === marker._id);
+                if(this.markingConfig && this.markingConfig.allowMultipleMarkers) {
+                    // If multiple markers are enabled, find the mark for the current marker
+                    marks = quizSessionIdMarks.find((mark) => mark.markerId === marker._id);
+                } else {
+                    // If multiple marking is not enabled, use the mark returned regardless of the marker
+                    marks = quizSessionIdMarks[0];
+                }
                 if (!marks) throw new Error();
                 // If there are any missing marks, add default values or negative values?
                 const missingCriterias = this.associatedCriterias.filter((criteria) => {
@@ -75,7 +69,8 @@ export default class MarkingComponent extends Vue {
                 missingCriterias.forEach((mark) => {
                   marks!.marks.push({
                     criteriaId: mark._id!,
-                    value: 0
+                    value: 0,
+                    feedback: ''
                   });
                 });
 
@@ -96,7 +91,8 @@ export default class MarkingComponent extends Vue {
         const defaultMarks = this.associatedCriterias.reduce((arr: Schema.MarkCriteria[], value) => {
           arr.push({
             value: 0,
-            criteriaId: value._id!
+            criteriaId: value._id!,
+            feedback: ""
           });
           return arr;
         }, []);
@@ -261,8 +257,20 @@ export default class MarkingComponent extends Vue {
 
 
 }
+
 </script>
-<style scoped>
+
+<style scoped lang="scss">
+@import "../../../css/app.scss";
+
+.general-feedback {
+    padding: 0.5rem;
+}
+
+.general-feedback > textarea {
+    background: white;
+}
+
 .sidebar {
     color: white;
     text-shadow: rgb(85, 85, 85) 0.05em 0.05em 0.05em;

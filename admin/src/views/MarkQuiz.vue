@@ -1,32 +1,40 @@
 <template>
   <v-container v-if="q">
-      <h3 class="text-xs-center">Quiz Title: {{ q.title }}</h3>
-      <p class="text-xs-center">Quiz ID: {{q._id}}</p>
-      <p class="text-xs-center"><b>Available Start:</b> {{ new Date(q.availableStart).toLocaleString() }}</p>
-      <p class="text-xs-center"><b>Available End:</b> {{ new Date(q.availableEnd).toLocaleString() }}</p>
-      <v-form>
-        <v-container fluid grid-list-md>
+    <h3 class="text-xs-center">Quiz Title: {{ q.title }}</h3>
+    <p class="text-xs-center">Quiz ID: {{q._id}}</p>
+    <p class="text-xs-center"><b>Available Start:</b> {{ new Date(q.availableStart).toLocaleString() }}</p>
+    <p class="text-xs-center"><b>Available End:</b> {{ new Date(q.availableEnd).toLocaleString() }}</p>
+    <v-checkbox
+        v-if="marksPublic !== null"
+        :input-value="marksPublic"
+        @click.stop.prevent="toggleMarksVisibility"
+        label="Publish Marks? (If checked, marks will be displayed to students)"
+      ></v-checkbox>
+    <v-form>
+      <v-container fluid grid-list-md>
+        <div class="form-control">
           <v-layout row wrap>
-            <v-flex xs6>
-              <b-field label="Select the Group">
-                <v-overflow-btn :items="chatGroupsDropDown" v-model="selectedGroupId" outline/>
-              </b-field>
-            </v-flex>
-            <v-flex xs6>
-              <b-field label="Select the User">
-                <v-overflow-btn :items="currentGroupQuizSessionDropDown" v-model="currentQuizSessionId" outline/>
-              </b-field>
-            </v-flex>
+            
+            <div class="groups">
+              <Pagination :currentPage="(selectedGroupIndex + 1)" 
+                          :totalPages="chatGroupsDropDown.length" 
+                          :numPageButtons="numVisiblePagesButton" 
+                          @pageChanged="changeGroupChat"/>
+            </div>
+
+            <div class="users">
+              <template v-for="(user, i) in currentGroupQuizSessionDropDown">
+                <UserCard v-if="user && user.text && user.value"
+                  :key="`${user.text}-user`"
+                  :studentId="user.text"
+                  @click.native="setCurrentQuizSessionId(user.value)"
+                  :numeral="i + 1"
+                  :marked="false"
+                  :selected="currentQuizSessionId === user.value"/>
+              </template>
+            </div>
+
             <v-flex xs12>
-              <div class="step-navigation">
-                <v-btn type="button"
-                        class="primary"
-                        @click.prevent="previous">
-                  &lt; Previous</v-btn>
-                <v-btn type="button"
-                        class="primary"
-                        @click.prevent="next">Next &gt;</v-btn>
-              </div>
               <div class="group-mark"
                   v-if="selectedGroup">
 
@@ -49,8 +57,9 @@
               </div>
             </v-flex>            
           </v-layout>
-        </v-container>
-      </v-form>
+        </div>
+      </v-container>
+    </v-form>
   </v-container>
   <div v-else>Select a group from the dropdown list</div>
 </template>
@@ -62,6 +71,8 @@ import { IQuiz, QuizScheduleDataAdmin, Page, IDiscussionPage, IQuestionAnswerPag
 import { PageType } from "../../../common/enums/DBEnums";
 import MarkQuizMarkingSection from '../components/Marking/MarkQuizMarkingSection.vue';
 import { API } from "../../../common/js/DB_API";
+import UserCard from "../components/Marking/UserCard.vue";
+import Pagination from "../components/Pagination/Pagination.vue";
 
 Component.registerHooks([
   'beforeRouteEnter',
@@ -76,11 +87,29 @@ interface DropDownConfiguration {
 
 @Component({
   components: {
-    MarkQuizMarkingSection
+    MarkQuizMarkingSection,
+    UserCard,
+    Pagination
   }
 })
 export default class MarkQuiz extends Vue {
   private displayQuestionContent: boolean = false;
+  private numVisiblePagesButton: number = 7;
+
+  get marksPublic(): boolean | null | undefined {
+    if(!this.q) return null;
+    return this.q.marksPublic;
+  }
+
+  async toggleMarksVisibility() {
+    // Check if marksPublic is not invalid
+    if(this.marksPublic !== null && this.q && this.q._id) {
+      await this.$store.dispatch('updateQuizMarksVisibility', {
+        quizScheduleId: this.q._id,
+        marksPublic: !(!!this.marksPublic) 
+      });
+    }
+  }
 
   @Watch('selectedGroupId')
   async chatGroupIdChangeHandler() {
@@ -92,6 +121,7 @@ export default class MarkQuiz extends Vue {
     }
 
   }
+
   goToChatgroup(chatGroupIndex: number, questionIndex: number, quizSessionIndex: number) {
     if (!this.chatGroups) return;
     if (!this.chatGroups[chatGroupIndex]) {
@@ -117,89 +147,24 @@ export default class MarkQuiz extends Vue {
     else this.currentQuizSessionId = this.currentGroupQuizSessionInfoObjects[index].quizSession._id;
   }
 
-  next() {
-    // Check from lowest level to highest level
-    // Check if next user/quiz session available
-    if (this.currentGroupQuizSessionInfoObjects.length > 0) {
-      const quizSessionIndex = this.currentGroupQuizSessionInfoObjects.findIndex((s: any) => s.quizSession._id === this.currentQuizSessionId);
-      if (quizSessionIndex === -1) {
-        this.goToQuizSession(0);
-        return;
-      } else if (this.currentGroupQuizSessionInfoObjects.length > 1 && quizSessionIndex < this.currentGroupQuizSessionInfoObjects.length - 1) {
-        // More than one quiz session exists, can move to the next one
-        this.goToQuizSession(quizSessionIndex + 1);
-        return;
-      }
-    }
-    if (this.orderedDiscussionPageQuestionIds.length > 0) {
-      // Check if next question available
-      const questionIndex = this.orderedDiscussionPageQuestionIds.indexOf(this.selectedQuestionId);
-      if (questionIndex === -1) {
-        this.goToQuestion(0, 0);
-        return;
-      } else if (this.orderedDiscussionPageQuestionIds.length > 1 && questionIndex < this.orderedDiscussionPageQuestionIds.length - 1) {
-        this.goToQuestion(questionIndex + 1, 0);
-        return;
-      }
-    }
-
-    if (this.chatGroups.length > 0) {
-      const chatGroupIndex = this.chatGroups.findIndex((cg: IChatGroup) => cg._id === this.selectedGroupId);
-      if (chatGroupIndex === -1) {
-        this.goToChatgroup(0, 0, 0);
-        return;
-      } else if (this.chatGroups.length > 1 && chatGroupIndex < this.chatGroups.length - 1) {
-        this.goToChatgroup(chatGroupIndex + 1, 0, 0);
-        return;
-      }
-    }
-  }
-
   get isCurrentUserSelectedAndInGroup() {
     if (!this.currentQuizSessionId || !this.currentGroupQuizSessionInfoObjects) return false;
     const existsInGroup = this.currentGroupQuizSessionInfoObjects.findIndex(o => o.quizSession._id === this.currentQuizSessionId)
     if (existsInGroup !== -1) return true;
     return false;
   }
-  previous() {
-    // Check from lowest level to highest level
-    // Check if next user/quiz session available
-    if (this.currentGroupQuizSessionInfoObjects.length > 0) {
-      const quizSessionIndex = this.currentGroupQuizSessionInfoObjects.findIndex((s: any) => s.quizSession._id === this.currentQuizSessionId);
-      if (quizSessionIndex === -1) {
-        this.goToQuizSession(0);
-        return;
-      } else if (this.currentGroupQuizSessionInfoObjects.length > 1 && quizSessionIndex > 0) {
-        // More than one quiz session exists, can move to the next one
-        this.goToQuizSession(quizSessionIndex - 1);
-        return;
-      }
-    }
-    if (this.orderedDiscussionPageQuestionIds.length > 0) {
-      // Check if next question available
-      const questionIndex = this.orderedDiscussionPageQuestionIds.indexOf(this.selectedQuestionId);
-      if (questionIndex === -1) {
-        this.goToQuestion(0, 0);
-        return;
-      } else if (this.orderedDiscussionPageQuestionIds.length > 1 && questionIndex > 0) {
-        this.goToQuestion(questionIndex - 1, 0);
-        this.goToQuizSession(this.currentGroupQuizSessionInfoObjects.length - 1);
-        return;
-      }
-    }
 
-    if (this.chatGroups.length > 0) {
-      const chatGroupIndex = this.chatGroups.findIndex((cg: IChatGroup) => cg._id === this.selectedGroupId);
-      if (chatGroupIndex === -1) {
-        this.goToChatgroup(0, 0, 0);
-        return;
-      } else if (this.chatGroups.length > 1 && chatGroupIndex > 0) {
-        this.goToChatgroup(chatGroupIndex - 1, 0, 0);
-        this.goToQuestion(this.orderedDiscussionPageQuestionIds.length - 1, this.currentGroupQuizSessionInfoObjects.length - 1);
-        return;
-      }
+  //Choosing group chat from pagination
+  changeGroupChat(groupId: number){
+    if (this.chatGroups.length <= 0) return;
+    if (!groupId) {
+      this.goToChatgroup(0, 0, 0);
+    } else if (this.chatGroups.length > 1 && groupId > 0) {
+      this.goToChatgroup(groupId - 1, 0, 0);
+      this.goToQuestion(this.orderedDiscussionPageQuestionIds.length - 1, this.currentGroupQuizSessionInfoObjects.length - 1);
     }
   }
+
   get markingState() {
     return this.$store.getters.currentMarkingContext;
   }
@@ -276,6 +241,12 @@ export default class MarkQuiz extends Vue {
     return this.chatGroups.find((g: any) => g._id === this.selectedGroupId);
   }
 
+  get selectedGroupIndex(): number {
+    if (!this.chatGroups || !this.selectedGroupId) return -1;
+    const found = this.chatGroups.findIndex((g: any, idx: number) => g._id === this.selectedGroupId);
+    return found !== -1 ? found: 0;
+  }
+
 
   get orderedDiscussionPageQuestionIds() {
     if (!this.q || !this.q.pages) return [];
@@ -312,6 +283,7 @@ export default class MarkQuiz extends Vue {
   get quizSessionInfoMap() {
     return this.$store.getters.quizSessionInfoMap;
   }
+
   // get groupQuizSessions() {
   //   // if (!this.selectedGroup || !this.quizSessionMap) return [];
   //   // const users = Object.keys(this.quizSessionMap).filter((qid) => this.selectedGroup!.quizSessionIds!.indexOf(qid) !== -1).map((quizSessionId) => {
@@ -401,13 +373,32 @@ export default class MarkQuiz extends Vue {
     });
   }
 
+  setCurrentQuizSessionId(quizSessionId: string) {
+    this.currentQuizSessionId = quizSessionId;
+  }
   // async beforeRouteUpdate(to: any, from: any, next: any) {
   //   await this.fetchAllQuizSessionInfo(this);
   // }
 }
 </script>
 <style lang="scss" scoped>
-@import "../../css/variables.scss";
+
+@import "../../css/app.scss";
+
+.flex-row {
+  display: flex;
+}
+
+.justify-space-between {
+  justify-content: space-between;
+}
+
+.justify-space-around {
+  justify-content: space-around;
+}
+
+
+
 .sidebar {
   color: white;
   text-shadow: rgb(85, 85, 85) 0.05em 0.05em 0.05em;
@@ -470,5 +461,16 @@ export default class MarkQuiz extends Vue {
   font-size: 1.5em;
   color: #51247a; 
   font-weight: 400;
+}
+
+.users {
+  display: flex;
+  width: 80%;
+  flex-wrap: wrap;
+
+  > * {
+    margin: 0 0.25rem;
+  }
+
 }
 </style>
