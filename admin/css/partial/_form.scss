@@ -42,7 +42,7 @@
     border-radius: 5px;
 
     box-sizing: border-box;
-    margin: 0 0 0.5rem;
+    margin: 0;
     width: 100%;
     height: 40px;
 
@@ -70,8 +70,7 @@
     padding: 0 15px 0 40px;
   }
 
-  input[type="text"],
-  textarea {
+  input[type="text"] {
     padding: 0 15px;
   }
 
@@ -81,7 +80,7 @@
     height: 200px;
     resize: none;
     overflow-y: scroll;
-    padding: 15px;
+    padding: 8px 15px;
   }
 }
 

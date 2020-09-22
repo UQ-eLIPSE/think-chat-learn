@@ -17,7 +17,6 @@
         <InfoViewer v-if="page.type === PageTypes.INFO_PAGE" :contentLeft="[page.content]" />
     </Collapsible>
  </div>
- <MarkingComponent class="marking-component"></MarkingComponent>
 </div>
 </template>
  
@@ -28,7 +27,6 @@ import { IQuiz, QuizScheduleDataAdmin, Page, IDiscussionPage, IQuestion,
   Response, QuizSessionDataObject, IPage, IChatMessage } from "../../../../common/interfaces/ToClientData";
 import { PageType } from "../../../../common/enums/DBEnums";
 import ChatMessage from './ChatMessage.vue';
-import MarkingComponent from './MarkingComponent.vue';
 import { CurrentMarkingContext } from "../../store/modules/quiz";
 import Collapsible from "../../elements/Collapsible.vue";
 import QuestionViewer from "../QuizSessionViewer/QuestionViewer.vue";
@@ -70,7 +68,6 @@ type GenericContent = PageContent | ResponseContent | ChatContent;
 @Component({
   components: {
     ChatMessage,
-    MarkingComponent,
     Collapsible,
     QuestionViewer,
     DiscussionViewer,

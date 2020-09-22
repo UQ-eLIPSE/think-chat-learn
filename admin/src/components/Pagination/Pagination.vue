@@ -118,7 +118,12 @@
 
 .start-btn,
 .end-btn{
-  @include icon-wrapper-shape(33.3%, 25, 1.3);
+  @include icon-wrapper-shape(33.3%, 22.5, 1.2);
+}
+
+.previous-btn,
+.next-btn{
+  @include icon-wrapper-shape(33.3%, 25, 1);
 }
 
 .start-btn,
@@ -130,5 +135,9 @@
 
 .squircular-icon:not(:last-of-type){
   margin-right: 5px;
+}
+
+.pagination {
+  height: 40px;
 }
 </style>

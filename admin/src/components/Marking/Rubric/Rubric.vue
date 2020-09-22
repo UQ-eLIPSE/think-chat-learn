@@ -77,6 +77,7 @@ export default class Rubric extends Vue {
 <style lang="scss" scoped>
 @import "../../../../css/partial/variables";
 @import "../../../../css/partial/containers";
+@import "../../../../css/partial/button";
 .rubric {
   display: flex;
   flex-direction: column;
@@ -106,9 +107,6 @@ export default class Rubric extends Vue {
   .general-feedback {
     margin: 0.25rem 0;
     width: 180px;
-
-    height: 100px;
-
     padding: 0.5rem 0;
     h5 {
       color: $dark-grey;
@@ -118,17 +116,8 @@ export default class Rubric extends Vue {
 
     textarea {
       width: 100%;
-      height: 85%;
+      height: 100px;
       font-size: 0.875em;
-      // border: 0.01em solid $border-grey;
-      // overflow: scroll;
-      // padding: 0.5rem;
-      // border-radius: 5px;
-      // &:hover,
-      // &:focus,
-      // &:active {
-      //   outline: none;
-      // }
     }
   }
 
