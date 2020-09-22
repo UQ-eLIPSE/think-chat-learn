@@ -1,8 +1,13 @@
 <template>
   <v-app>
-    <v-navigation-drawer permanent app class="z-index-zero">
+    <v-navigation-drawer app class="z-index-zero" :mini-variant="!openNavDrawer">
       <v-toolbar flat color="uq" class="py-2">
-        <span class="text-truncate title">Course: {{course}}</span>
+        <button :class="`nav-toggler ${openNavDrawer ? 'open-drawer': ''}`" @click="toggleDrawer">
+          <i class="icon-bars icon-med"></i>
+        </button>
+        <v-list-tile-content>
+          <span class="text-truncate title">{{course}}</span>
+        </v-list-tile-content>
       </v-toolbar>
       <v-list class="pt-2">
         <v-list-tile v-for="item in sideNavItems" :key="item.name" @click="goToRoute(item.route)">
@@ -58,7 +63,17 @@
 
 <style lang="scss">
 @import "../css/app.scss";
+.nav-toggler{
+  color: $white;
+  width: fit-content;
+  min-width: unset;
+  margin: 0;
+  padding: 0 8px;
 
+  &.open-drawer{
+    padding: 0 16px 0 0;
+  }
+}
 </style>
 
 <script lang="ts">
@@ -109,6 +124,7 @@ const SideNavItems: SideNavItem[] = [
 export default class App extends Vue {
 
   private openDialog: boolean = false;
+  private openNavDrawer: boolean = false;
   private loadedDialogEvent: ModalEvent = {
     message: "",
     title: ""
@@ -152,6 +168,10 @@ export default class App extends Vue {
     // Set up the bus events
     EventBus.$on(EventList.PUSH_SNACKBAR, this.handlePushSnackBar);
     EventBus.$on(EventList.OPEN_MODAL, this.handleOpenModal);
+  }
+
+  private toggleDrawer() {
+    this.openNavDrawer = !this.openNavDrawer;
   }
 }
 </script>

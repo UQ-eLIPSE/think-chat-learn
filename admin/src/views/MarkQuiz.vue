@@ -3,7 +3,7 @@
 
     <v-layout row>
       <v-flex xs8>
-        <h2>Quiz Title: {{ q.title }}</h2>
+        <h2>{{ q.title }}</h2>
       </v-flex>
       <v-flex>
         <v-layout row class="blue-cl-static quiz-info pa-2">
