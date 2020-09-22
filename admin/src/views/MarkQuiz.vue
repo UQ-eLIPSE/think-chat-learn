@@ -4,8 +4,8 @@
     <p class="text-xs-center">Quiz ID: {{q._id}}</p>
     <p class="text-xs-center"><b>Available Start:</b> {{ new Date(q.availableStart).toLocaleString() }}</p>
     <p class="text-xs-center"><b>Available End:</b> {{ new Date(q.availableEnd).toLocaleString() }}</p>
-    <input v-model="searchText" placeholder="Search student ..." />
-    <div v-for="(r, i) in searchResults" :key="i + 'searchresult'">{{ JSON.stringify(r) }}</div>
+    <input v-model="searchText" @input="checkOrFetchUserMap()" placeholder="Search student ..." />
+    <div v-for="(r, i) in searchResults" :key="i + 'searchresult'" @click="searchResultClickHandler(r)">{{ JSON.stringify(r) }}</div>
     <v-checkbox
         v-if="marksPublic !== null"
         :input-value="marksPublic"
@@ -98,20 +98,10 @@ export default class MarkQuiz extends Vue {
   private displayQuestionContent: boolean = false;
   private numVisiblePagesButton: number = 7;
   private searchText: string = '';
-  private userMap: any = {};
 
   get marksPublic(): boolean | null | undefined {
     if(!this.q) return null;
     return this.q.marksPublic;
-  }
-
-  get searchResults() {
-    console.log('Getting search result ...');
-    if(this.searchText.trim().length === 0) return [];
-    const searchTerm = this.searchText.trim().toLowerCase();
-    return (Object.keys(this.userMap) || []).filter((userString) => {
-      return userString.includes(searchTerm);
-    }).map((u) => [u, this.userMap[u]]).filter((truthy) => truthy);
   }
 
   async toggleMarksVisibility() {
@@ -285,9 +275,6 @@ export default class MarkQuiz extends Vue {
     }
   }
 
-  changeQuizSession() {
-
-  }
   get selectedUser() {
     if (!this.selectedGroup) return undefined;
     this.selectedGroup.quizSessionIds
@@ -336,20 +323,6 @@ export default class MarkQuiz extends Vue {
     return null;
   }
 
-
-  async fetchUserSearchMap(vm: any) {
-    if (!vm.$route.params.id) return;
-    const response = await API.request(API.GET, API.QUIZSESSION + `usermap/${vm.$route.params.id}`, {}, undefined);
-  
-    if(response && response.success && response.payload) {
-      const reversedMap = Object.keys(response.payload).reduce((newMap, quizSessionId) => {
-        newMap[response.payload[quizSessionId]] = quizSessionId;
-        return newMap;
-      }, {} as {[key: string]: string })
-      this.userMap = reversedMap;
-    }
-  }
-
   async fetchAllQuizSessionInfo(vm: any) {
     if (!vm.$route.params.id) return;
     // This is being done on the parent route now
@@ -393,16 +366,88 @@ export default class MarkQuiz extends Vue {
   async beforeRouteEnter(to: any, from: any, next: any) {
     next(async (vm: any) => {
       await vm.fetchAllQuizSessionInfo(vm);
-      await vm.fetchUserSearchMap(vm);
     });
   }
 
   setCurrentQuizSessionId(quizSessionId: string) {
     this.currentQuizSessionId = quizSessionId;
   }
-  // async beforeRouteUpdate(to: any, from: any, next: any) {
-  //   await this.fetchAllQuizSessionInfo(this);
-  // }
+
+  /** SEARCH FUNCTIONALITY */
+
+  get currentQuizId() {
+    const quiz = this.$store.getters.currentQuiz;
+    if(!quiz || !quiz._id) return undefined;
+    return quiz._id;
+  }
+
+  /**
+   * If user attempts to search, attempts to fetch search map from the server through the store.
+   */
+  checkOrFetchUserMap() {
+    if(this.searchText && this.searchText.trim()) {
+      // If search text has a valid string, fetch the search map from the server
+      // for the current quiz if data for the current quiz does not exist in the store
+      if(this.currentQuizId && !this.searchMap[this.currentQuizId]) {
+        this.$store.dispatch('getQuizSessionUserMap', this.currentQuizId);
+      }
+    }
+  }
+
+  /**
+   * 
+   * @param r A string in t
+   */
+  searchResultClickHandler(r: string) {
+    const quizSessionId = r[1];
+    const chatGroupIndex = this.chatGroups.findIndex((group) => (group.quizSessionIds || []).includes(quizSessionId));
+    if(chatGroupIndex < 0) {
+      this.searchText = '';
+      return;
+    }
+
+    const chatGroup = this.chatGroups[chatGroupIndex];
+    if(!chatGroup) {
+      this.searchText = '';
+      return;
+    }
+    const userIndexInChatGroup = (chatGroup.quizSessionIds || []).findIndex((g) => g === quizSessionId);
+
+    if(userIndexInChatGroup < 0) {
+      this.searchText = '';
+      return;
+    }
+
+    // Navigate to group and user
+    this.goToChatgroup(chatGroupIndex, 0, userIndexInChatGroup);
+    this.searchText = '';
+  }
+
+  /**
+   * Returns the search map for the current quiz
+   */
+  get currentSearchMap() {
+    return this.$store.getters.currentSearchMap;
+  }
+
+  get searchMap() {
+    return this.$store.getters.searchMap;
+  }
+
+  /**
+   * A computed value which uses value of `searchText` to return matching users and quiz sessions from the store for the current quiz
+   */
+  get searchResults() {
+    if(this.searchText.trim().length === 0) return [];
+    const searchTerm = this.searchText.trim().toLowerCase();
+
+    const currentSearchMap = this.currentSearchMap;
+
+    return (Object.keys(currentSearchMap) || []).filter((userString) => {
+      return userString.includes(searchTerm);
+    }).map((u) => [u, currentSearchMap[u]]);
+  }
+
 }
 </script>
 <style lang="scss" scoped>

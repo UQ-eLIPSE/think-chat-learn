@@ -24,6 +24,16 @@ export type CurrentMarkingContext = {
 
 type MarksQuestionUserMap = { [quizSessionId: string]: { [questionId: string]: { [markerId: string]: Mark } } };
 
+type QuizSessionToUserInfoMap = {
+    [quizSessionId: string]: string
+};
+
+type QuizSessionUserSearchMap =
+    { 
+        [quizId: string]: QuizSessionToUserInfoMap
+    };
+
+
 export interface IState {
     quiz: IQuiz[];
     course: string;
@@ -33,6 +43,7 @@ export interface IState {
     marksQuestionUserMap: MarksQuestionUserMap;
     criterias: ICriteria[];
     rubrics: IRubric[];
+    quizSessionUserSearchMap: QuizSessionUserSearchMap;
 }
 
 const state: IState = {
@@ -49,6 +60,7 @@ const state: IState = {
         currentMarks: null
     },
     marksQuestionUserMap: {},
+    quizSessionUserSearchMap: {},
     criterias: [],
     rubrics: [],
 };
@@ -66,7 +78,8 @@ const mutationKeys = {
     SET_RUBRIC: "Setting a rubric",
     DELETE_RUBRIC: "Deleting a rubric",
     SET_COURSE: "setCourse",
-    SET_CHATGROUPS: "setChatGroups"
+    SET_CHATGROUPS: "setChatGroups",
+    SET_SEARCH_QUIZ_SESSIONS: "Sets the quiz to quiz session information map for search functionality"
 };
 
 const getters: GetterTree<IState, undefined> = {
@@ -176,6 +189,15 @@ const getters: GetterTree<IState, undefined> = {
     },
     rubrics: (state): IRubric[] => {
         return state.rubrics;
+    },
+    /** Returns the search map for the currently selected quiz */
+    currentSearchMap: (state, getters) => {
+        const currentQuiz = getters.currentQuiz;
+        if(!currentQuiz || !currentQuiz._id) return {};
+        return state.quizSessionUserSearchMap[currentQuiz._id] || {};
+    },
+    searchMap: (state) => {
+        return state.quizSessionUserSearchMap;
     }
 
 };
@@ -388,7 +410,24 @@ const actions: ActionTree<IState, undefined> = {
         };
 
         EventBus.$emit(EventList.PUSH_SNACKBAR, message);
-    }    
+    },
+    
+    /**
+     * For a given quiz schedule id, fetches a map of quiz session ids to user information strings
+     * Used for search functionality.
+     * @param quizScheduleId Quiz schedule id
+     */
+    async getQuizSessionUserMap({ commit }: { commit: Commit }, quizScheduleId: string) {
+        const response = await API.request(API.GET, API.QUIZSESSION + `usermap/${quizScheduleId}`, {}, undefined);
+  
+        if(response && response.success && response.payload) {
+            const reversedMap = Object.keys(response.payload).reduce((newMap, quizSessionId) => {
+                newMap[response.payload[quizSessionId]] = quizSessionId;
+                return newMap;
+            }, {} as {[key: string]: string });
+            commit(mutationKeys.SET_SEARCH_QUIZ_SESSIONS, { quizScheduleId, payload: reversedMap });
+        }
+    }
 };
 
 const mutations = {
@@ -453,6 +492,9 @@ const mutations = {
     SET_MARKS(state: IState, payload: any) {
         const newObject = Object.assign({}, state.quizSessionInfoMap[payload.quizSessionId], { marks: payload.marks });
         Vue.set(state.quizSessionInfoMap, payload.quizSessionId, newObject);
+    },
+    [mutationKeys.SET_SEARCH_QUIZ_SESSIONS](state: IState, payload: { quizScheduleId: string, payload: QuizSessionToUserInfoMap }) {
+        Vue.set(state.quizSessionUserSearchMap, payload.quizScheduleId, payload.payload);
     }
 };
 
