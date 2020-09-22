@@ -383,7 +383,7 @@ export default class MarkQuiz extends Vue {
   }
 
   /**
-   * If user attempts to search, attempts to fetch search map from the server through the store.
+   * If user attempts to search, fetch search map from the server for the current quiz id (through the Vuex store).
    */
   checkOrFetchUserMap() {
     if(this.searchText && this.searchText.trim()) {
@@ -397,7 +397,7 @@ export default class MarkQuiz extends Vue {
 
   /**
    * Handler for user search item click
-   * @param r A string in the format ["quizSessionId", "<username>,<firstname>,<lastname>"]
+   * @param r An array of the format ["quizSessionId", "<username>,<firstname>,<lastname>"]
    */
   searchResultClickHandler(r: [string, string]) {
     
@@ -406,7 +406,7 @@ export default class MarkQuiz extends Vue {
 
       // Get the quiz session ID
       const quizSessionId = r[0];
-      
+
       const chatGroupIndex = this.chatGroups.findIndex((group) => (group.quizSessionIds || []).includes(quizSessionId));
       if(chatGroupIndex < 0) {
         throw new Error('Chat group not found');
