@@ -110,10 +110,12 @@ export class QuizSessionController extends BaseController {
     rd(n: number) {
         return Math.floor(Math.random() * n);
     }
+
+
     /**
-     * Used for search mechanism
+     * Returns a map which can be used to search a quiz session by username, first name or last name for a particular quiz
      * Returns in the format
-     * { "<quizSessionId>": "<username>,<firstname>,<lastname>" }
+     * { [quizSessionId: string]: "<UQ username>,<firstname>,<lastname>" }
      * @param req 
      * @param res 
      * @param next 
@@ -121,17 +123,12 @@ export class QuizSessionController extends BaseController {
     private async getQuizSessionUserMap(req: express.Request, res: express.Response, next: express.NextFunction | undefined) {
         try {
             if(!req.params.quizScheduleId) throw new Error('Missing quiz schedule id');
-            const result = await this.quizSessionService.getQuizSessionUserMap(req.params.quizScheduleId);
+            const result = await this.quizSessionService.getQuizSessionUserSearchMap(req.params.quizScheduleId);
             if(!result || !result.success || !result.payload) {
-                throw new Error('Quiz session map could not be created');
+                throw new Error(result.message || 'Quiz session map could not be created');
             }
-            // Fake data generation, mock for 1000 users
-            // for(let i = 0; i < 1000; i++) {
-            //     result.payload[`5f60625abfd6970999ba${this.rd(9)}${this.rd(9)}${this.rd(9)}${this.rd(9)}`] =
-            //         `s4441${this.rd(100)},John${this.rd(1000)}, Doe${this.rd(1000)}`.toLowerCase()
-            // };
 
-            return res.json(result);
+            return res.json(result).status(200);
         } catch(e) {
             console.error(e);
             return res.json({
@@ -148,6 +145,6 @@ export class QuizSessionController extends BaseController {
         this.router.post("/fetchByUserQuiz", StudentAuthenticatorMiddleware.checkUserId(), this.getQuizSessionByUserIdAndQuiz.bind(this));
         this.router.get("/quizsession-marking/:quizSessionId", isAdmin(), this.getQuizSessionById.bind(this));
         this.router.get("/history", StudentAuthenticatorMiddleware.checkUserId(), this.getPastQuizSessionByUserCourse.bind(this));
-        this.router.get("/usermap/:quizScheduleId", isAdmin(), this.getQuizSessionUserMap.bind(this));
+        this.router.get("/searchmap/:quizScheduleId", isAdmin(), this.getQuizSessionUserMap.bind(this));
     }
 }

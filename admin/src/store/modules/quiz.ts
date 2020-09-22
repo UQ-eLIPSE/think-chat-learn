@@ -418,7 +418,7 @@ const actions: ActionTree<IState, undefined> = {
      * @param quizScheduleId Quiz schedule id
      */
     async getQuizSessionUserMap({ commit }: { commit: Commit }, quizScheduleId: string) {
-        const response = await API.request(API.GET, API.QUIZSESSION + `usermap/${quizScheduleId}`, {}, undefined);
+        const response = await API.request(API.GET, API.QUIZSESSION + `searchmap/${quizScheduleId}`, {}, undefined);
   
         if(response && response.success && response.payload) {
             const reversedMap = Object.keys(response.payload).reduce((newMap, quizSessionId) => {

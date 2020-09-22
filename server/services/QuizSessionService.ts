@@ -193,11 +193,12 @@ export class QuizSessionService extends BaseService<IQuizSession> {
     }
 
     /**
-     * Used for searching quiz sessions by username
-     * Returns payload of { quizSessionId: "(lowercase) <username>,<first name>,<last name>""}
+     * Generates a search map used to search users while marking for a particular `quizScheduleId`.
+     * Map can be used to search a quiz session by username, first name or last name for a particular quiz.
+     * Returns payload of the format { [quizSessionId: key]: "(lowercase) <username>,<first name>,<last name>}
      * @param quizScheduleId 
      */
-    public async getQuizSessionUserMap(quizScheduleId: string): Promise<{ success: boolean, payload?: any, message?: string }> {
+    public async getQuizSessionUserSearchMap(quizScheduleId: string): Promise<{ success: boolean, payload?: {[quizSessionId: string]: string}, message?: string }> {
         try {
             const quizSessions = await this.quizSessionRepo.findQuizSessionsByQuizId(quizScheduleId);
 
@@ -209,25 +210,25 @@ export class QuizSessionService extends BaseService<IQuizSession> {
 
             if(!userSessions || !Array.isArray(userSessions)) throw new Error("No valid user sessions found for quiz id");
 
-            const userIds = userSessions.map((u) => u.userId).filter((x) => x) as string[];
+            const userIds = userSessions.map((userSession) => userSession.userId).filter((session) => !!session) as string[];
 
             const users = await this.userRepo.findByIdArray(userIds);
 
             if(!users || !Array.isArray(users)) throw new Error("No valid users found for quiz id");
 
-          
+            /**
+             * Map for searching
+             */
             const quizSessionUserMap = quizSessions.reduce((userMap, quizSession) => {
                 if(userMap[quizSession._id as string]) return userMap;
-
-                const userSessionId = quizSession.userSessionId;
-                const userSession = userSessions.find((s) => s._id === userSessionId);
+                const userSession = userSessions.find((userSession) => userSession._id === quizSession.userSessionId);
                 if(!userSession) return userMap;
-                const user = users.find((u) => u._id === userSession.userId);
+                const user = users.find((user) => user._id === userSession.userId);
                 if(!user) return userMap;
-                userMap[quizSession._id as string] = `${user?.username},${user.firstName},${user.lastName}`.toLowerCase();
+                userMap[quizSession._id!] = `${user.username || ''},${user.firstName || ''},${user.lastName || ''}`.toLowerCase();
 
                 return userMap;
-            }, {} as {[key: string]: string});
+            }, {} as {[quizSessionId: string]: string});
 
             return {
                 success: true,
