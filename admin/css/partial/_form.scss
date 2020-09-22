@@ -82,6 +82,40 @@
     overflow-y: scroll;
     padding: 8px 15px;
   }
+
+  input[type="checkbox"] {
+    min-width: 20px;
+    max-height: 20px;
+    width: 20px;
+    height: 20px;
+
+    border-radius: 3px;
+    border: 2px solid $uq;
+    position: relative;
+
+    appearance: none;
+    -webkit-appearance: none;
+
+    &:after {
+      position: absolute;
+      display: none;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+
+      @include icon;
+      color: $white;
+      content: $icon-check;
+    }
+
+    &:checked {
+      background-color: $uq;
+
+      &:after {
+        display: block;
+      }
+    }
+  }
 }
 
 /*Append/Prepend icon accordingly to the form element type*/
@@ -90,11 +124,11 @@
 .editable-field{
   position: relative;
   
-  &:before {
+  &:after {
     @include icon;
     @include form-icon-position($isAfter: true);
     
-    color: $grey;
+    color: $dark-grey;
     content: $icon-pencil;
   }
 }
@@ -107,7 +141,7 @@
     @include icon;
     @include form-icon-position($isAfter: true);
     
-    color: $grey;
+    color: $dark-grey;
     content: $icon-chevron-down;
   }
 
@@ -125,7 +159,13 @@
     @include icon;
     @include form-icon-position($isAfter: false);
     
-    color: $grey;
+    color: $dark-grey;
     content: $icon-search;
   }
+}
+
+/*Label font*/
+/*--------------------------------------------------------*/
+.checkbox-label{
+  @include font-style(1, 1.5, 400, $dark-grey);
 }

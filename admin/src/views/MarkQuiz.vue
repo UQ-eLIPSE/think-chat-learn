@@ -7,18 +7,20 @@
       </v-flex>
       <v-flex>
         <v-layout row class="blue-cl-static quiz-info pa-2">
-          <p class="text-xs-center mr-2"><b>Available Start:</b> {{ new Date(q.availableStart).toLocaleString() }}</p>
-          <p class="text-xs-center"><b>Available End:</b> {{ new Date(q.availableEnd).toLocaleString() }}</p>
+          <p class="mr-2"><b>Available Start:</b> {{ new Date(q.availableStart).toLocaleString() }}</p>
+          <p><b>Available End:</b> {{ new Date(q.availableEnd).toLocaleString() }}</p>
         </v-layout>
       </v-flex>
     </v-layout>
 
-    <v-checkbox
-      v-if="marksPublic !== null"
-      :input-value="marksPublic"
-      @click.stop.prevent="toggleMarksVisibility"
-      label="Publish Marks? (If checked, marks will be displayed to students)"
-    ></v-checkbox>
+    <div class="form-control my-2" v-if="marksPublic !== null">
+      <v-layout row class="align-center">
+        <input type="checkbox" v-model="marksPublic" class="mr-2" 
+              @click.stop.prevent="toggleMarksVisibility">
+        <span class="checkbox-label">Publish Marks? (If checked, marks will be displayed to students)</span>
+      </v-layout>
+    </div>
+
     <v-form class="form-control">
 
       <!--Search student component and group pagination-->
@@ -441,6 +443,7 @@ export default class MarkQuiz extends Vue {
 
   > p {
     margin-bottom: 0;
+    white-space: nowrap;
   }
 }
 
