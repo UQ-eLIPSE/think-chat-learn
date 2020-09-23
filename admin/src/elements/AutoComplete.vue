@@ -2,10 +2,7 @@
   <div class="form-control input-autocomplete">
     <div :class="`${type === 'text'? 'editable-field': 'search-field'}`">
       <input :type="type" v-model="displayValue" :title="title"
-              @input="(e) => onQuery(e.currentTarget.value)"
-              @keydown.up="onArrowUp"
-              @keydown.down="onArrowDown"
-              @keydown.enter="onChooseItem(highlightItemIndex)">
+              @input="(e) => onQuery(e.currentTarget.value)">
 
       <div class="dropdown-list card-container" v-if="isQuerying">
         <template v-for="(item, idx) in itemList">
