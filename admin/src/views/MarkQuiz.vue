@@ -78,7 +78,7 @@
                     </div>
 
                     <span v-if="!isCurrentUserSelectedAndInGroup"><p>Please select a user</p></span>
-                    <MarkQuizMarkingSection v-if="selectedGroup && selectedQuestion && isCurrentUserSelectedAndInGroup"/>
+                    <QuizSessionViewer v-if="selectedGroup && selectedQuestion && isCurrentUserSelectedAndInGroup"/>
                   </div>
                 </div>
               </v-flex>
@@ -101,7 +101,7 @@ import { Vue, Component, Watch } from "vue-property-decorator";
 import { IQuiz, QuizScheduleDataAdmin, Page, IDiscussionPage, IQuestionAnswerPage, IQuizSession, IChatGroup, IUserSession, IUser, QuizSessionDataObject } from "../../../common/interfaces/ToClientData";
 
 import { PageType } from "../../../common/enums/DBEnums";
-import MarkQuizMarkingSection from '../components/Marking/MarkQuizMarkingSection.vue';
+import QuizSessionViewer from '../components/QuizSessionViewer/QuizSessionViewer.vue';
 import MarkingComponent from '../components/Marking/MarkingComponent.vue';
 import { API } from "../../../common/js/DB_API";
 import UserCard from "../components/Marking/UserCard.vue";
@@ -120,7 +120,7 @@ interface DropDownConfiguration {
 
 @Component({
   components: {
-    MarkQuizMarkingSection,
+    QuizSessionViewer,
     MarkingComponent,
     UserCard,
     Pagination

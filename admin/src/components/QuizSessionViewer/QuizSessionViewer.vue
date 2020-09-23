@@ -1,82 +1,44 @@
 <template>
-<div class="marking-quiz-marking-section">
- <div v-for="page in pages" :key="page._id">
-    <Collapsible class="marking-collapsible" :title="`${page.title}`" :label="pageTypeTitle(page)">
-        <QuestionViewer
-          v-if="page.type === PageTypes.QUESTION_ANSWER_PAGE"
-          :questionPage="page"
-          :question="getQuestionForPage(page)"
-          :responseWithContent="getQuestionResponseForPage(page)"
-        />
-        <DiscussionViewer
-          v-if="page.type === PageTypes.DISCUSSION_PAGE"
-          :page="page"
-          :chatGroup="currentChatGroup"
-          :quizSessionId="currentQuizSessionId"
-        />
-        <InfoViewer v-if="page.type === PageTypes.INFO_PAGE" :contentLeft="[page.content]" />
-    </Collapsible>
- </div>
-</div>
+  <div class="quiz-session-viewer">
+  <div v-for="page in pages" :key="page._id">
+      <Collapsible class="marking-collapsible" :title="`${page.title}`" :label="pageTypeTitle(page)">
+          <QuestionViewer
+            v-if="page.type === PageTypes.QUESTION_ANSWER_PAGE"
+            :questionPage="page"
+            :question="getQuestionForPage(page)"
+            :responseWithContent="getQuestionResponseForPage(page)"
+          />
+          <DiscussionViewer
+            v-if="page.type === PageTypes.DISCUSSION_PAGE"
+            :page="page"
+            :chatGroup="currentChatGroup"
+            :quizSessionId="currentQuizSessionId"
+          />
+          <InfoViewer v-if="page.type === PageTypes.INFO_PAGE" :contentLeft="[page.content]" />
+      </Collapsible>
+  </div>
+  </div>
 </template>
  
 <script lang="ts">
 import { Vue, Component, Prop } from "vue-property-decorator";
-import { IQuiz, QuizScheduleDataAdmin, Page, IDiscussionPage, IQuestion,
-  IQuestionAnswerPage, IQuizSession, IUserSession, IUser, IChatGroup,
-  Response, QuizSessionDataObject, IPage, IChatMessage } from "../../../../common/interfaces/ToClientData";
+import { IQuestionAnswerPage, QuizSessionDataObject } from "../../../../common/interfaces/ToClientData";
 import { PageType } from "../../../../common/enums/DBEnums";
-import ChatMessage from './ChatMessage.vue';
-import { CurrentMarkingContext } from "../../store/modules/quiz";
 import Collapsible from "../../elements/Collapsible.vue";
 import QuestionViewer from "../QuizSessionViewer/QuestionViewer.vue";
 import DiscussionViewer from "../QuizSessionViewer/DiscussionViewer.vue";
 import InfoViewer from "../QuizSessionViewer/InfoViewer.vue";
-import { IResponse } from "../../../../common/interfaces/DBSchema";
-// Since we are dumping the entire page here, we need to know what content there is to render
-enum ContentType {
-  PAGE = "PAGE",
-  RESPONSE = "RESPONSE",
-  CHAT = "CHAT"
-}
-
-interface Content {
-  type: ContentType;
-  visible: boolean;
-}
-
-interface PageContent extends Content {
-  type: ContentType.PAGE;
-  page: IPage;
-}
-
-interface ResponseContent extends Content {
-  type: ContentType.RESPONSE;
-  responses: Response[];
-  questionTitle: string;
-}
-
-interface ChatContent extends Content {
-  type: ContentType.CHAT;
-  messages: IChatMessage[];
-  questionTitle: string;
-}
-
-type GenericContent = PageContent | ResponseContent | ChatContent;
-
+import { IQuestion, IQuiz, IResponse, Page } from "../../../../common/interfaces/DBSchema";
 
 @Component({
   components: {
-    ChatMessage,
     Collapsible,
     QuestionViewer,
     DiscussionViewer,
     InfoViewer
   }
 })
-export default class MarkQuizMarkingSection extends Vue {
-
-  private content: GenericContent[] = [];
+export default class QuizSessionViewer extends Vue {
 
   get PageTypes() {
     return PageType;
@@ -125,7 +87,9 @@ export default class MarkQuizMarkingSection extends Vue {
     return this.currentQuizSessionInfoObject.quizSession._id;
   }
 
-  // Current quiz for marking purposes
+  /**
+   * Current quiz being marked
+   */
   get currentQuiz(): IQuiz {
     return this.$store.getters.currentQuiz;
   }
@@ -135,10 +99,7 @@ export default class MarkQuizMarkingSection extends Vue {
     return this.currentQuiz.pages || [];
   }
 
-
-
-
-  /** QUESTION */
+  /** QUESTION LOGIC */
 
   private getQuestionById(id: string): IQuestion | undefined {
     return this.$store.getters.getQuestionById(id);

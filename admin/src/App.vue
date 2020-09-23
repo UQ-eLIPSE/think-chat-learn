@@ -69,7 +69,8 @@
   min-width: unset;
   margin: 0;
   padding: 0 8px;
-
+  outline: none;
+  
   &.open-drawer{
     padding: 0 16px 0 0;
   }
