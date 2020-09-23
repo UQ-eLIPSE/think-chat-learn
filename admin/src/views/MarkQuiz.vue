@@ -1,67 +1,99 @@
 <template>
   <v-container v-if="q">
-    <h3 class="text-xs-center">Quiz Title: {{ q.title }}</h3>
-    <p class="text-xs-center">Quiz ID: {{q._id}}</p>
-    <p class="text-xs-center"><b>Available Start:</b> {{ new Date(q.availableStart).toLocaleString() }}</p>
-    <p class="text-xs-center"><b>Available End:</b> {{ new Date(q.availableEnd).toLocaleString() }}</p>
-    <v-checkbox
-        v-if="marksPublic !== null"
-        :input-value="marksPublic"
-        @click.stop.prevent="toggleMarksVisibility"
-        label="Publish Marks? (If checked, marks will be displayed to students)"
-      ></v-checkbox>
-    <v-form>
-      <v-container fluid grid-list-md>
-        <div class="form-control">
-          <v-layout row wrap>
-            
-            <div class="groups">
+
+    <v-layout row>
+      <v-flex xs8>
+        <h2>{{ q.title }}</h2>
+      </v-flex>
+      <v-flex>
+        <v-layout row class="blue-cl-static quiz-info pa-2">
+          <p class="mr-2"><b>Available Start:</b> {{ new Date(q.availableStart).toLocaleString() }}</p>
+          <p><b>Available End:</b> {{ new Date(q.availableEnd).toLocaleString() }}</p>
+        </v-layout>
+      </v-flex>
+    </v-layout>
+
+    <div class="form-control my-2" v-if="marksPublic !== null">
+      <v-layout row class="align-center">
+        <input type="checkbox" v-model="marksPublic" class="mr-2" 
+              @click.stop.prevent="toggleMarksVisibility">
+        <span class="checkbox-label">Publish Marks? (If checked, marks will be displayed to students)</span>
+      </v-layout>
+    </div>
+
+    <v-form class="form-control">
+
+      <!--Search student component and group pagination-->
+      <v-layout row class="align-center">
+        <!--Search student input-->
+        <v-flex class="search-field mr-4" xs3>
+          <input type="search" placeholder="Search student">
+        </v-flex>
+
+        <!--Group pagination-->
+        <v-flex class="groups card-container ma-0 py-1 px-8" xs8>
+          <v-layout row class="align-center">
+            <h3 class="ma-0">Group</h3>
+            <div class="mx-auto">
               <Pagination :currentPage="(selectedGroupIndex + 1)" 
                           :totalPages="chatGroupsDropDown.length" 
                           :numPageButtons="numVisiblePagesButton" 
                           @pageChanged="changeGroupChat"/>
             </div>
+          </v-layout>
+        </v-flex>
+      </v-layout>
 
-            <div class="users">
-              <template v-for="(user, i) in currentGroupQuizSessionDropDown">
-                <UserCard v-if="user && user.text && user.value"
-                  :key="`${user.text}-user`"
-                  :studentId="user.text"
-                  @click.native="setCurrentQuizSessionId(user.value)"
-                  :numeral="i + 1"
-                  :marked="false"
-                  :selected="currentQuizSessionId === user.value"/>
-              </template>
+      <v-container fluid grid-list-md class="pa-0 mt-2">
+        <div class="form-control">
+          <v-layout row>
+            <!--Main panel-->
+            <div class="card-container mr-3 ">
+              
+              <!--List of students in group-->
+              <v-layout row class="users">
+                <template v-for="(user, i) in currentGroupQuizSessionDropDown">
+                  <UserCard v-if="user && user.text && user.value"
+                    :key="`${user.text}-user`"
+                    :studentId="user.text"
+                    @click.native="setCurrentQuizSessionId(user.value)"
+                    :numeral="i + 1"
+                    :marked="false"
+                    :selected="currentQuizSessionId === user.value"/>
+                </template>
+              </v-layout>
+
+              <div class="divider"></div>
+              <!--Questions list and answers-->
+              <v-flex xs12 class="marking-section">
+                <div class="group-mark" v-if="selectedGroup">
+
+                  <div class="question-discussion" v-if="selectedQuestion">
+
+                    <div class="question-box" v-if="displayQuestionContent">
+                      <span> Question Title:
+                        <b>{{ selectedQuestion.title }}</b>
+                      </span>
+                      <div v-html="selectedQuestion.content"></div>
+                    </div>
+
+                    <span v-if="!isCurrentUserSelectedAndInGroup"><p>Please select a user</p></span>
+                    <QuizSessionViewer v-if="selectedGroup && selectedQuestion && isCurrentUserSelectedAndInGroup"/>
+                  </div>
+                </div>
+              </v-flex>
             </div>
 
-            <v-flex xs12>
-              <div class="group-mark"
-                  v-if="selectedGroup">
+            <!--Rubric and general feedback-->
+            <MarkingComponent v-if="selectedGroup && selectedQuestion && isCurrentUserSelectedAndInGroup" 
+                              class="marking-component"></MarkingComponent>
 
-                <div class="question-discussion"
-                    v-if="selectedQuestion">
-
-
-                  <div class="question-box"
-                      v-if="displayQuestionContent">
-                    <span> Question Title:
-                      <b>{{ selectedQuestion.title }}</b>
-                    </span>
-                    <div v-html="selectedQuestion.content"></div>
-                  </div>
-
-                  <span class="info" v-if="!isCurrentUserSelectedAndInGroup">Please select a user</span>
-                  <MarkQuizMarkingSection v-if="selectedGroup && selectedQuestion && isCurrentUserSelectedAndInGroup"
-                                          class="marking-section" />
-                </div>
-              </div>
-            </v-flex>            
           </v-layout>
         </div>
       </v-container>
     </v-form>
   </v-container>
-  <div v-else>Select a group from the dropdown list</div>
+  <div v-else> Select a group from the dropdown list</div>
 </template>
 
 <script lang="ts">
@@ -69,7 +101,8 @@ import { Vue, Component, Watch } from "vue-property-decorator";
 import { IQuiz, QuizScheduleDataAdmin, Page, IDiscussionPage, IQuestionAnswerPage, IQuizSession, IChatGroup, IUserSession, IUser, QuizSessionDataObject } from "../../../common/interfaces/ToClientData";
 
 import { PageType } from "../../../common/enums/DBEnums";
-import MarkQuizMarkingSection from '../components/Marking/MarkQuizMarkingSection.vue';
+import QuizSessionViewer from '../components/QuizSessionViewer/QuizSessionViewer.vue';
+import MarkingComponent from '../components/Marking/MarkingComponent.vue';
 import { API } from "../../../common/js/DB_API";
 import UserCard from "../components/Marking/UserCard.vue";
 import Pagination from "../components/Pagination/Pagination.vue";
@@ -87,7 +120,8 @@ interface DropDownConfiguration {
 
 @Component({
   components: {
-    MarkQuizMarkingSection,
+    QuizSessionViewer,
+    MarkingComponent,
     UserCard,
     Pagination
   }
@@ -385,39 +419,6 @@ export default class MarkQuiz extends Vue {
 
 @import "../../css/app.scss";
 
-.flex-row {
-  display: flex;
-}
-
-.justify-space-between {
-  justify-content: space-between;
-}
-
-.justify-space-around {
-  justify-content: space-around;
-}
-
-
-
-.sidebar {
-  color: white;
-  text-shadow: rgb(85, 85, 85) 0.05em 0.05em 0.05em;
-  width: 18rem;
-  font-size: 1.2rem;
-  overflow-y: hidden;
-  background: rgb(150, 85, 102);
-}
-
-.course-name {
-  font-style: italic;
-  margin: 1rem 2rem 1.5rem;
-}
-
-.moochat-name {
-  line-height: 1;
-  margin: 2rem 2rem 1rem;
-}
-
 .question-box {
   display: flex;
   flex-direction: column;
@@ -425,42 +426,25 @@ export default class MarkQuiz extends Vue {
   padding: 0.5rem;
 }
 
-.marking {
-  // max-height: 90vh;
-  overflow: auto;
-}
-
 .marking-section {
-  // max-height: 80vh;
-  overflow: scroll;
+  overflow-y: auto;
+  max-height: 70vh;
 }
 
-.step-navigation {
-  display: flex;
-  justify-content: flex-end;
+.marking-rubric{
+  position: sticky;
+  top: 16px;
 }
 
-.step-navigation>* {
-  margin: 0 0.25rem;
-  width: 15%;
-}
+.quiz-info{
+  border-radius: 5px;
+  width: fit-content;
+  flex: unset;
 
-.quiz-mark-page {
-  height: 100vh;
-}
-
-.select-row {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.select-row>* {
-  margin: 0.25rem 0.5rem;
-}
-.info {
-  font-size: 1.5em;
-  color: #51247a; 
-  font-weight: 400;
+  > p {
+    margin-bottom: 0;
+    white-space: nowrap;
+  }
 }
 
 .users {
@@ -472,5 +456,15 @@ export default class MarkQuiz extends Vue {
     margin: 0 0.25rem;
   }
 
+}
+
+.groups h3{
+  color: $uq;
+}
+
+.divider{
+  width: calc(100% + 4rem);
+  margin-left: -2rem;
+  margin-bottom: 0;
 }
 </style>
