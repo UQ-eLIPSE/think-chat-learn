@@ -87,7 +87,8 @@ export default class Rubric extends Vue {
   border: 0.01em solid transparent;
   border-radius: 10px;
   text-overflow: ellipsis;
-
+  word-break: break-word;
+  
   .rubric-heading {
     color: $uq;
     align-self: flex-start;

@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-navigation-drawer app class="z-index-zero" :mini-variant="!openNavDrawer">
+    <v-navigation-drawer app class="z-index-zero" :mini-variant="!openNavDrawer" permanent>
       <v-toolbar flat color="uq" class="py-2">
         <button :class="`nav-toggler ${openNavDrawer ? 'open-drawer': ''}`" @click="toggleDrawer">
           <i class="icon-bars icon-med"></i>
