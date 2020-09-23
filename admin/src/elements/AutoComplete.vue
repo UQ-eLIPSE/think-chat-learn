@@ -16,27 +16,7 @@
   </div>
 </template>
 
-<style lang="scss" scoped>
-@import "../../css/partial/variables.scss";
-.dropdown-list{
-  padding: 0 0 5px 0;
-  border-radius: 0 0 5px 5px;
-  position: absolute;
-  top: 30px;
-  max-height: 225px;
-
-  overflow-y: auto;
-}
-
-.dropdown-list-item{
-  padding: 0.5rem 1rem;
-  height: 40px;
-
-  &:hover {
-    background-color: rgba($uq, 0.15);
-    color: $uq;
-  }
-}
+<style lang="scss">
 </style>
 
 <script lang="ts">
@@ -83,7 +63,7 @@ export default class Collapsible extends Vue {
 
   onChooseItem(index: number){
     this.displayValue = this.itemList[index].label;
-    this.$emit('click', index);
+    this.$emit('click', this.itemList[index]);
     this.isQuerying = false;
   }
 
