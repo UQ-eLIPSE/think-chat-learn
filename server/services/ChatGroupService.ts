@@ -1,6 +1,7 @@
 import { BaseService } from "./BaseService";
 import { ChatGroupRepository } from "../repositories/ChatGroupRepository";
-import { IChatGroup, IChatMessage, ChatGroupMarkingResponseItem, QuizSessionMarkedMap } from "../../common/interfaces/DBSchema";
+import { IChatGroup, IChatMessage } from "../../common/interfaces/DBSchema";
+import { ChatGroupMarkingResponseItem, QuizSessionMarkedMap } from "../../common/interfaces/ToClientData";
 import { ObjectId } from "bson";
 import * as IWStoClientData from "../../common/interfaces/IWSToClientData";
 import { ResponseRepository } from "../repositories/ResponseRepository";

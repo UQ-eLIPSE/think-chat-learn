@@ -2,7 +2,7 @@ import Vue from "vue";
 import { Commit, ActionTree, GetterTree } from "vuex";
 import { IQuizSession, IChatMessage, Mark } from "../../../../common/interfaces/DBSchema";
 import { IQuiz, QuizSessionDataObject, IChatGroup,
-    IQuestionAnswerPage, ICriteria, IRubric } from "../../../../common/interfaces/ToClientData";
+    IQuestionAnswerPage, ICriteria, IRubric, ChatGroupMarkingResponseItem } from "../../../../common/interfaces/ToClientData";
 import { PageType } from "../../../../common/enums/DBEnums";
 import { API } from "../../../../common/js/DB_API";
 import { IQuizOverNetwork } from "../../../../common/interfaces/NetworkData";
@@ -27,7 +27,7 @@ type MarksQuestionUserMap = { [quizSessionId: string]: { [questionId: string]: {
 export interface IState {
     quiz: IQuiz[];
     course: string;
-    chatGroups: ChatGroupMarkingResponseIte[];
+    chatGroups: ChatGroupMarkingResponseItem[];
     quizSessionInfoMap: QuizSessionInfoMap;
     currentMarkingContext: CurrentMarkingContext;
     marksQuestionUserMap: MarksQuestionUserMap;
@@ -80,7 +80,7 @@ const getters: GetterTree<IState, undefined> = {
         return state.quizSessionInfoMap;
     },
     chatGroupQuestionMessagesMap: (state): ChatGroupQuestionMessagesMap => {
-        const chatGroups: IChatGroup[] = state.chatGroups || [];
+        const chatGroups = state.chatGroups || [];
         const map: ChatGroupQuestionMessagesMap = {};
         chatGroups.forEach((g) => {
             if (!g || !g._id) return;
@@ -100,10 +100,10 @@ const getters: GetterTree<IState, undefined> = {
     currentMarkingContext: (): CurrentMarkingContext => {
         return state.currentMarkingContext;
     },
-    chatGroups: (): IChatGroup[] => {
+    chatGroups: () => {
         return state.chatGroups || [];
     },
-    currentChatGroup: (): IChatGroup | undefined => {
+    currentChatGroup: (): ChatGroupMarkingResponseItem | undefined => {
         if (!state.chatGroups || !state.currentMarkingContext.currentChatGroupId) return undefined;
         return state.chatGroups.find((g) => g._id === state.currentMarkingContext.currentChatGroupId);
     },
@@ -428,7 +428,7 @@ const mutations = {
     [mutationKeys.SET_COURSE](funcState: IState, course: string) {
         funcState.course = course;
     },
-    [mutationKeys.SET_CHATGROUPS](funcState: IState, chatGroups: any[]) {
+    [mutationKeys.SET_CHATGROUPS](funcState: IState, chatGroups: ChatGroupMarkingResponseItem[]) {
         funcState.chatGroups = chatGroups;
     },
     [mutationKeys.SET_CRITERIAS](funcState: IState, criterias: ICriteria[]) {

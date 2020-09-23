@@ -255,6 +255,3 @@ export type AttemptedQuizSessionData = IQuizSession &
 export type IRubricCriteria = Omit<IRubric, "criterias"> & {
   criteria: ICriteria[];
 };
-
-export type QuizSessionMarkedMap = { [quizSessionId: string]: boolean };
-export type ChatGroupMarkingResponseItem = (IChatGroup & { marked: boolean } & { quizSessionMarkedMap: QuizSessionMarkedMap });
