@@ -1,7 +1,7 @@
 <template>
   <div class="form-control input-autocomplete">
     <div :class="`${type === 'text'? 'editable-field': 'search-field'}`">
-      <input :type="type" v-model="displayValue"
+      <input :type="type" v-model="displayValue" :title="title"
               @input="(e) => onQuery(e.currentTarget.value)"
               @keydown.up="onArrowUp"
               @keydown.down="onArrowDown"
@@ -50,17 +50,21 @@ export interface IDropdownItem {
   value: string;
 }
 
-/**
- * <AutoComplete :itemList="generatedList" :value="currentValue" @click="onClick"/>
+/**Usage
+ * <AutoComplete type="search" :itemList="generatedList" :defaultValue="defaultValue" @click="onClick"/>
+ * @prop title - input title
+ * @prop defaultValue - default input value
+ * @prop type - type of the input
+ * @prop itemList - dropdown item queried by input value
 */
 @Component
 export default class Collapsible extends Vue {
   @Prop({required: false, default: ""}) private title!: string;
-  @Prop({required: false, default: ""}) private value!: string;
+  @Prop({required: false, default: ""}) private defaultValue!: string;
   @Prop({required: true, default: "text"}) private type!: "text" | "search";
   @Prop({required: true, default: () => []}) private itemList!: IDropdownItem[];
 
-  private displayValue: string = this.value || "";
+  private displayValue: string = this.defaultValue|| "";
   private isQuerying: boolean = false;
 
   private mounted(){
