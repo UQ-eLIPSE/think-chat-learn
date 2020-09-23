@@ -29,7 +29,7 @@
                   :studentId="user.text"
                   @click.native="setCurrentQuizSessionId(user.value)"
                   :numeral="i + 1"
-                  :marked="false"
+                  :marked="checkIfUserQuizSessionMarked(user.value)"
                   :selected="currentQuizSessionId === user.value"/>
               </template>
             </div>
@@ -120,6 +120,11 @@ export default class MarkQuiz extends Vue {
       await Promise.all(quizSessionInfoPromises);
     }
 
+  }
+
+  checkIfUserQuizSessionMarked(quizSessionId: string) {
+    if(!this.selectedGroup) return false;
+    this.selectedGroup.
   }
 
   goToChatgroup(chatGroupIndex: number, questionIndex: number, quizSessionIndex: number) {

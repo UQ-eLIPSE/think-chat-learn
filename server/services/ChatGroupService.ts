@@ -1,26 +1,37 @@
 import { BaseService } from "./BaseService";
 import { ChatGroupRepository } from "../repositories/ChatGroupRepository";
-import { IChatGroup, IChatMessage } from "../../common/interfaces/DBSchema";
+import { IChatGroup, IChatMessage, ChatGroupMarkingResponseItem, QuizSessionMarkedMap } from "../../common/interfaces/DBSchema";
 import { ObjectId } from "bson";
 import * as IWStoClientData from "../../common/interfaces/IWSToClientData";
 import { ResponseRepository } from "../repositories/ResponseRepository";
 import { ChatGroupResync } from "../../common/interfaces/HTTPToClientData";
 import { QuizSessionRepository } from "../repositories/QuizSessionRepository";
 import { UserSessionRepository } from "../repositories/UserSessionRepository";
+import { MarksRepository } from "../repositories/MarksRepository";
+import { QuizRepository } from "../repositories/QuizRepository";
+
+
+
+
 export class ChatGroupService extends BaseService<IChatGroup> {
 
     protected readonly chatGroupRepo: ChatGroupRepository;
     protected readonly responseRepo: ResponseRepository;
     protected readonly quizSessionRepo: QuizSessionRepository;
     protected readonly userSessionRepo: UserSessionRepository;
+    protected readonly marksRepo: MarksRepository;
+    protected readonly quizRepo: QuizRepository;
 
-    constructor(_chatGroupRepo: ChatGroupRepository, _responseRepo: ResponseRepository, _quizSessionRepo: QuizSessionRepository, _userSessionRepo: UserSessionRepository){
+    constructor(_chatGroupRepo: ChatGroupRepository, _responseRepo: ResponseRepository, _quizSessionRepo: QuizSessionRepository, _userSessionRepo: UserSessionRepository, _marksRepo: MarksRepository,
+        _quizRepo: QuizRepository) {
         super();
         this.chatGroupRepo = _chatGroupRepo;
         this.responseRepo = _responseRepo;
         this.quizSessionRepo = _quizSessionRepo;
         this.userSessionRepo = _userSessionRepo;
-}
+        this.marksRepo = _marksRepo;
+        this.quizRepo = _quizRepo;
+    }
 
     // Creates a chat group (only ran/endpoint is from the server)
     public async createOne(data: IChatGroup): Promise<string> {
@@ -63,6 +74,64 @@ export class ChatGroupService extends BaseService<IChatGroup> {
         return this.chatGroupRepo.findAll({
             quizId
         });
+    }
+
+    /**
+     * Returns chat groups for a given quiz schedule along with marking data
+     * @param quizId 
+     * @param currentUserId 
+     */
+    public async getChatGroupsWithMarkingData(quizId: string, currentUserId: string): Promise<ChatGroupMarkingResponseItem[]> {
+        let multipleMarking = false;
+
+        const chatGroups = await this.chatGroupRepo.findAll({
+            quizId
+        });
+
+        // Check if quiz is configured to allow multiple marking mode
+        const quiz = await this.quizRepo.findOne(quizId);
+
+        if(quiz && quiz.markingConfiguration && quiz.markingConfiguration.allowMultipleMarkers) multipleMarking = true;
+
+        const chatGroupsWithMarkingData: ChatGroupMarkingResponseItem[] = (chatGroups || []).map((group) => {
+            return {
+                ...group,
+                marked: false,
+                quizSessionMarkedMap: {}
+            };
+        });
+
+        /** Iterates over every chat group and marks users and groups as marked */
+        const populatedChatGroupsWithMarkingData = await Promise.all(chatGroupsWithMarkingData.map(async (group) => {
+            const quizSessionToMarkedMap: QuizSessionMarkedMap = {};
+
+
+            // Check if marks were provided
+            const quizSessionsMarks = await this.marksRepo.collection.find({
+                quizSessionId: {
+                    $in: (group.quizSessionIds || [])
+                },
+                // Add additional filter for markerId IFF multiple marker is enabled
+                markerId: multipleMarking? currentUserId : undefined
+            }).toArray();
+
+            let groupMarked = false;
+
+            (group.quizSessionIds || []).forEach((quizSessionId) => {
+                const marked = quizSessionsMarks.some((quizSessionMark) => quizSessionMark.quizSessionId === quizSessionId);
+                quizSessionToMarkedMap[quizSessionId] = marked;
+                if(!groupMarked && marked) groupMarked = true;
+
+            });
+
+            group.quizSessionMarkedMap = quizSessionToMarkedMap;
+
+            group.marked = groupMarked;
+
+            return group;
+        }));
+
+        return populatedChatGroupsWithMarkingData;
     }
 
     // Gets the chat group session based on the id itself

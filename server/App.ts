@@ -147,7 +147,7 @@ export default class App {
         this.userSessionService = new UserSessionService(this.userSessionRepository);
         this.quizSessionService = new QuizSessionService(this.quizSessionRepository, this.userSessionRepository,
             this.quizRepository, this.responseRepository, this.questionRepository);
-        this.chatGroupService = new ChatGroupService(this.chatGroupRepository, this.responseRepository, this.quizSessionRepository, this.userSessionRepository);
+        this.chatGroupService = new ChatGroupService(this.chatGroupRepository, this.responseRepository, this.quizSessionRepository, this.userSessionRepository, this.marksRepository, this.quizRepository);
         this.responseService = new ResponseService(this.responseRepository, this.quizSessionRepository, this.quizRepository);
         this.marksService = new MarksService(this.marksRepository, this.quizRepository, this.quizSessionRepository, this.chatGroupRepository,
             this.userSessionRepository, this.userRepository, this.rubricRepository, this.criteriaRepository);

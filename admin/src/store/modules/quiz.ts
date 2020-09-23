@@ -27,7 +27,7 @@ type MarksQuestionUserMap = { [quizSessionId: string]: { [questionId: string]: {
 export interface IState {
     quiz: IQuiz[];
     course: string;
-    chatGroups: any[];
+    chatGroups: ChatGroupMarkingResponseIte[];
     quizSessionInfoMap: QuizSessionInfoMap;
     currentMarkingContext: CurrentMarkingContext;
     marksQuestionUserMap: MarksQuestionUserMap;
@@ -233,8 +233,10 @@ const actions: ActionTree<IState, undefined> = {
         });
     },
     async getChatGroups({ commit }: { commit: Commit }, quizId: string) {
-        await API.request(API.GET, API.CHATGROUP + `getChatGroups?quizid=${quizId}`, {}).then((output: any[]) => {
-            commit(mutationKeys.SET_CHATGROUPS, output);
+        await API.request(API.GET, API.CHATGROUP + `getChatGroups?quizid=${quizId}`, {}).then((output: { success: boolean, payload?: any[] }) => {
+            if(output && output.success && output.payload) {
+                commit(mutationKeys.SET_CHATGROUPS, output.payload);
+            }
         });
     },
     setQuizzes({ commit }: { commit: Commit }, data: IQuiz[]) {
