@@ -83,7 +83,6 @@ import { IQuiz, QuizScheduleDataAdmin, Page, IDiscussionPage, IQuestionAnswerPag
     QuizSessionDataObject } from "../../../common/interfaces/ToClientData";
 import * as Schema from "../../../common/interfaces/DBSchema";
 import { PageType } from "../../../common/enums/DBEnums";
-import MarkQuizMarkingSection from '../components/Marking/MarkQuizMarkingSection.vue';
 import { API } from "../../../common/js/DB_API";
 
 Component.registerHooks([
@@ -92,11 +91,7 @@ Component.registerHooks([
     'beforeRouteUpdate' // for vue-router 2.2+
 ])
 
-@Component({
-    components: {
-        MarkQuizMarkingSection
-    }
-})
+@Component
 export default class QuizMarkViewer extends Vue {
     private marksMap: { [quizSessionId: string]: Schema.Mark[] } = {};
     private quizSessionUserMap: { [quizSessionId: string]: { userSessionId: string, user: IUser } } = {};
