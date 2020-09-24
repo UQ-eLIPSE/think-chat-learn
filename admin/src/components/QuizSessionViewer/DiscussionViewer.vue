@@ -20,13 +20,13 @@ import {
   IQuestionAnswerPage,
   IResponseQualitative,
   IResponseMCQ,
-  IChatGroup,
   IDiscussionPage,
   IChatMessage,
 } from "../../../../common/interfaces/DBSchema";
 import InfoViewer from "./InfoViewer.vue";
 import { QuestionType } from "../../../../common/enums/DBEnums";
 import ChatMessage from "../Marking/ChatMessage.vue";
+import { IChatGroupWithMarkingIndicator } from "../../../../common/interfaces/ToClientData";
 
 @Component({
   components: {
@@ -38,7 +38,7 @@ export default class DiscussionViewer extends Vue {
   @Prop({ default: undefined, required: true })
   page!: IDiscussionPage;
   @Prop({ default: undefined, required: true }) quizSessionId!: string;
-  @Prop({ default: undefined, required: true }) chatGroup!: IChatGroup;
+  @Prop({ default: undefined, required: true }) chatGroup!: IChatGroupWithMarkingIndicator;
 
   getNumeralFromQuizSessionId(quizSessionId: string) {
     if (!this.chatGroup || !this.chatGroup.quizSessionIds || !Array.isArray(this.chatGroup.quizSessionIds)) return 1;

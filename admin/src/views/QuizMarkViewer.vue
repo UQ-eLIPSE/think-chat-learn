@@ -79,7 +79,7 @@
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator";
 import { IQuiz, QuizScheduleDataAdmin, Page, IDiscussionPage, IQuestionAnswerPage,
-    IQuizSession, IChatGroup, IUserSession, IUser,
+    IQuizSession, IChatGroupWithMarkingIndicator, IUserSession, IUser,
     QuizSessionDataObject } from "../../../common/interfaces/ToClientData";
 import * as Schema from "../../../common/interfaces/DBSchema";
 import { PageType } from "../../../common/enums/DBEnums";
@@ -234,7 +234,7 @@ export default class QuizMarkViewer extends Vue {
         // Fetch chat groups for quiz id
         await vm.$store.dispatch("getChatGroups", vm.q._id);
 
-        const chatGroups = vm.$store.getters.chatGroups as IChatGroup[];
+        const chatGroups = vm.$store.getters.chatGroups as IChatGroupWithMarkingIndicator[];
 
         await vm.fetchAndUpdatePaginatedMarksForQuiz(vm);
 
