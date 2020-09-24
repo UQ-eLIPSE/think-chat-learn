@@ -2,11 +2,11 @@
   <div class="pagination">
     <v-layout row class="controls align-center">
 
-      <div class="squircular-icon uq start-btn" @click="firstPage()">
+      <div :class="`squircular-icon start-btn ${currentPage === 1 ? 'disabled-button-cs': 'uq'}`" @click="firstPage()">
         <i class="icon-angle-double-left"></i>
       </div>
 
-      <div class="squircular-icon uq previous-btn" @click="previousPage()">
+      <div :class="`squircular-icon previous-btn ${currentPage === 1 ? 'disabled-button-cs': 'uq'}`" @click="previousPage()">
         <i class="icon-chevron-left"></i>
       </div>
 
@@ -33,11 +33,11 @@
         </v-layout>
       </span>
 
-      <div class="squircular-icon uq next-btn" @click="nextPage()">
+      <div :class="`squircular-icon next-btn ${currentPage === totalPages ? 'disabled-button-cs': 'uq'}`" @click="nextPage()">
         <i class="icon-chevron-right"></i>
       </div>
 
-      <div class="squircular-icon uq end-btn" @click="lastPage()">
+      <div :class="`squircular-icon end-btn ${currentPage === totalPages ? 'disabled-button-cs': 'uq'}`" @click="lastPage()">
         <i class="icon-angle-double-right"></i>
       </div>
 

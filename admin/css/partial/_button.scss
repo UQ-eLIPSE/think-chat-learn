@@ -28,3 +28,8 @@
     height: 20px;
   }
 }
+
+.disabled-button-cs{
+  @include transparent-color($dark-grey, false);
+  cursor: default !important;
+}
