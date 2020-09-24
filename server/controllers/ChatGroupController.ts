@@ -26,8 +26,6 @@ export class ChatGroupController extends BaseController {
     }
 
     private async getChatGroups(req: express.Request, res: express.Response, next: express.NextFunction | undefined): Promise<express.Response> {
-
-
         try {
             const decodedToken = req.user as AdminLoginResponse;
             const userId = (decodedToken && decodedToken.user && decodedToken.user._id) || null;

@@ -181,7 +181,6 @@ export default class MarkQuiz extends Vue {
         page: i + 1,
         marked: marked
       };
-
     });
   }
 
