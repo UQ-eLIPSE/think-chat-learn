@@ -1,7 +1,7 @@
 import { BaseService } from "./BaseService";
 import { ChatGroupRepository } from "../repositories/ChatGroupRepository";
 import { IChatGroup, IChatMessage } from "../../common/interfaces/DBSchema";
-import { ChatGroupMarkingResponseItem, QuizSessionMarkedMap } from "../../common/interfaces/ToClientData";
+import { IChatGroupWithMarkingIndicator, QuizSessionMarkedMap } from "../../common/interfaces/ToClientData";
 import { ObjectId } from "bson";
 import * as IWStoClientData from "../../common/interfaces/IWSToClientData";
 import { ResponseRepository } from "../repositories/ResponseRepository";
@@ -11,9 +11,6 @@ import { UserSessionRepository } from "../repositories/UserSessionRepository";
 import { MarksRepository } from "../repositories/MarksRepository";
 import { QuizRepository } from "../repositories/QuizRepository";
 import { FilterQuery } from "mongodb";
-
-
-
 
 export class ChatGroupService extends BaseService<IChatGroup> {
 
@@ -83,7 +80,7 @@ export class ChatGroupService extends BaseService<IChatGroup> {
      * @param quizId 
      * @param currentUserId 
      */
-    public async getChatGroupsWithMarkingData(quizId: string, currentUserId: string): Promise<ChatGroupMarkingResponseItem[]> {
+    public async getChatGroupsWithMarkingData(quizId: string, currentUserId: string): Promise<IChatGroupWithMarkingIndicator[]> {
         let multipleMarking = false;
 
         const chatGroups = await this.chatGroupRepo.findAll({
@@ -95,7 +92,7 @@ export class ChatGroupService extends BaseService<IChatGroup> {
 
         if(quiz && quiz.markingConfiguration && quiz.markingConfiguration.allowMultipleMarkers) multipleMarking = true;
 
-        const chatGroupsWithMarkingData: ChatGroupMarkingResponseItem[] = (chatGroups || []).map((group) => {
+        const chatGroupsWithMarkingData: IChatGroupWithMarkingIndicator[] = (chatGroups || []).map((group) => {
             return {
                 ...group,
                 quizSessionMarkedMap: {}

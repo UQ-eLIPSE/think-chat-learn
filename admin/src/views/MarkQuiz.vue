@@ -101,7 +101,7 @@
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator";
 import { IQuiz, QuizScheduleDataAdmin, Page, IDiscussionPage,
-  IQuestionAnswerPage, IQuizSession, ChatGroupMarkingResponseItem, IUserSession, IUser, QuizSessionDataObject } from "../../../common/interfaces/ToClientData";
+  IQuestionAnswerPage, IQuizSession, IChatGroupWithMarkingIndicator, IUserSession, IUser, QuizSessionDataObject } from "../../../common/interfaces/ToClientData";
 
 import { PageType } from "../../../common/enums/DBEnums";
 import QuizSessionViewer from '../components/QuizSessionViewer/QuizSessionViewer.vue';
@@ -160,7 +160,11 @@ export default class MarkQuiz extends Vue {
 
   }
 
-  checkIfUserQuizSessionMarked(quizSessionId: string) {
+  /**
+   * Returns if a quiz session is marked
+   * @returns boolean - True is marked, false if not marked
+   */
+  checkIfUserQuizSessionMarked(quizSessionId: string): boolean {
     if(!this.selectedGroup || !this.selectedGroup.quizSessionMarkedMap) return false;
     return this.selectedGroup.quizSessionMarkedMap[quizSessionId];
   }
@@ -281,7 +285,7 @@ export default class MarkQuiz extends Vue {
     const question = this.q.pages.find((p) => p.type === PageType.QUESTION_ANSWER_PAGE && ((p as IQuestionAnswerPage).questionId === this.selectedQuestionId));
     return question;
   }
-  get chatGroups(): ChatGroupMarkingResponseItem[] {
+  get chatGroups(): IChatGroupWithMarkingIndicator[] {
     return this.$store.state.Quiz.chatGroups || [];
   }
 
@@ -294,7 +298,7 @@ export default class MarkQuiz extends Vue {
     });
   }
 
-  get selectedGroup(): ChatGroupMarkingResponseItem | undefined {
+  get selectedGroup(): IChatGroupWithMarkingIndicator | undefined {
     if (!this.chatGroups || !this.selectedGroupId) return undefined;
     return this.chatGroups.find((g: any) => g._id === this.selectedGroupId);
   }
@@ -366,7 +370,7 @@ export default class MarkQuiz extends Vue {
   async fetchAllQuizSessionInfo(vm: any) {
     if (!vm.$route.params.id) return;
     // Quiz session marking data is being fetched in router for common routes
-    
+
     const chatGroups = vm.$store.getters.chatGroups;
     // Set up initial state
     if (!vm.$store.getters.currentMarkingContext.currentChatGroupId) {
@@ -384,7 +388,7 @@ export default class MarkQuiz extends Vue {
 
       const currentChatGroup = vm.selectedGroup;
       if (currentChatGroup) {
-        const quizSessionIds = (<ChatGroupMarkingResponseItem>currentChatGroup).quizSessionIds || [];
+        const quizSessionIds = (<IChatGroupWithMarkingIndicator>currentChatGroup).quizSessionIds || [];
         if (quizSessionIds.length > 0) {
           const currentQuizSessionIdBeingMarked = quizSessionIds[0];
           vm.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuizSessionId', value: currentQuizSessionIdBeingMarked });

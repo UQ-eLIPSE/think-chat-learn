@@ -1,7 +1,7 @@
 import Vue from "vue";
 import { Commit, ActionTree, GetterTree } from "vuex";
 import { IQuizSession, IChatMessage, Mark } from "../../../../common/interfaces/DBSchema";
-import { IQuiz, QuizSessionDataObject, IQuestionAnswerPage, ICriteria, IRubric, ChatGroupMarkingResponseItem } from "../../../../common/interfaces/ToClientData";
+import { IQuiz, QuizSessionDataObject, IQuestionAnswerPage, ICriteria, IRubric, IChatGroupWithMarkingIndicator } from "../../../../common/interfaces/ToClientData";
 import { PageType } from "../../../../common/enums/DBEnums";
 import { API } from "../../../../common/js/DB_API";
 import { IQuizOverNetwork } from "../../../../common/interfaces/NetworkData";
@@ -26,7 +26,7 @@ type MarksQuestionUserMap = { [quizSessionId: string]: { [questionId: string]: {
 export interface IState {
     quiz: IQuiz[];
     course: string;
-    chatGroups: ChatGroupMarkingResponseItem[];
+    chatGroups: IChatGroupWithMarkingIndicator[];
     quizSessionInfoMap: QuizSessionInfoMap;
     currentMarkingContext: CurrentMarkingContext;
     marksQuestionUserMap: MarksQuestionUserMap;
@@ -103,7 +103,7 @@ const getters: GetterTree<IState, undefined> = {
     chatGroups: () => {
         return state.chatGroups || [];
     },
-    currentChatGroup: (): ChatGroupMarkingResponseItem | undefined => {
+    currentChatGroup: (): IChatGroupWithMarkingIndicator | undefined => {
         if (!state.chatGroups || !state.currentMarkingContext.currentChatGroupId) return undefined;
         return state.chatGroups.find((g) => g._id === state.currentMarkingContext.currentChatGroupId);
     },
@@ -122,7 +122,7 @@ const getters: GetterTree<IState, undefined> = {
         return getters.quizSessionInfoMap[currentSessionId];
     },
     currentGroupQuizSessionInfoObjects(state, getters): QuizSessionDataObject[] {
-        const currentChatGroup = getters.currentChatGroup as ChatGroupMarkingResponseItem | undefined;
+        const currentChatGroup = getters.currentChatGroup as IChatGroupWithMarkingIndicator | undefined;
         if (!currentChatGroup) return [];
         const quizSessionIdsInCurrentChatGroup = currentChatGroup.quizSessionIds;
         if (!quizSessionIdsInCurrentChatGroup) return [];
@@ -131,7 +131,7 @@ const getters: GetterTree<IState, undefined> = {
         return quizSessionInfoObjectsInCurrentChatGroup;
     },
     currentChatGroupQuestionMessageMap: (state, getters): { [questionId: string]: IChatMessage[]} => {
-        if(!(getters.currentChatGroup as ChatGroupMarkingResponseItem | undefined) || !state.currentMarkingContext.currentQuestionId) return {};
+        if(!(getters.currentChatGroup as IChatGroupWithMarkingIndicator | undefined) || !state.currentMarkingContext.currentQuestionId) return {};
         const currentChatGroupId = getters.currentChatGroup._id;
         const currentChatGroupQuestionMessageMap = getters.chatGroupQuestionMessagesMap[currentChatGroupId];
         return currentChatGroupQuestionMessageMap;
@@ -146,7 +146,7 @@ const getters: GetterTree<IState, undefined> = {
      * Returns a questionId to question response array map per chat group
      */
     currentChatGroupResponsesMap: (state, getters): { [questionId: string]: Response[] } => {
-        const currentChatGroup:  ChatGroupMarkingResponseItem | undefined = getters.currentChatGroup;
+        const currentChatGroup:  IChatGroupWithMarkingIndicator | undefined = getters.currentChatGroup;
         if(!currentChatGroup || !state.quizSessionInfoMap) return {};
         const groupSessionInfoObjectResponses = (currentChatGroup.quizSessionIds || []).filter((qid) => state.quizSessionInfoMap[qid]).map((qid) => state.quizSessionInfoMap[qid].responses);
         let map:{ [questionId: string]: any[] }  = {};
@@ -428,7 +428,7 @@ const mutations = {
     [mutationKeys.SET_COURSE](funcState: IState, course: string) {
         funcState.course = course;
     },
-    [mutationKeys.SET_CHATGROUPS](funcState: IState, chatGroups: ChatGroupMarkingResponseItem[]) {
+    [mutationKeys.SET_CHATGROUPS](funcState: IState, chatGroups: IChatGroupWithMarkingIndicator[]) {
         funcState.chatGroups = chatGroups;
     },
     [mutationKeys.SET_CRITERIAS](funcState: IState, criterias: ICriteria[]) {
@@ -456,9 +456,10 @@ const mutations = {
         const newObject = Object.assign({}, state.quizSessionInfoMap[payload.quizSessionId], { marks: payload.marks });
         Vue.set(state.quizSessionInfoMap, payload.quizSessionId, newObject);
     },
+    /** Sets the marking indicator for a quiz session in a group */
     [mutationKeys.SET_QUIZSESSION_MARKED](state: IState, payload: { marked: boolean, quizSessionId: string, chatGroupId: string }) {
         const chatGroup = state.chatGroups && state.chatGroups.find((group) => group._id === payload.chatGroupId);
-        
+
         // If a chat group is found, mark quiz session as supplied `marked` value in `payload`
         chatGroup && chatGroup.quizSessionMarkedMap && Vue.set(chatGroup.quizSessionMarkedMap, payload.quizSessionId, payload.marked);
     }

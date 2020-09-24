@@ -190,6 +190,9 @@ export default class MarkingComponent extends Vue {
         return Object.keys(empty);
     }
 
+    /**
+     * Returns the chat group ID of the group that is currently being marked
+     */
     get currentChatGroupId() {
        return this.$store.getters.currentChatGroup && this.$store.getters.currentChatGroup._id; 
     }
@@ -229,7 +232,7 @@ export default class MarkingComponent extends Vue {
             if (markSaveResponse) {
                 this.showSuccessMessage();
 
-                // Update marking map in group
+                // Update marking indicator map in group
                 this.$store.commit("SET_QUIZSESSION_MARKED", { quizSessionId: this.currentQuizSessionId, marked: true, chatGroupId: this.currentChatGroupId });
             }
 
