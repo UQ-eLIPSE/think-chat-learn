@@ -10,7 +10,7 @@
         <i class="icon-chevron-left"></i>
       </div>
 
-      <span class="pagination-wrapper">
+      <span class="pagination-wrapper mr-2">
         <v-layout  row class="align-baseline ma-0 pa-0">
         <i v-if="(pageArray.length && pageArray[0] > 1)" class="icon-ellipsis-h"></i>
 
