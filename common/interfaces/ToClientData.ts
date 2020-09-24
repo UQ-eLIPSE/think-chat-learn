@@ -114,3 +114,8 @@ export type QuizSessionDataObject = { quizSession: IQuizSession | null,
 export type QuizSessionMarkedMap = { [quizSessionId: string]: boolean };
 export type IChatGroupWithMarkingIndicator = (IChatGroup & { quizSessionMarkedMap: QuizSessionMarkedMap });
 
+export interface ResponseMessage<T = void> {
+  success: boolean;
+  payload?: T;
+  message?: string;
+}

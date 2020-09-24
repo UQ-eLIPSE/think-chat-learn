@@ -107,6 +107,31 @@ export class QuizSessionController extends BaseController {
         return res.json({ payload: quizSessionsData });
     }
 
+    /**
+     * Returns a map which can be used to search a quiz session by username, first name or last name for a particular quiz
+     * Returns in the format
+     * { [quizSessionId: string]: "<UQ username>,<firstname>,<lastname>" }
+     * @param req 
+     * @param res 
+     * @param next 
+     */
+    private async getQuizSessionUserMap(req: express.Request, res: express.Response, next: express.NextFunction | undefined) {
+        try {
+            if(!req.params.quizScheduleId) throw new Error('Missing quiz schedule id');
+            const result = await this.quizSessionService.getQuizSessionUserSearchMap(req.params.quizScheduleId);
+            if(!result || !result.success || !result.payload) {
+                throw new Error(result.message || 'Quiz session map could not be created');
+            }
+
+            return res.json(result).status(200);
+        } catch(e) {
+            console.error(e);
+            return res.json({
+                success: false
+            }).status(500);
+        }
+    }
+
     public setupRoutes() {
         this.router.post("/create", StudentAuthenticatorMiddleware.checkUserId(), StudentAuthenticatorMiddleware.checkQuizSessionId(), this.createQuizSession.bind(this));
         this.router.get("/quizsession/:quizSessionId", StudentAuthenticatorMiddleware.checkUserId(), this.getQuizSessionById.bind(this));
@@ -115,5 +140,6 @@ export class QuizSessionController extends BaseController {
         this.router.post("/fetchByUserQuiz", StudentAuthenticatorMiddleware.checkUserId(), this.getQuizSessionByUserIdAndQuiz.bind(this));
         this.router.get("/quizsession-marking/:quizSessionId", isAdmin(), this.getQuizSessionById.bind(this));
         this.router.get("/history", StudentAuthenticatorMiddleware.checkUserId(), this.getPastQuizSessionByUserCourse.bind(this));
+        this.router.get("/searchmap/:quizScheduleId", isAdmin(), this.getQuizSessionUserMap.bind(this));
     }
 }
