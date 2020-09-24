@@ -15,9 +15,9 @@
                 <span><b>Available End:</b> {{ new Date(q.availableEnd).toLocaleString() }}</span>
 
                 <div class="controls">
-                    <router-link tag="button" class="primary-cl"
+                    <router-link tag="button" class="primary-cl button-cs"
                                  :to="{ name: 'mark-quiz', params: { id: q._id } }">Start marking</router-link>
-                    <router-link tag="button" class="uq"
+                    <router-link tag="button" class="uq button-cs"
                                  id="view-marks"
                                  :to="{ name: 'view-mark-quiz', params: { id: q._id } }">View marks</router-link>
                 </div>

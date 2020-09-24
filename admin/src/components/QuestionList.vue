@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <h1 class="moochat-name">Question List</h1>
-        <router-link tag="button" class="primary-cl" to="/questionPage">Add Question</router-link>
+        <router-link tag="button" class="primary-cl button-cs" to="/questionPage">Add Question</router-link>
         <v-container fluid grid-list-md>
             <v-layout row wrap>
                 <v-flex v-for="question in questions"

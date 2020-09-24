@@ -1,7 +1,7 @@
 <template>
     <v-container>
         <h1 class="moocchat-name">Criteria List</h1>
-        <router-link tag="button" class="primary-cl" to="/criteriaEditor">Add Criteria</router-link>
+        <router-link tag="button" class="primary-cl button-cs" to="/criteriaEditor">Add Criteria</router-link>
         <v-container fluid grid-list-md>
             <v-layout row wrap>
                 <v-flex v-for="criteria in criterias"
