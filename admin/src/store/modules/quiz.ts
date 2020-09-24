@@ -24,6 +24,19 @@ export type CurrentMarkingContext = {
 
 type MarksQuestionUserMap = { [quizSessionId: string]: { [questionId: string]: { [markerId: string]: Mark } } };
 
+/**
+ * Search map for mapping quiz session id to user string
+ */
+export type QuizSessionToUserInfoMap = {
+    [quizSessionId: string]: string
+};
+
+type QuizSessionUserSearchMap =
+    { 
+        [quizScheduleId: string]: QuizSessionToUserInfoMap
+    };
+
+
 export interface IState {
     quiz: IQuiz[];
     course: string;
@@ -33,6 +46,11 @@ export interface IState {
     marksQuestionUserMap: MarksQuestionUserMap;
     criterias: ICriteria[];
     rubrics: IRubric[];
+    /**
+     * A map which stores search maps by quiz schedule id.
+     * Each search map is used to search for users by username, first name or last name for a particular quiz schedule Id.
+    */
+    quizSessionUserSearchMap: QuizSessionUserSearchMap;
 }
 
 const state: IState = {
@@ -49,6 +67,11 @@ const state: IState = {
         currentMarks: null
     },
     marksQuestionUserMap: {},
+    /**
+     * A map which stores search maps by quiz id.
+     * Each search map is used to search for users by username, first name or last name for a particular quiz schedule Id.
+    */
+    quizSessionUserSearchMap: {},
     criterias: [],
     rubrics: [],
 };
@@ -66,7 +89,8 @@ const mutationKeys = {
     SET_RUBRIC: "Setting a rubric",
     DELETE_RUBRIC: "Deleting a rubric",
     SET_COURSE: "setCourse",
-    SET_CHATGROUPS: "setChatGroups"
+    SET_CHATGROUPS: "setChatGroups",
+    SET_SEARCH_QUIZ_SESSIONS: "Sets quiz search map"
 };
 
 const getters: GetterTree<IState, undefined> = {
@@ -176,6 +200,15 @@ const getters: GetterTree<IState, undefined> = {
     },
     rubrics: (state): IRubric[] => {
         return state.rubrics;
+    },
+    /** Returns the search map for the currently selected quiz */
+    currentSearchMap: (state, getters) => {
+        const currentQuiz = getters.currentQuiz;
+        if(!currentQuiz || !currentQuiz._id) return {};
+        return state.quizSessionUserSearchMap[currentQuiz._id] || {};
+    },
+    searchMap: (state) => {
+        return state.quizSessionUserSearchMap;
     }
 
 };
@@ -388,7 +421,20 @@ const actions: ActionTree<IState, undefined> = {
         };
 
         EventBus.$emit(EventList.PUSH_SNACKBAR, message);
-    }    
+    },
+    
+    /**
+     * For a given quiz schedule id, fetches a map of quiz session ids to user information strings
+     * Used for search functionality.
+     * @param quizScheduleId Quiz schedule id
+     */
+    async getQuizSessionUserMap({ commit }: { commit: Commit }, quizScheduleId: string) {
+        const response = await API.request(API.GET, API.QUIZSESSION + `searchmap/${quizScheduleId}`, {}, undefined);
+  
+        if(response && response.success && response.payload) {
+            commit(mutationKeys.SET_SEARCH_QUIZ_SESSIONS, { quizScheduleId, payload: response.payload });
+        }
+    }
 };
 
 const mutations = {
@@ -453,6 +499,9 @@ const mutations = {
     SET_MARKS(state: IState, payload: any) {
         const newObject = Object.assign({}, state.quizSessionInfoMap[payload.quizSessionId], { marks: payload.marks });
         Vue.set(state.quizSessionInfoMap, payload.quizSessionId, newObject);
+    },
+    [mutationKeys.SET_SEARCH_QUIZ_SESSIONS](state: IState, payload: { quizScheduleId: string, payload: QuizSessionToUserInfoMap }) {
+        Vue.set(state.quizSessionUserSearchMap, payload.quizScheduleId, payload.payload);
     }
 };
 
