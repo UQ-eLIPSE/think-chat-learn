@@ -31,17 +31,17 @@ export interface IDropdownItem {
  * <AutoComplete type="search" :itemList="generatedList" :defaultValue="defaultValue" @click="onClick"/>
  * @prop title - input title
  * @prop defaultValue - default input value
- * @prop type - type of the input
- * @prop itemList - dropdown item queried by input value
+ * @prop type - (required) type of the input
+ * @prop itemList - (required) dropdown item queried by input value
 */
 @Component
-export default class Collapsible extends Vue {
+export default class AutoComplete extends Vue {
   @Prop({required: false, default: ""}) private title!: string;
   @Prop({required: false, default: ""}) private defaultValue!: string;
   @Prop({required: true, default: "text"}) private type!: "text" | "search";
   @Prop({required: true, default: () => []}) private itemList!: IDropdownItem[];
 
-  private displayValue: string = this.defaultValue|| "";
+  private displayValue: string = this.defaultValue || "";
   private isQuerying: boolean = false;
 
   private mounted(){
