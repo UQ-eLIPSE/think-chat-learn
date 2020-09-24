@@ -63,7 +63,7 @@ export default class MarkingComponent extends Vue {
                 // Marks were found, update quiz session marked map in store
                 // This is done because if on initial load of chat groups, a user was not marked, but upon navigating to a user it is found that they were indeed marked,
                 // the marking indicators (for user and group) need to be updated
-                this.$store.commit("QUIZSESSION_MARKS", { quizSessionId: this.currentQuizSessionId, chatGroupId: this.currentChatGroupId, marked: true });
+                this.$store.commit("SET_QUIZSESSION_MARKED", { quizSessionId: this.currentQuizSessionId, chatGroupId: this.currentChatGroupId, marked: true });
 
                 // If there are any missing marks, add default values or negative values?
                 const missingCriterias = this.associatedCriterias.filter((criteria) => {

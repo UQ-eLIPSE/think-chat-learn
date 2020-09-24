@@ -332,6 +332,9 @@ export default class MarkQuiz extends Vue {
 
   setCurrentQuizSessionId(quizSessionId: string) {
     this.currentQuizSessionId = quizSessionId;
+
+    // Side effect: Clear any search text
+    this.searchText = '';
   }
 
   /** Search Functionality */
@@ -383,7 +386,7 @@ export default class MarkQuiz extends Vue {
 
       // Navigate to group and user
       this.goToChatgroup(chatGroupIndex, quizSessionId);
-      this.searchText = '';
+      this.searchText = quizSessionSearchItem.label;
     } catch(e) {
       console.error(e.message);
       this.searchText = '';
