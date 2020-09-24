@@ -33,7 +33,6 @@
 
 .marking,
 .marking-section {
-    width: calc(90% - 18rem);
     height: 100%;
     display: flex;
     flex-direction: column;
