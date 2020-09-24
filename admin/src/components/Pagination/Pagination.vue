@@ -112,32 +112,4 @@
 </script>
 
 <style lang="scss" scoped>
-@import "../../../css/partial/variables";
-@import "../../../css/partial/fonts";
-@import "../../../css/partial/icons";
-
-.start-btn,
-.end-btn{
-  @include icon-wrapper-shape(33.3%, 22.5, 1.2);
-}
-
-.previous-btn,
-.next-btn{
-  @include icon-wrapper-shape(33.3%, 25, 1);
-}
-
-.start-btn,
-.end-btn,
-.previous-btn,
-.next-btn{
-  cursor: pointer;
-}
-
-.squircular-icon:not(:last-of-type){
-  margin-right: 5px;
-}
-
-.pagination {
-  height: 40px;
-}
 </style>
