@@ -46,7 +46,6 @@ export default class MarkingComponent extends Vue {
         try {
             const currentMarkingContext = this.currentMarkingContext;
             const quizSessionId = currentMarkingContext.currentQuizSessionId;
-            const questionId = currentMarkingContext.currentQuestionId;
             const quizSessionIdMarks: Schema.Mark = await API.request(API.GET, API.MARKS + `quizSessionId/${quizSessionId}`, {});
             const marker = this.marker;
             let marks: Schema.Mark | null = null;
@@ -118,10 +117,6 @@ export default class MarkingComponent extends Vue {
 
     get markingContext() {
         return this.$store.getters.currentMarkingContext;
-    }
-    get currentQuestionId() {
-        if (!this.markingContext) return undefined;
-        return this.markingContext.currentQuestionId;
     }
 
     get currentQuizSessionId() {
@@ -199,9 +194,7 @@ export default class MarkingComponent extends Vue {
 
     async saveMarks() {
         try {
-
-
-            if (!this.marks || !this.markingConfig || !this.currentQuestionId || !this.currentQuizSessionId) return;
+            if (!this.marks || !this.markingConfig || !this.currentQuizSessionId) throw new Error('Invalid marking data');
 
             const marksToBeSaved: Schema.Mark = Object.assign({}, this.marks);
 
@@ -225,21 +218,24 @@ export default class MarkingComponent extends Vue {
 
             if (multipleMarking) {
                 markSaveResponse = await API.request(API.POST, API.MARKS +
-                    `multiple/createOrUpdate/quizSessionId/${this.currentQuizSessionId}/questionId/${this.currentQuestionId}`, marksToBeSaved);
+                    `multiple/createOrUpdate/quizSessionId/${this.currentQuizSessionId}`, marksToBeSaved);
             } else {
                 markSaveResponse = await API.request(API.POST, API.MARKS +
-                    `createOrUpdate/quizSessionId/${this.currentQuizSessionId}/questionId/${this.currentQuestionId}`, marksToBeSaved);
+                    `createOrUpdate/quizSessionId/${this.currentQuizSessionId}`, marksToBeSaved);
             }
 
-            if (markSaveResponse) {
-                this.showSuccessMessage();
+            if (!markSaveResponse) throw new Error();
+            
+            this.showSuccessMessage();
 
-                // Update marking indicator map in group
-                this.$store.commit("SET_QUIZSESSION_MARKED", { quizSessionId: this.currentQuizSessionId, marked: true, chatGroupId: this.currentChatGroupId });
-            }
-
+            // Update marking indicator map in group
+            this.$store.commit("SET_QUIZSESSION_MARKED", { quizSessionId: this.currentQuizSessionId, marked: true, chatGroupId: this.currentChatGroupId });
         } catch (e) {
-            console.log('Error: Could not save mark');
+            console.log(e.message);
+            EventBus.$emit(EventList.PUSH_SNACKBAR, {
+                message: "Could not save mark",
+                error: true
+            });
         }
     }
     showSuccessMessage() {
@@ -267,12 +263,6 @@ export default class MarkingComponent extends Vue {
     async quizSessionChangeHandler() {
         this.fetchMarksForQuestion();
     }
-
-    @Watch('currentQuestionId')
-    async questionChangeHandler() {
-        this.fetchMarksForQuestion();
-    }
-
 
 }
 
