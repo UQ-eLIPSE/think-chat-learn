@@ -99,7 +99,7 @@ export class ChatGroupService extends BaseService<IChatGroup> {
             };
         });
 
-        /** Iterates over every chat group and marks users and groups as marked */
+        /** Iterates over every chat group and sets users as marked */
         const populatedChatGroupsWithMarkingData = await Promise.all(chatGroupsWithMarkingData.map(async (group) => {
             const quizSessionToMarkedMap: QuizSessionMarkedMap = {};
 
