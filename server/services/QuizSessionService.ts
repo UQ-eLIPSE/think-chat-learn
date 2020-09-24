@@ -8,7 +8,7 @@ import { Utils } from "../../common/js/Utils";
 import { PageType } from "../../common/enums/DBEnums";
 import { QuestionRepository } from "../repositories/QuestionRepository";
 import { ObjectID } from "mongodb";
-import { IQuestionAnswerPage } from "../../common/interfaces/ToClientData";
+import { IQuestionAnswerPage, ResponseMessage } from "../../common/interfaces/ToClientData";
 import { UserRepository } from "../repositories/UserRepository";
 
 export class QuizSessionService extends BaseService<IQuizSession> {
@@ -198,7 +198,7 @@ export class QuizSessionService extends BaseService<IQuizSession> {
      * Returns payload of the format { [quizSessionId: key]: "(lowercase) <username>,<first name>,<last name>}
      * @param quizScheduleId 
      */
-    public async getQuizSessionUserSearchMap(quizScheduleId: string): Promise<{ success: boolean, payload?: {[quizSessionId: string]: string}, message?: string }> {
+    public async getQuizSessionUserSearchMap(quizScheduleId: string): Promise<ResponseMessage<{[quizSessionId: string]: string}>> {
         try {
             const quizSessions = await this.quizSessionRepo.findQuizSessionsByQuizId(quizScheduleId);
 

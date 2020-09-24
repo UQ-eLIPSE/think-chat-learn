@@ -395,7 +395,7 @@ export default class MarkQuiz extends Vue {
       return quizSessionKeyValue && quizSessionKeyValue[1] && quizSessionKeyValue[1].includes(searchTerm);
     }).map((searchResultObject) => {
       return {
-        label: (searchResultObject[1] || "").split(",").join(', '),
+        label: (searchResultObject[1] || "").split(",").join(" "),
         value: searchResultObject[0]
       };
     });
@@ -461,7 +461,7 @@ export default class MarkQuiz extends Vue {
 }
 
 .autocomplete-marks {
-  z-index: 999999;
+  z-index: 100;
 }
 
 </style>
