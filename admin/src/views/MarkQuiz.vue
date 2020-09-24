@@ -162,7 +162,8 @@ export default class MarkQuiz extends Vue {
 
   /**
    * Returns if a quiz session is marked
-   * @returns boolean - True is marked, false if not marked
+   * @param {string} quizSessionId Quiz session ID
+   * @returns {boolean} `true` if marked, `false` if not marked
    */
   checkIfUserQuizSessionMarked(quizSessionId: string): boolean {
     if(!this.selectedGroup || !this.selectedGroup.quizSessionMarkedMap) return false;
