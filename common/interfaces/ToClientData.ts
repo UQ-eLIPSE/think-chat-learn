@@ -110,3 +110,9 @@ export type QuizSessionDataObject = { quizSession: IQuizSession | null,
   userSession: IUserSession | null, user: IUser | null,
   responses: Response[]
 };
+
+export interface ResponseMessage<T = void> {
+  success: boolean;
+  payload?: T;
+  message?: string;
+}
