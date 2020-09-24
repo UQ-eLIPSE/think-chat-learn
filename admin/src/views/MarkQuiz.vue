@@ -150,6 +150,8 @@ export default class MarkQuiz extends Vue {
       const quizSessionInfoPromises = (chatGroup.quizSessionIds || []).map(async (qs) => await this.$store.dispatch('getQuizSessionInfo', qs));
 
       await Promise.all(quizSessionInfoPromises);
+      
+      await this.checkAndFetchChatGroupMessages(chatGroup);
     }
 
   }
@@ -191,7 +193,17 @@ export default class MarkQuiz extends Vue {
     }
     this.selectedGroupId = this.chatGroups[chatGroupIndex]._id ? this.chatGroups[chatGroupIndex]._id! : "";
 
-    if(quizSessionId) this.currentQuizSessionId = quizSessionId;
+    if(quizSessionId) this.currentQuizSessionId = quizSessionId;    
+  }
+
+  /**
+   * Fetches messages for a chat group if not available
+   */
+  async checkAndFetchChatGroupMessages(chatGroup: IChatGroupWithMarkingIndicator) {
+    // Attempt to fetch messages if messages are empty for current chat group
+    if(chatGroup) {
+      await this.$store.dispatch("fetchChatGroupMessages", chatGroup._id);
+    }
   }
 
   goToQuizSession(index: number) {
