@@ -21,8 +21,8 @@ export class ChatGroupService extends BaseService<IChatGroup> {
     protected readonly marksRepo: MarksRepository;
     protected readonly quizRepo: QuizRepository;
 
-    constructor(_chatGroupRepo: ChatGroupRepository, _responseRepo: ResponseRepository, _quizSessionRepo: QuizSessionRepository, _userSessionRepo: UserSessionRepository, _marksRepo: MarksRepository,
-        _quizRepo: QuizRepository) {
+    constructor(_chatGroupRepo: ChatGroupRepository, _responseRepo: ResponseRepository, _quizSessionRepo: QuizSessionRepository,
+        _userSessionRepo: UserSessionRepository, _marksRepo: MarksRepository, _quizRepo: QuizRepository) {
         super();
         this.chatGroupRepo = _chatGroupRepo;
         this.responseRepo = _responseRepo;

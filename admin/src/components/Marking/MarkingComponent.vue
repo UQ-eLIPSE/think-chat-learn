@@ -224,9 +224,11 @@ export default class MarkingComponent extends Vue {
             let markSaveResponse = null;
 
             if (multipleMarking) {
-                markSaveResponse = await API.request(API.POST, API.MARKS + `multiple/createOrUpdate/quizSessionId/${this.currentQuizSessionId}/questionId/${this.currentQuestionId}`, marksToBeSaved);
+                markSaveResponse = await API.request(API.POST, API.MARKS +
+                    `multiple/createOrUpdate/quizSessionId/${this.currentQuizSessionId}/questionId/${this.currentQuestionId}`, marksToBeSaved);
             } else {
-                markSaveResponse = await API.request(API.POST, API.MARKS + `createOrUpdate/quizSessionId/${this.currentQuizSessionId}/questionId/${this.currentQuestionId}`, marksToBeSaved);
+                markSaveResponse = await API.request(API.POST, API.MARKS +
+                    `createOrUpdate/quizSessionId/${this.currentQuizSessionId}/questionId/${this.currentQuestionId}`, marksToBeSaved);
             }
 
             if (markSaveResponse) {
