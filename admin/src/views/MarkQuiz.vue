@@ -92,10 +92,6 @@
         </div>
       </v-container>
     </v-form>
-    <Pagination :currentPage="currentPage" 
-                          :totalPages="50" 
-                          :numPageButtons="7" 
-                          @pageChanged="(index)=>{currentPage = index}"/>
   </v-container>
   <div v-else> Select a group from the dropdown list</div>
 </template>
@@ -133,9 +129,6 @@ interface DropDownConfiguration {
 export default class MarkQuiz extends Vue {
   private displayQuestionContent: boolean = false;
   private numVisiblePagesButton: number = 7;
-
-  private currentPage: number = 1;
-
 
   get marksPublic(): boolean | null | undefined {
     if(!this.q) return null;

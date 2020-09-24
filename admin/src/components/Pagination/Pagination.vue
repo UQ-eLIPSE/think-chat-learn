@@ -10,13 +10,28 @@
         <i class="icon-chevron-left"></i>
       </div>
 
-      <template v-for="(p, i) in pageArray">
-        <div @click="changePageAction(p)" :key="`${i}-page`" :class="`pagination-number-${p}`">
-          <PageNumber :numeral="p" 
-                      :marked="isGroupMarking && groupList && p <= groupList.length ? groupList[p-1].marked : false" 
-                      :selected="p === currentPage"/>
+      <span class="pagination-wrapper">
+        <v-layout  row class="align-baseline ma-0 pa-0">
+        <i v-if="(pageArray.length && pageArray[0] > 1)" class="icon-ellipsis-h"></i>
+
+        <template v-for="(p, i) in pageArray">
+          <div @click="changePageAction(p)" :key="`${i}-page`">
+            <PageNumber :numeral="p" 
+                        :marked="isGroupMarking && groupList && p <= groupList.length ? groupList[p-1].marked : false" 
+                        :selected="p === currentPage"/>
+          </div>
+        </template>
+
+        <i v-if="(pageArray.length && pageArray[pageArray.length - 1] < totalPages - 1)" class="icon-ellipsis-h"></i>
+
+        <div v-if="(pageArray.length && pageArray[pageArray.length - 1] < totalPages)" 
+            @click="changePageAction(totalPages)" :key="`${totalPages}-page`">
+          <PageNumber :numeral="totalPages" 
+                      :marked="isGroupMarking && groupList && groupList[totalPages - 1].marked " 
+                      :selected="totalPages === currentPage"/>
         </div>
-      </template>
+        </v-layout>
+      </span>
 
       <div class="squircular-icon uq next-btn" @click="nextPage()">
         <i class="icon-chevron-right"></i>
@@ -66,14 +81,14 @@
 
     calculatePageArray(currentPage: number, totalPages: number, numVisiblePageButtons: number) {
       const pageArray = [];
-      /* if (totalPages < numVisiblePageButtons) {
+      if (totalPages < numVisiblePageButtons) {
         numVisiblePageButtons = totalPages;
-      } */
+      }
 
-      //const startPage = Math.min(Math.max(currentPage - ~~(numVisiblePageButtons / 2), 1), totalPages - numVisiblePageButtons + 1);
+      const startPage = Math.min(Math.max(currentPage - ~~(numVisiblePageButtons / 2), 1), totalPages - numVisiblePageButtons + 1);
 
-      for (let i = 0; i < totalPages; i++) {
-        pageArray.push(1 + i);
+      for (let i = 0; i < numVisiblePageButtons; i++) {
+        pageArray.push(i + startPage);
       }
 
       return pageArray;

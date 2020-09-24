@@ -23,6 +23,15 @@
   margin-right: 5px;
 }
 
+.pagination-wrapper{
+  width: fit-content;
+}
+
 .pagination {
   height: 40px;
+
+  i.icon-ellipsis-h{
+    color: $grey;
+  }
 }
+
