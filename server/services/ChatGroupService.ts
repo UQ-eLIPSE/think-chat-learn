@@ -10,6 +10,7 @@ import { QuizSessionRepository } from "../repositories/QuizSessionRepository";
 import { UserSessionRepository } from "../repositories/UserSessionRepository";
 import { MarksRepository } from "../repositories/MarksRepository";
 import { QuizRepository } from "../repositories/QuizRepository";
+import { FilterQuery } from "mongodb";
 
 
 
@@ -97,7 +98,6 @@ export class ChatGroupService extends BaseService<IChatGroup> {
         const chatGroupsWithMarkingData: ChatGroupMarkingResponseItem[] = (chatGroups || []).map((group) => {
             return {
                 ...group,
-                marked: false,
                 quizSessionMarkedMap: {}
             };
         });
@@ -106,15 +106,18 @@ export class ChatGroupService extends BaseService<IChatGroup> {
         const populatedChatGroupsWithMarkingData = await Promise.all(chatGroupsWithMarkingData.map(async (group) => {
             const quizSessionToMarkedMap: QuizSessionMarkedMap = {};
 
-
-            // Check if marks were provided
-            const quizSessionsMarks = await this.marksRepo.collection.find({
+            const queryObjectForQuizSessions: FilterQuery<MarksRepository> = {
                 quizSessionId: {
                     $in: (group.quizSessionIds || [])
-                },
-                // Add additional filter for markerId IFF multiple marker is enabled
-                markerId: multipleMarking? currentUserId : undefined
-            }).toArray();
+                }
+            };
+
+            if(multipleMarking) {
+                queryObjectForQuizSessions.markerId = currentUserId;
+            }
+
+            // Check if marks were provided
+            const quizSessionsMarks = await this.marksRepo.collection.find(queryObjectForQuizSessions).toArray();
 
             let groupMarked = false;
 
@@ -126,8 +129,6 @@ export class ChatGroupService extends BaseService<IChatGroup> {
             });
 
             group.quizSessionMarkedMap = quizSessionToMarkedMap;
-
-            group.marked = groupMarked;
 
             return group;
         }));

@@ -59,6 +59,12 @@ export default class MarkingComponent extends Vue {
                     marks = quizSessionIdMarks[0];
                 }
                 if (!marks) throw new Error();
+
+                // Marks were found, update quiz session marked map in store
+                // This is done because if on initial load of chat groups, a user was not marked, but upon navigating to a user it is found that they were indeed marked,
+                // the marking indicators (for user and group) need to be updated
+                this.$store.commit("QUIZSESSION_MARKS", { quizSessionId: this.currentQuizSessionId, chatGroupId: this.currentChatGroupId, marked: true });
+
                 // If there are any missing marks, add default values or negative values?
                 const missingCriterias = this.associatedCriterias.filter((criteria) => {
                   return marks!.marks.findIndex((mark) => {
@@ -184,6 +190,10 @@ export default class MarkingComponent extends Vue {
         return Object.keys(empty);
     }
 
+    get currentChatGroupId() {
+       return this.$store.getters.currentChatGroup && this.$store.getters.currentChatGroup._id; 
+    }
+
     async saveMarks() {
         try {
 
@@ -208,16 +218,19 @@ export default class MarkingComponent extends Vue {
             marksToBeSaved.quizId = this.quiz._id!;
             const multipleMarking = this.markingConfig.allowMultipleMarkers;
 
+            let markSaveResponse = null;
+
             if (multipleMarking) {
-                const markSaveResponse = await API.request(API.POST, API.MARKS + `multiple/createOrUpdate/quizSessionId/${this.currentQuizSessionId}/questionId/${this.currentQuestionId}`, marksToBeSaved);
-                if (markSaveResponse) {
-                    this.showSuccessMessage();
-                }
+                markSaveResponse = await API.request(API.POST, API.MARKS + `multiple/createOrUpdate/quizSessionId/${this.currentQuizSessionId}/questionId/${this.currentQuestionId}`, marksToBeSaved);
             } else {
-                const markSaveResponse = await API.request(API.POST, API.MARKS + `createOrUpdate/quizSessionId/${this.currentQuizSessionId}/questionId/${this.currentQuestionId}`, marksToBeSaved);
-                if (markSaveResponse) {
-                    this.showSuccessMessage();
-                }
+                markSaveResponse = await API.request(API.POST, API.MARKS + `createOrUpdate/quizSessionId/${this.currentQuizSessionId}/questionId/${this.currentQuestionId}`, marksToBeSaved);
+            }
+
+            if (markSaveResponse) {
+                this.showSuccessMessage();
+
+                // Update marking map in group
+                this.$store.commit("SET_QUIZSESSION_MARKED", { quizSessionId: this.currentQuizSessionId, marked: true, chatGroupId: this.currentChatGroupId });
             }
 
         } catch (e) {

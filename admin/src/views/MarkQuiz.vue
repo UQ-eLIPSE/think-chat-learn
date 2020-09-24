@@ -38,7 +38,9 @@
               <Pagination :currentPage="(selectedGroupIndex + 1)" 
                           :totalPages="chatGroupsDropDown.length" 
                           :numPageButtons="numVisiblePagesButton" 
-                          @pageChanged="changeGroupChat"/>
+                          @pageChanged="changeGroupChat"
+                          :isGroupMarking="true"
+                          :groupList="groupMarkingPaginationList"/>
             </div>
           </v-layout>
         </v-flex>
@@ -58,7 +60,7 @@
                     :studentId="user.text"
                     @click.native="setCurrentQuizSessionId(user.value)"
                     :numeral="i + 1"
-                    :marked="false"
+                    :marked="checkIfUserQuizSessionMarked(user.value)"
                     :selected="currentQuizSessionId === user.value"/>
                 </template>
               </v-layout>
@@ -98,7 +100,8 @@
 
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator";
-import { IQuiz, QuizScheduleDataAdmin, Page, IDiscussionPage, IQuestionAnswerPage, IQuizSession, IChatGroup, IUserSession, IUser, QuizSessionDataObject } from "../../../common/interfaces/ToClientData";
+import { IQuiz, QuizScheduleDataAdmin, Page, IDiscussionPage,
+  IQuestionAnswerPage, IQuizSession, ChatGroupMarkingResponseItem, IUserSession, IUser, QuizSessionDataObject } from "../../../common/interfaces/ToClientData";
 
 import { PageType } from "../../../common/enums/DBEnums";
 import QuizSessionViewer from '../components/QuizSessionViewer/QuizSessionViewer.vue';
@@ -106,6 +109,7 @@ import MarkingComponent from '../components/Marking/MarkingComponent.vue';
 import { API } from "../../../common/js/DB_API";
 import UserCard from "../components/Marking/UserCard.vue";
 import Pagination from "../components/Pagination/Pagination.vue";
+import { IPageNumber } from "../components/Pagination/PageNumber.vue";
 
 Component.registerHooks([
   'beforeRouteEnter',
@@ -157,8 +161,23 @@ export default class MarkQuiz extends Vue {
   }
 
   checkIfUserQuizSessionMarked(quizSessionId: string) {
-    if(!this.selectedGroup) return false;
-    
+    if(!this.selectedGroup || !this.selectedGroup.quizSessionMarkedMap) return false;
+    return this.selectedGroup.quizSessionMarkedMap[quizSessionId];
+  }
+
+  /**
+   * Returns group marking array for pagination
+   */
+  get groupMarkingPaginationList(): IPageNumber[] {
+    return this.chatGroups.map((chatGroup, i) => {
+      const marked = chatGroup && chatGroup.quizSessionMarkedMap? Object.values(chatGroup.quizSessionMarkedMap).every((value) => value) : false;
+
+      return {
+        page: i + 1,
+        marked: marked
+      };
+
+    });
   }
 
   goToChatgroup(chatGroupIndex: number, questionIndex: number, quizSessionIndex: number) {
@@ -262,7 +281,7 @@ export default class MarkQuiz extends Vue {
     const question = this.q.pages.find((p) => p.type === PageType.QUESTION_ANSWER_PAGE && ((p as IQuestionAnswerPage).questionId === this.selectedQuestionId));
     return question;
   }
-  get chatGroups(): IChatGroup[] {
+  get chatGroups(): ChatGroupMarkingResponseItem[] {
     return this.$store.state.Quiz.chatGroups || [];
   }
 
@@ -275,7 +294,7 @@ export default class MarkQuiz extends Vue {
     });
   }
 
-  get selectedGroup(): IChatGroup | undefined {
+  get selectedGroup(): ChatGroupMarkingResponseItem | undefined {
     if (!this.chatGroups || !this.selectedGroupId) return undefined;
     return this.chatGroups.find((g: any) => g._id === this.selectedGroupId);
   }
@@ -311,9 +330,6 @@ export default class MarkQuiz extends Vue {
     }
   }
 
-  changeQuizSession() {
-
-  }
   get selectedUser() {
     if (!this.selectedGroup) return undefined;
     this.selectedGroup.quizSessionIds
@@ -322,24 +338,6 @@ export default class MarkQuiz extends Vue {
   get quizSessionInfoMap() {
     return this.$store.getters.quizSessionInfoMap;
   }
-
-  // get groupQuizSessions() {
-  //   // if (!this.selectedGroup || !this.quizSessionMap) return [];
-  //   // const users = Object.keys(this.quizSessionMap).filter((qid) => this.selectedGroup!.quizSessionIds!.indexOf(qid) !== -1).map((quizSessionId) => {
-  //   //   return this.quizSessionMap[quizSessionId]
-  //   // });
-
-  //   // return users || [];
-  //   try {
-  //     if (this.quizSessionInfoMap && this.selectedGroup) {
-  //       return Object.keys(this.quizSessionInfoMap).filter((quizSessionId) => this.selectedGroup!.quizSessionIds!.indexOf(quizSessionId) !== -1).map((q) => this.quizSessionInfoMap[q]);
-  //     } else {
-  //       return [];
-  //     }
-  //   } catch (e) {
-  //     return [];
-  //   }
-  // }
 
   get currentGroupQuizSessionInfoObjects(): any[] {
     return this.$store.getters.currentGroupQuizSessionInfoObjects;
@@ -367,17 +365,8 @@ export default class MarkQuiz extends Vue {
 
   async fetchAllQuizSessionInfo(vm: any) {
     if (!vm.$route.params.id) return;
-    // This is being done on the parent route now
-    // vm.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuizId', value: vm.$route.params.id });
-
-    // await vm.$store.dispatch("getChatGroups", vm.q._id);
-    // const chatGroups = vm.$store.getters.chatGroups;
-    // const chatGroupsInformationPromises = await Promise.all(chatGroups.map(async (g: IChatGroup) => {
-    //   const chatGroupsQuizSessionPromises = await Promise.all((g!.quizSessionIds || []).map(async (qs) => {
-    //     await vm.$store.dispatch("getQuizSessionInfo", qs);
-    //   }));
-    // }));
-
+    // Quiz session marking data is being fetched in router for common routes
+    
     const chatGroups = vm.$store.getters.chatGroups;
     // Set up initial state
     if (!vm.$store.getters.currentMarkingContext.currentChatGroupId) {
@@ -395,7 +384,7 @@ export default class MarkQuiz extends Vue {
 
       const currentChatGroup = vm.selectedGroup;
       if (currentChatGroup) {
-        const quizSessionIds = (<IChatGroup>currentChatGroup).quizSessionIds || [];
+        const quizSessionIds = (<ChatGroupMarkingResponseItem>currentChatGroup).quizSessionIds || [];
         if (quizSessionIds.length > 0) {
           const currentQuizSessionIdBeingMarked = quizSessionIds[0];
           vm.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuizSessionId', value: currentQuizSessionIdBeingMarked });

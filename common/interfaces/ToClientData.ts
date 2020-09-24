@@ -112,5 +112,5 @@ export type QuizSessionDataObject = { quizSession: IQuizSession | null,
 };
 
 export type QuizSessionMarkedMap = { [quizSessionId: string]: boolean };
-export type ChatGroupMarkingResponseItem = (IChatGroup & { marked: boolean } & { quizSessionMarkedMap: QuizSessionMarkedMap });
+export type ChatGroupMarkingResponseItem = (IChatGroup & { quizSessionMarkedMap: QuizSessionMarkedMap });
 
