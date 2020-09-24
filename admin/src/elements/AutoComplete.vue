@@ -5,7 +5,7 @@
 
       <div class="dropdown-list card-container" v-if="isQuerying && itemList && itemList.length">
         <template v-for="(item, idx) in itemList">
-          <div :key="`item-${idx}`" :class="`dropdown-list-item`" 
+          <div :key="`item-${idx}`" :class="`dropdown-list-item`" :title="item.label || ''"
                 @click="onChooseItem(idx)">
             {{item.label}}
           </div>

@@ -64,28 +64,19 @@
               </v-layout>
 
               <div class="divider"></div>
-              <!--Questions list and answers-->
               <v-flex xs12 class="marking-section">
                 <div class="group-mark" v-if="selectedGroup">
-
-                  <div class="question-discussion" v-if="selectedQuestion">
-
-                    <div class="question-box" v-if="displayQuestionContent">
-                      <span> Question Title:
-                        <b>{{ selectedQuestion.title }}</b>
-                      </span>
-                      <div v-html="selectedQuestion.content"></div>
-                    </div>
-
+                  <div class="question-discussion" >
+                    <QuizSessionViewer v-if="selectedGroup && isCurrentUserSelectedAndInGroup"/>
                     <span v-if="!isCurrentUserSelectedAndInGroup"><p>Please select a user</p></span>
-                    <QuizSessionViewer v-if="selectedGroup && selectedQuestion && isCurrentUserSelectedAndInGroup"/>
+                    
                   </div>
                 </div>
               </v-flex>
             </div>
 
             <!--Rubric and general feedback-->
-            <MarkingComponent v-if="selectedGroup && selectedQuestion && isCurrentUserSelectedAndInGroup" 
+            <MarkingComponent v-if="selectedGroup && isCurrentUserSelectedAndInGroup" 
                               class="marking-component"></MarkingComponent>
 
           </v-layout>
@@ -130,7 +121,6 @@ interface DropDownConfiguration {
   }
 })
 export default class MarkQuiz extends Vue {
-  private displayQuestionContent: boolean = false;
   private numVisiblePagesButton: number = 7;
   private searchText: string = '';
 
@@ -160,7 +150,12 @@ export default class MarkQuiz extends Vue {
 
   }
 
-  goToChatgroup(chatGroupIndex: number, questionIndex: number, quizSessionIndex: number) {
+  /**
+   * Navigates to a chat group, optionally to a specific user quiz session if provided
+   * @param chatGroupIndex {number} Index of the chat group in the chatGroups array
+   * @param quizSessionId {string} (Optional) Quiz session ID to be selected
+   */
+  goToChatgroup(chatGroupIndex: number, quizSessionId?: string) {
     if (!this.chatGroups) return;
     if (!this.chatGroups[chatGroupIndex]) {
       this.selectedGroupId = this.chatGroups[0]._id ? this.chatGroups[0]._id : "";
@@ -168,15 +163,7 @@ export default class MarkQuiz extends Vue {
     }
     this.selectedGroupId = this.chatGroups[chatGroupIndex]._id ? this.chatGroups[chatGroupIndex]._id! : "";
 
-    this.goToQuestion(questionIndex, quizSessionIndex);
-  }
-
-  goToQuestion(questionIndex: number, quizSessionIndex: number) {
-    if (!this.orderedDiscussionPageQuestionIds) return;
-    if (!this.orderedDiscussionPageQuestionIds[questionIndex]) this.selectedQuestionId = this.orderedDiscussionPageQuestionIds[0];
-    else this.selectedQuestionId = this.orderedDiscussionPageQuestionIds[questionIndex];
-    // Set the quiz session id as the first
-    this.goToQuizSession(quizSessionIndex);
+    if(quizSessionId) this.currentQuizSessionId = quizSessionId;
   }
 
   goToQuizSession(index: number) {
@@ -196,10 +183,9 @@ export default class MarkQuiz extends Vue {
   changeGroupChat(groupId: number){
     if (this.chatGroups.length <= 0) return;
     if (!groupId) {
-      this.goToChatgroup(0, 0, 0);
+      this.goToChatgroup(0);
     } else if (this.chatGroups.length > 1 && groupId > 0) {
-      this.goToChatgroup(groupId - 1, 0, 0);
-      this.goToQuestion(this.orderedDiscussionPageQuestionIds.length - 1, this.currentGroupQuizSessionInfoObjects.length - 1);
+      this.goToChatgroup(groupId - 1);
     }
   }
 
@@ -222,13 +208,6 @@ export default class MarkQuiz extends Vue {
     this.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentChatGroupId', value: groupId });
   }
 
-  get selectedQuestionId() {
-    return this.markingState.currentQuestionId;
-  }
-
-  set selectedQuestionId(questionId: string) {
-    this.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuestionId', value: questionId });
-  }
   get q() {
     if (!this.$route.params.id) return null;
     return this.quizzes.find((q) => q._id === this.$route.params.id);
@@ -237,30 +216,6 @@ export default class MarkQuiz extends Vue {
     return this.$store.getters.quizzes || [];
   }
 
-  getQuestionById(questionId: string) {
-    if (!this.q || !this.q.pages) return undefined;
-    return this.q.pages.find((p) => p.type === PageType.QUESTION_ANSWER_PAGE && (p as IQuestionAnswerPage).questionId === questionId);
-  }
-  get selectedQuestionChatMessages() {
-    if (this.chatGroupQuestionIdMap && this.chatGroupQuestionIdMap[this.selectedQuestionId]) {
-      return this.chatGroupQuestionIdMap[this.selectedQuestionId].messages;
-    } else {
-      return [];
-    }
-  }
-
-  get selectedQuestionResponses() {
-    if (this.chatGroupQuestionIdMap && this.chatGroupQuestionIdMap[this.selectedQuestionId]) {
-      return this.chatGroupQuestionIdMap[this.selectedQuestionId].messages;
-    } else {
-      return [];
-    }
-  }
-  get selectedQuestion() {
-    if (!this.q || !this.selectedGroup || !this.q.pages) return undefined;
-    const question = this.q.pages.find((p) => p.type === PageType.QUESTION_ANSWER_PAGE && ((p as IQuestionAnswerPage).questionId === this.selectedQuestionId));
-    return question;
-  }
   get chatGroups(): IChatGroup[] {
     return this.$store.state.Quiz.chatGroups || [];
   }
@@ -285,31 +240,6 @@ export default class MarkQuiz extends Vue {
     return found !== -1 ? found: 0;
   }
 
-
-  get orderedDiscussionPageQuestionIds() {
-    if (!this.q || !this.q.pages) return [];
-    const discussionPages = this.q.pages.filter((p) => p.type === PageType.DISCUSSION_PAGE);
-    const discussionPageQuestionIds = discussionPages.map((p) => (p as IDiscussionPage).questionId);
-    return discussionPageQuestionIds;
-  }
-
-
-  get chatGroupQuestionIdMap(): (undefined | { [questionId: string]: { messages: any[] } }) {
-    try {
-      let map: { [questionId: string]: { messages: any[] } } = {};
-      if (!this.selectedGroup) return undefined;
-      const messages = this.selectedGroup.messages;
-      if (!messages) return undefined;
-      messages.forEach((m: any) => {
-        if (map[m.questionId] === undefined) map[m.questionId] = { messages: [] };
-        map[m.questionId].messages.push(m);
-      });
-      return map;
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
   get selectedUser() {
     if (!this.selectedGroup) return undefined;
     this.selectedGroup.quizSessionIds
@@ -318,24 +248,6 @@ export default class MarkQuiz extends Vue {
   get quizSessionInfoMap() {
     return this.$store.getters.quizSessionInfoMap;
   }
-
-  // get groupQuizSessions() {
-  //   // if (!this.selectedGroup || !this.quizSessionMap) return [];
-  //   // const users = Object.keys(this.quizSessionMap).filter((qid) => this.selectedGroup!.quizSessionIds!.indexOf(qid) !== -1).map((quizSessionId) => {
-  //   //   return this.quizSessionMap[quizSessionId]
-  //   // });
-
-  //   // return users || [];
-  //   try {
-  //     if (this.quizSessionInfoMap && this.selectedGroup) {
-  //       return Object.keys(this.quizSessionInfoMap).filter((quizSessionId) => this.selectedGroup!.quizSessionIds!.indexOf(quizSessionId) !== -1).map((q) => this.quizSessionInfoMap[q]);
-  //     } else {
-  //       return [];
-  //     }
-  //   } catch (e) {
-  //     return [];
-  //   }
-  // }
 
   get currentGroupQuizSessionInfoObjects(): any[] {
     return this.$store.getters.currentGroupQuizSessionInfoObjects;
@@ -380,12 +292,6 @@ export default class MarkQuiz extends Vue {
         vm.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentChatGroupId', value: chatGroups[0]._id });
       }
 
-      const questionsIds = vm.orderedDiscussionPageQuestionIds;
-      if (questionsIds && questionsIds.length > 0) {
-        vm.selectedQuestionId = questionsIds[0];
-        vm.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuestionId', value: questionsIds[0] });
-      }
-
       const currentChatGroup = vm.selectedGroup;
       if (currentChatGroup) {
         const quizSessionIds = (<IChatGroup>currentChatGroup).quizSessionIds || [];
@@ -398,6 +304,7 @@ export default class MarkQuiz extends Vue {
 
     }
   }
+  
   async beforeRouteEnter(to: any, from: any, next: any) {
     next(async (vm: any) => {
       await vm.fetchAllQuizSessionInfo(vm);
@@ -456,7 +363,7 @@ export default class MarkQuiz extends Vue {
       }
 
       // Navigate to group and user
-      this.goToChatgroup(chatGroupIndex, 0, userIndexInChatGroup);
+      this.goToChatgroup(chatGroupIndex, quizSessionId);
       this.searchText = '';
     } catch(e) {
       console.error(e.message);

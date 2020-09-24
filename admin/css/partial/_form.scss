@@ -185,6 +185,10 @@
     height: 40px;
     cursor: pointer;
     
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
     &:hover {
       background-color: rgba($uq, 0.15);
       color: $uq;
