@@ -1,10 +1,9 @@
 <template>
   <div class="form-control input-autocomplete">
     <div :class="`${type === 'text'? 'editable-field': 'search-field'}`">
-      <input :type="type" v-model="displayValue" :title="title"
-              @input="(e) => onQuery(e.currentTarget.value)">
+      <input :type="type" v-model="displayValue" :title="title">
 
-      <div class="dropdown-list card-container" v-if="isQuerying">
+      <div class="dropdown-list card-container" v-if="isQuerying && itemList && itemList.length">
         <template v-for="(item, idx) in itemList">
           <div :key="`item-${idx}`" :class="`dropdown-list-item`" 
                 @click="onChooseItem(idx)">
@@ -20,7 +19,7 @@
 </style>
 
 <script lang="ts">
-import { Vue, Component, Watch, Prop } from "vue-property-decorator";
+import { Vue, Component, Watch, Prop, Model } from "vue-property-decorator";
 
 export interface IDropdownItem {
   label: string;
@@ -28,7 +27,7 @@ export interface IDropdownItem {
 }
 
 /**Usage
- * <AutoComplete type="search" :itemList="generatedList" :defaultValue="defaultValue" @click="onClick"/>
+ * <AutoComplete type="search" v-model="searchTextVariable" :itemList="generatedList" :defaultValue="defaultValue" @click="onClick"/>
  * @prop title - input title
  * @prop defaultValue - default input value
  * @prop type - (required) type of the input
@@ -40,8 +39,9 @@ export default class AutoComplete extends Vue {
   @Prop({required: false, default: ""}) private defaultValue!: string;
   @Prop({required: true, default: "text"}) private type!: "text" | "search";
   @Prop({required: true, default: () => []}) private itemList!: IDropdownItem[];
+  /** Custom v-model `value` prop for the AutoComplete component */
+  @Model('input', { type: String }) readonly value!: string;
 
-  private displayValue: string = this.defaultValue || "";
   private isQuerying: boolean = false;
 
   private mounted(){
@@ -52,13 +52,22 @@ export default class AutoComplete extends Vue {
     document.removeEventListener('click', this.onFocusOut);
   }
 
-  onQuery(query: string){
-    if (!query || !query.length){
-      this.isQuerying = false;
-      return;
-    }
-    this.isQuerying = true;
-    this.$emit('input', query);
+  /**
+   * Returns the value passed from parent
+   */
+  get displayValue() {
+    return this.value;
+  }
+
+  /**
+   * Setter used to (effectively) set the value in parent
+   * This is done by emitting the input event to the parent component
+   */
+  set displayValue(val: string) {
+
+    this.isQuerying = !!(val && val.length);
+
+    this.$emit('input', val);
   }
 
   onChooseItem(index: number){

@@ -183,7 +183,8 @@
   .dropdown-list-item{
     padding: 0.5rem 1rem;
     height: 40px;
-  
+    cursor: pointer;
+    
     &:hover {
       background-color: rgba($uq, 0.15);
       color: $uq;

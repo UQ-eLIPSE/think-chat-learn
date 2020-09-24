@@ -27,7 +27,7 @@
       <v-layout row class="align-center">
         <!--Search student input-->
         <v-flex class="search-field mr-4" xs3>
-          <input type="search" placeholder="Search student">
+          <AutoComplete title="Search student" class="autocomplete-marks" type="search" v-model="searchText" :itemList="searchResults" @click="searchClickHandler"/>
         </v-flex>
 
         <!--Group pagination-->
@@ -107,6 +107,7 @@ import { API } from "../../../common/js/DB_API";
 import UserCard from "../components/Marking/UserCard.vue";
 import Pagination from "../components/Pagination/Pagination.vue";
 import { QuizSessionToUserInfoMap } from "../store/modules/quiz";
+import AutoComplete from "../elements/AutoComplete.vue";
 
 Component.registerHooks([
   'beforeRouteEnter',
@@ -124,7 +125,8 @@ interface DropDownConfiguration {
     QuizSessionViewer,
     MarkingComponent,
     UserCard,
-    Pagination
+    Pagination,
+    AutoComplete
   }
 })
 export default class MarkQuiz extends Vue {
@@ -429,17 +431,15 @@ export default class MarkQuiz extends Vue {
 
   /**
    * Handler for user search item click
-   * @param r An array of the format ["quizSessionId", "<username>,<firstname>,<lastname>"]
+   * @param quizSessionSearchItem Value emitted from AutoComplete on click
    */
-  searchResultClickHandler(r: [string, string]) {
-    
+  searchClickHandler(quizSessionSearchItem: { label: string, value: string }) {
     try {
-      if(!r || !r[0]) throw new Error('Invalid search for quiz session id');
-
-      // Get the quiz session ID
-      const quizSessionId = r[0];
-
+      if(!quizSessionSearchItem || !quizSessionSearchItem.value) throw new Error("Invalid selection");
+      
+      const quizSessionId = quizSessionSearchItem.value;
       const chatGroupIndex = this.chatGroups.findIndex((group) => (group.quizSessionIds || []).includes(quizSessionId));
+      
       if(chatGroupIndex < 0) {
         throw new Error('Chat group not found');
       }
@@ -465,7 +465,8 @@ export default class MarkQuiz extends Vue {
   }
 
   /**
-   * Returns the search map for the current quiz
+   * Returns the search map for the current quiz.
+   * Maps quizSessionId to user information string ("<username>,<first name>,<last name>")
    */
   get currentSearchMap(): QuizSessionToUserInfoMap {
     return this.$store.getters.currentSearchMap;
@@ -485,9 +486,18 @@ export default class MarkQuiz extends Vue {
 
     return (Object.entries(this.currentSearchMap) || []).filter((quizSessionKeyValue) => {
       return quizSessionKeyValue && quizSessionKeyValue[1] && quizSessionKeyValue[1].includes(searchTerm);
+    }).map((searchResultObject) => {
+      return {
+        label: (searchResultObject[1] || "").split(",").join(', '),
+        value: searchResultObject[0]
+      };
     });
   }
 
+  @Watch('searchText')
+  searchTextChangeHandler() {
+    this.checkOrFetchUserMap();
+  }
 }
 </script>
 <style lang="scss" scoped>
@@ -542,4 +552,9 @@ export default class MarkQuiz extends Vue {
   margin-left: -2rem;
   margin-bottom: 0;
 }
+
+.autocomplete-marks {
+  z-index: 999999;
+}
+
 </style>
