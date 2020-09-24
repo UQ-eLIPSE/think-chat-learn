@@ -4,7 +4,7 @@
 
     <button
       type="button"
-      class="button-min toggle-question"
+      class="button-min toggle-question button-cs"
       @click.prevent="questionContentVisible = !questionContentVisible"
     >
       <span>{{ questionContentVisible? 'Hide question': 'Show question' }}</span>

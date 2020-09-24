@@ -22,13 +22,13 @@
                         </div>
                         <div class="controls">
                             <button type="button"
-                                    class="primary-cl"
+                                    class="primary-cl button-cs"
                                     @click="editQuiz(quiz._id)">Edit</button>
                             <button type="button"
-                                    class="uq"
+                                    class="uq button-cs"
                                     @click="deleteQuiz(quiz._id)">Delete</button>
                             <button type="button"
-                                    class="purple-cl"
+                                    class="purple-cl button-cs"
                                     @click="cloneQuiz(quiz._id)">Create copy</button>
                         </div>
                     </div>

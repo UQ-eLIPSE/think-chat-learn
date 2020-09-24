@@ -12,10 +12,10 @@
                         <span class="criteria-description"><b>Description:</b>{{criteria.description}}</span>
                         <div class="controls">
                             <button type="button"
-                                    class="primary-cl"
+                                    class="primary-cl button-cs"
                                     @click="editCriteria(criteria._id)">Edit</button>
                             <button type="button"
-                                    class="purple-cl"
+                                    class="purple-cl button-cs"
                                     @click="deleteCriteria(criteria._id)">Delete</button>
                         </div>
                     </div>

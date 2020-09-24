@@ -11,10 +11,10 @@
                         <v-card-title><h3>Question Title: {{question.title}}</h3></v-card-title>
                         <div class="controls">
                             <button type="button"
-                                    class="primary-cl"
+                                    class="primary-cl button-cs"
                                     @click="editQuestion(question._id)">Edit</button>
                             <button type="button"
-                                    class="uq"
+                                    class="uq button-cs"
                                     @click="deleteQuestion(question._id)">Delete</button>
                         </div>
                     </div>

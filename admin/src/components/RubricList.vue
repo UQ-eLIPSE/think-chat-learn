@@ -11,10 +11,10 @@
                         <v-card-title><h3>Rubric Name: {{rubric.name}}</h3></v-card-title>
                         <div class="controls">
                             <button type="button"
-                                    class="primary-cl"
+                                    class="primary-cl button-cs"
                                     @click="editRubric(rubric._id)">Edit</button>
                             <button type="button"
-                                    class="purple-cl"
+                                    class="purple-cl button-cs"
                                     @click="deleteRubric(rubric._id)">Delete</button>
                         </div>
                     </div>

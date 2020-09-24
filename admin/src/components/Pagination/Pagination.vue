@@ -11,7 +11,7 @@
       </div>
 
       <template v-for="(p, i) in pageArray">
-        <div @click="changePageAction(p)" :key="`${i}-page`">
+        <div @click="changePageAction(p)" :key="`${i}-page`" :class="`pagination-number-${p}`">
           <PageNumber :numeral="p" 
                       :marked="isGroupMarking && groupList && p <= groupList.length ? groupList[p-1].marked : false" 
                       :selected="p === currentPage"/>
@@ -66,14 +66,14 @@
 
     calculatePageArray(currentPage: number, totalPages: number, numVisiblePageButtons: number) {
       const pageArray = [];
-      if (totalPages < numVisiblePageButtons) {
+      /* if (totalPages < numVisiblePageButtons) {
         numVisiblePageButtons = totalPages;
-      }
+      } */
 
-      const startPage = Math.min(Math.max(currentPage - ~~(numVisiblePageButtons / 2), 1), totalPages - numVisiblePageButtons + 1);
+      //const startPage = Math.min(Math.max(currentPage - ~~(numVisiblePageButtons / 2), 1), totalPages - numVisiblePageButtons + 1);
 
-      for (let i = 0; i < numVisiblePageButtons; i++) {
-        pageArray.push(startPage + i);
+      for (let i = 0; i < totalPages; i++) {
+        pageArray.push(1 + i);
       }
 
       return pageArray;
