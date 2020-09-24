@@ -107,11 +107,6 @@ export class QuizSessionController extends BaseController {
         return res.json({ payload: quizSessionsData });
     }
 
-    rd(n: number) {
-        return Math.floor(Math.random() * n);
-    }
-
-
     /**
      * Returns a map which can be used to search a quiz session by username, first name or last name for a particular quiz
      * Returns in the format

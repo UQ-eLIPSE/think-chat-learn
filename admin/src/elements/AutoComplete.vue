@@ -64,9 +64,8 @@ export default class AutoComplete extends Vue {
    * This is done by emitting the input event to the parent component
    */
   set displayValue(val: string) {
-
+    // Set isQuerying to true if input has a value
     this.isQuerying = !!(val && val.length);
-
     this.$emit('input', val);
   }
 

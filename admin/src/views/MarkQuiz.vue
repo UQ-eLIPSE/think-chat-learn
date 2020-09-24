@@ -304,7 +304,7 @@ export default class MarkQuiz extends Vue {
 
     }
   }
-  
+
   async beforeRouteEnter(to: any, from: any, next: any) {
     next(async (vm: any) => {
       await vm.fetchAllQuizSessionInfo(vm);
@@ -315,7 +315,7 @@ export default class MarkQuiz extends Vue {
     this.currentQuizSessionId = quizSessionId;
   }
 
-  /** SEARCH FUNCTIONALITY */
+  /** Search Functionality */
 
   get currentQuizId() {
     const quiz = this.$store.getters.currentQuiz;
@@ -356,9 +356,9 @@ export default class MarkQuiz extends Vue {
         throw new Error('Chat group not found');
       }
 
-      const userIndexInChatGroup = (chatGroup.quizSessionIds || []).findIndex((g) => g === quizSessionId);
+      const quizSessionExistsInChatGroup = (chatGroup.quizSessionIds || []).find((g) => g === quizSessionId);
 
-      if(userIndexInChatGroup < 0) {
+      if(!quizSessionExistsInChatGroup) {
         throw new Error('User not found in chat group');
       }
 
