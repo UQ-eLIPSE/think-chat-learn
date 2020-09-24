@@ -81,7 +81,6 @@ export class ChatGroupService extends BaseService<IChatGroup> {
      * @param currentUserId 
      */
     public async getChatGroupsWithMarkingData(quizId: string, currentUserId: string): Promise<IChatGroupWithMarkingIndicator[]> {
-        let multipleMarking = false;
 
         const chatGroups = await this.chatGroupRepo.findAll({
             quizId
@@ -90,7 +89,8 @@ export class ChatGroupService extends BaseService<IChatGroup> {
         // Check if quiz is configured to allow multiple marking mode
         const quiz = await this.quizRepo.findOne(quizId);
 
-        if(quiz && quiz.markingConfiguration && quiz.markingConfiguration.allowMultipleMarkers) multipleMarking = true;
+        // Check if `allowMultipleMarkers` exactly equals `true`
+        const allowMultipleMarkers = (quiz && quiz.markingConfiguration && quiz.markingConfiguration.allowMultipleMarkers) === true;
 
         const chatGroupsWithMarkingData: IChatGroupWithMarkingIndicator[] = (chatGroups || []).map((group) => {
             return {
@@ -109,20 +109,16 @@ export class ChatGroupService extends BaseService<IChatGroup> {
                 }
             };
 
-            if(multipleMarking) {
+            if(allowMultipleMarkers) {
                 queryObjectForQuizSessions.markerId = currentUserId;
             }
 
             // Check if marks were provided
             const quizSessionsMarks = await this.marksRepo.collection.find(queryObjectForQuizSessions).toArray();
 
-            let groupMarked = false;
-
             (group.quizSessionIds || []).forEach((quizSessionId) => {
                 const marked = quizSessionsMarks.some((quizSessionMark) => quizSessionMark.quizSessionId === quizSessionId);
                 quizSessionToMarkedMap[quizSessionId] = marked;
-                if(!groupMarked && marked) groupMarked = true;
-
             });
 
             group.quizSessionMarkedMap = quizSessionToMarkedMap;
