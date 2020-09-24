@@ -86,30 +86,11 @@ export class MarksController extends BaseController {
         });
     }
 
-    private async getChatGroupsUserMap(req: express.Request, res: express.Response, next: express.NextFunction | undefined) {
-        try {
-            if(!req.params.quizId) throw new Error('Invalid request parameters');
-
-            const result = await this.marksService.getChatGroupsUserMap(req.params.quizId);
-
-            if(result) return res.json({
-                success: true,
-                payload: result
-            }).status(200);
-
-            return res.json({
-                success: false
-            }).status(500);
-        } catch(e) {
-            return res.sendStatus(500);
-        }
-    }
     public setupRoutes() {
         this.router.get("/bulk/quiz", isAdmin(), this.getMarksByQuizId.bind(this));
         this.router.get("/quizSessionId/:quizSessionId", isAdmin(), this.getMarksByQuizSession.bind(this));
         this.router.post("/createOrUpdate/quizSessionId/:quizSessionId/questionId/:questionId", isAdmin(), this.createOrUpdateMarks.bind(this));
         this.router.post("/multiple/createOrUpdate/quizSessionId/:quizSessionId/questionId/:questionId", isAdmin(), this.createOrUpdateMarksMultiple.bind(this));
-        this.router.get('/chatGroupsUserMap/:quizId', isAdmin(), this.getChatGroupsUserMap.bind(this));
         this.router.get("/student/quizSession/:quizSessionId", StudentAuthenticatorMiddleware.checkUserId(), this.getMarksByQuizSessionForCurrentUser.bind(this));
     }
 }
