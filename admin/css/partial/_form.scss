@@ -169,3 +169,24 @@
 .checkbox-label{
   @include font-style(1, 1.5, 400, $dark-grey);
 }
+
+.input-autocomplete{
+  .dropdown-list{
+    padding: 0 0 5px 0;
+    border-radius: 0 0 5px 5px;
+    position: absolute;
+    top: 30px;
+    max-height: 225px;
+    overflow-y: auto;
+  }
+  
+  .dropdown-list-item{
+    padding: 0.5rem 1rem;
+    height: 40px;
+  
+    &:hover {
+      background-color: rgba($uq, 0.15);
+      color: $uq;
+    }
+  }
+}
