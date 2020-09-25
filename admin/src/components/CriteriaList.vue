@@ -1,7 +1,7 @@
 <template>
     <v-container>
         <h1 class="moocchat-name">Criteria List</h1>
-        <router-link tag="button" class="primary-cl" to="/criteriaEditor">Add Criteria</router-link>
+        <router-link tag="button" class="primary-cl button-cs" to="/criteriaEditor">Add Criteria</router-link>
         <v-container fluid grid-list-md>
             <v-layout row wrap>
                 <v-flex v-for="criteria in criterias"
@@ -12,10 +12,10 @@
                         <span class="criteria-description"><b>Description:</b>{{criteria.description}}</span>
                         <div class="controls">
                             <button type="button"
-                                    class="primary-cl"
+                                    class="primary-cl button-cs"
                                     @click="editCriteria(criteria._id)">Edit</button>
                             <button type="button"
-                                    class="purple-cl"
+                                    class="purple-cl button-cs"
                                     @click="deleteCriteria(criteria._id)">Delete</button>
                         </div>
                     </div>

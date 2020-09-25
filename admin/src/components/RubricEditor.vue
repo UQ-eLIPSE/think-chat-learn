@@ -18,11 +18,11 @@
                             <!-- Since we can't actually set the criteria directly, we assign it key-wise instead -->
                             <!-- Also note that the name would not change, meanining re-render logic isn't affected -->
                             <v-overflow-btn :items="criteriaDropDown" v-model="mountedCriteriasId[index]" :rules="[existenceRule, duplicateRule]" outline/>
-                            <button type="button" class="red-cl" @click="deleteCriteria(index)">Remove Criteria</button>
+                            <button type="button" class="red-cl button-cs" @click="deleteCriteria(index)">Remove Criteria</button>
                         </div>
                     </v-flex>
-                    <button type="button" class="primary-cl" @click="appendRubric()">Add Criteria</button>
-                    <button type="button" class="purple-cl" @click="sendRubric()">{{id ? "Edit Rubric" : "Create Rubric"}}</button>
+                    <button type="button" class="primary-cl button-cs" @click="appendRubric()">Add Criteria</button>
+                    <button type="button" class="purple-cl button-cs" @click="sendRubric()">{{id ? "Edit Rubric" : "Create Rubric"}}</button>
                 </v-layout>
             </v-container>
         </v-form>

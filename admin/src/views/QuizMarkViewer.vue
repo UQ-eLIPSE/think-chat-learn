@@ -17,7 +17,7 @@
                 </b-select>
             </b-field>
 
-            <button class="green-cl"
+            <button class="green-cl button-cs"
                     type="button"
                     @click="exportToCsv">Export marks to CSV</button>
         </div>

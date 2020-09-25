@@ -19,7 +19,7 @@
         </div>
       </div>
     </div>
-    <button type="button" class="primary-cl save-marks" @click.prevent="saveMarksHandler">Save</button>
+    <button type="button" class="primary-cl save-marks button-cs" @click.prevent="saveMarksHandler">Save</button>
   </div>
 </template>
 

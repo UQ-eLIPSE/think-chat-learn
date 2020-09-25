@@ -2,27 +2,42 @@
   <div class="pagination">
     <v-layout row class="controls align-center">
 
-      <div class="squircular-icon uq start-btn" @click="firstPage()">
+      <div :class="`squircular-icon start-btn ${currentPage === 1 ? 'disabled-button-cs': 'uq'}`" @click="firstPage()">
         <i class="icon-angle-double-left"></i>
       </div>
 
-      <div class="squircular-icon uq previous-btn" @click="previousPage()">
+      <div :class="`squircular-icon previous-btn ${currentPage === 1 ? 'disabled-button-cs': 'uq'}`" @click="previousPage()">
         <i class="icon-chevron-left"></i>
       </div>
 
-      <template v-for="(p, i) in pageArray">
-        <div @click="changePageAction(p)" :key="`${i}-page`">
-          <PageNumber :numeral="p" 
-                      :marked="isGroupMarking && groupList && p <= groupList.length ? groupList[p-1].marked : false" 
-                      :selected="p === currentPage"/>
-        </div>
-      </template>
+      <span class="pagination-wrapper mr-2">
+        <v-layout  row class="align-baseline ma-0 pa-0">
+        <i v-if="(pageArray.length && pageArray[0] > 1)" class="icon-ellipsis-h"></i>
 
-      <div class="squircular-icon uq next-btn" @click="nextPage()">
+        <template v-for="(p, i) in pageArray">
+          <div @click="changePageAction(p)" :key="`${i}-page`">
+            <PageNumber :numeral="p" 
+                        :marked="isGroupMarking && groupList && p <= groupList.length ? groupList[p-1].marked : false" 
+                        :selected="p === currentPage"/>
+          </div>
+        </template>
+
+        <i v-if="(pageArray.length && pageArray[pageArray.length - 1] < totalPages - 1)" class="icon-ellipsis-h"></i>
+
+        <div v-if="(pageArray.length && pageArray[pageArray.length - 1] < totalPages)" 
+            @click="changePageAction(totalPages)" :key="`${totalPages}-page`">
+          <PageNumber :numeral="totalPages" 
+                      :marked="isGroupMarking && groupList && groupList[totalPages - 1].marked " 
+                      :selected="totalPages === currentPage"/>
+        </div>
+        </v-layout>
+      </span>
+
+      <div :class="`squircular-icon next-btn ${currentPage === totalPages ? 'disabled-button-cs': 'uq'}`" @click="nextPage()">
         <i class="icon-chevron-right"></i>
       </div>
 
-      <div class="squircular-icon uq end-btn" @click="lastPage()">
+      <div :class="`squircular-icon end-btn ${currentPage === totalPages ? 'disabled-button-cs': 'uq'}`" @click="lastPage()">
         <i class="icon-angle-double-right"></i>
       </div>
 
@@ -73,7 +88,7 @@
       const startPage = Math.min(Math.max(currentPage - ~~(numVisiblePageButtons / 2), 1), totalPages - numVisiblePageButtons + 1);
 
       for (let i = 0; i < numVisiblePageButtons; i++) {
-        pageArray.push(startPage + i);
+        pageArray.push(i + startPage);
       }
 
       return pageArray;
@@ -112,32 +127,4 @@
 </script>
 
 <style lang="scss" scoped>
-@import "../../../css/partial/variables";
-@import "../../../css/partial/fonts";
-@import "../../../css/partial/icons";
-
-.start-btn,
-.end-btn{
-  @include icon-wrapper-shape(33.3%, 22.5, 1.2);
-}
-
-.previous-btn,
-.next-btn{
-  @include icon-wrapper-shape(33.3%, 25, 1);
-}
-
-.start-btn,
-.end-btn,
-.previous-btn,
-.next-btn{
-  cursor: pointer;
-}
-
-.squircular-icon:not(:last-of-type){
-  margin-right: 5px;
-}
-
-.pagination {
-  height: 40px;
-}
 </style>
