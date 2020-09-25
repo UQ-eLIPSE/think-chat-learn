@@ -172,7 +172,7 @@ export class MarksService extends BaseService<Mark> {
         
     }
 
-    public async createOrUpdateMarks(quizSessionId: string, questionId: string, newMarks: Mark): Promise<boolean> {
+    public async createOrUpdateMarks(quizSessionId: string, newMarks: Mark): Promise<boolean> {
         const currentMarkerMarks = await this.marksRepo.findAll({
             quizSessionId: quizSessionId
         });
@@ -302,7 +302,7 @@ export class MarksService extends BaseService<Mark> {
         }
     }
 
-    public async createOrUpdateMarksMultiple(quizSessionId: string, questionId: string, newMarks: Mark): Promise<boolean> {
+    public async createOrUpdateMarksMultiple(quizSessionId: string, newMarks: Mark): Promise<boolean> {
 
         // Only need a quiz session + markerID combo to determine a mark
         const currentMarkerMarks = await this.marksRepo.findAll({

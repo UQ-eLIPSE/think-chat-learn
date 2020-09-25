@@ -4,6 +4,7 @@
 @import "partial/fonts";
 @import "partial/form";
 @import "partial/icons";
+@import "partial/pagination";
 @import "partial/table";
 
 @font-face {
@@ -17,6 +18,12 @@
   font-style: normal;
   font-display: block;
 }
+
+/**
+* Naming class rule (exclude form elements)
+* Custom element: .<element name>-cs
+* Custom color: .<color name>-cl
+*/
 
 #app {
     // font-family: "Roboto-Light", sans-serif;
