@@ -8,7 +8,7 @@
       <div class="circular-icon toggle-comment">
         <i class="icon-chat" title="Add Comment" @click.prevent="toggleComments()" />
         <span v-if="mark && mark.feedback" class="marked">
-          <div :class="`circular-icon green-cl-solid`">
+          <div class="circular-icon green-cl-solid">
             <i class="icon-check"/>
           </div>
         </span>
