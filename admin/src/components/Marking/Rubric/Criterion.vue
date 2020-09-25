@@ -5,7 +5,7 @@
       <Points @marked="markedHandler" :totalPoints="maximumMarks" :currentPoints="mark.value" />
     </div>
     <div class="comments-icon">
-      <div class="circular-icon toggle-comment" :class="commentClasses">
+      <div class="circular-icon toggle-comment">
         <i class="icon-chat" title="Add Comment" @click.prevent="toggleComments()" />
         <span v-if="mark && mark.feedback" class="marked">
           <div :class="`circular-icon green-cl-solid`">
@@ -56,12 +56,6 @@ export default class Criterion extends Vue {
 
   get criterionName() {
     return (this.criterion && this.criterion.name) || "";
-  }
-
-  get commentClasses() {
-    return {
-      filled: this.mark && this.mark.feedback,
-    };
   }
 
   toggleComments() {
