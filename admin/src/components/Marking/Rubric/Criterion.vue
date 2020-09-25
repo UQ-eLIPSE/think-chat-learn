@@ -5,8 +5,13 @@
       <Points @marked="markedHandler" :totalPoints="maximumMarks" :currentPoints="mark.value" />
     </div>
     <div class="comments-icon">
-      <div class="circular-icon" :class="commentClasses">
-        <i class="icon-chat" title="Add Comment" @click.prevent="toggleComments()" />
+      <div class="circular-icon toggle-comment" @click.prevent="toggleComments()" >
+        <i class="icon-chat" title="Add Comment"/>
+        <span v-if="mark && mark.feedback" class="marked">
+          <div class="circular-icon green-cl-solid">
+            <i class="icon-check"/>
+          </div>
+        </span>
       </div>
 
       <div v-show="commentsVisible" class="comments-box flex-row">
@@ -53,12 +58,6 @@ export default class Criterion extends Vue {
     return (this.criterion && this.criterion.name) || "";
   }
 
-  get commentClasses() {
-    return {
-      filled: this.mark && this.mark.feedback,
-    };
-  }
-
   toggleComments() {
     this.commentsVisible = !this.commentsVisible;
   }
@@ -66,7 +65,8 @@ export default class Criterion extends Vue {
 </script>
 <style lang="scss" scoped>
 @import "../../../../css/partial/variables";
-@import "../../../../css/partial/containers";
+@import "../../../../css/partial/fonts";
+@import "../../../../css/partial/icons";
 
 .criterion {
   display: flex;
@@ -92,32 +92,35 @@ export default class Criterion extends Vue {
     position: relative;
     font-size: 1.4em;
 
+
+    .marked {
+      position: absolute;
+      right: 2px;
+      top: 2px;
+      .circular-icon {
+        @include icon-wrapper-shape(50%, 11, 0.6);
+      }
+    }
+
+    i {
+      cursor: pointer;
+      border-radius: 50%;
+      background: transparent;
+    }
+
+    .toggle-comment > i, .comment-close > i {
+      color: $primary;
+      padding: 0.25rem;
+
+      &:hover {
+        background: rgba(1, 0, 0, 0.09);
+      }
+    }
+    
     .comment-close {
       align-self: flex-start;
     }
 
-    .circular-icon:hover {
-      background: rgba(1, 0, 0, 0.09);
-    }
-
-    // .circular-icon.filled {
-    //   background: transparentize($color: $primary, $amount: 0.9);
-    // }
-
-    i,
-    svg {
-      cursor: pointer;
-      border-radius: 50%;
-      background: transparent;
-      color: $primary;
-    }
-
-    &.filled {
-      i,
-      svg {
-        color: $primary;
-      }
-    }
 
     .comments-box {
       display: flex;
