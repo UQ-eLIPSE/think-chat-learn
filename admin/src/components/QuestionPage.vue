@@ -63,7 +63,7 @@
           <v-flex xs12>
             <button
               type="button"
-              class="primary-cl"
+              class="primary-cl button-cs"
               @click="submitQuestion()"
             >{{ isEditing ? "Edit Question" : "Create Question" }}</button>
           </v-flex>

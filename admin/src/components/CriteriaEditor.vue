@@ -15,7 +15,7 @@
                             <v-textarea label="Criteria Description" v-model="currentCriteria.description" outline :rules="[existenceRule]"/>
                         </b-field>
                     </v-flex>                    
-                    <button class="primary-cl" type="button" @click="sendCriteria()">{{currentCriteria._id ? "Edit Criteria" : "Create Criteria"}}</button>
+                    <button class="primary-cl button-cs" type="button" @click="sendCriteria()">{{currentCriteria._id ? "Edit Criteria" : "Create Criteria"}}</button>
                 </v-layout>
             </v-container>
         </v-form>

@@ -1,9 +1,8 @@
 @import "./variables";
 
-button {
+.button-cs{
   border: none;
   border-radius: 5px;
-  color: $white;
   cursor: pointer;
 
   font-family: "Open Sans", sans-serif;
@@ -28,4 +27,9 @@ button {
     min-width: 75px;
     height: 20px;
   }
+}
+
+.disabled-button-cs{
+  @include transparent-color($dark-grey, false);
+  cursor: default !important;
 }
