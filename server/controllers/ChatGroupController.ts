@@ -4,7 +4,7 @@ import { ChatGroupService } from "../services/ChatGroupService";
 import { SocketSession } from "../js/websocket/SocketSession";
 import { StudentAuthenticatorMiddleware } from "../js/auth/StudentPageAuth";
 import { isAdmin } from "../js/auth/AdminPageAuth";
-import { LoginResponse } from "../../common/interfaces/ToClientData";
+import { LoginResponse, AdminLoginResponse } from "../../common/interfaces/ToClientData";
 import { uniqueId } from "lodash";
 
 export class ChatGroupController extends BaseController {
@@ -25,12 +25,26 @@ export class ChatGroupController extends BaseController {
         });
     }
 
-    private getChatGroups(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        this.chatGroupService.getChatGroups(req.query.quizid).then((result) => {
-            res.json(result);
-        }).catch((e) => {
-            res.sendStatus(400);
-        });
+    private async getChatGroups(req: express.Request, res: express.Response, next: express.NextFunction | undefined): Promise<express.Response> {
+        try {
+            const decodedToken = req.user as AdminLoginResponse;
+            const userId = (decodedToken && decodedToken.user && decodedToken.user._id) || null;
+            if(!userId) throw new Error('Invalid user credentials');
+            const quizId = req.query.quizid;
+
+            if(!quizId) throw new Error("Quiz ID not provided");
+
+            const chatGroups = await this.chatGroupService.getMinifiedChatGroupsWithMarkingData(quizId, userId);
+
+            return res.json({
+                success: true,
+                payload: chatGroups
+            }).status(200);
+        } catch(e) {
+            return res.json({
+                success: false
+            }).status(500);
+        }
     }
 
     /**
@@ -83,10 +97,30 @@ export class ChatGroupController extends BaseController {
         }
     }
 
+    private async getMessagesByChatGroupId(req: express.Request, res: express.Response, next: express.NextFunction | undefined) {
+        try {
+            const chatGroupId = req.params.chatGroupId;
+            if(!chatGroupId) throw new Error('Invalid parameters: chatGroupId missing');
+
+            const messages = await this.chatGroupService.getMessagesByChatGroupId(chatGroupId);
+
+            return res.json({
+                success: true,
+                payload: messages
+            });
+        } catch(e) {
+            console.error(e);
+            return res.json({
+                success: false
+            }).status(500);
+        }
+    }
+
     public setupRoutes() {
         this.router.post("/recoverSession", StudentAuthenticatorMiddleware.checkUserId(),
             StudentAuthenticatorMiddleware.checkQuizSessionId(), this.recoverChatGroupStateByQuizSessionId.bind(this));
         this.router.get('/getChatGroups', isAdmin(), this.getChatGroups.bind(this));
         this.router.get('/quizSession/:quizSessionId', StudentAuthenticatorMiddleware.checkUserId(), this.getChatGroupForQuizSessionForClient.bind(this));
+        this.router.get('/:chatGroupId/messages', isAdmin(), this.getMessagesByChatGroupId.bind(this));
     }
 }

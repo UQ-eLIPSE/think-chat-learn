@@ -182,15 +182,15 @@
               </b-field>
             </div>
             <div class="p-controls">
-              <button type="button" class="primary-cl" @click="up(index)">Move up</button>
-              <button type="button" class="uq" @click="down(index)">Move down</button>
-              <button type="button" class="purple-cl" @click="deletePage(index)">Delete page</button>
+              <button type="button" class="primary-cl button-cs" @click="up(index)">Move up</button>
+              <button type="button" class="uq button-cs" @click="down(index)">Move down</button>
+              <button type="button" class="purple-cl button-cs" @click="deletePage(index)">Delete page</button>
             </div>
           </v-flex>
 
           <v-flex xs12>
             <v-container class="controls">
-              <button class="primary-cl" type="button" @click="createPage()">Create new page</button>
+              <button class="primary-cl button-cs" type="button" @click="createPage()">Create new page</button>
             </v-container>
           </v-flex>
 
@@ -227,7 +227,7 @@
           </div>
           <v-flex xs12>
             <v-container class="controls">
-              <button type="button" class="primary-cl" @click="submitQuiz()">{{ pageAction }}</button>
+              <button type="button" class="primary-cl button-cs" @click="submitQuiz()">{{ pageAction }}</button>
             </v-container>
           </v-flex>
         </v-layout>

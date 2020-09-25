@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <h1 class="moochat-name">Question List</h1>
-        <router-link tag="button" class="primary-cl" to="/questionPage">Add Question</router-link>
+        <router-link tag="button" class="primary-cl button-cs" to="/questionPage">Add Question</router-link>
         <v-container fluid grid-list-md>
             <v-layout row wrap>
                 <v-flex v-for="question in questions"
@@ -11,10 +11,10 @@
                         <v-card-title><h3>Question Title: {{question.title}}</h3></v-card-title>
                         <div class="controls">
                             <button type="button"
-                                    class="primary-cl"
+                                    class="primary-cl button-cs"
                                     @click="editQuestion(question._id)">Edit</button>
                             <button type="button"
-                                    class="uq"
+                                    class="uq button-cs"
                                     @click="deleteQuestion(question._id)">Delete</button>
                         </div>
                     </div>
