@@ -65,9 +65,9 @@ export class MarksController extends BaseController {
     }
 
     private createOrUpdateMarks(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        if (!req.params.quizSessionId || !req.params.questionId || !req.body) throw new Error('Parameters not supplied');
+        if (!req.params.quizSessionId || !req.body) throw new Error('Parameters not supplied');
         // TODO validate req.body as a valid mark
-        this.marksService.createOrUpdateMarks(req.params.quizSessionId, req.params.questionId, req.body).then((result) => {
+        this.marksService.createOrUpdateMarks(req.params.quizSessionId, req.body).then((result) => {
             res.json(result).status(200);
         }).catch((e) => {
             console.log(e);
@@ -76,9 +76,9 @@ export class MarksController extends BaseController {
     }
 
     private createOrUpdateMarksMultiple(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-        if (!req.params.quizSessionId || !req.params.questionId || !req.body) throw new Error('Parameters not supplied');
+        if (!req.params.quizSessionId || !req.body) throw new Error('Parameters not supplied');
         // TODO validate req.body as a valid mark
-        this.marksService.createOrUpdateMarksMultiple(req.params.quizSessionId, req.params.questionId, req.body).then((result) => {
+        this.marksService.createOrUpdateMarksMultiple(req.params.quizSessionId, req.body).then((result) => {
             res.json(result).status(200);
         }).catch((e) => {
             console.log(e);
@@ -89,8 +89,8 @@ export class MarksController extends BaseController {
     public setupRoutes() {
         this.router.get("/bulk/quiz", isAdmin(), this.getMarksByQuizId.bind(this));
         this.router.get("/quizSessionId/:quizSessionId", isAdmin(), this.getMarksByQuizSession.bind(this));
-        this.router.post("/createOrUpdate/quizSessionId/:quizSessionId/questionId/:questionId", isAdmin(), this.createOrUpdateMarks.bind(this));
-        this.router.post("/multiple/createOrUpdate/quizSessionId/:quizSessionId/questionId/:questionId", isAdmin(), this.createOrUpdateMarksMultiple.bind(this));
+        this.router.post("/createOrUpdate/quizSessionId/:quizSessionId", isAdmin(), this.createOrUpdateMarks.bind(this));
+        this.router.post("/multiple/createOrUpdate/quizSessionId/:quizSessionId", isAdmin(), this.createOrUpdateMarksMultiple.bind(this));
         this.router.get("/student/quizSession/:quizSessionId", StudentAuthenticatorMiddleware.checkUserId(), this.getMarksByQuizSessionForCurrentUser.bind(this));
     }
 }
