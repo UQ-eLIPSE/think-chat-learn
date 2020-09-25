@@ -76,11 +76,11 @@ export class ChatGroupService extends BaseService<IChatGroup> {
     }
 
     /**
-     * Returns chat groups for a given quiz schedule along with marking data
+     * Returns chat groups for a given quiz schedule along with marking data *without* messages
      * @param quizId 
      * @param currentUserId 
      */
-    public async getChatGroupsWithMarkingData(quizId: string, currentUserId: string): Promise<IChatGroupWithMarkingIndicator[]> {
+    public async getMinifiedChatGroupsWithMarkingData(quizId: string, currentUserId: string): Promise<IChatGroupWithMarkingIndicator[]> {
 
         const chatGroups = await this.chatGroupRepo.findAll({
             quizId
@@ -93,6 +93,9 @@ export class ChatGroupService extends BaseService<IChatGroup> {
         const allowMultipleMarkers = (quiz && quiz.markingConfiguration && quiz.markingConfiguration.allowMultipleMarkers) === true;
 
         const chatGroupsWithMarkingData: IChatGroupWithMarkingIndicator[] = (chatGroups || []).map((group) => {
+            // Set messages to empty array since they are not required for this function
+            group.messages = [];
+            
             return {
                 ...group,
                 quizSessionMarkedMap: {}
@@ -228,5 +231,16 @@ export class ChatGroupService extends BaseService<IChatGroup> {
             startTime: group.startTime!,
         };
 
+    }
+
+    /**
+     * Returns messages for a chat group ID
+     * @param chatGroupId ChatGroup ID
+     * @throws Error if chat group not found
+     */
+    public async getMessagesByChatGroupId(chatGroupId: string) {
+        const chatGroup = await this.chatGroupRepo.findOne(chatGroupId);
+        if(!chatGroup) throw new Error('Could not find chat group');
+        return (chatGroup && chatGroup.messages) || [];
     }
 }

@@ -11,7 +11,7 @@ import { convertNetworkQuizIntoQuiz, convertNetworkQuizzesIntoQuizzes } from "..
 import { EventBus, EventList, SnackEvent } from "../../EventBus";
 
 type QuizSessionInfoMap = { [key: string]: QuizSessionDataObject };
-type ChatGroupQuestionMessagesMap = { [chatGroupId: string]: { [questionId: string]: IChatMessage[] } };
+
 export type CurrentMarkingContext = {
     currentUserId: string | null,
     currentQuizSessionId: string | null,
@@ -90,7 +90,8 @@ const mutationKeys = {
     SET_COURSE: "setCourse",
     SET_CHATGROUPS: "setChatGroups",
     SET_QUIZSESSION_MARKED: "SET_QUIZSESSION_MARKED",
-    SET_SEARCH_QUIZ_SESSIONS: "SET_SEARCH_QUIZ_SESSIONS"
+    SET_SEARCH_QUIZ_SESSIONS: "SET_SEARCH_QUIZ_SESSIONS",
+    SET_CHATGROUP_MESSAGES: "SET_CHATGROUP_MESSAGES"
 };
 
 const getters: GetterTree<IState, undefined> = {
@@ -102,21 +103,6 @@ const getters: GetterTree<IState, undefined> = {
     },
     quizSessionInfoMap: (): QuizSessionInfoMap => {
         return state.quizSessionInfoMap;
-    },
-    chatGroupQuestionMessagesMap: (state): ChatGroupQuestionMessagesMap => {
-        const chatGroups = state.chatGroups || [];
-        const map: ChatGroupQuestionMessagesMap = {};
-        chatGroups.forEach((g) => {
-            if (!g || !g._id) return;
-            if (!map[g._id]) map[g._id] = {};
-            (g.messages || []).forEach((m) => {
-                if (m) {
-                    if (!map[g!._id!][m.questionId]) map[g!._id!][m.questionId] = [];
-                    map[g!._id!][m.questionId].push(m);
-                }
-            })
-        });
-        return map;
     },
     currentQuiz: (): IQuiz | undefined => {
         return state.quiz.find((q) => state.currentMarkingContext.currentQuizId === q._id);
@@ -153,18 +139,6 @@ const getters: GetterTree<IState, undefined> = {
         const quizSessionInfoObjectsInCurrentChatGroup = quizSessionIdsInCurrentChatGroup.map((qid) => state.quizSessionInfoMap[qid]).filter((o) => o !== null && o !== undefined);
         
         return quizSessionInfoObjectsInCurrentChatGroup;
-    },
-    currentChatGroupQuestionMessageMap: (state, getters): { [questionId: string]: IChatMessage[]} => {
-        if(!(getters.currentChatGroup as IChatGroupWithMarkingIndicator | undefined) || !state.currentMarkingContext.currentQuestionId) return {};
-        const currentChatGroupId = getters.currentChatGroup._id;
-        const currentChatGroupQuestionMessageMap = getters.chatGroupQuestionMessagesMap[currentChatGroupId];
-        return currentChatGroupQuestionMessageMap;
-    },
-    currentChatGroupQuestionMessages: (state, getters): IChatMessage[] => {
-        const currentChatGroupQuestionMessageMap = getters.chatGroupQuestionMessagesMap;
-        if(!currentChatGroupQuestionMessageMap || !state.currentMarkingContext.currentChatGroupId || !state.currentMarkingContext.currentQuestionId) return [];
-        if(!currentChatGroupQuestionMessageMap[state.currentMarkingContext.currentChatGroupId]) return [];
-        return currentChatGroupQuestionMessageMap[state.currentMarkingContext.currentChatGroupId][state.currentMarkingContext.currentQuestionId] || [];
     },
     /**
      * Returns a questionId to question response array map per chat group
@@ -436,6 +410,20 @@ const actions: ActionTree<IState, undefined> = {
         if(response && response.success && response.payload) {
             commit(mutationKeys.SET_SEARCH_QUIZ_SESSIONS, { quizScheduleId, payload: response.payload });
         }
+    },
+
+    /**
+     * Fetches messages for a chat group from the server
+     * @param chatGroupId Chat group ID
+     */
+    async fetchChatGroupMessages({ commit }: { commit: Commit }, chatGroupId: string) {
+        const group = (state.chatGroups || []).find((group) => group._id === chatGroupId);
+        if(!group) return;
+        
+        const response = await API.request(API.GET, API.CHATGROUP + `${chatGroupId}/messages`, {}, undefined);
+        if(response && response.success && response.payload) {
+            commit(mutationKeys.SET_CHATGROUP_MESSAGES, { chatGroupId, messages: response.payload || []});
+        }
     }
 };
 
@@ -511,6 +499,12 @@ const mutations = {
     },
     [mutationKeys.SET_SEARCH_QUIZ_SESSIONS](state: IState, payload: { quizScheduleId: string, payload: QuizSessionToUserInfoMap }) {
         Vue.set(state.quizSessionUserSearchMap, payload.quizScheduleId, payload.payload);
+    },
+    [mutationKeys.SET_CHATGROUP_MESSAGES](state: IState, payload: { messages: IChatMessage[], chatGroupId: string }) {
+        const chatGroup = state.chatGroups.find((group) => group._id === payload.chatGroupId);
+        if(chatGroup) {
+            Vue.set(chatGroup, 'messages', payload.messages);
+        }
     }
 };
 
