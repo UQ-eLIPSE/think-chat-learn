@@ -17,7 +17,7 @@
                 </b-select>
             </b-field>
 
-            <button class="primary"
+            <button class="green-cl button-cs"
                     type="button"
                     @click="exportToCsv">Export marks to CSV</button>
         </div>
@@ -79,11 +79,10 @@
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator";
 import { IQuiz, QuizScheduleDataAdmin, Page, IDiscussionPage, IQuestionAnswerPage,
-    IQuizSession, IChatGroup, IUserSession, IUser,
+    IQuizSession, IChatGroupWithMarkingIndicator, IUserSession, IUser,
     QuizSessionDataObject } from "../../../common/interfaces/ToClientData";
 import * as Schema from "../../../common/interfaces/DBSchema";
 import { PageType } from "../../../common/enums/DBEnums";
-import MarkQuizMarkingSection from '../components/Marking/MarkQuizMarkingSection.vue';
 import { API } from "../../../common/js/DB_API";
 
 Component.registerHooks([
@@ -92,11 +91,7 @@ Component.registerHooks([
     'beforeRouteUpdate' // for vue-router 2.2+
 ])
 
-@Component({
-    components: {
-        MarkQuizMarkingSection
-    }
-})
+@Component
 export default class QuizMarkViewer extends Vue {
     private marksMap: { [quizSessionId: string]: Schema.Mark[] } = {};
     private quizSessionUserMap: { [quizSessionId: string]: { userSessionId: string, user: IUser } } = {};
@@ -239,7 +234,7 @@ export default class QuizMarkViewer extends Vue {
         // Fetch chat groups for quiz id
         await vm.$store.dispatch("getChatGroups", vm.q._id);
 
-        const chatGroups = vm.$store.getters.chatGroups as IChatGroup[];
+        const chatGroups = vm.$store.getters.chatGroups as IChatGroupWithMarkingIndicator[];
 
         await vm.fetchAndUpdatePaginatedMarksForQuiz(vm);
 
@@ -319,7 +314,7 @@ export default class QuizMarkViewer extends Vue {
 }
 </script>
 <style lang="scss" scoped>
-@import "../../css/variables.scss";
+@import "../../css/app.scss";
 .pagination {
     margin: 1rem 0;
 }
@@ -330,6 +325,7 @@ export default class QuizMarkViewer extends Vue {
 
 .marks-table {
     border-collapse: collapse;
+    width: 100%;
 }
 
 .marks-table td,

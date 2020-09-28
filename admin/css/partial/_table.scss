@@ -1,0 +1,5 @@
+@import "./variables";
+
+th, thead td {
+    @include transparent-color($primary, false)
+}

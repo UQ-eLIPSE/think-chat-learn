@@ -1,32 +1,37 @@
 <template>
     <div class="container">
         <h1 class="moochat-name">Question List</h1>
-        <router-link tag="button" class="primary" to="/questionPage">Add Question</router-link>
+        <router-link tag="button" class="primary-cl button-cs" to="/questionPage">Add Question</router-link>
         <v-container fluid grid-list-md>
             <v-layout row wrap>
                 <v-flex v-for="question in questions"
                     :key="question._id"
                     xs12>
-                    <v-card>
+                    <div class="card-container">
                         <v-card-title><h3>Question Title: {{question.title}}</h3></v-card-title>
                         <div class="controls">
-                            <v-btn type="button"
-                                    class="primary"
-                                    @click="editQuestion(question._id)">Edit</v-btn>
-                            <v-btn type="button"
-                                    class="primary"
-                                    @click="deleteQuestion(question._id)">Delete</v-btn>
+                            <button type="button"
+                                    class="primary-cl button-cs"
+                                    @click="editQuestion(question._id)">Edit</button>
+                            <button type="button"
+                                    class="uq button-cs"
+                                    @click="deleteQuestion(question._id)">Delete</button>
                         </div>
-                    </v-card>
+                    </div>
                 </v-flex>
             </v-layout>
         </v-container>
     </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@import "../../css/app.scss";
 .question {
-    border-bottom: 1px solid black;
+    border-bottom: 1px solid $black;
+}
+
+button {
+    margin-right: 0.5rem;
 }
 </style>
 

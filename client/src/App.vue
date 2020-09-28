@@ -5,7 +5,7 @@
       <template v-if="renderRestart">
         <div @click="restartSocket()">Restart</div>
       </template>
-      <div class="info"><font-awesome-icon icon="info-circle" /> If you encounter connection issues with Think.Chat.Learn, close this window/tab and relaunch Think.Chat.Learn from Blackboard. (Your progress will be saved) </div>
+      <!-- <div class="info"><font-awesome-icon icon="info-circle" /> If you encounter connection issues with Think.Chat.Learn, close this window/tab and relaunch Think.Chat.Learn from Blackboard. (Your progress will be saved) </div> -->
       <GlobalMessage v-if="GlobalMessageExists"/>
       <Stepper steps=5 />
       <Timer />
@@ -13,7 +13,6 @@
         <router-view class="router-panel" />
       </div>
     </section>
-
     <Footer />
   </div>
 </template>
@@ -126,7 +125,7 @@ html {
         bottom: 0;
         box-shadow: 0px 3px 6px 0px rgba(0, 0, 0, 0.15);
         left: 0;
-        max-width: 1920px;
+        max-width: 1441px;
         margin: 1em auto 1em auto;
         width: 85%;
 

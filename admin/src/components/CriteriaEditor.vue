@@ -15,14 +15,15 @@
                             <v-textarea label="Criteria Description" v-model="currentCriteria.description" outline :rules="[existenceRule]"/>
                         </b-field>
                     </v-flex>                    
-                    <v-btn type="button" @click="sendCriteria()">{{currentCriteria._id ? "Edit Criteria" : "Create Criteria"}}</v-btn>
+                    <button class="primary-cl button-cs" type="button" @click="sendCriteria()">{{currentCriteria._id ? "Edit Criteria" : "Create Criteria"}}</button>
                 </v-layout>
             </v-container>
         </v-form>
     </v-container>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@import "../../css/app.scss";
     .container button:hover {
         background-color: #51247a;
         transition: background-color 1s ease-out;

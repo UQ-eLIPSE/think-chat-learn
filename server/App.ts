@@ -146,21 +146,22 @@ export default class App {
         this.questionService = new QuestionService(this.questionRepository);
         this.userSessionService = new UserSessionService(this.userSessionRepository);
         this.quizSessionService = new QuizSessionService(this.quizSessionRepository, this.userSessionRepository,
-            this.quizRepository, this.responseRepository);
-        this.chatGroupService = new ChatGroupService(this.chatGroupRepository, this.responseRepository);
+            this.quizRepository, this.responseRepository, this.questionRepository, this.userRepository);
+        this.chatGroupService = new ChatGroupService(this.chatGroupRepository, this.responseRepository, this.quizSessionRepository,
+            this.userSessionRepository, this.marksRepository, this.quizRepository)
         this.responseService = new ResponseService(this.responseRepository, this.quizSessionRepository, this.quizRepository);
         this.marksService = new MarksService(this.marksRepository, this.quizRepository, this.quizSessionRepository, this.chatGroupRepository,
             this.userSessionRepository, this.userRepository, this.rubricRepository, this.criteriaRepository);
         this.criteriaService = new CriteriaService(this.criteriaRepository);
         this.courseService = new CourseService(this.courseRepository);
-        this.rubricService = new RubricService(this.rubricRepository);
+        this.rubricService = new RubricService(this.rubricRepository, this.criteriaRepository);
 
         // Controllers
         this.userController = new UserController(this.userService);
         this.quizController = new QuizController(this.quizService);
         this.questionController = new QuestionController(this.questionService);
         this.userSessionController = new UserSessionController(this.userSessionService);
-        this.quizSessionController = new QuizSessionController(this.quizSessionService);
+        this.quizSessionController = new QuizSessionController(this.quizSessionService, this.marksService);
         this.responseController = new ResponseController(this.responseService);
         this.chatGroupController = new ChatGroupController(this.chatGroupService);
         this.marksController = new MarksController(this.marksService);

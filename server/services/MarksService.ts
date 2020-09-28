@@ -8,7 +8,7 @@ import { UserRepository } from "../repositories/UserRepository";
 
 
 import { Mark } from "../../common/interfaces/DBSchema";
-import { IUser, IQuiz } from "../../common/interfaces/ToClientData";
+import { IUser, IQuiz, IQuizSession, IUserSession, IChatGroup } from "../../common/interfaces/ToClientData";
 import { RubricRepository } from "../repositories/RubricRepository";
 import { CriteriaRepository } from "../repositories/CriteriaRepository";
 
@@ -96,14 +96,83 @@ export class MarksService extends BaseService<Mark> {
         return this.marksRepo.findOne(_id);
     }
 
-    public async getMarksForQuizSession(quizSessionId: string): Promise<Mark[]> {
+    /**
+     * 
+     * @param quizSessionId 
+     * @param checkPublic If `true`, fetch marks only if quiz marks are public
+     */
+    public async getMarksForQuizSession(quizSessionId: string, checkPublic?: boolean): Promise<Mark[]> {
+        // Check if quiz marks are public
+        if(!quizSessionId) return [];
+
+        const quizSession = await this.quizSessionRepo.findOne(quizSessionId);
+        if(!quizSession || !quizSession.quizId) {
+            console.error('Invalid quiz session / quiz id in quiz session');
+            return [];
+        };
+
+        const quiz = await this.quizRepo.findOne(quizSession.quizId);
+
+        // Quiz could not be found
+        if(!quiz) {
+            console.error('Quiz could not be found');
+            return [];
+        }
+
+        // If quiz marks have not been made public, DO NOT return marks to the user
+        if(checkPublic && !quiz.marksPublic) return [];
 
         return this.marksRepo.findAll({
             quizSessionId: quizSessionId
-        })
+        });
     }
 
-    public async createOrUpdateMarks(quizSessionId: string, questionId: string, newMarks: Mark): Promise<boolean> {
+    public async getOverallScoreForQuizSession(quizSessionId: string): Promise<number | null> {
+        const markObjects = await this.marksRepo.collection.find({
+            quizSessionId: quizSessionId + ''
+        }).toArray();
+
+        if(!markObjects || !markObjects.length) return null;
+
+        // TODO: DECIDE WHICH SET OF MARKS TO USE. CURRENTLY USING THE FIRST RESULT ONLY
+        const markObject = markObjects[0];
+        const marks = markObject.marks || [];
+
+        return marks.reduce((total, mark) => total + (mark.value || 0), 0)
+    }
+
+    public async getOverallMaximumMarksForQuiz(quiz: Partial<IQuiz>): Promise<number | null> {
+        try {
+            if(!(quiz && quiz.rubricId &&
+                quiz.markingConfiguration &&
+                (quiz.markingConfiguration.maximumMarks || quiz.markingConfiguration.maximumMarks === 0))) {
+                throw new Error('Invalid marking values');
+            }
+
+    
+            const referredRubric = await this.rubricRepo.findOne({
+                _id: quiz.rubricId
+            });
+    
+            if (!referredRubric) {
+                throw new Error(`No rubric found of id ${quiz.rubricId}`);
+            }
+    
+            const criteria = await this.criteriaRepo.findByIdArray(referredRubric.criterias);
+
+            if(!criteria || !criteria.length) throw new Error('Criteria not set for quiz');
+
+            const markPerCriterion = quiz.markingConfiguration.maximumMarks;
+
+            return criteria.length * markPerCriterion;
+        } catch(e) {
+            console.error(e.message);
+            return null;
+        }
+        
+    }
+
+    public async createOrUpdateMarks(quizSessionId: string, newMarks: Mark): Promise<boolean> {
         const currentMarkerMarks = await this.marksRepo.findAll({
             quizSessionId: quizSessionId
         });
@@ -233,7 +302,7 @@ export class MarksService extends BaseService<Mark> {
         }
     }
 
-    public async createOrUpdateMarksMultiple(quizSessionId: string, questionId: string, newMarks: Mark): Promise<boolean> {
+    public async createOrUpdateMarksMultiple(quizSessionId: string, newMarks: Mark): Promise<boolean> {
 
         // Only need a quiz session + markerID combo to determine a mark
         const currentMarkerMarks = await this.marksRepo.findAll({
@@ -268,4 +337,5 @@ export class MarksService extends BaseService<Mark> {
             return false;
         }
     }
+
 }

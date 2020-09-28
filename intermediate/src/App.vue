@@ -1,6 +1,6 @@
 <template>
   <v-app class="pa-3" id="app">
-    <h1 class="display-1">MOOCchat Backup Client</h1>
+    <h1 class="display-1">Think.Chat.Learn Backup Client</h1>
     <div v-if="quiz" class="text-xs-center py-3">
       <h2 class="title py-2">Quiz details</h2>
       <h3 class="subheading">Title: {{quiz.title}}</h3>

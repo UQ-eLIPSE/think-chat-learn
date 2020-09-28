@@ -1,67 +1,108 @@
 <template>
   <v-container v-if="q">
-      <h3 class="text-xs-center">Quiz Title: {{ q.title }}</h3>
-      <p class="text-xs-center">Quiz ID: {{q._id}}</p>
-      <p class="text-xs-center"><b>Available Start:</b> {{ new Date(q.availableStart).toLocaleString() }}</p>
-      <p class="text-xs-center"><b>Available End:</b> {{ new Date(q.availableEnd).toLocaleString() }}</p>
-      <v-form>
-        <v-container fluid grid-list-md>
-          <v-layout row wrap>
-            <v-flex xs6>
-              <b-field label="Select the Group">
-                <v-overflow-btn :items="chatGroupsDropDown" v-model="selectedGroupId" outline/>
-              </b-field>
-            </v-flex>
-            <v-flex xs6>
-              <b-field label="Select the User">
-                <v-overflow-btn :items="currentGroupQuizSessionDropDown" v-model="currentQuizSessionId" outline/>
-              </b-field>
-            </v-flex>
-            <v-flex xs12>
-              <div class="step-navigation">
-                <v-btn type="button"
-                        class="primary"
-                        @click.prevent="previous">
-                  &lt; Previous</v-btn>
-                <v-btn type="button"
-                        class="primary"
-                        @click.prevent="next">Next &gt;</v-btn>
-              </div>
-              <div class="group-mark"
-                  v-if="selectedGroup">
 
-                <div class="question-discussion"
-                    v-if="selectedQuestion">
+    <v-layout row>
+      <v-flex xs8>
+        <h2>{{ q.title }}</h2>
+      </v-flex>
+      <v-flex>
+        <v-layout row class="blue-cl-static quiz-info pa-2">
+          <p class="mr-2"><b>Available Start:</b> {{ new Date(q.availableStart).toLocaleString() }}</p>
+          <p><b>Available End:</b> {{ new Date(q.availableEnd).toLocaleString() }}</p>
+        </v-layout>
+      </v-flex>
+    </v-layout>
 
+    <div class="form-control my-2" v-if="marksPublic !== null">
+      <v-layout row class="align-center">
+        <input type="checkbox" v-model="marksPublic" class="mr-2" 
+              @click.stop.prevent="toggleMarksVisibility">
+        <span class="checkbox-label">Publish Marks? (If checked, marks will be displayed to students)</span>
+      </v-layout>
+    </div>
 
-                  <div class="question-box"
-                      v-if="displayQuestionContent">
-                    <span> Question Title:
-                      <b>{{ selectedQuestion.title }}</b>
-                    </span>
-                    <div v-html="selectedQuestion.content"></div>
-                  </div>
+    <v-form class="form-control">
 
-                  <span class="info" v-if="!isCurrentUserSelectedAndInGroup">Please select a user</span>
-                  <MarkQuizMarkingSection v-if="selectedGroup && selectedQuestion && isCurrentUserSelectedAndInGroup"
-                                          class="marking-section" />
-                </div>
-              </div>
-            </v-flex>            
+      <!--Search student component and group pagination-->
+      <v-layout row class="align-center">
+        <!--Search student input-->
+        <v-flex class="search-field mr-4" xs3>
+          <AutoComplete title="Search student" class="autocomplete-marks" type="search" v-model="searchText" :itemList="searchResults" @click="searchClickHandler"/>
+        </v-flex>
+
+        <!--Group pagination-->
+        <v-flex class="groups card-container ma-0 py-1 px-8" xs8>
+          <v-layout row class="align-center">
+            <h3 class="ma-0">Group</h3>
+            <div class="mx-auto">
+              <Pagination :currentPage="(selectedGroupIndex + 1)" 
+                          :totalPages="chatGroupsDropDown.length" 
+                          :numPageButtons="numVisiblePagesButton" 
+                          @pageChanged="changeGroupChat"
+                          :isGroupMarking="true"
+                          :groupList="groupMarkingPaginationList"/>
+            </div>
           </v-layout>
-        </v-container>
-      </v-form>
+        </v-flex>
+      </v-layout>
+
+      <v-container fluid grid-list-md class="pa-0 mt-2">
+        <div class="form-control">
+          <v-layout row>
+            <!--Main panel-->
+            <div class="card-container mr-3 ">
+              
+              <!--List of students in group-->
+              <v-layout row class="users">
+                <template v-for="(user, i) in currentGroupQuizSessionDropDown">
+                  <UserCard v-if="user && user.text && user.value"
+                    :key="`${user.text}-user`"
+                    :studentId="user.text"
+                    @click.native="setCurrentQuizSessionId(user.value)"
+                    :numeral="i + 1"
+                    :marked="checkIfUserQuizSessionMarked(user.value)"
+                    :selected="currentQuizSessionId === user.value"/>
+                </template>
+              </v-layout>
+
+              <div class="divider"></div>
+              <v-flex xs12 class="marking-section">
+                <div class="group-mark" v-if="selectedGroup">
+                  <div class="question-discussion" >
+                    <QuizSessionViewer v-if="selectedGroup && isCurrentUserSelectedAndInGroup"/>
+                    <span v-if="!isCurrentUserSelectedAndInGroup"><p>Please select a user</p></span>
+                    
+                  </div>
+                </div>
+              </v-flex>
+            </div>
+
+            <!--Rubric and general feedback-->
+            <MarkingComponent v-if="selectedGroup && isCurrentUserSelectedAndInGroup" 
+                              class="marking-component"></MarkingComponent>
+
+          </v-layout>
+        </div>
+      </v-container>
+    </v-form>
   </v-container>
-  <div v-else>Select a group from the dropdown list</div>
+  <div v-else> Select a group from the dropdown list</div>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Watch } from "vue-property-decorator";
-import { IQuiz, QuizScheduleDataAdmin, Page, IDiscussionPage, IQuestionAnswerPage, IQuizSession, IChatGroup, IUserSession, IUser, QuizSessionDataObject } from "../../../common/interfaces/ToClientData";
+import { IQuiz, QuizScheduleDataAdmin, Page, IDiscussionPage,
+  IQuestionAnswerPage, IQuizSession, IChatGroupWithMarkingIndicator, IUserSession, IUser, QuizSessionDataObject } from "../../../common/interfaces/ToClientData";
 
 import { PageType } from "../../../common/enums/DBEnums";
-import MarkQuizMarkingSection from '../components/Marking/MarkQuizMarkingSection.vue';
+import QuizSessionViewer from '../components/QuizSessionViewer/QuizSessionViewer.vue';
+import MarkingComponent from '../components/Marking/MarkingComponent.vue';
 import { API } from "../../../common/js/DB_API";
+import UserCard from "../components/Marking/UserCard.vue";
+import Pagination from "../components/Pagination/Pagination.vue";
+import { IPageNumber } from "../components/Pagination/PageNumber.vue";
+import { QuizSessionToUserInfoMap } from "../store/modules/quiz";
+import AutoComplete from "../elements/AutoComplete.vue";
 
 Component.registerHooks([
   'beforeRouteEnter',
@@ -76,11 +117,31 @@ interface DropDownConfiguration {
 
 @Component({
   components: {
-    MarkQuizMarkingSection
+    QuizSessionViewer,
+    MarkingComponent,
+    UserCard,
+    Pagination,
+    AutoComplete
   }
 })
 export default class MarkQuiz extends Vue {
-  private displayQuestionContent: boolean = false;
+  private numVisiblePagesButton: number = 7;
+  private searchText: string = '';
+
+  get marksPublic(): boolean | null | undefined {
+    if(!this.q) return null;
+    return this.q.marksPublic;
+  }
+
+  async toggleMarksVisibility() {
+    // Check if marksPublic is not invalid
+    if(this.marksPublic !== null && this.q && this.q._id) {
+      await this.$store.dispatch('updateQuizMarksVisibility', {
+        quizScheduleId: this.q._id,
+        marksPublic: !(!!this.marksPublic) 
+      });
+    }
+  }
 
   @Watch('selectedGroupId')
   async chatGroupIdChangeHandler() {
@@ -89,10 +150,42 @@ export default class MarkQuiz extends Vue {
       const quizSessionInfoPromises = (chatGroup.quizSessionIds || []).map(async (qs) => await this.$store.dispatch('getQuizSessionInfo', qs));
 
       await Promise.all(quizSessionInfoPromises);
+      
+      await this.checkAndFetchChatGroupMessages(chatGroup);
     }
 
   }
-  goToChatgroup(chatGroupIndex: number, questionIndex: number, quizSessionIndex: number) {
+
+  /**
+   * Returns if a quiz session is marked
+   * @param {string} quizSessionId Quiz session ID
+   * @returns {boolean} `true` if marked, `false` if not marked
+   */
+  checkIfUserQuizSessionMarked(quizSessionId: string): boolean {
+    if(!this.selectedGroup || !this.selectedGroup.quizSessionMarkedMap) return false;
+    return this.selectedGroup.quizSessionMarkedMap[quizSessionId];
+  }
+
+  /**
+   * Returns group marking array for pagination
+   */
+  get groupMarkingPaginationList(): IPageNumber[] {
+    return this.chatGroups.map((chatGroup, i) => {
+      const marked = chatGroup && chatGroup.quizSessionMarkedMap? Object.values(chatGroup.quizSessionMarkedMap).every((value) => value) : false;
+
+      return {
+        page: i + 1,
+        marked: marked
+      };
+    });
+  }
+
+  /**
+   * Navigates to a chat group, optionally to a specific user quiz session if provided
+   * @param chatGroupIndex {number} Index of the chat group in the chatGroups array
+   * @param quizSessionId {string} (Optional) Quiz session ID to be selected
+   */
+  goToChatgroup(chatGroupIndex: number, quizSessionId?: string) {
     if (!this.chatGroups) return;
     if (!this.chatGroups[chatGroupIndex]) {
       this.selectedGroupId = this.chatGroups[0]._id ? this.chatGroups[0]._id : "";
@@ -100,15 +193,17 @@ export default class MarkQuiz extends Vue {
     }
     this.selectedGroupId = this.chatGroups[chatGroupIndex]._id ? this.chatGroups[chatGroupIndex]._id! : "";
 
-    this.goToQuestion(questionIndex, quizSessionIndex);
+    if(quizSessionId) this.currentQuizSessionId = quizSessionId;    
   }
 
-  goToQuestion(questionIndex: number, quizSessionIndex: number) {
-    if (!this.orderedDiscussionPageQuestionIds) return;
-    if (!this.orderedDiscussionPageQuestionIds[questionIndex]) this.selectedQuestionId = this.orderedDiscussionPageQuestionIds[0];
-    else this.selectedQuestionId = this.orderedDiscussionPageQuestionIds[questionIndex];
-    // Set the quiz session id as the first
-    this.goToQuizSession(quizSessionIndex);
+  /**
+   * Fetches messages for a chat group if not available
+   */
+  async checkAndFetchChatGroupMessages(chatGroup: IChatGroupWithMarkingIndicator) {
+    // Attempt to fetch messages if messages are empty for current chat group
+    if(chatGroup) {
+      await this.$store.dispatch("fetchChatGroupMessages", chatGroup._id);
+    }
   }
 
   goToQuizSession(index: number) {
@@ -117,89 +212,23 @@ export default class MarkQuiz extends Vue {
     else this.currentQuizSessionId = this.currentGroupQuizSessionInfoObjects[index].quizSession._id;
   }
 
-  next() {
-    // Check from lowest level to highest level
-    // Check if next user/quiz session available
-    if (this.currentGroupQuizSessionInfoObjects.length > 0) {
-      const quizSessionIndex = this.currentGroupQuizSessionInfoObjects.findIndex((s: any) => s.quizSession._id === this.currentQuizSessionId);
-      if (quizSessionIndex === -1) {
-        this.goToQuizSession(0);
-        return;
-      } else if (this.currentGroupQuizSessionInfoObjects.length > 1 && quizSessionIndex < this.currentGroupQuizSessionInfoObjects.length - 1) {
-        // More than one quiz session exists, can move to the next one
-        this.goToQuizSession(quizSessionIndex + 1);
-        return;
-      }
-    }
-    if (this.orderedDiscussionPageQuestionIds.length > 0) {
-      // Check if next question available
-      const questionIndex = this.orderedDiscussionPageQuestionIds.indexOf(this.selectedQuestionId);
-      if (questionIndex === -1) {
-        this.goToQuestion(0, 0);
-        return;
-      } else if (this.orderedDiscussionPageQuestionIds.length > 1 && questionIndex < this.orderedDiscussionPageQuestionIds.length - 1) {
-        this.goToQuestion(questionIndex + 1, 0);
-        return;
-      }
-    }
-
-    if (this.chatGroups.length > 0) {
-      const chatGroupIndex = this.chatGroups.findIndex((cg: IChatGroup) => cg._id === this.selectedGroupId);
-      if (chatGroupIndex === -1) {
-        this.goToChatgroup(0, 0, 0);
-        return;
-      } else if (this.chatGroups.length > 1 && chatGroupIndex < this.chatGroups.length - 1) {
-        this.goToChatgroup(chatGroupIndex + 1, 0, 0);
-        return;
-      }
-    }
-  }
-
   get isCurrentUserSelectedAndInGroup() {
     if (!this.currentQuizSessionId || !this.currentGroupQuizSessionInfoObjects) return false;
     const existsInGroup = this.currentGroupQuizSessionInfoObjects.findIndex(o => o.quizSession._id === this.currentQuizSessionId)
     if (existsInGroup !== -1) return true;
     return false;
   }
-  previous() {
-    // Check from lowest level to highest level
-    // Check if next user/quiz session available
-    if (this.currentGroupQuizSessionInfoObjects.length > 0) {
-      const quizSessionIndex = this.currentGroupQuizSessionInfoObjects.findIndex((s: any) => s.quizSession._id === this.currentQuizSessionId);
-      if (quizSessionIndex === -1) {
-        this.goToQuizSession(0);
-        return;
-      } else if (this.currentGroupQuizSessionInfoObjects.length > 1 && quizSessionIndex > 0) {
-        // More than one quiz session exists, can move to the next one
-        this.goToQuizSession(quizSessionIndex - 1);
-        return;
-      }
-    }
-    if (this.orderedDiscussionPageQuestionIds.length > 0) {
-      // Check if next question available
-      const questionIndex = this.orderedDiscussionPageQuestionIds.indexOf(this.selectedQuestionId);
-      if (questionIndex === -1) {
-        this.goToQuestion(0, 0);
-        return;
-      } else if (this.orderedDiscussionPageQuestionIds.length > 1 && questionIndex > 0) {
-        this.goToQuestion(questionIndex - 1, 0);
-        this.goToQuizSession(this.currentGroupQuizSessionInfoObjects.length - 1);
-        return;
-      }
-    }
 
-    if (this.chatGroups.length > 0) {
-      const chatGroupIndex = this.chatGroups.findIndex((cg: IChatGroup) => cg._id === this.selectedGroupId);
-      if (chatGroupIndex === -1) {
-        this.goToChatgroup(0, 0, 0);
-        return;
-      } else if (this.chatGroups.length > 1 && chatGroupIndex > 0) {
-        this.goToChatgroup(chatGroupIndex - 1, 0, 0);
-        this.goToQuestion(this.orderedDiscussionPageQuestionIds.length - 1, this.currentGroupQuizSessionInfoObjects.length - 1);
-        return;
-      }
+  //Choosing group chat from pagination
+  changeGroupChat(groupId: number){
+    if (this.chatGroups.length <= 0) return;
+    if (!groupId) {
+      this.goToChatgroup(0);
+    } else if (this.chatGroups.length > 1 && groupId > 0) {
+      this.goToChatgroup(groupId - 1);
     }
   }
+
   get markingState() {
     return this.$store.getters.currentMarkingContext;
   }
@@ -219,13 +248,6 @@ export default class MarkQuiz extends Vue {
     this.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentChatGroupId', value: groupId });
   }
 
-  get selectedQuestionId() {
-    return this.markingState.currentQuestionId;
-  }
-
-  set selectedQuestionId(questionId: string) {
-    this.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuestionId', value: questionId });
-  }
   get q() {
     if (!this.$route.params.id) return null;
     return this.quizzes.find((q) => q._id === this.$route.params.id);
@@ -234,31 +256,7 @@ export default class MarkQuiz extends Vue {
     return this.$store.getters.quizzes || [];
   }
 
-  getQuestionById(questionId: string) {
-    if (!this.q || !this.q.pages) return undefined;
-    return this.q.pages.find((p) => p.type === PageType.QUESTION_ANSWER_PAGE && (p as IQuestionAnswerPage).questionId === questionId);
-  }
-  get selectedQuestionChatMessages() {
-    if (this.chatGroupQuestionIdMap && this.chatGroupQuestionIdMap[this.selectedQuestionId]) {
-      return this.chatGroupQuestionIdMap[this.selectedQuestionId].messages;
-    } else {
-      return [];
-    }
-  }
-
-  get selectedQuestionResponses() {
-    if (this.chatGroupQuestionIdMap && this.chatGroupQuestionIdMap[this.selectedQuestionId]) {
-      return this.chatGroupQuestionIdMap[this.selectedQuestionId].messages;
-    } else {
-      return [];
-    }
-  }
-  get selectedQuestion() {
-    if (!this.q || !this.selectedGroup || !this.q.pages) return undefined;
-    const question = this.q.pages.find((p) => p.type === PageType.QUESTION_ANSWER_PAGE && ((p as IQuestionAnswerPage).questionId === this.selectedQuestionId));
-    return question;
-  }
-  get chatGroups(): IChatGroup[] {
+  get chatGroups(): IChatGroupWithMarkingIndicator[] {
     return this.$store.state.Quiz.chatGroups || [];
   }
 
@@ -271,39 +269,17 @@ export default class MarkQuiz extends Vue {
     });
   }
 
-  get selectedGroup(): IChatGroup | undefined {
+  get selectedGroup(): IChatGroupWithMarkingIndicator | undefined {
     if (!this.chatGroups || !this.selectedGroupId) return undefined;
     return this.chatGroups.find((g: any) => g._id === this.selectedGroupId);
   }
 
-
-  get orderedDiscussionPageQuestionIds() {
-    if (!this.q || !this.q.pages) return [];
-    const discussionPages = this.q.pages.filter((p) => p.type === PageType.DISCUSSION_PAGE);
-    const discussionPageQuestionIds = discussionPages.map((p) => (p as IDiscussionPage).questionId);
-    return discussionPageQuestionIds;
+  get selectedGroupIndex(): number {
+    if (!this.chatGroups || !this.selectedGroupId) return -1;
+    const found = this.chatGroups.findIndex((g: any, idx: number) => g._id === this.selectedGroupId);
+    return found !== -1 ? found: 0;
   }
 
-
-  get chatGroupQuestionIdMap(): (undefined | { [questionId: string]: { messages: any[] } }) {
-    try {
-      let map: { [questionId: string]: { messages: any[] } } = {};
-      if (!this.selectedGroup) return undefined;
-      const messages = this.selectedGroup.messages;
-      if (!messages) return undefined;
-      messages.forEach((m: any) => {
-        if (map[m.questionId] === undefined) map[m.questionId] = { messages: [] };
-        map[m.questionId].messages.push(m);
-      });
-      return map;
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
-  changeQuizSession() {
-
-  }
   get selectedUser() {
     if (!this.selectedGroup) return undefined;
     this.selectedGroup.quizSessionIds
@@ -312,23 +288,6 @@ export default class MarkQuiz extends Vue {
   get quizSessionInfoMap() {
     return this.$store.getters.quizSessionInfoMap;
   }
-  // get groupQuizSessions() {
-  //   // if (!this.selectedGroup || !this.quizSessionMap) return [];
-  //   // const users = Object.keys(this.quizSessionMap).filter((qid) => this.selectedGroup!.quizSessionIds!.indexOf(qid) !== -1).map((quizSessionId) => {
-  //   //   return this.quizSessionMap[quizSessionId]
-  //   // });
-
-  //   // return users || [];
-  //   try {
-  //     if (this.quizSessionInfoMap && this.selectedGroup) {
-  //       return Object.keys(this.quizSessionInfoMap).filter((quizSessionId) => this.selectedGroup!.quizSessionIds!.indexOf(quizSessionId) !== -1).map((q) => this.quizSessionInfoMap[q]);
-  //     } else {
-  //       return [];
-  //     }
-  //   } catch (e) {
-  //     return [];
-  //   }
-  // }
 
   get currentGroupQuizSessionInfoObjects(): any[] {
     return this.$store.getters.currentGroupQuizSessionInfoObjects;
@@ -351,21 +310,9 @@ export default class MarkQuiz extends Vue {
     return null;
   }
 
-
-
-
   async fetchAllQuizSessionInfo(vm: any) {
     if (!vm.$route.params.id) return;
-    // This is being done on the parent route now
-    // vm.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuizId', value: vm.$route.params.id });
-
-    // await vm.$store.dispatch("getChatGroups", vm.q._id);
-    // const chatGroups = vm.$store.getters.chatGroups;
-    // const chatGroupsInformationPromises = await Promise.all(chatGroups.map(async (g: IChatGroup) => {
-    //   const chatGroupsQuizSessionPromises = await Promise.all((g!.quizSessionIds || []).map(async (qs) => {
-    //     await vm.$store.dispatch("getQuizSessionInfo", qs);
-    //   }));
-    // }));
+    // Quiz session marking data is being fetched in router for common routes
 
     const chatGroups = vm.$store.getters.chatGroups;
     // Set up initial state
@@ -376,15 +323,9 @@ export default class MarkQuiz extends Vue {
         vm.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentChatGroupId', value: chatGroups[0]._id });
       }
 
-      const questionsIds = vm.orderedDiscussionPageQuestionIds;
-      if (questionsIds && questionsIds.length > 0) {
-        vm.selectedQuestionId = questionsIds[0];
-        vm.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuestionId', value: questionsIds[0] });
-      }
-
       const currentChatGroup = vm.selectedGroup;
       if (currentChatGroup) {
-        const quizSessionIds = (<IChatGroup>currentChatGroup).quizSessionIds || [];
+        const quizSessionIds = (<IChatGroupWithMarkingIndicator>currentChatGroup).quizSessionIds || [];
         if (quizSessionIds.length > 0) {
           const currentQuizSessionIdBeingMarked = quizSessionIds[0];
           vm.$store.commit('UPDATE_CURRENT_MARKING_CONTEXT', { prop: 'currentQuizSessionId', value: currentQuizSessionIdBeingMarked });
@@ -394,38 +335,115 @@ export default class MarkQuiz extends Vue {
 
     }
   }
+
   async beforeRouteEnter(to: any, from: any, next: any) {
     next(async (vm: any) => {
       await vm.fetchAllQuizSessionInfo(vm);
-
     });
   }
 
-  // async beforeRouteUpdate(to: any, from: any, next: any) {
-  //   await this.fetchAllQuizSessionInfo(this);
-  // }
+  setCurrentQuizSessionId(quizSessionId: string) {
+    this.currentQuizSessionId = quizSessionId;
+
+    // Side effect: Clear any search text
+    this.searchText = '';
+  }
+
+  /** Search Functionality */
+
+  get currentQuizId() {
+    const quiz = this.$store.getters.currentQuiz;
+    if(!quiz || !quiz._id) return undefined;
+    return quiz._id;
+  }
+
+  /**
+   * If user attempts to search, fetch search map from the server for the current quiz id (through the Vuex store).
+   */
+  checkOrFetchUserMap() {
+    if(this.searchText && this.searchText.trim()) {
+      // If search text has a valid string, fetch the search map from the server
+      // for the current quiz if data for the current quiz does not exist in the store
+      if(this.currentQuizId && !this.searchMap[this.currentQuizId]) {
+        this.$store.dispatch('getQuizSessionUserMap', this.currentQuizId);
+      }
+    }
+  }
+
+  /**
+   * Handler for user search item click
+   * @param quizSessionSearchItem Value emitted from AutoComplete on click
+   */
+  searchClickHandler(quizSessionSearchItem: { label: string, value: string }) {
+    try {
+      if(!quizSessionSearchItem || !quizSessionSearchItem.value) throw new Error("Invalid selection");
+      
+      const quizSessionId = quizSessionSearchItem.value;
+      const chatGroupIndex = this.chatGroups.findIndex((group) => (group.quizSessionIds || []).includes(quizSessionId));
+      
+      if(chatGroupIndex < 0) {
+        throw new Error('Chat group not found');
+      }
+
+      const chatGroup = this.chatGroups[chatGroupIndex];
+      if(!chatGroup) {
+        throw new Error('Chat group not found');
+      }
+
+      const quizSessionExistsInChatGroup = (chatGroup.quizSessionIds || []).find((g) => g === quizSessionId);
+
+      if(!quizSessionExistsInChatGroup) {
+        throw new Error('User not found in chat group');
+      }
+
+      // Navigate to group and user
+      this.goToChatgroup(chatGroupIndex, quizSessionId);
+      this.searchText = quizSessionSearchItem.label;
+    } catch(e) {
+      console.error(e.message);
+      this.searchText = '';
+    }
+  }
+
+  /**
+   * Returns the search map for the current quiz.
+   * Maps quizSessionId to user information string ("<username>,<first name>,<last name>")
+   */
+  get currentSearchMap(): QuizSessionToUserInfoMap {
+    return this.$store.getters.currentSearchMap;
+  }
+
+  get searchMap() {
+    return this.$store.getters.searchMap;
+  }
+
+  /**
+   * Return user search results based on the value of `searchText`
+   * A computed value which uses value of `searchText` to return matching users and quiz sessions from the store for the current quiz
+   */
+  get searchResults() {
+    if(this.searchText.trim().length === 0) return [];
+    const searchTerm = this.searchText.trim().toLowerCase();
+
+    return (Object.entries(this.currentSearchMap) || []).filter((quizSessionKeyValue) => {
+      return quizSessionKeyValue && quizSessionKeyValue[1] && quizSessionKeyValue[1].includes(searchTerm);
+    }).map((searchResultObject) => {
+      return {
+        label: (searchResultObject[1] || "").split(",").join(" "),
+        value: searchResultObject[0]
+      };
+    });
+  }
+
+  @Watch('searchText')
+  searchTextChangeHandler() {
+    this.checkOrFetchUserMap();
+  }
 }
 </script>
 <style lang="scss" scoped>
-@import "../../css/variables.scss";
-.sidebar {
-  color: white;
-  text-shadow: rgb(85, 85, 85) 0.05em 0.05em 0.05em;
-  width: 18rem;
-  font-size: 1.2rem;
-  overflow-y: hidden;
-  background: rgb(150, 85, 102);
-}
 
-.course-name {
-  font-style: italic;
-  margin: 1rem 2rem 1.5rem;
-}
-
-.moochat-name {
-  line-height: 1;
-  margin: 2rem 2rem 1rem;
-}
+@import "../../css/app.scss";
 
 .question-box {
   display: flex;
@@ -434,41 +452,50 @@ export default class MarkQuiz extends Vue {
   padding: 0.5rem;
 }
 
-.marking {
-  // max-height: 90vh;
-  overflow: auto;
-}
-
 .marking-section {
-  // max-height: 80vh;
-  overflow: scroll;
+  overflow-y: auto;
+  max-height: 70vh;
 }
 
-.step-navigation {
+.marking-rubric{
+  position: sticky;
+  top: 16px;
+}
+
+.quiz-info{
+  border-radius: 5px;
+  width: fit-content;
+  flex: unset;
+
+  > p {
+    margin-bottom: 0;
+    white-space: nowrap;
+  }
+}
+
+.users {
   display: flex;
-  justify-content: flex-end;
-}
-
-.step-navigation>* {
-  margin: 0 0.25rem;
-  width: 15%;
-}
-
-.quiz-mark-page {
-  height: 100vh;
-}
-
-.select-row {
-  display: flex;
+  width: 80%;
   flex-wrap: wrap;
+
+  > * {
+    margin: 0 0.25rem;
+  }
+
 }
 
-.select-row>* {
-  margin: 0.25rem 0.5rem;
+.groups h3{
+  color: $uq;
 }
-.info {
-  font-size: 1.5em;
-  color: #51247a; 
-  font-weight: 400;
+
+.divider{
+  width: calc(100% + 4rem);
+  margin-left: -2rem;
+  margin-bottom: 0;
 }
+
+.autocomplete-marks {
+  z-index: 100;
+}
+
 </style>
