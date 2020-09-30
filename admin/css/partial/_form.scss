@@ -133,6 +133,18 @@
   }
 }
 
+.date-field{
+  position: relative;
+  
+  &:before {
+    @include icon;
+    @include form-icon-position($isAfter: false);
+    
+    color: $dark-grey;
+    content: $icon-pencil;
+  }
+}
+
 //Icon append for <select>
 .select-field {
   position: relative;
@@ -166,6 +178,17 @@
 
 /*Label font*/
 /*--------------------------------------------------------*/
+.input-label{
+  @include font-style(0.875, 1, 600, $uq);
+  margin-bottom: 4px;
+
+  &.required-input{
+    &::after{
+      content: "*";
+    }
+  }
+}
+
 .checkbox-label{
   @include font-style(1, 1.5, 400, $dark-grey);
 }

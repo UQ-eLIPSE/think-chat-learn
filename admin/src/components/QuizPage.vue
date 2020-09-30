@@ -8,39 +8,69 @@
       </h3>
       <v-container fluid grid-list-md>
         <v-layout row wrap>
-          <v-flex xs12>
-            <b-field label="Set the quiz title">
-              <v-text-field label="Title" class="text-field-ce"
-                            v-model="quizTitle" outline :rules="[existenceRule]" />
-            </b-field>
+          <v-flex class="form-control" xs12>
+            <span class="input-label required-input">Set the quiz title</span>
+            <div class="editable-field">
+              <input type="text" v-model="quizTitle"/>
+            </div>
           </v-flex>
+
+          <v-flex class="form-control" xs5>
+            <span class="input-label required-input">Rubric</span>
+            <div class="select-field">
+              <select v-model="rubricId">
+                <template v-for="rubric in rubricDropDown">
+                  <option :key="`rubric-${rubric.value}`">{{rubric.text}}</option>
+                </template>
+              </select>
+            </div>
+          </v-flex>
+
+          <v-flex class="form-control" xs2>
+            <span class="input-label required-input">Group size</span>
+            <div class="editable-field">
+              <input type="text" v-model.number="groupSize"/>
+            </div>
+          </v-flex>
+
+          <v-flex xs1>
+            <div class="divider"></div>
+          </v-flex>
+
+          <v-flex class="form-control" xs4>
+            <span class="input-label">Marking Configuration</span>
+            <div class="card-container ma-0" :style="{padding: '12px 16px'}">
+              <v-layout row class="align-center">
+                <input type="checkbox" v-model="markingConfiguration.allowMultipleMarkers" class="mr-2">
+                <span class="checkbox-label">Allow multiple markers</span>
+              </v-layout>
+            </div>
+          </v-flex>
+
           <v-flex xs3>
             <!-- In order to create rules, we need to use Vue components instead. Menu with one item is essentially a drop down -->
             <!-- Also v-on syntax is Vue 2.6+ -->
-            <b-field label="Start date">
-              <v-menu
-                ref="startDateMenu"
-                v-model="startDateShow"
-                :close-on-content-click="false"
-                :return-value.sync="startDateString"
-              >
-                <template v-slot:activator="{ on }">
-                  <v-text-field
-                    v-model="startDateString"
-                    prepend-icon="calendar_today"
-                    readonly
-                    v-on="on"
-                    :rules="[existenceRule]"
-                  ></v-text-field>
-                </template>
-                <v-date-picker v-model="startDateString" no-title scrollable>
-                  <!-- Use buttons because time pickers require a 2-step process -->
-                  <v-spacer></v-spacer>
-                  <v-btn flat @click="startDateShow = false">Cancel</v-btn>
-                  <v-btn flat @click="$refs.startDateMenu.save(startDateString)">OK</v-btn>
-                </v-date-picker>
-              </v-menu>
-            </b-field>
+            
+            <v-menu
+              ref="startDateMenu"
+              v-model="startDateShow"
+              :close-on-content-click="false"
+              :return-value.sync="startDateString"
+            >
+              <template v-slot:activator="{ on }">
+                <div class="form-control">
+                  <input v-model="startDateString" v-on="on" readonly/>
+                </div>
+              </template>
+
+              <v-date-picker v-model="startDateString" no-title scrollable>
+                <!-- Use buttons because time pickers require a 2-step process -->
+                <v-spacer></v-spacer>
+                <v-btn flat @click="startDateShow = false">Cancel</v-btn>
+                <v-btn flat @click="$refs.startDateMenu.save(startDateString)">OK</v-btn>
+              </v-date-picker>
+              
+            </v-menu>
           </v-flex>
           <v-flex xs3>
             <b-field label="Start time">
@@ -196,16 +226,7 @@
 
           <div class="card-container">
             <v-layout row wrap>
-              <v-flex xs6>
-                <b-field label="Set the associated Rubric">
-                  <v-select
-                    :items="rubricDropDown"
-                    v-model="rubricId"
-                    outline single-line
-                    :rules="[existenceRule]"
-                  />
-                </b-field>
-              </v-flex>
+              
               <v-flex xs6>
                 <b-field label="Set up group size" />
                 <v-text-field
@@ -216,11 +237,6 @@
                 ></v-text-field>
               </v-flex>
               <v-flex xs12>
-                <b-field label="Set up the marking configurations" />
-                <v-checkbox
-                  v-model="markingConfiguration.allowMultipleMarkers"
-                  :label="'Allow multiple markers?'"
-                ></v-checkbox>
                 <label>Max marks: {{ markingConfiguration.maximumMarks }}</label>
               </v-flex>
             </v-layout>
@@ -836,5 +852,13 @@ export default class QuizPage extends Vue {
 
 .moocchat-title {
   margin: 6px;
+}
+
+/**Custom styling*/
+.divider {
+  width: 1px;
+  height: 40px;
+  margin-top: 1.5rem;
+  margin-left: 50%;
 }
 </style>
