@@ -70,7 +70,9 @@
     padding: 0 15px 0 40px;
   }
 
-  input[type="text"] {
+  input[type="text"],
+  input[type="email"],
+  input[type="number"] {
     padding: 0 40px 0 15px;
   }
 

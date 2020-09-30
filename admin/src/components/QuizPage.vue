@@ -29,7 +29,7 @@
           <v-flex class="form-control" xs2>
             <span class="input-label required-input">Group size</span>
             <div class="editable-field">
-              <input type="text" v-model.number="groupSize"/>
+              <input type="number" v-model.number="groupSize"/>
             </div>
           </v-flex>
 
