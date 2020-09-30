@@ -8,6 +8,10 @@
       </h3>
       <v-container fluid grid-list-md>
         <v-layout row wrap>
+          <v-flex xs12>
+            <h3>Quiz details</h3>
+          </v-flex>
+          
           <v-flex class="form-control" xs12>
             <span class="input-label required-input">Set the quiz title</span>
             <div class="editable-field">
@@ -49,6 +53,10 @@
 
           <v-flex xs12>
             <div class="divider"></div>
+          </v-flex>
+          
+          <v-flex xs12>
+            <h3>Schedule details</h3>
           </v-flex>
           
           <v-flex xs3>
@@ -156,7 +164,7 @@
 
           <!-- Temporary wrapper for the page labels -->
           <v-flex xs12>
-            
+            <h3>Quiz content</h3>
           </v-flex>
 
           <v-flex v-for="(page, index) in pages" :key="page.__mountedId" xs12>
@@ -851,4 +859,5 @@ export default class QuizPage extends Vue {
   margin-top: 2rem;
   margin-bottom: 2rem;
 }
+
 </style>
