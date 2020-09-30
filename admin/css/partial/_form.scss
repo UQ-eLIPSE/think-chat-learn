@@ -71,7 +71,7 @@
   }
 
   input[type="text"] {
-    padding: 0 15px;
+    padding: 0 40px 0 15px;
   }
 
   textarea {
@@ -133,15 +133,28 @@
   }
 }
 
+//Icon append for <input type="text"> with date input
 .date-field{
   position: relative;
   
-  &:before {
+  &:after {
     @include icon;
-    @include form-icon-position($isAfter: false);
+    @include form-icon-position($isAfter: true);
     
     color: $dark-grey;
-    content: $icon-pencil;
+    content: $icon-calendar;
+  }
+}
+
+.time-field{
+  position: relative;
+  
+  &:after {
+    @include icon;
+    @include form-icon-position($isAfter: true);
+    
+    color: $dark-grey;
+    content: $icon-clock2;
   }
 }
 
