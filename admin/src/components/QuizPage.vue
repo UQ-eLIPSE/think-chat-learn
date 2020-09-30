@@ -60,6 +60,7 @@
               v-model="startDateShow"
               :close-on-content-click="false"
               :return-value.sync="startDateString"
+              min-width="unset"
             >
               <template v-slot:activator="{ on }">
                 <div class="form-control date-field">
@@ -83,6 +84,7 @@
               v-model="startTimeShow"
               :close-on-content-click="false"
               :return-value.sync="startTimeString"
+              min-width="unset"
             >
               <template v-slot:activator="{ on }">
                 <div class="form-control time-field">
@@ -104,6 +106,7 @@
               v-model="endDateShow"
               :close-on-content-click="false"
               :return-value.sync="endDateString"
+              min-width="unset"
             >
               <template v-slot:activator="{ on }">
                 <div class="form-control date-field">
@@ -124,6 +127,7 @@
               v-model="endTimeShow"
               :close-on-content-click="false"
               :return-value.sync="endTimeString"
+              min-width="unset"
             >
               <template v-slot:activator="{ on }">
                 <div class="form-control time-field">
@@ -152,7 +156,7 @@
 
           <!-- Temporary wrapper for the page labels -->
           <v-flex xs12>
-            <b-field label="Create and configure the pages" />
+            
           </v-flex>
 
           <v-flex v-for="(page, index) in pages" :key="page.__mountedId" xs12>
@@ -222,24 +226,7 @@
               <button class="primary-cl button-cs" type="button" @click="createPage()">Create new page</button>
             </v-container>
           </v-flex>
-
-          <div class="card-container">
-            <v-layout row wrap>
-              
-              <v-flex xs6>
-                <b-field label="Set up group size" />
-                <v-text-field
-                  mask="##"
-                  outline single-line
-                  v-model.number="groupSize"
-                  :rules="[existenceRule]"
-                ></v-text-field>
-              </v-flex>
-              <v-flex xs12>
-                <label>Max marks: {{ markingConfiguration.maximumMarks }}</label>
-              </v-flex>
-            </v-layout>
-          </div>
+          
           <v-flex xs12>
             <v-container class="controls">
               <button type="button" class="primary-cl button-cs" @click="submitQuiz()">{{ pageAction }}</button>
