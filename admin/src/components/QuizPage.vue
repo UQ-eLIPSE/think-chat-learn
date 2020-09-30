@@ -145,7 +145,7 @@
             <div class="form-control">
               <v-layout row class="align-center my-2">
                 <input type="checkbox" v-model="isPublic"/>
-                <span class="checkbox-label ml-2">Publish Marks? (If checked, marks will be displayed to students)</span>
+                <span class="checkbox-label ml-2">Public? (If checked, this quiz will be displayed to students)</span>
               </v-layout>
             </div>
           </v-flex>
