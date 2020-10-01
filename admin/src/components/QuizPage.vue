@@ -168,9 +168,22 @@
           </v-flex>
 
           <v-flex v-for="(page, index) in pages" :key="page.__mountedId" xs12>
-            <v-layout row>
-              <v-flex class="position-relative mt-3" xs11>
-                <Collapsible class="marking-collapsible" :title="`Page #${index + 1} :: ${page.title || ''}`">
+            <v-layout row class="align-start mt-3">
+
+              <div class="page-elevation-controls mr-1">
+                <button type="button" @click="up(index)"
+                        :class="`squircular-icon ${index === 0? 'move-btn-disabled': 'move-btn'}`" >
+                  <i class="icon-chevron-up"></i>
+                </button>
+                
+                <button type="button"  @click="down(index)"
+                        :class="`squircular-icon ${index === pages.length - 1? 'move-btn-disabled': 'move-btn'}`">
+                  <i class="icon-chevron-down"></i>
+                </button>
+              </div>
+
+              <v-flex class="position-relative" xs11>
+                <Collapsible class="marking-collapsible" :title="`Page #${index + 1} - ${page.title || ''}`">
                   <v-layout row wrap class="mt-3 pa-3">
                     <v-flex xs5 class="form-control">
                       <span class="input-label required-input">Page title</span>
@@ -237,24 +250,24 @@
                 </Collapsible>
 
                 <div class="page-multipliable-controls">
-                  <button class="button-cs dark-grey-cl delete-btn compact-btn" @click="deletePage(index)">
+                  <button type="button" class="button-cs dark-grey-cl delete-btn compact-btn" @click="deletePage(index)">
                     <i class="icon-times-circle"></i>
                     Delete Page
                   </button>
-                  <button class="button-cs green-cl add-btn compact-btn" @click="createPage(index + 1)">
+                  <button type="button" class="button-cs green-cl add-btn compact-btn" @click="createPage(index + 1)">
                     <i class="icon-plus-circle"></i>
                     New Page
                   </button>
                 </div>
 
-                <div class="page-elevation-controls">
-                  <button class="squircular-icon move-btn" @click="up(index)">
+                <!-- <div class="page-elevation-controls">
+                  <button type="button" class="squircular-icon move-btn" @click="up(index)">
                     <i class="icon-chevron-up"></i>
                   </button>
-                  <button class="squircular-icon move-btn" @click="down(index)">
+                  <button type="button" class="squircular-icon move-btn" @click="down(index)">
                     <i class="icon-chevron-down"></i>
                   </button>
-                </div>
+                </div> -->
               </v-flex>
             </v-layout>
 
@@ -905,21 +918,27 @@ export default class QuizPage extends Vue {
 .page-elevation-controls{
   display: flex;
   flex-flow: column;
+  color: $dark-grey;
 
-  position: absolute;
-  top: 0;
-  right: -2.8rem;
-  color: $primary;
-
-  .move-btn{
+  .move-btn,
+  .move-btn-disabled{
     font-size: 0.8em;
     height: 25px;
     width: 25px;
 
-    &:hover{
-      @include transparent-color($primary, false);
+    &:last-of-type{
+      margin-top: -4px;
     }
 
+  }
+
+  .move-btn-disabled{
+    color: $grey;
+    cursor: default;
+  }
+
+  .move-btn:hover{
+    @include transparent-color($primary, false);
   }
 }
 
