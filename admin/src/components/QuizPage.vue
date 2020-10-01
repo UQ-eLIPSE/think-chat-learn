@@ -169,64 +169,71 @@
 
           <v-flex v-for="(page, index) in pages" :key="page.__mountedId" xs12>
             <v-layout row>
-              <v-flex class="position-relative mt-3" xs10>
+              <v-flex class="position-relative mt-3" xs11>
                 <Collapsible class="marking-collapsible" :title="`Page #${index + 1} :: ${page.title || ''}`">
-                  <v-layout row wrap>
-                    <v-flex xs12>
-                      <div class="divider mt-0 mb-4"></div>
-                    </v-flex>
-                    
-                    <v-flex xs4>
-                      <b-field label="Set the page title">
-                        <v-text-field label="Title" v-model="page.title" outline :rules="[existenceRule]" />
-                      </b-field>
+                  <v-layout row wrap class="mt-3 pa-3">
+                    <v-flex xs5 class="form-control">
+                      <span class="input-label required-input">Page title</span>
+                      <div class="editable-field">
+                        <input type="text" v-model="page.title"/>
+                      </div>
                     </v-flex>
 
-                    <v-flex xs4>
-                      <b-field label="Set the page type">
-                        <!-- Only one rule applys to the discussion page rule -->
-                        <v-overflow-btn
-                          :items="pageTypeDropDown"
-                          v-model="page.type"
-                          outline
-                          :rules="[discussionPageRule]"
-                        />
-                      </b-field>
+                    <v-flex xs4 class="form-control">
+                      <span class="input-label required-input">Page type</span>
+                      <div class="select-field">
+                        <select v-model="page.type">
+                          <template v-for="pageType in pageTypeDropDown">
+                            <option :key="`pt-${pageType.value}`" :value="pageType.value">{{pageType.text}}</option>
+                          </template>
+                        </select>
+                      </div>
                     </v-flex>
 
-                    <v-flex xs4>
-                      <!-- TODO make this a proper select box once Questions and Answers are implemented -->
-                      <b-field
-                        v-if="(page.type === PageType.QUESTION_ANSWER_PAGE) || (page.type === PageType.DISCUSSION_PAGE)"
-                        label="Set the associate question for the page"
-                      >
-                        <v-overflow-btn
-                          :items="questionDropDown"
-                          v-model="page.questionId"
-                          outline
-                          :rules="page.type === PageType.QUESTION_ANSWER_PAGE ? [existenceRule, duplicateQuestionPageRule] : [existenceRule, duplicateDiscussionPageRule]"
-                        />
-                      </b-field>
+                    <v-flex xs3 class="form-control">
+                      <span class="input-label required-input">Timeout (minutes)</span>
+                      <div class="editable-field">
+                        <input type="number" v-model="page.timeoutInMins"/>
+                      </div>
+                    </v-flex>
                       
-                      <select v-model="page.surveryId" v-else-if="page.type === PageType.SURVEY_PAGE">
-                        <option>Some Default survey</option>
-                      </select>
+                    <v-flex xs6 class="form-control">
+                      <!-- TODO make this a proper select box once Questions and Answers are implemented -->
+                      <div v-if="(page.type === PageType.QUESTION_ANSWER_PAGE) || (page.type === PageType.DISCUSSION_PAGE)">
+                        <span class="input-label required-input">Associate question for the page</span>
+                        <div class="select-field">
+                          <select v-model="page.questionId">
+                            <template v-for="question in questionDropDown">
+                              <option :key="`pt-${question.value}`" :value="question.value">{{question.text}}</option>
+                            </template>
+                          </select>
+                        </div>
+                      </div>
+                      
+                      <div class="select-field" v-else-if="page.type === PageType.SURVEY_PAGE">
+                        <select v-model="page.surveryId">
+                          <option>Some Default survey</option>
+                        </select>
+                      </div>
                     </v-flex>
                   
                     <!-- Business logic for rendering based on page type -->
-                    <v-checkbox
-                      v-if="(page.type === PageType.DISCUSSION_PAGE)"
-                      v-model="page.displayResponses"
-                      :label="'Display Responses from question?'"
-                    ></v-checkbox>
+                    <v-flex xs1 v-if="(page.type === PageType.DISCUSSION_PAGE)">
+                      <div class="divider vertical-divider"></div>
+                    </v-flex>
+
+                    <v-flex xs5 class="form-control" v-if="(page.type === PageType.DISCUSSION_PAGE)">
+                      <v-layout row class="align-center mt-3 py-2">
+                        <input type="checkbox" v-model="page.displayResponses"/>
+                        <span class="checkbox-label ml-2">Display responses from question</span>
+                      </v-layout>
+                    </v-flex>
                   </v-layout>
 
-                  <b-field label="Page content">
-                      <TinyMce :id="`tmce-${page.__mountedId}`" v-model="page.content" />
-                  </b-field>
-                  <b-field label="Set the timeout in minutes">
-                    <v-text-field label="Timeout" v-model="page.timeoutInMins" outline type="number" />
-                  </b-field>
+                  <v-flex xs12 class="pa-3">
+                    <span class="input-label required-input">Page content</span>
+                    <TinyMce :id="`tmce-${page.__mountedId}`" v-model="page.content" />
+                  </v-flex>
                 </Collapsible>
 
                 <div class="page-multipliable-controls">
