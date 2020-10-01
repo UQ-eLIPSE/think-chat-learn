@@ -9,121 +9,162 @@
       <v-container fluid grid-list-md>
         <v-layout row wrap>
           <v-flex xs12>
-            <b-field label="Set the quiz title">
-              <v-text-field label="Title" class="text-field-ce"
-                            v-model="quizTitle" outline :rules="[existenceRule]" />
-            </b-field>
+            <h3>Quiz details</h3>
           </v-flex>
+          
+          <v-flex class="form-control" xs12>
+            <span class="input-label required-input">Set the quiz title</span>
+            <div class="editable-field">
+              <input type="text" v-model="quizTitle"/>
+            </div>
+          </v-flex>
+
+          <v-flex class="form-control" xs5>
+            <span class="input-label required-input">Rubric</span>
+            <div class="select-field">
+              <select v-model="rubricId">
+                <template v-for="rubric in rubricDropDown">
+                  <option :key="`rubric-${rubric.value}`" :value="rubric.value">{{rubric.text}}</option>
+                </template>
+              </select>
+            </div>
+          </v-flex>
+
+          <v-flex class="form-control" xs2>
+            <span class="input-label required-input">Group size</span>
+            <div class="editable-field">
+              <input type="number" v-model.number="groupSize"/>
+            </div>
+          </v-flex>
+
+          <v-flex xs1>
+            <div class="divider vertical-divider"></div>
+          </v-flex>
+
+          <v-flex class="form-control" xs4>
+            <span class="input-label">Marking Configuration</span>
+            <div class="card-container ma-0" :style="{padding: '12px 16px'}">
+              <v-layout row class="align-center">
+                <input type="checkbox" v-model="markingConfiguration.allowMultipleMarkers" class="mr-2">
+                <span class="checkbox-label">Allow multiple markers</span>
+              </v-layout>
+            </div>
+          </v-flex>
+
+          <v-flex xs12>
+            <div class="divider"></div>
+          </v-flex>
+          
+          <v-flex xs12>
+            <h3>Schedule details</h3>
+          </v-flex>
+          
           <v-flex xs3>
             <!-- In order to create rules, we need to use Vue components instead. Menu with one item is essentially a drop down -->
             <!-- Also v-on syntax is Vue 2.6+ -->
-            <b-field label="Start date">
-              <v-menu
-                ref="startDateMenu"
-                v-model="startDateShow"
-                :close-on-content-click="false"
-                :return-value.sync="startDateString"
-              >
-                <template v-slot:activator="{ on }">
-                  <v-text-field
-                    v-model="startDateString"
-                    prepend-icon="calendar_today"
-                    readonly
-                    v-on="on"
-                    :rules="[existenceRule]"
-                  ></v-text-field>
-                </template>
-                <v-date-picker v-model="startDateString" no-title scrollable>
-                  <!-- Use buttons because time pickers require a 2-step process -->
-                  <v-spacer></v-spacer>
-                  <v-btn flat @click="startDateShow = false">Cancel</v-btn>
-                  <v-btn flat @click="$refs.startDateMenu.save(startDateString)">OK</v-btn>
-                </v-date-picker>
-              </v-menu>
-            </b-field>
+            <span class="input-label required-input">Start date</span>
+            <v-menu
+              ref="startDateMenu"
+              v-model="startDateShow"
+              :close-on-content-click="false"
+              :return-value.sync="startDateString"
+              min-width="unset"
+            >
+              <template v-slot:activator="{ on }">
+                <div class="form-control date-field">
+                  <input type="text" v-model="startDateString" v-on="on" readonly/>
+                </div>
+              </template>
+              <v-date-picker v-model="startDateString" no-title scrollable>
+                <!-- Use buttons because time pickers require a 2-step process -->
+                <v-spacer></v-spacer>
+                <v-btn flat @click="startDateShow = false">Cancel</v-btn>
+                <v-btn flat @click="$refs.startDateMenu.save(startDateString)">OK</v-btn>
+              </v-date-picker>
+            </v-menu>
           </v-flex>
-          <v-flex xs3>
-            <b-field label="Start time">
-              <v-menu
-                ref="startTimeMenu"
-                v-model="startTimeShow"
-                :close-on-content-click="false"
-                :return-value.sync="startTimeString"
-              >
-                <template v-slot:activator="{ on }">
-                  <v-text-field
-                    v-model="startTimeString"
-                    prepend-icon="access_time"
-                    readonly
-                    v-on="on"
-                    :rules="[existenceRule]"
-                  ></v-text-field>
-                </template>
-                <v-time-picker v-model="startTimeString" scrollable format="24hr">
-                  <v-btn flat @click="startTimeShow = false">Cancel</v-btn>
-                  <v-btn flat @click="$refs.startTimeMenu.save(startTimeString)">OK</v-btn>
-                </v-time-picker>
-              </v-menu>
-            </b-field>
-          </v-flex>
-          <v-flex xs3>
-            <b-field label="End date">
-              <v-menu
-                ref="endDateMenu"
-                v-model="endDateShow"
-                :close-on-content-click="false"
-                :return-value.sync="endDateString"
-              >
-                <template v-slot:activator="{ on }">
-                  <v-text-field
-                    v-model="endDateString"
-                    prepend-icon="calendar_today"
-                    readonly
-                    v-on="on"
-                    required
-                    :rules="[existenceRule, validDateRule]"
-                  ></v-text-field>
-                </template>
-                <v-date-picker v-model="endDateString" no-title scrollable>
-                  <v-btn flat @click="endDateShow = false">Cancel</v-btn>
-                  <v-btn flat @click="$refs.endDateMenu.save(endDateString)">OK</v-btn>
-                </v-date-picker>
-              </v-menu>
-            </b-field>
-          </v-flex>
-          <v-flex xs3>
-            <b-field label="End time">
-              <v-menu
-                ref="endTimeMenu"
-                v-model="endTimeShow"
-                :close-on-content-click="false"
-                :return-value.sync="endTimeString"
-              >
-                <template v-slot:activator="{ on }">
-                  <v-text-field
-                    v-model="endTimeString"
-                    prepend-icon="access_time"
-                    readonly
-                    v-on="on"
-                    :rules="[existenceRule, validDateRule]"
-                  ></v-text-field>
-                </template>
-                <v-time-picker v-model="endTimeString" scrollable format="24hr">
-                  <v-btn flat @click="endTimeShow = false">Cancel</v-btn>
-                  <v-btn flat @click="$refs.endTimeMenu.save(endTimeString)">OK</v-btn>
-                </v-time-picker>
-              </v-menu>
-            </b-field>
 
+
+          <v-flex xs3>
+            <span class="input-label required-input">Start time</span>
+            <v-menu
+              ref="startTimeMenu"
+              v-model="startTimeShow"
+              :close-on-content-click="false"
+              :return-value.sync="startTimeString"
+              min-width="unset"
+            >
+              <template v-slot:activator="{ on }">
+                <div class="form-control time-field">
+                  <input type="text" v-model="startTimeString" v-on="on" readonly/>
+                </div>
+              </template>
+              <v-time-picker v-model="startTimeString" scrollable format="24hr">
+                <v-btn flat @click="startTimeShow = false">Cancel</v-btn>
+                <v-btn flat @click="$refs.startTimeMenu.save(startTimeString)">OK</v-btn>
+              </v-time-picker>
+            </v-menu>
           </v-flex>
+
+
+          <v-flex xs3>
+            <span class="input-label required-input">End date</span>
+            <v-menu
+              ref="endDateMenu"
+              v-model="endDateShow"
+              :close-on-content-click="false"
+              :return-value.sync="endDateString"
+              min-width="unset"
+            >
+              <template v-slot:activator="{ on }">
+                <div class="form-control date-field">
+                  <input type="text" v-model="endDateString" v-on="on" readonly/>
+                </div>
+              </template>
+              <v-date-picker v-model="endDateString" no-title scrollable>
+                <v-btn flat @click="endDateShow = false">Cancel</v-btn>
+                <v-btn flat @click="$refs.endDateMenu.save(endDateString)">OK</v-btn>
+              </v-date-picker>
+            </v-menu>
+          </v-flex>
+
+          <v-flex xs3>
+            <span class="input-label required-input">End time</span>
+            <v-menu
+              ref="endTimeMenu"
+              v-model="endTimeShow"
+              :close-on-content-click="false"
+              :return-value.sync="endTimeString"
+              min-width="unset"
+            >
+              <template v-slot:activator="{ on }">
+                <div class="form-control time-field">
+                  <input type="text" v-model="endTimeString" v-on="on" readonly/>
+                </div>
+              </template>
+              <v-time-picker v-model="endTimeString" scrollable format="24hr">
+                <v-btn flat @click="endTimeShow = false">Cancel</v-btn>
+                <v-btn flat @click="$refs.endTimeMenu.save(endTimeString)">OK</v-btn>
+              </v-time-picker>
+            </v-menu>
+          </v-flex>
+
           <v-flex xs12>
-            <v-checkbox
-              v-model="isPublic"
-              label="Public? (If checked, this quiz will be displayed to students)"></v-checkbox>
+            <div class="form-control">
+              <v-layout row class="align-center my-2">
+                <input type="checkbox" v-model="isPublic"/>
+                <span class="checkbox-label ml-2">Public? (If checked, this quiz will be displayed to students)</span>
+              </v-layout>
+            </div>
           </v-flex>
+
+          <v-flex xs12>
+            <div class="divider"></div>
+          </v-flex>
+
           <!-- Temporary wrapper for the page labels -->
           <v-flex xs12>
-            <b-field label="Create and configure the pages" />
+            <h3>Quiz content</h3>
           </v-flex>
 
           <v-flex v-for="(page, index) in pages" :key="page.__mountedId" xs12>
@@ -193,38 +234,7 @@
               <button class="primary-cl button-cs" type="button" @click="createPage()">Create new page</button>
             </v-container>
           </v-flex>
-
-          <div class="card-container">
-            <v-layout row wrap>
-              <v-flex xs6>
-                <b-field label="Set the associated Rubric">
-                  <v-select
-                    :items="rubricDropDown"
-                    v-model="rubricId"
-                    outline single-line
-                    :rules="[existenceRule]"
-                  />
-                </b-field>
-              </v-flex>
-              <v-flex xs6>
-                <b-field label="Set up group size" />
-                <v-text-field
-                  mask="##"
-                  outline single-line
-                  v-model.number="groupSize"
-                  :rules="[existenceRule]"
-                ></v-text-field>
-              </v-flex>
-              <v-flex xs12>
-                <b-field label="Set up the marking configurations" />
-                <v-checkbox
-                  v-model="markingConfiguration.allowMultipleMarkers"
-                  :label="'Allow multiple markers?'"
-                ></v-checkbox>
-                <label>Max marks: {{ markingConfiguration.maximumMarks }}</label>
-              </v-flex>
-            </v-layout>
-          </div>
+          
           <v-flex xs12>
             <v-container class="controls">
               <button type="button" class="primary-cl button-cs" @click="submitQuiz()">{{ pageAction }}</button>
@@ -837,4 +847,17 @@ export default class QuizPage extends Vue {
 .moocchat-title {
   margin: 6px;
 }
+
+/**Custom styling*/
+.divider.vertical-divider {
+  width: 1px;
+  height: 40px;
+  margin: 1.5rem 50% 0 50%;
+}
+
+.divider {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
 </style>
