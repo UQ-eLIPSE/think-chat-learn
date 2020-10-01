@@ -168,71 +168,89 @@
           </v-flex>
 
           <v-flex v-for="(page, index) in pages" :key="page.__mountedId" xs12>
-            <div class="card-container">
-              <v-layout row wrap>
-                <v-flex xs4>
-                  <b-field label="Set the page title">
-                    <v-text-field label="Title" v-model="page.title" outline :rules="[existenceRule]" />
-                  </b-field>
-                </v-flex>
+            <v-layout row>
+              <v-flex class="position-relative mt-3" xs10>
+                <Collapsible class="marking-collapsible" :title="`Page #${index + 1} :: ${page.title || ''}`">
+                  <v-layout row wrap>
+                    <v-flex xs12>
+                      <div class="divider mt-0 mb-4"></div>
+                    </v-flex>
+                    
+                    <v-flex xs4>
+                      <b-field label="Set the page title">
+                        <v-text-field label="Title" v-model="page.title" outline :rules="[existenceRule]" />
+                      </b-field>
+                    </v-flex>
 
-                <v-flex xs4>
-                  <b-field label="Set the page type">
-                    <!-- Only one rule applys to the discussion page rule -->
-                    <v-overflow-btn
-                      :items="pageTypeDropDown"
-                      v-model="page.type"
-                      outline
-                      :rules="[discussionPageRule]"
-                    />
-                  </b-field>
-                </v-flex>
+                    <v-flex xs4>
+                      <b-field label="Set the page type">
+                        <!-- Only one rule applys to the discussion page rule -->
+                        <v-overflow-btn
+                          :items="pageTypeDropDown"
+                          v-model="page.type"
+                          outline
+                          :rules="[discussionPageRule]"
+                        />
+                      </b-field>
+                    </v-flex>
 
-                <v-flex xs4>
-                  <!-- TODO make this a proper select box once Questions and Answers are implemented -->
-                  <b-field
-                    v-if="(page.type === PageType.QUESTION_ANSWER_PAGE) || (page.type === PageType.DISCUSSION_PAGE)"
-                    label="Set the associate question for the page"
-                  >
-                    <v-overflow-btn
-                      :items="questionDropDown"
-                      v-model="page.questionId"
-                      outline
-                      :rules="page.type === PageType.QUESTION_ANSWER_PAGE ? [existenceRule, duplicateQuestionPageRule] : [existenceRule, duplicateDiscussionPageRule]"
-                    />
-                  </b-field>
+                    <v-flex xs4>
+                      <!-- TODO make this a proper select box once Questions and Answers are implemented -->
+                      <b-field
+                        v-if="(page.type === PageType.QUESTION_ANSWER_PAGE) || (page.type === PageType.DISCUSSION_PAGE)"
+                        label="Set the associate question for the page"
+                      >
+                        <v-overflow-btn
+                          :items="questionDropDown"
+                          v-model="page.questionId"
+                          outline
+                          :rules="page.type === PageType.QUESTION_ANSWER_PAGE ? [existenceRule, duplicateQuestionPageRule] : [existenceRule, duplicateDiscussionPageRule]"
+                        />
+                      </b-field>
+                      
+                      <select v-model="page.surveryId" v-else-if="page.type === PageType.SURVEY_PAGE">
+                        <option>Some Default survey</option>
+                      </select>
+                    </v-flex>
                   
-                  <select v-model="page.surveryId" v-else-if="page.type === PageType.SURVEY_PAGE">
-                    <option>Some Default survey</option>
-                  </select>
-                </v-flex>
-              
-                <!-- Business logic for rendering based on page type -->
-                <v-checkbox
-                  v-if="(page.type === PageType.DISCUSSION_PAGE)"
-                  v-model="page.displayResponses"
-                  :label="'Display Responses from question?'"
-                ></v-checkbox>
-              </v-layout>
+                    <!-- Business logic for rendering based on page type -->
+                    <v-checkbox
+                      v-if="(page.type === PageType.DISCUSSION_PAGE)"
+                      v-model="page.displayResponses"
+                      :label="'Display Responses from question?'"
+                    ></v-checkbox>
+                  </v-layout>
 
-              <b-field label="Page content">
-                  <TinyMce :id="`tmce-${page.__mountedId}`" v-model="page.content" />
-              </b-field>
-              <b-field label="Set the timeout in minutes">
-                <v-text-field label="Timeout" v-model="page.timeoutInMins" outline type="number" />
-              </b-field>
-            </div>
-            <div class="p-controls">
-              <button type="button" class="primary-cl button-cs" @click="up(index)">Move up</button>
-              <button type="button" class="uq button-cs" @click="down(index)">Move down</button>
-              <button type="button" class="purple-cl button-cs" @click="deletePage(index)">Delete page</button>
-            </div>
-          </v-flex>
+                  <b-field label="Page content">
+                      <TinyMce :id="`tmce-${page.__mountedId}`" v-model="page.content" />
+                  </b-field>
+                  <b-field label="Set the timeout in minutes">
+                    <v-text-field label="Timeout" v-model="page.timeoutInMins" outline type="number" />
+                  </b-field>
+                </Collapsible>
 
-          <v-flex xs12>
-            <v-container class="controls">
-              <button class="primary-cl button-cs" type="button" @click="createPage()">Create new page</button>
-            </v-container>
+                <div class="page-multipliable-controls">
+                  <button class="button-cs dark-grey-cl compact-btn delete-btn" @click="deletePage(index)">
+                    <i class="icon-times-circle"></i>
+                    Delete Page
+                  </button>
+                  <button class="button-cs green-cl add-btn compact-btn" @click="createPage(index + 1)">
+                    <i class="icon-plus-circle"></i>
+                    New Page
+                  </button>
+                </div>
+
+                <div class="page-elevation-controls">
+                  <button class="squircular-icon move-btn" @click="up(index)">
+                    <i class="icon-chevron-up"></i>
+                  </button>
+                  <button class="squircular-icon move-btn" @click="down(index)">
+                    <i class="icon-chevron-down"></i>
+                  </button>
+                </div>
+              </v-flex>
+            </v-layout>
+
           </v-flex>
           
           <v-flex xs12>
@@ -275,6 +293,7 @@ import { Utils } from "../../../common/js/Utils";
 import API from "../../../common/js/DB_API";
 import uniqueId from "../util/uniqueId";
 import { saveTinyMceEditorContent } from "../util/TinyMceUtils";
+import Collapsible from "../elements/Collapsible.vue"
 
 
 interface DropDownConfiguration {
@@ -286,7 +305,8 @@ const IMAGE_LOCATION = process.env.VUE_APP_IMAGE_LOCATION;
 
 @Component({
   components: {
-    TinyMce
+    TinyMce,
+    Collapsible
   }
 })
 export default class QuizPage extends Vue {
@@ -469,7 +489,7 @@ export default class QuizPage extends Vue {
   }
   get pageTitle() {
     if (this.isEditing && !this.isCloning) {
-      return "Editing quiz session";
+      return "Updating quiz session";
     } else if (this.isCloning) {
       return `Creating a copy of quiz session "${this.clonedQuizName}"`;
     } else {
@@ -479,7 +499,7 @@ export default class QuizPage extends Vue {
 
   get pageAction() {
     if (this.isEditing && !this.isCloning) {
-      return "Edit quiz session";
+      return "Update quiz session";
     } else if (this.isCloning) {
       return "Save new copy";
     } else {
@@ -585,7 +605,7 @@ export default class QuizPage extends Vue {
 
   // The reason for the mounted id is that we need it for rendering purposes
   // but toss it away later for db calls.
-  private createPage() {
+  private createPage(index?: number) {
     const output: IQuestionAnswerPage = {
       type: PageType.QUESTION_ANSWER_PAGE,
       title: "Some Title",
@@ -594,7 +614,7 @@ export default class QuizPage extends Vue {
       timeoutInMins: 2
     };
 
-    this.pagesArray.push({
+    this.pagesArray.splice(index || 0, 0, {
       ...output,
       __mountedId: uniqueId()
     });
@@ -858,6 +878,43 @@ export default class QuizPage extends Vue {
 .divider {
   margin-top: 2rem;
   margin-bottom: 2rem;
+}
+
+.delete-btn,
+.add-btn{
+  width: 30px;
+  height: 30px;
+  font-size: 0.875em;
+}
+
+.page-multipliable-controls{
+  display: flex;
+  flex-flow: row nowrap;
+
+  position: absolute;
+  top: 0.5rem;
+  right: 40px;
+}
+
+.page-elevation-controls{
+  display: flex;
+  flex-flow: column;
+
+  position: absolute;
+  top: 0;
+  right: -2.8rem;
+  color: $primary;
+
+  .move-btn{
+    font-size: 0.8em;
+    height: 25px;
+    width: 25px;
+
+    &:hover{
+      @include transparent-color($primary, false);
+    }
+
+  }
 }
 
 </style>
