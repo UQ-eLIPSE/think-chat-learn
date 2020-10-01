@@ -75,7 +75,7 @@
                   <input type="text" v-model="startDateString" v-on="on" readonly/>
                 </div>
               </template>
-              <v-date-picker v-model="startDateString" no-title scrollable>
+              <v-date-picker v-model="startDateString" no-title scrollable :max="endDateString">
                 <!-- Use buttons because time pickers require a 2-step process -->
                 <v-spacer></v-spacer>
                 <v-btn flat @click="startDateShow = false">Cancel</v-btn>
@@ -99,7 +99,8 @@
                   <input type="text" v-model="startTimeString" v-on="on" readonly/>
                 </div>
               </template>
-              <v-time-picker v-model="startTimeString" scrollable format="24hr">
+              <v-time-picker v-model="startTimeString" scrollable format="24hr" 
+                             :max="endDateString === startDateString? endTimeString: ''">
                 <v-btn flat @click="startTimeShow = false">Cancel</v-btn>
                 <v-btn flat @click="$refs.startTimeMenu.save(startTimeString)">OK</v-btn>
               </v-time-picker>
@@ -121,7 +122,7 @@
                   <input type="text" v-model="endDateString" v-on="on" readonly/>
                 </div>
               </template>
-              <v-date-picker v-model="endDateString" no-title scrollable>
+              <v-date-picker v-model="endDateString" no-title scrollable :min="startDateString">
                 <v-btn flat @click="endDateShow = false">Cancel</v-btn>
                 <v-btn flat @click="$refs.endDateMenu.save(endDateString)">OK</v-btn>
               </v-date-picker>
@@ -142,7 +143,8 @@
                   <input type="text" v-model="endTimeString" v-on="on" readonly/>
                 </div>
               </template>
-              <v-time-picker v-model="endTimeString" scrollable format="24hr">
+              <v-time-picker v-model="endTimeString" scrollable format="24hr"
+                             :min="endDateString === startDateString? startTimeString: ''">
                 <v-btn flat @click="endTimeShow = false">Cancel</v-btn>
                 <v-btn flat @click="$refs.endTimeMenu.save(endTimeString)">OK</v-btn>
               </v-time-picker>
