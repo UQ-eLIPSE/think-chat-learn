@@ -230,7 +230,7 @@
                 </Collapsible>
 
                 <div class="page-multipliable-controls">
-                  <button class="button-cs dark-grey-cl compact-btn delete-btn" @click="deletePage(index)">
+                  <button class="button-cs dark-grey-cl delete-btn compact-btn" @click="deletePage(index)">
                     <i class="icon-times-circle"></i>
                     Delete Page
                   </button>
@@ -882,7 +882,6 @@ export default class QuizPage extends Vue {
 
 .delete-btn,
 .add-btn{
-  width: 30px;
   height: 30px;
   font-size: 0.875em;
 }
