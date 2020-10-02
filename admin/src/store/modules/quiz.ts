@@ -45,6 +45,8 @@ export interface IState {
     marksQuestionUserMap: MarksQuestionUserMap;
     criterias: ICriteria[];
     rubrics: IRubric[];
+    /** Tracks whether mark has been changed and has not been saved */
+    MARK_CHANGED_FLAG: boolean;
     /**
      * A map which stores search maps by quiz schedule id.
      * Each search map is used to search for users by username, first name or last name for a particular quiz schedule Id.
@@ -73,6 +75,7 @@ const state: IState = {
     quizSessionUserSearchMap: {},
     criterias: [],
     rubrics: [],
+    MARK_CHANGED_FLAG: false
 };
 
 const mutationKeys = {
@@ -91,7 +94,8 @@ const mutationKeys = {
     SET_CHATGROUPS: "setChatGroups",
     SET_QUIZSESSION_MARKED: "SET_QUIZSESSION_MARKED",
     SET_SEARCH_QUIZ_SESSIONS: "SET_SEARCH_QUIZ_SESSIONS",
-    SET_CHATGROUP_MESSAGES: "SET_CHATGROUP_MESSAGES"
+    SET_CHATGROUP_MESSAGES: "SET_CHATGROUP_MESSAGES",
+    SET_MARK_CHANGED_FLAG: "SET_MARK_CHANGED_FLAG"
 };
 
 const getters: GetterTree<IState, undefined> = {
@@ -183,6 +187,9 @@ const getters: GetterTree<IState, undefined> = {
     },
     searchMap: (state) => {
         return state.quizSessionUserSearchMap;
+    },
+    isMarkChanged: (state) => {
+        return state.MARK_CHANGED_FLAG === true;
     }
 
 };
@@ -505,6 +512,9 @@ const mutations = {
         if(chatGroup) {
             Vue.set(chatGroup, 'messages', payload.messages);
         }
+    },
+    [mutationKeys.SET_MARK_CHANGED_FLAG](state: IState, payload: boolean) {
+        state.MARK_CHANGED_FLAG = payload;
     }
 };
 

@@ -12,6 +12,7 @@ import * as Schema from "../../../../common/interfaces/DBSchema";
 import { API } from "../../../../common/js/DB_API";
 import { EventBus, EventList, SnackEvent } from "../../EventBus";
 import Rubric from "./Rubric/Rubric.vue";
+import { setMarkChangedFlag } from "../../util/MarkChangeTracker";
 
 Component.registerHooks([
     'updated',
@@ -230,12 +231,19 @@ export default class MarkingComponent extends Vue {
 
             // Update marking indicator map in group
             this.$store.commit("SET_QUIZSESSION_MARKED", { quizSessionId: this.currentQuizSessionId, marked: true, chatGroupId: this.currentChatGroupId });
+        
+            // Marks saved successfully, set changed to false
+            setMarkChangedFlag(false);
+            
         } catch (e) {
+            // Marks could not be saved
+            // mark change indicator will not be changed if mark could not be saved
             console.log(e.message);
             EventBus.$emit(EventList.PUSH_SNACKBAR, {
                 message: "Could not save mark",
                 error: true
             });
+
         }
     }
     showSuccessMessage() {

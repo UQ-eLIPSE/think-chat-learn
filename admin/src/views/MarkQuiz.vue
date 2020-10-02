@@ -103,6 +103,7 @@ import Pagination from "../components/Pagination/Pagination.vue";
 import { IPageNumber } from "../components/Pagination/PageNumber.vue";
 import { QuizSessionToUserInfoMap } from "../store/modules/quiz";
 import AutoComplete from "../elements/AutoComplete.vue";
+import { confirmMarkNavigateAway, isMarkChanged } from "../util/MarkChangeTracker";
 
 Component.registerHooks([
   'beforeRouteEnter',
@@ -222,9 +223,22 @@ export default class MarkQuiz extends Vue {
   //Choosing group chat from pagination
   changeGroupChat(groupId: number){
     if (this.chatGroups.length <= 0) return;
-    if (!groupId) {
-      this.goToChatgroup(0);
-    } else if (this.chatGroups.length > 1 && groupId > 0) {
+
+    if (!groupId) return;
+    
+    if (this.chatGroups.length > 1 && groupId > 0) {
+      // Check if current groupId corresponds to selectGroupId
+      const group = this.chatGroups[groupId - 1];
+      if(!group || !group._id) return;
+
+      // If current group is not the same as group to navigate to
+      if(this.selectedGroupId !== group._id) {
+        // Check if current mark was modified
+        const allowNavigation = confirmMarkNavigateAway();
+
+        if(!allowNavigation) return;
+      }
+      
       this.goToChatgroup(groupId - 1);
     }
   }
@@ -343,6 +357,14 @@ export default class MarkQuiz extends Vue {
   }
 
   setCurrentQuizSessionId(quizSessionId: string) {
+    if(this.currentQuizSessionId !== quizSessionId) {
+      // If user tries to navigate to a different user in the group
+      // Check if current mark was modified
+      const allowNavigation = confirmMarkNavigateAway();
+
+      if(!allowNavigation) return;
+    }
+
     this.currentQuizSessionId = quizSessionId;
 
     // Side effect: Clear any search text
@@ -376,6 +398,10 @@ export default class MarkQuiz extends Vue {
    */
   searchClickHandler(quizSessionSearchItem: { label: string, value: string }) {
     try {
+      // Check if current mark was modified
+      const allowNavigation = confirmMarkNavigateAway();
+      if(!allowNavigation) return;
+
       if(!quizSessionSearchItem || !quizSessionSearchItem.value) throw new Error("Invalid selection");
       
       const quizSessionId = quizSessionSearchItem.value;
@@ -438,6 +464,26 @@ export default class MarkQuiz extends Vue {
   @Watch('searchText')
   searchTextChangeHandler() {
     this.checkOrFetchUserMap();
+  }
+
+  mounted() {
+    /**
+     * Check if mark has been modified before leaving the page.
+     * If modified, a standard prompt will be shown. Otherwise, users can leave the page.
+     * Docs: https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onbeforeunload
+     */
+    window.addEventListener('beforeunload', function (e) {
+      if(isMarkChanged()) {
+        // Cancel the event (Note: If you prevent default behavior in Mozilla Firefox prompt will always be shown)
+        e.preventDefault();
+
+        // Set a returnValue so that prompt will open
+        e.returnValue = '';
+      } else {
+        // the absence of a returnValue property on the event will guarantee the browser unload happens
+        delete e['returnValue'];
+      }
+    });
   }
 }
 </script>

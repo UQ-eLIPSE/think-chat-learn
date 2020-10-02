@@ -70,7 +70,6 @@ export default class AutoComplete extends Vue {
   }
 
   onChooseItem(index: number){
-    this.displayValue = this.itemList[index].label;
     this.$emit('click', this.itemList[index]);
     this.isQuerying = false;
   }
