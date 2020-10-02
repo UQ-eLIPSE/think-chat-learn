@@ -13,10 +13,12 @@
           </v-flex>
           
           <v-flex class="form-control" xs12>
-            <span class="input-label required-input">Set the quiz title</span>
-            <div class="editable-field">
-              <input type="text" v-model="quizTitle"/>
-            </div>
+            <Validator :validationRule="[existenceRule]" :value="quizTitle">
+              <span class="input-label required-input">Set the quiz title</span>
+              <div class="editable-field">
+                <input type="text" v-model="quizTitle"/>
+              </div>
+            </Validator>
           </v-flex>
 
           <v-flex class="form-control" xs5>
@@ -76,7 +78,9 @@
             >
               <template v-slot:activator="{ on }">
                 <div class="form-control date-field">
-                  <input type="text" v-model="startDateString" v-on="on" readonly/>
+                  <Validator :validationRule="[existenceRule, validDateRule]" :value="startDateString">
+                    <input type="text" v-model="startDateString" v-on="on" readonly/>
+                  </Validator>
                 </div>
               </template>
               <v-date-picker v-model="startDateString" no-title scrollable :max="endDateString">
@@ -100,7 +104,9 @@
             >
               <template v-slot:activator="{ on }">
                 <div class="form-control time-field">
-                  <input type="text" v-model="startTimeString" v-on="on" readonly/>
+                  <Validator :validationRule="[existenceRule]" :value="startTimeString">
+                    <input type="text" v-model="startTimeString" v-on="on" readonly/>
+                  </Validator>
                 </div>
               </template>
               <v-time-picker v-model="startTimeString" scrollable format="24hr" 
@@ -123,7 +129,9 @@
             >
               <template v-slot:activator="{ on }">
                 <div class="form-control date-field">
-                  <input type="text" v-model="endDateString" v-on="on" readonly/>
+                  <Validator :validationRule="[existenceRule, validDateRule]" :value="endDateString">
+                    <input type="text" v-model="endDateString" v-on="on" readonly/>
+                  </Validator>
                 </div>
               </template>
               <v-date-picker v-model="endDateString" no-title scrollable :min="startDateString">
@@ -144,7 +152,9 @@
             >
               <template v-slot:activator="{ on }">
                 <div class="form-control time-field">
-                  <input type="text" v-model="endTimeString" v-on="on" readonly/>
+                  <Validator :validationRule="[existenceRule, validDateRule]" :value="endTimeString">
+                    <input type="text" v-model="endTimeString" v-on="on" readonly/>
+                  </Validator>
                 </div>
               </template>
               <v-time-picker v-model="endTimeString" scrollable format="24hr"
@@ -736,7 +746,7 @@ export default class QuizPage extends Vue {
 
   // Compares the start and end date values and existence
   get validDateRule() {
-    return () => {
+    return (value: any) => {
       if (this.startDate && this.startTime && this.endDate && this.endTime) {
         // Construct the time and check for comparisons since we have valid inputs
         const availableStart = new Date(
@@ -756,12 +766,15 @@ export default class QuizPage extends Vue {
           this.endTime.getMinutes(),
           this.endTime.getSeconds()
         );
+
+        const today = new Date();
         return (
-          availableEnd.getTime() > availableStart.getTime() ||
-          "Set the end time to be greater than start time"
+          (availableEnd.getTime() > today.getTime() &&
+          availableStart.getTime() > today.getTime()) ||
+          "Date/time can't be older than current time"
         );
       } else {
-        return "Start Date and End Date needs to be filled out";
+        return "Start date/time and end date/time are required";
       }
     };
   }

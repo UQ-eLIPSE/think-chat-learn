@@ -1,15 +1,13 @@
 <template>
-  <div class="validator-wrapper pa-0">
+  <div class="validator-wrapper pa-0" @click="activateFlag">
     <slot></slot>
-    <v-layout row class="validation-message mt-1" >
-      <i v-if="validationMsg && forceShowValidation" 
-         :class="`${validationMsg ? 'icon-times-circle': ''} mx-1`"></i>
-      <span v-if="validationMsg && forceShowValidation">
-        {{validationMsg}}
-      </span>
+    <v-layout row class="validation-message mt-1" v-if="showValidateFlag && (validationMsg || forceShowValidation)">
+      <i :class="`${validationMsg ? 'icon-times-circle': ''} mx-1`"></i>
+      <span>{{validationMsg}}</span>
     </v-layout>
   </div>
 </template>
+
 <script lang="ts">
 import { type } from "jquery";
 import { Vue, Component, Watch, Prop } from "vue-property-decorator";
@@ -23,6 +21,8 @@ export default class Validator extends Vue {
   //Value to validate
   @Prop({ default: '', required: true }) value!: any;
 
+  private showValidateFlag = false;
+
   get validationMsg(){
     let validateMsg = '';
     for (let rule of this.validationRule){
@@ -32,6 +32,10 @@ export default class Validator extends Vue {
       break;
     }
     return validateMsg;
+  }
+
+  activateFlag(){
+    this.showValidateFlag = true;
   }
 }
 </script>
