@@ -8,7 +8,7 @@
         :criterion="criterionObject.criterion"
         :mark="criterionObject.mark || 0"
         :maximumMarks="maximumMarks"
-        :key="`${criterionObject.criterion._id}-criterion`"
+        :key="`${username || ''}-${criterionObject.criterion._id}-criterion`"
       />
     </div>
     <div class="general-feedback">

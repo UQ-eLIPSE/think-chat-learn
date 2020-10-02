@@ -224,14 +224,21 @@ export default class MarkQuiz extends Vue {
   changeGroupChat(groupId: number){
     if (this.chatGroups.length <= 0) return;
 
-    // Check if current mark was modified
-    const allowNavigation = confirmMarkNavigateAway();
+    if (!groupId) return;
+    
+    if (this.chatGroups.length > 1 && groupId > 0) {
+      // Check if current groupId corresponds to selectGroupId
+      const group = this.chatGroups[groupId - 1];
+      if(!group || !group._id) return;
 
-    if(!allowNavigation) return;
+      // If current group is not the same as group to navigate to
+      if(this.selectedGroupId !== group._id) {
+        // Check if current mark was modified
+        const allowNavigation = confirmMarkNavigateAway();
 
-    if (!groupId) {
-      this.goToChatgroup(0);
-    } else if (this.chatGroups.length > 1 && groupId > 0) {
+        if(!allowNavigation) return;
+      }
+      
       this.goToChatgroup(groupId - 1);
     }
   }
@@ -350,6 +357,14 @@ export default class MarkQuiz extends Vue {
   }
 
   setCurrentQuizSessionId(quizSessionId: string) {
+    if(this.currentQuizSessionId !== quizSessionId) {
+      // If user tries to navigate to a different user in the group
+      // Check if current mark was modified
+      const allowNavigation = confirmMarkNavigateAway();
+
+      if(!allowNavigation) return;
+    }
+
     this.currentQuizSessionId = quizSessionId;
 
     // Side effect: Clear any search text
