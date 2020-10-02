@@ -259,15 +259,6 @@
                     New Page
                   </button>
                 </div>
-
-                <!-- <div class="page-elevation-controls">
-                  <button type="button" class="squircular-icon move-btn" @click="up(index)">
-                    <i class="icon-chevron-up"></i>
-                  </button>
-                  <button type="button" class="squircular-icon move-btn" @click="down(index)">
-                    <i class="icon-chevron-down"></i>
-                  </button>
-                </div> -->
               </v-flex>
             </v-layout>
 
