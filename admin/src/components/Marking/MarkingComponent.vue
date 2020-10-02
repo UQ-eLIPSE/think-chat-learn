@@ -1,6 +1,6 @@
 <template>
     <div class="marking-rubric">
-        <Rubric @saved="saveMarks" :username="username" :criteria="associatedCriterias" :mark="marks" :maximumMarks="markingConfig.maximumMarks" />
+        <Rubric @saved="saveMarks" :username="username" :criteria="associatedCriterias" :mark="marks" :maximumMarks="markingConfig.maximumMarks"/>
     </div>
 </template>
 
@@ -12,6 +12,7 @@ import * as Schema from "../../../../common/interfaces/DBSchema";
 import { API } from "../../../../common/js/DB_API";
 import { EventBus, EventList, SnackEvent } from "../../EventBus";
 import Rubric from "./Rubric/Rubric.vue";
+import { setMarkChangedFlag } from "../../util/MarkChangeTracker";
 
 Component.registerHooks([
     'updated',
@@ -230,12 +231,22 @@ export default class MarkingComponent extends Vue {
 
             // Update marking indicator map in group
             this.$store.commit("SET_QUIZSESSION_MARKED", { quizSessionId: this.currentQuizSessionId, marked: true, chatGroupId: this.currentChatGroupId });
+        
+            // Marks saved successfully, set changed to false
+            this.markChangedHandler(false);
+            
         } catch (e) {
             console.log(e.message);
             EventBus.$emit(EventList.PUSH_SNACKBAR, {
                 message: "Could not save mark",
                 error: true
             });
+
+            // Marks could not be saved
+            // `markChanged` should not be modified here, e.g. If someone made no change:
+            // 1. clicked "Save"
+            // 2. Saving operation failed
+            // 3. They still see a message 
         }
     }
     showSuccessMessage() {
@@ -263,6 +274,11 @@ export default class MarkingComponent extends Vue {
     async quizSessionChangeHandler() {
         this.fetchMarksForQuestion();
     }
+
+    markChangedHandler(changed: boolean) {
+        setMarkChangedFlag(changed);
+    }
+
 
 }
 

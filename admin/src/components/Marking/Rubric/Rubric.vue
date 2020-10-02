@@ -15,7 +15,7 @@
       <h5>General feedback</h5>
       <div class="form-control">
         <div class="editable-field">
-          <textarea v-if="mark && typeof mark.feedback === 'string'" v-model="mark.feedback" />
+          <textarea v-if="mark && typeof mark.feedback === 'string'" @input="markChangedHandler(true)" v-model="mark.feedback" />
         </div>
       </div>
     </div>
@@ -26,12 +26,13 @@
 
 
 <script lang="ts">
-import { Vue, Component, Prop } from "vue-property-decorator";
+import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import {
   ICriteria,
   Mark,
   MarkCriteria,
 } from "../../../../../common/interfaces/DBSchema";
+import { setMarkChangedFlag } from "../../../util/MarkChangeTracker";
 import Criterion from "./Criterion.vue";
 
 @Component({
@@ -67,6 +68,10 @@ export default class Rubric extends Vue {
         mark: mark,
       };
     });
+  }
+
+  markChangedHandler(changed: boolean) {
+    setMarkChangedFlag(changed);
   }
 
   saveMarksHandler() {

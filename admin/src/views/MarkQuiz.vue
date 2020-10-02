@@ -4,6 +4,7 @@
     <v-layout row>
       <v-flex xs8>
         <h2>{{ q.title }}</h2>
+        <h3>Marks changed: {{ markChanged()  }}</h3>
       </v-flex>
       <v-flex>
         <v-layout row class="blue-cl-static quiz-info pa-2">
@@ -103,6 +104,7 @@ import Pagination from "../components/Pagination/Pagination.vue";
 import { IPageNumber } from "../components/Pagination/PageNumber.vue";
 import { QuizSessionToUserInfoMap } from "../store/modules/quiz";
 import AutoComplete from "../elements/AutoComplete.vue";
+import { confirmMarkNavigateAway, isMarkChanged } from "../util/MarkChangeTracker";
 
 Component.registerHooks([
   'beforeRouteEnter',
@@ -131,6 +133,10 @@ export default class MarkQuiz extends Vue {
   get marksPublic(): boolean | null | undefined {
     if(!this.q) return null;
     return this.q.marksPublic;
+  }
+
+  markChanged() {
+    return isMarkChanged();
   }
 
   async toggleMarksVisibility() {
@@ -222,6 +228,12 @@ export default class MarkQuiz extends Vue {
   //Choosing group chat from pagination
   changeGroupChat(groupId: number){
     if (this.chatGroups.length <= 0) return;
+
+    // Check if current mark was modified
+    const allowNavigation = confirmMarkNavigateAway();
+
+    if(!allowNavigation) return;
+
     if (!groupId) {
       this.goToChatgroup(0);
     } else if (this.chatGroups.length > 1 && groupId > 0) {
