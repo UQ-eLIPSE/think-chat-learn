@@ -28,7 +28,7 @@ export function confirmMarkNavigateAway() {
     const changed = isMarkChanged();
 
     if (changed) {
-        const confirmed = confirm("Mark may have unsaved changes. Changes will be discarded if you continue. Continue?");
+        const confirmed = confirm("Mark may have unsaved changes. Changes will be discarded if you continue. Continue ?");
         if(confirmed) {
             // User has confirmed they are OK to navigate away, set the changed flag as false
             setMarkChangedFlag(false);
