@@ -21,13 +21,25 @@
     width: 100%;
   }
 
+  /*Smaller button with text*/
   &.button-min {
     font-size: 0.8em;
     padding: 0 15px;
     min-width: 75px;
     height: 20px;
   }
+
+  &.compact-btn{
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+
+    > i{
+      margin-right: 8px;
+    }
+  }
 }
+
 
 .disabled-button-cs{
   @include transparent-color($dark-grey, false);
