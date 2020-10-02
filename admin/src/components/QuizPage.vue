@@ -20,21 +20,25 @@
           </v-flex>
 
           <v-flex class="form-control" xs5>
-            <span class="input-label required-input">Rubric</span>
-            <div class="select-field">
-              <select v-model="rubricId">
-                <template v-for="rubric in rubricDropDown">
-                  <option :key="`rubric-${rubric.value}`" :value="rubric.value">{{rubric.text}}</option>
-                </template>
-              </select>
-            </div>
+            <Validator :validationRule="[existenceRule]" :value="rubricId">
+              <span class="input-label required-input">Rubric</span>
+              <div class="select-field">
+                <select v-model="rubricId">
+                  <template v-for="rubric in rubricDropDown">
+                    <option :key="`rubric-${rubric.value}`" :value="rubric.value">{{rubric.text}}</option>
+                  </template>
+                </select>
+              </div>
+            </Validator>
           </v-flex>
 
           <v-flex class="form-control" xs2>
-            <span class="input-label required-input">Group size</span>
-            <div class="editable-field">
-              <input type="number" v-model.number="groupSize"/>
-            </div>
+            <Validator :validationRule="[existenceRule]" :value="groupSize">
+              <span class="input-label required-input">Group size</span>
+              <div class="editable-field">
+                <input type="number" v-model.number="groupSize"/>
+              </div>
+            </Validator>
           </v-flex>
 
           <v-flex xs1>
@@ -277,6 +281,7 @@ import { Utils } from "../../../common/js/Utils";
 import API from "../../../common/js/DB_API";
 import uniqueId from "../util/uniqueId";
 import { saveTinyMceEditorContent } from "../util/TinyMceUtils";
+import Validator from "../elements/Validator.vue";
 
 
 interface DropDownConfiguration {
@@ -288,7 +293,8 @@ const IMAGE_LOCATION = process.env.VUE_APP_IMAGE_LOCATION;
 
 @Component({
   components: {
-    TinyMce
+    TinyMce,
+    Validator
   }
 })
 export default class QuizPage extends Vue {
@@ -345,6 +351,8 @@ export default class QuizPage extends Vue {
   private endTimeShow: boolean = false;
 
   private quizToBeCloned: null | DBSchema.IQuiz = null;
+
+  private forceValidation: boolean = false;
 
   initMarkConfig(): DBSchema.MarkConfig {
     return {
@@ -413,6 +421,14 @@ export default class QuizPage extends Vue {
   private async submitQuiz() {
     // Check for the rules note that the $refs aren't defined with Vuetify
     const valid = (this.$refs.form as any).validate();
+
+    const isValid = this.existenceRule(this.quizTitle)
+                    && this.existenceRule(this.rubricId)
+                    && this.existenceRule(this.groupSize);
+    
+    if(!isValid){
+      this.forceValidation = true;
+    }
 
     if (!valid) {
       showSnackbar("Failed. Check the form for any errors", true);
@@ -796,7 +812,6 @@ export default class QuizPage extends Vue {
       return new Date(Date.now()).toString();
     }
   }
-
 }
 </script>
 
