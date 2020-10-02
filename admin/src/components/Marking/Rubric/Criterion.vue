@@ -18,6 +18,7 @@
         <textarea
           v-if="mark && typeof mark.feedback === 'string'"
           v-model="mark.feedback"
+          @input="markChanged(true)"
           placeholder="Comment ..."
         />
         <div class="circular-icon comment-close">
@@ -31,12 +32,13 @@
 
 
 <script lang="ts">
-import { Vue, Component, Prop } from "vue-property-decorator";
+import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 import {
   ICriteria,
   Mark,
   MarkCriteria,
 } from "../../../../../common/interfaces/DBSchema";
+import { setMarkChangedFlag } from "../../../util/MarkChangeTracker";
 import Points from "./Points.vue";
 @Component({
   components: {
@@ -50,8 +52,13 @@ export default class Criterion extends Vue {
 
   private commentsVisible: boolean = false;
 
+  markChanged(changed: boolean) {
+    setMarkChangedFlag(changed);
+  }
+
   markedHandler(point: number) {
     this.mark.value = point;
+    this.markChanged(true);
   }
 
   get criterionName() {
