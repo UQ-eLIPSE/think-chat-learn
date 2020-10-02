@@ -78,7 +78,7 @@
             >
               <template v-slot:activator="{ on }">
                 <div class="form-control date-field">
-                  <Validator :validationRule="[existenceRule, validDateRule]" :value="startDateString">
+                  <Validator :validationRule="[existenceRule, validDateRule('startDateTime')]" :value="startDateString">
                     <input type="text" v-model="startDateString" v-on="on" readonly/>
                   </Validator>
                 </div>
@@ -104,7 +104,7 @@
             >
               <template v-slot:activator="{ on }">
                 <div class="form-control time-field">
-                  <Validator :validationRule="[existenceRule]" :value="startTimeString">
+                  <Validator :validationRule="[existenceRule, validDateRule('startDateTime')]" :value="startTimeString">
                     <input type="text" v-model="startTimeString" v-on="on" readonly/>
                   </Validator>
                 </div>
@@ -129,7 +129,7 @@
             >
               <template v-slot:activator="{ on }">
                 <div class="form-control date-field">
-                  <Validator :validationRule="[existenceRule, validDateRule]" :value="endDateString">
+                  <Validator :validationRule="[existenceRule, validDateRule('endDateTime')]" :value="endDateString">
                     <input type="text" v-model="endDateString" v-on="on" readonly/>
                   </Validator>
                 </div>
@@ -152,7 +152,7 @@
             >
               <template v-slot:activator="{ on }">
                 <div class="form-control time-field">
-                  <Validator :validationRule="[existenceRule, validDateRule]" :value="endTimeString">
+                  <Validator :validationRule="[existenceRule, validDateRule('endDateTime')]" :value="endTimeString">
                     <input type="text" v-model="endTimeString" v-on="on" readonly/>
                   </Validator>
                 </div>
@@ -776,7 +776,7 @@ export default class QuizPage extends Vue {
   }
 
   // Compares the start and end date values and existence
-  get validDateRule() {
+  validDateRule(validator: 'startDateTime' | 'endDateTime') {
     return (value: any) => {
       if (this.startDate && this.startTime && this.endDate && this.endTime) {
         // Construct the time and check for comparisons since we have valid inputs
@@ -799,11 +799,14 @@ export default class QuizPage extends Vue {
         );
 
         const today = new Date();
-        return (
-          (availableEnd.getTime() > today.getTime() &&
-          availableStart.getTime() > today.getTime()) ||
-          "Date/time can't be older than current time"
-        );
+
+        if (validator === 'startDateTime'){
+          return (availableStart.getTime() > today.getTime() 
+                  || "Start date/time can't be older than current time");
+        } else {
+          return (availableEnd.getTime() > today.getTime() 
+                  ||"End date/time can't be older than current time" )
+        }
       } else {
         return "Start date/time and end date/time are required";
       }
