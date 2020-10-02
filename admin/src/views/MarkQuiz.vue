@@ -4,7 +4,6 @@
     <v-layout row>
       <v-flex xs8>
         <h2>{{ q.title }}</h2>
-        <h3>Marks changed: {{ markChanged()  }}</h3>
       </v-flex>
       <v-flex>
         <v-layout row class="blue-cl-static quiz-info pa-2">
@@ -133,10 +132,6 @@ export default class MarkQuiz extends Vue {
   get marksPublic(): boolean | null | undefined {
     if(!this.q) return null;
     return this.q.marksPublic;
-  }
-
-  markChanged() {
-    return isMarkChanged();
   }
 
   async toggleMarksVisibility() {
@@ -411,7 +406,7 @@ export default class MarkQuiz extends Vue {
       if(!quizSessionExistsInChatGroup) {
         throw new Error('User not found in chat group');
       }
-      
+
       // Navigate to group and user
       this.goToChatgroup(chatGroupIndex, quizSessionId);
       this.searchText = quizSessionSearchItem.label;
@@ -454,6 +449,21 @@ export default class MarkQuiz extends Vue {
   @Watch('searchText')
   searchTextChangeHandler() {
     this.checkOrFetchUserMap();
+  }
+
+  mounted() {
+    /**
+     * Check if mark has been modified before leaving the page.
+     * If modified, a standard prompt will be shown. Otherwise, users can leave the page.
+     */
+    window.addEventListener('beforeunload', function (e) {
+      if(!isMarkChanged()) {
+        e.preventDefault();
+        delete e['returnValue'];
+      } else {
+        e.returnValue = '';
+      };
+    });
   }
 }
 </script>
