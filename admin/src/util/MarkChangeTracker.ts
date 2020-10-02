@@ -14,7 +14,7 @@ export function isMarkChanged() {
 /**
  * Checks if a mark change has been detected.
  * If a mark change has been detected, prompts the user to confirm whether they want to cancel navigation or continue navigation.
- * @returns `true` If it is safe to navigate to another page
+ * @returns `true` If it is safe to navigate to another page / user wants to discard marks and continue navigation
  */
 
 export function confirmMarkNavigateAway() {

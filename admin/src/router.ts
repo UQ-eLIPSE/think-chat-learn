@@ -16,6 +16,7 @@ import Marking from './views/Marking.vue';
 import MarkPlaceholder from './components/Marking/MarkPlaceholder.vue';
 import store from './store';
 import * as Schema from '../../common/interfaces/DBSchema';
+import  { confirmMarkNavigateAway } from "./util/MarkChangeTracker";
 
 Vue.use(Router);
 
@@ -117,7 +118,7 @@ const router = new Router({
 });
 
 // Navigation guard to check for `login`
-router.beforeEach((to, _from, next) => {
+router.beforeEach((to, from, next) => {
   const course = store.getters.course;
   const user = store.getters.user;
 
@@ -125,6 +126,14 @@ router.beforeEach((to, _from, next) => {
   if ((!course || !user) && !(to.name === "Login")) {
     // If user/course does not exist, use jwt to fetch and re-instantiate user and course details
     next({ name: 'Login' });
+  } else if(from.path.includes('mark-quiz') && !to.path.includes('mark-quiz')) { 
+    // Check if user is navigating to a different route other than marking, and mark has unsaved changes
+    const allowNavigateAway = confirmMarkNavigateAway();
+
+    if(allowNavigateAway) {
+      // If marks has no unsaved changes / user allows navigating away, continue to route
+      next();
+    }
   } else {
     next();
   }

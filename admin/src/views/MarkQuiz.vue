@@ -388,6 +388,10 @@ export default class MarkQuiz extends Vue {
    */
   searchClickHandler(quizSessionSearchItem: { label: string, value: string }) {
     try {
+      // Check if current mark was modified
+      const allowNavigation = confirmMarkNavigateAway();
+      if(!allowNavigation) return;
+
       if(!quizSessionSearchItem || !quizSessionSearchItem.value) throw new Error("Invalid selection");
       
       const quizSessionId = quizSessionSearchItem.value;
@@ -407,7 +411,7 @@ export default class MarkQuiz extends Vue {
       if(!quizSessionExistsInChatGroup) {
         throw new Error('User not found in chat group');
       }
-
+      
       // Navigate to group and user
       this.goToChatgroup(chatGroupIndex, quizSessionId);
       this.searchText = quizSessionSearchItem.label;
