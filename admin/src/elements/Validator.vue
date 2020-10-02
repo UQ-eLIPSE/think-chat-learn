@@ -1,7 +1,7 @@
 <template>
   <div class="validator-wrapper pa-0" @click="activateFlag">
     <slot></slot>
-    <v-layout row class="validation-message mt-1" v-if="showValidateFlag && (validationMsg || forceShowValidation)">
+    <v-layout row class="validation-message mt-1" v-if="(showValidateFlag && validationMsg) || forceShowValidation">
       <i :class="`${validationMsg ? 'icon-times-circle': ''} mx-1`"></i>
       <span>{{validationMsg}}</span>
     </v-layout>
@@ -15,7 +15,7 @@ import { Vue, Component, Watch, Prop } from "vue-property-decorator";
 @Component
 export default class Validator extends Vue {
   //Rule of validation, e.g (value > 5)
-  @Prop({ default: [], required: true }) validationRule!: ((value: any) => boolean | string)[];
+  @Prop({ default: [], required: true }) validationRule!: ((value?: any) => boolean | string)[];
   //Force validator to always show 
   @Prop({ default: false, required: false }) forceShowValidation!: string;
   //Value to validate

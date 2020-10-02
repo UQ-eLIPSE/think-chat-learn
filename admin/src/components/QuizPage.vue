@@ -13,7 +13,7 @@
           </v-flex>
           
           <v-flex class="form-control" xs12>
-            <Validator :validationRule="[existenceRule]" :value="quizTitle">
+            <Validator :validationRule="[existenceRule]" :value="quizTitle" :forceShowValidation="forceValidation">
               <span class="input-label required-input">Set the quiz title</span>
               <div class="editable-field">
                 <input type="text" v-model="quizTitle"/>
@@ -22,7 +22,7 @@
           </v-flex>
 
           <v-flex class="form-control" xs5>
-            <Validator :validationRule="[existenceRule]" :value="rubricId">
+            <Validator :validationRule="[existenceRule]" :value="rubricId" :forceShowValidation="forceValidation">
               <span class="input-label required-input">Rubric</span>
               <div class="select-field">
                 <select v-model="rubricId">
@@ -35,7 +35,7 @@
           </v-flex>
 
           <v-flex class="form-control" xs2>
-            <Validator :validationRule="[existenceRule]" :value="groupSize">
+            <Validator :validationRule="[existenceRule]" :value="groupSize" :forceShowValidation="forceValidation">
               <span class="input-label required-input">Group size</span>
               <div class="editable-field">
                 <input type="number" v-model.number="groupSize"/>
@@ -78,7 +78,8 @@
             >
               <template v-slot:activator="{ on }">
                 <div class="form-control date-field">
-                  <Validator :validationRule="[existenceRule, validDateRule('startDateTime')]" :value="startDateString">
+                  <Validator :validationRule="[existenceRule, validDateRule('startDateTime')]" :value="startDateString" 
+                             :forceShowValidation="forceValidation">
                     <input type="text" v-model="startDateString" v-on="on" readonly/>
                   </Validator>
                 </div>
@@ -104,7 +105,8 @@
             >
               <template v-slot:activator="{ on }">
                 <div class="form-control time-field">
-                  <Validator :validationRule="[existenceRule, validDateRule('startDateTime')]" :value="startTimeString">
+                  <Validator :validationRule="[existenceRule, validDateRule('startDateTime')]" :value="startTimeString"
+                             :forceShowValidation="forceValidation">
                     <input type="text" v-model="startTimeString" v-on="on" readonly/>
                   </Validator>
                 </div>
@@ -129,7 +131,8 @@
             >
               <template v-slot:activator="{ on }">
                 <div class="form-control date-field">
-                  <Validator :validationRule="[existenceRule, validDateRule('endDateTime')]" :value="endDateString">
+                  <Validator :validationRule="[existenceRule, validDateRule('endDateTime')]" :value="endDateString"
+                             :forceShowValidation="forceValidation">
                     <input type="text" v-model="endDateString" v-on="on" readonly/>
                   </Validator>
                 </div>
@@ -152,7 +155,8 @@
             >
               <template v-slot:activator="{ on }">
                 <div class="form-control time-field">
-                  <Validator :validationRule="[existenceRule, validDateRule('endDateTime')]" :value="endTimeString">
+                  <Validator :validationRule="[existenceRule, validDateRule('endDateTime')]" :value="endTimeString"
+                             :forceShowValidation="forceValidation">
                     <input type="text" v-model="endTimeString" v-on="on" readonly/>
                   </Validator>
                 </div>
@@ -201,6 +205,12 @@
               <v-flex class="position-relative" xs11>
                 <Collapsible class="marking-collapsible" :title="`Page #${index + 1} - ${page.title || ''}`">
                   <v-layout row wrap class="mt-3 pa-3">
+                    <v-flex xs12>
+                      <Validator :validationRule="[existenceRule, validDateRule('endDateTime')]" :value="endDateString"
+                                :forceShowValidation="forceValidation">
+                        <input type="text" v-model="endDateString" v-on="on" readonly/>
+                      </Validator>
+                    </v-flex>
                     <v-flex xs5 class="form-control">
                       <span class="input-label required-input">Page title</span>
                       <div class="editable-field">
@@ -229,14 +239,20 @@
                     <v-flex xs6 class="form-control">
                       <!-- TODO make this a proper select box once Questions and Answers are implemented -->
                       <div v-if="(page.type === PageType.QUESTION_ANSWER_PAGE) || (page.type === PageType.DISCUSSION_PAGE)">
-                        <span class="input-label required-input">Associate question for the page</span>
-                        <div class="select-field">
-                          <select v-model="page.questionId">
-                            <template v-for="question in questionDropDown">
-                              <option :key="`pt-${question.value}`" :value="question.value">{{question.text}}</option>
-                            </template>
-                          </select>
-                        </div>
+                        <Validator :validationRule="page.type === PageType.QUESTION_ANSWER_PAGE ? 
+                                                    [existenceRule, duplicateQuestionPageRule] 
+                                                    : [existenceRule, duplicateDiscussionPageRule]"
+                                   :value="page.questionId"
+                                   :forceShowValidation="forceValidation">
+                          <span class="input-label required-input">Associate question for the page</span>
+                          <div class="select-field">
+                            <select v-model="page.questionId">
+                              <template v-for="question in questionDropDown">
+                                <option :key="`pt-${question.value}`" :value="question.value">{{question.text}}</option>
+                              </template>
+                            </select>
+                          </div>
+                        </Validator>
                       </div>
                       
                       <div class="select-field" v-else-if="page.type === PageType.SURVEY_PAGE">
@@ -463,16 +479,53 @@ export default class QuizPage extends Vue {
     // Check for the rules note that the $refs aren't defined with Vuetify
     const valid = (this.$refs.form as any).validate();
 
-    const isValid = this.existenceRule(this.quizTitle)
-                    && this.existenceRule(this.rubricId)
-                    && this.existenceRule(this.groupSize);
+    const nonEmptyFieldArray = [this.quizTitle, this.rubricId, this.groupSize, 
+                                  this.startDateString, this.startTimeString, this.endDateString, this.endTimeString];
+    const allFieldsFilled = 
+          nonEmptyFieldArray.every((field) => this.existenceRule(field) && typeof this.existenceRule(field) === 'boolean')
+          && this.pages.every((page) => 
+                        [page.type, page.title].every((field) => this.existenceRule(field) && typeof this.existenceRule(field) === 'boolean')
+                        //If page type is question or discussion, check if associated question is chosen
+                        && (page.type !== PageType.INFO_PAGE 
+                            && this.existenceRule(page['questionId']) && typeof this.existenceRule(page['questionId']) === 'boolean')); 
     
-    if(!isValid){
+    if(!allFieldsFilled){
       this.forceValidation = true;
+      showSnackbar("Some required fields are not filled", true);
+      return;
     }
 
-    if (!valid) {
-      showSnackbar("Failed. Check the form for any errors", true);
+    const startDateValidate = this.validDateRule('startDateTime')();
+    const endDateValidate = this.validDateRule('endDateTime')();
+    const validDateTime = startDateValidate && (typeof startDateValidate === 'boolean')
+                          && endDateValidate && (typeof endDateValidate === 'boolean')
+
+    if(!validDateTime){
+      this.forceValidation = true;
+      showSnackbar("Invalid schedule time", true);
+      return;
+    }
+
+    //Validate quiz content
+    const questionSet = new Set();
+    const quizContentValid = this.pages.every((page) => {
+      switch (page.type){
+        case PageType.QUESTION_ANSWER_PAGE:
+          questionSet.add(page.questionId);
+          return this.duplicateQuestionPageRule(page.questionId) 
+                 && typeof this.duplicateQuestionPageRule(page.questionId) === 'boolean';
+        case PageType.DISCUSSION_PAGE:
+          return this.duplicateDiscussionPageRule(page.questionId)
+                 && typeof this.duplicateDiscussionPageRule(page.questionId) === 'boolean'
+                 && questionSet.has(page.questionId);
+        default:
+          return true;
+      }
+    });
+
+    if(!quizContentValid){
+      this.forceValidation = true;
+      showSnackbar("Invalid Quiz content", true);
       return;
     }
 
@@ -777,7 +830,7 @@ export default class QuizPage extends Vue {
 
   // Compares the start and end date values and existence
   validDateRule(validator: 'startDateTime' | 'endDateTime') {
-    return (value: any) => {
+    return (value?: any) => {
       if (this.startDate && this.startTime && this.endDate && this.endTime) {
         // Construct the time and check for comparisons since we have valid inputs
         const availableStart = new Date(
