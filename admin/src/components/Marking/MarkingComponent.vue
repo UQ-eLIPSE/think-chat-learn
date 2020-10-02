@@ -1,6 +1,6 @@
 <template>
     <div class="marking-rubric">
-        <Rubric @saved="saveMarks" :username="username" :criteria="associatedCriterias" :mark="marks" :maximumMarks="markingConfig.maximumMarks"/>
+        <Rubric @saved="saveMarks" :username="username" :criteria="associatedCriterias" :mark="marks" :maximumMarks="markingConfig.maximumMarks" />
     </div>
 </template>
 
@@ -233,20 +233,17 @@ export default class MarkingComponent extends Vue {
             this.$store.commit("SET_QUIZSESSION_MARKED", { quizSessionId: this.currentQuizSessionId, marked: true, chatGroupId: this.currentChatGroupId });
         
             // Marks saved successfully, set changed to false
-            this.markChangedHandler(false);
+            setMarkChangedFlag(false);
             
         } catch (e) {
+            // Marks could not be saved
+            // mark change indicator will not be changed if mark could not be saved
             console.log(e.message);
             EventBus.$emit(EventList.PUSH_SNACKBAR, {
                 message: "Could not save mark",
                 error: true
             });
 
-            // Marks could not be saved
-            // `markChanged` should not be modified here, e.g. If someone made no change:
-            // 1. clicked "Save"
-            // 2. Saving operation failed
-            // 3. They still see a message 
         }
     }
     showSuccessMessage() {
@@ -274,11 +271,6 @@ export default class MarkingComponent extends Vue {
     async quizSessionChangeHandler() {
         this.fetchMarksForQuestion();
     }
-
-    markChangedHandler(changed: boolean) {
-        setMarkChangedFlag(changed);
-    }
-
 
 }
 

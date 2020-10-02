@@ -3,10 +3,18 @@ import store from '../store';
 /**
  * Utilities to track if a mark has been changed
  */
+
+ /**
+  * Sets the mark changed flag value in the store
+  * @param changed 
+  */
 export function setMarkChangedFlag(changed: boolean) {
     store.commit('SET_MARK_CHANGED_FLAG', changed);
 }
 
+/**
+ * Returns `true` if a mark has been changed (and not saved)
+ */
 export function isMarkChanged() {
     return store.getters.isMarkChanged;
 }
@@ -16,7 +24,6 @@ export function isMarkChanged() {
  * If a mark change has been detected, prompts the user to confirm whether they want to cancel navigation or continue navigation.
  * @returns `true` If it is safe to navigate to another page / user wants to discard marks and continue navigation
  */
-
 export function confirmMarkNavigateAway() {
     const changed = isMarkChanged();
 
