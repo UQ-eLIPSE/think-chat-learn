@@ -455,14 +455,19 @@ export default class MarkQuiz extends Vue {
     /**
      * Check if mark has been modified before leaving the page.
      * If modified, a standard prompt will be shown. Otherwise, users can leave the page.
+     * Docs: https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onbeforeunload
      */
     window.addEventListener('beforeunload', function (e) {
-      if(!isMarkChanged()) {
+      if(isMarkChanged()) {
+        // Cancel the event (Note: If you prevent default behavior in Mozilla Firefox prompt will always be shown)
         e.preventDefault();
-        delete e['returnValue'];
-      } else {
+
+        // Set a returnValue so that prompt will open
         e.returnValue = '';
-      };
+      } else {
+        // the absence of a returnValue property on the event will guarantee the browser unload happens
+        delete e['returnValue'];
+      }
     });
   }
 }
