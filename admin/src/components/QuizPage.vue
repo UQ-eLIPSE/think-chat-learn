@@ -600,16 +600,54 @@ export default class QuizPage extends Vue {
   private up(index: number) {
     if (index === 0) return;
     if (this.pagesArray[index] && this.pagesArray[index - 1]) {
-      const items = [this.pagesArray[index - 1], this.pagesArray[index]];
-      this.pagesArray.splice(index - 1, 2, items[1], items[0]);
+      /**
+       * This elaborate manual cloning + individual splicing + swapping procedure is being done
+       * due to a TinyMCE mounting / unmounting issue.
+       * If pages are explicitly deleted and then re-inserted, TinyMCE component (re) mounts properly.
+       */
+      const previousPageIndex = index - 1;
+
+      // Clone page at [index]
+      const currentPageClone = Object.assign({}, this.pagesArray[index]);
+
+      // Clone page at [previousPageIndex]
+      const previousPageClone = Object.assign({}, this.pagesArray[previousPageIndex]);
+
+      // Delete pages at [index, previousPageIndex]
+      this.pagesArray.splice(previousPageIndex, 2);
+
+      this.$nextTick(() => {
+        // Insert pages originally cloned, but in swapped order
+        this.pagesArray.splice(previousPageIndex, 0, currentPageClone, previousPageClone);
+      });
+      
     }
   }
 
   private down(index: number) {
     if (index === this.pagesArray.length) return;
     if (this.pagesArray[index] && this.pagesArray[index + 1]) {
-      const items = [this.pagesArray[index], this.pagesArray[index + 1]];
-      this.pagesArray.splice(index, 2, items[1], items[0]);
+      /**
+       * This elaborate manual cloning + individual splicing + swapping procedure is being done
+       * due to a TinyMCE mounting / unmounting issue.
+       * If pages are explicitly deleted and then re-inserted, TinyMCE component (re) mounts properly.
+       */
+      const nextPageIndex = index + 1;
+
+      // Clone page at [index]
+      const currentPageClone = Object.assign({}, this.pagesArray[index]);
+
+      // Clone page at [nextPageIndex]
+      const nextPageClone = Object.assign({}, this.pagesArray[nextPageIndex]);
+
+      // Delete page at [index, nextPageIndex]
+      this.pagesArray.splice(index, 2);
+
+      this.$nextTick(() => {
+        // Insert pages originally cloned, but in swapped order
+        this.pagesArray.splice(index, 0, nextPageClone, currentPageClone);
+      });
+      
     }
   }
 
