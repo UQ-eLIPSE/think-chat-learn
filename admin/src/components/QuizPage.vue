@@ -175,7 +175,7 @@
               </v-layout>
 
               <b-field label="Page content">
-                  <TinyMce :id="`tmce-${page.__mountedId}`" v-model="page.content" />
+                  <TinyMce :key="`tmce-wrapper-${page.__mountedId}`" :editorId="`tmce-${page.__mountedId}`" v-model="page.content" />
               </b-field>
               <b-field label="Set the timeout in minutes">
                 <v-text-field label="Timeout" v-model="page.timeoutInMins" outline type="number" />
@@ -343,6 +343,7 @@ export default class QuizPage extends Vue {
 
   // Converts the dictionary to an array based on key number
   get pages() {
+    console.log('pages getter: ', this.pagesArray);
     return this.pagesArray;
   }
 
