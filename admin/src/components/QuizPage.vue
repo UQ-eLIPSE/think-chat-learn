@@ -602,7 +602,7 @@ export default class QuizPage extends Vue {
       /**
        * This elaborate manual cloning + individual splicing + swapping procedure is being done
        * due to a TinyMCE mounting / unmounting issue.
-       * If pages are explicitly deleted and then re-inserted, TinyMCE component (re) mounts properly.
+       * If pages are explicitly deleted -> (changes flushed to DOM) -> then re-inserted on $nextTick, TinyMCE component (re) mounts properly.
        */
       const previousPageIndex = index - 1;
 
@@ -615,6 +615,8 @@ export default class QuizPage extends Vue {
       // Delete pages at [index, previousPageIndex]
       this.pagesArray.splice(previousPageIndex, 2);
 
+      // Wait for the above changes (page deletions) to be flushed to the DOM (so that TinyMCE unmounts),
+      // then re-insert cloned pages in swapped order so that TinyMce mounts again
       this.$nextTick(() => {
         // Insert pages originally cloned, but in swapped order
         this.pagesArray.splice(previousPageIndex, 0, currentPageClone, previousPageClone);
@@ -629,7 +631,7 @@ export default class QuizPage extends Vue {
       /**
        * This elaborate manual cloning + individual splicing + swapping procedure is being done
        * due to a TinyMCE mounting / unmounting issue.
-       * If pages are explicitly deleted and then re-inserted, TinyMCE component (re) mounts properly.
+       * If pages are explicitly deleted -> (changes flushed to DOM) -> then re-inserted on $nextTick, TinyMCE component (re) mounts properly.
        */
       const nextPageIndex = index + 1;
 
@@ -642,6 +644,8 @@ export default class QuizPage extends Vue {
       // Delete page at [index, nextPageIndex]
       this.pagesArray.splice(index, 2);
 
+      // Wait for the above changes (page deletions) to be flushed to the DOM (so that TinyMCE unmounts),
+      // then re-insert cloned pages in swapped order so that TinyMce mounts again
       this.$nextTick(() => {
         // Insert pages originally cloned, but in swapped order
         this.pagesArray.splice(index, 0, nextPageClone, currentPageClone);
