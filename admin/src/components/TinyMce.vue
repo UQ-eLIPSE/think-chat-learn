@@ -73,11 +73,6 @@ export default class TinyMce extends Vue {
   }
 
   mounted() {
-    console.log(this.editorId, this.value);
-    // let s = 0;
-    // setInterval(() => {
-    //   console.log(`\n====\n${s++} -- ID: ${this.editorId} | Value: ${this.value}\n====\n${document.getElementById(this.editorId)}`);
-    // }, 7000);
     //Initial configuration
     let options: any = {};
     let config = (editor: any) => {

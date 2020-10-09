@@ -343,7 +343,6 @@ export default class QuizPage extends Vue {
 
   // Converts the dictionary to an array based on key number
   get pages() {
-    console.log('pages getter: ', this.pagesArray);
     return this.pagesArray;
   }
 
