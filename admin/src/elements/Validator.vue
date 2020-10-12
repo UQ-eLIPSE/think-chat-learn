@@ -14,7 +14,7 @@ import { Vue, Component, Watch, Prop } from "vue-property-decorator";
 @Component
 export default class Validator extends Vue {
   //Rule of validation, e.g (value > 5)
-  @Prop({ default: [], required: true }) validationRule!: ((value?: any) => boolean | string)[];
+  @Prop({ default: () =>[], required: true }) validationRule!: ((value?: any) => boolean | string)[];
   //Force validator to always show 
   @Prop({ default: false, required: false }) forceShowValidation!: string;
   //Value to validate
