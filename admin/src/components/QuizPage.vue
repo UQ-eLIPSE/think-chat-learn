@@ -175,7 +175,14 @@
               </v-layout>
 
               <b-field label="Page content">
-                  <TinyMce :key="`tmce-wrapper-${page.__mountedId}`" :editorId="`tmce-${page.__mountedId}`" v-model="page.content" />
+                  <!-- Note that a `key` has been added to the TinyMCE component.
+                    This `:key` includes `index` despite having a uniquely identifiable `__mountedId` ID.
+                    This is because we want the TinyMCE component to be re-rendered if the order of the pages is changed.
+                    Adding the `key` resolves the component mounting issue which caused TinyMCE to break if the page order was changed. -->
+                  <TinyMce
+                    :key="`tmce-wrapper-${page.__mountedId}-${index}`"
+                    :editorId="`tmce-${page.__mountedId}`"
+                    v-model="page.content" />
               </b-field>
               <b-field label="Set the timeout in minutes">
                 <v-text-field label="Timeout" v-model="page.timeoutInMins" outline type="number" />
@@ -597,45 +604,29 @@ export default class QuizPage extends Vue {
   }
 
   /**
-   * Swaps quiz pages (with some unusual render logic).
-   * Performs the following tasks:
-   * * Clones existing `pagesArray`
-   * * Swaps the page elements in the cloned array
-   * * Removes the pages to be swapped from `pagesArray`
-   * * Waits for `nextTick` (i.e. DOM update)
-   * * Re-assigns the cloned, swapped array to `pagesArray`
-   * <p>
-   *  This has to be done to solve a mounting issue with the TinyMCE component, wherein upon swapping
-   *  array elements normally, the TinyMCE component was not initialized/rendered properly and users
-   *  were not able to interact with it.
-   * </p>
-   * 
+   * Checks if `index` is a valid accessor for the given `array`
+   */
+  _indexInArrayLimits(array: any[], index: number) {
+    return (index < array.length) && (index >= 0);
+  }
+
+  /**
+   * Swaps quiz pages at specified indices
    * @param i Index of page to be swapped in `this.pagesArray`
    * @param j Index of other page to be swapped in `this.pagesArray`
    */
   private swapPages(i: number, j: number): void {
     if(!this.pagesArray ||
       !this.pagesArray.length ||
+      !this._indexInArrayLimits(this.pagesArray, i) ||
+      !this._indexInArrayLimits(this.pagesArray, j) ||
       !this.pagesArray[i] ||
       !this.pagesArray[j]) return;
-    
-    const clonedPages = [...this.pagesArray];
 
-    // Swap pages
-    const temp = clonedPages[i];
-    clonedPages[i] = clonedPages[j];
-    clonedPages[j] = temp;
-    
-    // Remove the two pages to be swapped from the `pagesArray`
-    this.pagesArray = this.pagesArray.filter((page) => page.__mountedId !== this.pagesArray[i].__mountedId &&
-      page.__mountedId !== this.pagesArray[j].__mountedId);
-
-
-    // Wait for the UI to update (i.e. components for the two pages will be unmounted)
-    this.$nextTick(() => {
-      // Re-assign pages (in swapped order) and (implicitly) mount the components for the two pages again.
-      this.pagesArray = clonedPages;
-    });
+    const temp = this.pagesArray[i];
+    // Nee to use Vue.set to notify Vue that `pagesArray` is being changed
+    Vue.set(this.pagesArray, i, this.pagesArray[j]);
+    Vue.set(this.pagesArray, j, temp);
   }
 
   private up(index: number) {
