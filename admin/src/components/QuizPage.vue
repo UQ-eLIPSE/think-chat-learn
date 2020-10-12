@@ -604,8 +604,11 @@ export default class QuizPage extends Vue {
    * * Removes the pages to be swapped from `pagesArray`
    * * Waits for `nextTick` (i.e. DOM update)
    * * Re-assigns the cloned, swapped array to `pagesArray`
-   * <p>This has to be done to solve a mounting issue with the TinyMCE component, wherein upon swapping array elements normally,
-   * the TinyMCE component was not initialized/rendered properly and users were not able to interact with it.</p>
+   * <p>
+   *  This has to be done to solve a mounting issue with the TinyMCE component, wherein upon swapping
+   *  array elements normally, the TinyMCE component was not initialized/rendered properly and users
+   *  were not able to interact with it.
+   * </p>
    * 
    * @param i Index of page to be swapped in `this.pagesArray`
    * @param j Index of other page to be swapped in `this.pagesArray`
@@ -624,7 +627,8 @@ export default class QuizPage extends Vue {
     clonedPages[j] = temp;
     
     // Remove the two pages to be swapped from the `pagesArray`
-    this.pagesArray = this.pagesArray.filter((page) => page.__mountedId !== this.pagesArray[i].__mountedId && page.__mountedId !== this.pagesArray[j].__mountedId);
+    this.pagesArray = this.pagesArray.filter((page) => page.__mountedId !== this.pagesArray[i].__mountedId &&
+      page.__mountedId !== this.pagesArray[j].__mountedId);
 
 
     // Wait for the UI to update (i.e. components for the two pages will be unmounted)
