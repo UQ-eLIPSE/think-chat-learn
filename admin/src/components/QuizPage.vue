@@ -596,62 +596,47 @@ export default class QuizPage extends Vue {
     }
   }
 
+  /**
+   * Swaps quiz pages (with some unusual render logic).
+   * Performs the following tasks:
+   * * Clones existing `pagesArray`
+   * * Swaps the page elements in the cloned array
+   * * Removes the pages to be swapped from `pagesArray`
+   * * Waits for `nextTick` (i.e. DOM update)
+   * * Re-assigns the cloned, swapped array to `pagesArray`
+   * <p>This has to be done to solve a mounting issue with the TinyMCE component, wherein upon swapping array elements normally,
+   * the TinyMCE component was not initialized/rendered properly and users were not able to interact with it.</p>
+   */
+  private swapPages(i: number, j: number) {
+    if(!this.pagesArray ||
+      !this.pagesArray.length ||
+      !this.pagesArray[i] ||
+      !this.pagesArray[j]) return;
+    
+    const clonedPages = [...this.pagesArray];
+
+    // Swap pages
+    const temp = clonedPages[i];
+    clonedPages[i] = clonedPages[j];
+    clonedPages[j] = temp;
+    
+    // Remove the two pages to be swapped from the `pagesArray`
+    this.pagesArray = this.pagesArray.filter((page) => page.__mountedId !== this.pagesArray[i].__mountedId && page.__mountedId !== this.pagesArray[j].__mountedId);
+
+
+    // Wait for the UI to update (i.e. components for the two pages will be unmounted)
+    this.$nextTick(() => {
+      // Re-assign pages (in swapped order) and (implicitly) mount the components for the two pages again.
+      this.pagesArray = clonedPages;
+    });
+  }
+
   private up(index: number) {
-    if (index === 0) return;
-    if (this.pagesArray[index] && this.pagesArray[index - 1]) {
-      /**
-       * This elaborate manual cloning + individual splicing + swapping procedure is being done
-       * due to a TinyMCE mounting / unmounting issue.
-       * If pages are explicitly deleted -> (changes flushed to DOM) -> then re-inserted on $nextTick, TinyMCE component (re) mounts properly.
-       */
-      const previousPageIndex = index - 1;
-
-      // Clone page at [index]
-      const currentPageClone = Object.assign({}, this.pagesArray[index]);
-
-      // Clone page at [previousPageIndex]
-      const previousPageClone = Object.assign({}, this.pagesArray[previousPageIndex]);
-
-      // Delete pages at [index, previousPageIndex]
-      this.pagesArray.splice(previousPageIndex, 2);
-
-      // Wait for the above changes (page deletions) to be flushed to the DOM (so that TinyMCE unmounts),
-      // then re-insert cloned pages in swapped order so that TinyMce mounts again
-      this.$nextTick(() => {
-        // Insert pages originally cloned, but in swapped order
-        this.pagesArray.splice(previousPageIndex, 0, currentPageClone, previousPageClone);
-      });
-      
-    }
+    this.swapPages(index, index - 1)
   }
 
   private down(index: number) {
-    if (index === this.pagesArray.length) return;
-    if (this.pagesArray[index] && this.pagesArray[index + 1]) {
-      /**
-       * This elaborate manual cloning + individual splicing + swapping procedure is being done
-       * due to a TinyMCE mounting / unmounting issue.
-       * If pages are explicitly deleted -> (changes flushed to DOM) -> then re-inserted on $nextTick, TinyMCE component (re) mounts properly.
-       */
-      const nextPageIndex = index + 1;
-
-      // Clone page at [index]
-      const currentPageClone = Object.assign({}, this.pagesArray[index]);
-
-      // Clone page at [nextPageIndex]
-      const nextPageClone = Object.assign({}, this.pagesArray[nextPageIndex]);
-
-      // Delete page at [index, nextPageIndex]
-      this.pagesArray.splice(index, 2);
-
-      // Wait for the above changes (page deletions) to be flushed to the DOM (so that TinyMCE unmounts),
-      // then re-insert cloned pages in swapped order so that TinyMce mounts again
-      this.$nextTick(() => {
-        // Insert pages originally cloned, but in swapped order
-        this.pagesArray.splice(index, 0, nextPageClone, currentPageClone);
-      });
-      
-    }
+    this.swapPages(index, index + 1);
   }
 
   // At least spawn one page at the start or do a load
