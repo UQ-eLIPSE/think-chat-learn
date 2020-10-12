@@ -606,8 +606,11 @@ export default class QuizPage extends Vue {
    * * Re-assigns the cloned, swapped array to `pagesArray`
    * <p>This has to be done to solve a mounting issue with the TinyMCE component, wherein upon swapping array elements normally,
    * the TinyMCE component was not initialized/rendered properly and users were not able to interact with it.</p>
+   * 
+   * @param i Index of page to be swapped in `this.pagesArray`
+   * @param j Index of other page to be swapped in `this.pagesArray`
    */
-  private swapPages(i: number, j: number) {
+  private swapPages(i: number, j: number): void {
     if(!this.pagesArray ||
       !this.pagesArray.length ||
       !this.pagesArray[i] ||
