@@ -205,12 +205,6 @@
               <v-flex class="position-relative" xs11>
                 <Collapsible class="marking-collapsible" :title="`Page #${index + 1} - ${page.title || ''}`">
                   <v-layout row wrap class="mt-3 pa-3">
-                    <v-flex xs12>
-                      <Validator :validationRule="[existenceRule, validDateRule('endDateTime')]" :value="endDateString"
-                                :forceShowValidation="forceValidation">
-                        <input type="text" v-model="endDateString" v-on="on" readonly/>
-                      </Validator>
-                    </v-flex>
                     <v-flex xs5 class="form-control">
                       <span class="input-label required-input">Page title</span>
                       <div class="editable-field">
@@ -241,7 +235,7 @@
                       <div v-if="(page.type === PageType.QUESTION_ANSWER_PAGE) || (page.type === PageType.DISCUSSION_PAGE)">
                         <Validator :validationRule="page.type === PageType.QUESTION_ANSWER_PAGE ? 
                                                     [existenceRule, duplicateQuestionPageRule] 
-                                                    : [existenceRule, duplicateDiscussionPageRule]"
+                                                    : [existenceRule, duplicateDiscussionPageRule, checkQuestionPageBeforeDiscussion]"
                                    :value="page.questionId"
                                    :forceShowValidation="forceValidation">
                           <span class="input-label required-input">Associate question for the page</span>
@@ -486,7 +480,7 @@ export default class QuizPage extends Vue {
           && this.pages.every((page) => 
                         [page.type, page.title].every((field) => this.existenceRule(field) && typeof this.existenceRule(field) === 'boolean')
                         //If page type is question or discussion, check if associated question is chosen
-                        && (page.type !== PageType.INFO_PAGE 
+                        && ((page.type === PageType.QUESTION_ANSWER_PAGE || page.type === PageType.DISCUSSION_PAGE) 
                             && this.existenceRule(page['questionId']) && typeof this.existenceRule(page['questionId']) === 'boolean')); 
     
     if(!allFieldsFilled){
@@ -866,10 +860,12 @@ export default class QuizPage extends Vue {
     };
   }
 
+  // Check if the value is undefined
   get existenceRule() {
     return Utils.Rules.existenceRule;
   }
 
+  // Check if the question page is duplicated (another question page has similar associate question)
   get duplicateQuestionPageRule() {
     return (id: string) => {
       const totalIds = this.pages.reduce((count: number, page) => {
@@ -885,6 +881,7 @@ export default class QuizPage extends Vue {
     };
   }
 
+  // Check if the discussion page is duplicated (another discussion page has similar associate question)
   get duplicateDiscussionPageRule() {
     return (id: string) => {
       const totalIds = this.pages.reduce((count: number, page) => {
@@ -895,6 +892,17 @@ export default class QuizPage extends Vue {
       }, 0);
       return totalIds == 1 || "Duplicate discussions detected";
     };
+  }
+  
+  get checkQuestionPageBeforeDiscussion(){
+    return (id:string) => {
+      const totalIds = this.pages.filter((page) => 
+        (page.type === PageType.QUESTION_ANSWER_PAGE || page.type === PageType.DISCUSSION_PAGE) 
+         && page.questionId === id
+      ).every((page, idx) => page.type !== PageType.DISCUSSION_PAGE || idx !== 0);
+
+      return totalIds || "Question page must be before Discussion"
+    }
   }
 
   /**

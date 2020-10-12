@@ -9,7 +9,6 @@
 </template>
 
 <script lang="ts">
-import { type } from "jquery";
 import { Vue, Component, Watch, Prop } from "vue-property-decorator";
 
 @Component
