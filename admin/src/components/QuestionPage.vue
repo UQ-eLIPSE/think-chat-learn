@@ -26,7 +26,7 @@
           <!-- All questions have some form of content -->
           <v-flex xs12>
             <b-field label="Set the content of the question">
-              <TinyMce :id="editorId" :options="{}" v-model="pageQuestion.content" />
+              <TinyMce :editorId="editorId" :options="{}" v-model="pageQuestion.content" />
             </b-field>
           </v-flex>
           <br />

@@ -175,7 +175,14 @@
               </v-layout>
 
               <b-field label="Page content">
-                  <TinyMce :id="`tmce-${page.__mountedId}`" v-model="page.content" />
+                  <!-- Note that a `key` has been added to the TinyMCE component.
+                    This `:key` includes `index` despite having a uniquely identifiable `__mountedId` ID.
+                    This is because we want the TinyMCE component to be re-rendered if the order of the pages is changed.
+                    Adding the `key` resolves the component mounting issue which caused TinyMCE to break if the page order was changed. -->
+                  <TinyMce
+                    :key="`tmce-wrapper-${page.__mountedId}-${index}`"
+                    :editorId="`tmce-${page.__mountedId}`"
+                    v-model="page.content" />
               </b-field>
               <b-field label="Set the timeout in minutes">
                 <v-text-field label="Timeout" v-model="page.timeoutInMins" outline type="number" />
@@ -596,20 +603,38 @@ export default class QuizPage extends Vue {
     }
   }
 
+  /**
+   * Checks if `index` is a valid accessor for the given `array`
+   */
+  _indexInArrayLimits(array: any[], index: number) {
+    return (index < array.length) && (index >= 0);
+  }
+
+  /**
+   * Swaps quiz pages at specified indices
+   * @param i Index of page to be swapped in `this.pagesArray`
+   * @param j Index of other page to be swapped in `this.pagesArray`
+   */
+  private swapPages(i: number, j: number): void {
+    if(!this.pagesArray ||
+      !this.pagesArray.length ||
+      !this._indexInArrayLimits(this.pagesArray, i) ||
+      !this._indexInArrayLimits(this.pagesArray, j) ||
+      !this.pagesArray[i] ||
+      !this.pagesArray[j]) return;
+
+    const temp = this.pagesArray[i];
+    // Nee to use Vue.set to notify Vue that `pagesArray` is being changed
+    Vue.set(this.pagesArray, i, this.pagesArray[j]);
+    Vue.set(this.pagesArray, j, temp);
+  }
+
   private up(index: number) {
-    if (index === 0) return;
-    if (this.pagesArray[index] && this.pagesArray[index - 1]) {
-      const items = [this.pagesArray[index - 1], this.pagesArray[index]];
-      this.pagesArray.splice(index - 1, 2, items[1], items[0]);
-    }
+    this.swapPages(index, index - 1)
   }
 
   private down(index: number) {
-    if (index === this.pagesArray.length) return;
-    if (this.pagesArray[index] && this.pagesArray[index + 1]) {
-      const items = [this.pagesArray[index], this.pagesArray[index + 1]];
-      this.pagesArray.splice(index, 2, items[1], items[0]);
-    }
+    this.swapPages(index, index + 1);
   }
 
   // At least spawn one page at the start or do a load
