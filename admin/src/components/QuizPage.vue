@@ -225,10 +225,12 @@
                       </v-flex>
 
                       <v-flex xs3 class="form-control">
-                        <span class="input-label required-input">Timeout (minutes)</span>
-                        <div class="editable-field">
-                          <input type="number" v-model="page.timeoutInMins"/>
-                        </div>
+                        <Validator :validationRule="[existenceRule]" :value="page.timeoutInMins" :forceShowValidation="forceValidation">
+                          <span class="input-label required-input">Timeout (minutes)</span>
+                          <div class="editable-field">
+                            <input type="number" v-model="page.timeoutInMins"/>
+                          </div>
+                        </Validator>
                       </v-flex>
                         
                       <v-flex xs6 class="form-control">
@@ -480,10 +482,12 @@ export default class QuizPage extends Vue {
     const allFieldsFilled = 
           nonEmptyFieldArray.every((field) => this.existenceRule(field) && typeof this.existenceRule(field) === 'boolean')
           && this.pages.every((page) => 
-                        [page.type, page.title].every((field) => this.existenceRule(field) && typeof this.existenceRule(field) === 'boolean')
+                        [page.type, page.title, page.timeoutInMins].every((field) => 
+                            this.existenceRule(field) && typeof this.existenceRule(field) === 'boolean')
+
                         //If page type is question or discussion, check if associated question is chosen
-                        && ((page.type === PageType.QUESTION_ANSWER_PAGE || page.type === PageType.DISCUSSION_PAGE) 
-                            && this.existenceRule(page['questionId']) && typeof this.existenceRule(page['questionId']) === 'boolean')); 
+                        && ((page.type !== PageType.QUESTION_ANSWER_PAGE && page.type !== PageType.DISCUSSION_PAGE) 
+                            || this.existenceRule(page['questionId']) && typeof this.existenceRule(page['questionId']) === 'boolean')); 
     
     if(!allFieldsFilled){
       this.forceValidation = true;
@@ -878,23 +882,22 @@ export default class QuizPage extends Vue {
     };
   }
 
-  pageValidation(page){
-    const validateTitleObject = new Validator({
-      props: ['validationRule', 'value']
-    });
-    validateTitleObject.$props.validationRule = [this.existenceRule];
-    validateTitleObject.$props.value = page.title;
-    
-    if(validateTitleObject.validationMsg !== '') return false;
-    if(page.type !== PageType.QUESTION_ANSWER_PAGE && page.type !== PageType.DISCUSSION_PAGE ) return true;
+  pageValidation(page: any){
+
+    const allFieldFilled = [page.type, page.title, page.timeoutInMins].every((field) => 
+                             this.existenceRule(field) && typeof this.existenceRule(field) === 'boolean');
+  
+    if (!allFieldFilled) return false;
+    if (page.type !== PageType.QUESTION_ANSWER_PAGE && page.type !== PageType.DISCUSSION_PAGE ) return true;
 
     const validateQuestionObject = new Validator({
       props: ['validationRule', 'value']
     });
+
     validateQuestionObject.$props.value = page.questionId;
     validateQuestionObject.$props.validationRule = page.type === PageType.QUESTION_ANSWER_PAGE ? 
-                      [this.existenceRule, this.duplicateQuestionPageRule] 
-                      : [this.existenceRule, this.duplicateDiscussionPageRule, this.checkQuestionPageBeforeDiscussion];
+                        [this.duplicateQuestionPageRule] 
+                      : [this.duplicateDiscussionPageRule, this.checkQuestionPageBeforeDiscussion];
                       
     return validateQuestionObject.validationMsg === '';
   }

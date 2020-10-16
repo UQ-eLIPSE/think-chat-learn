@@ -22,6 +22,7 @@ export default class Validator extends Vue {
 
   private showValidateFlag = false;
 
+  /**Return the validation message if the value is invalid, otherwise return empty string*/ 
   get validationMsg(){
     let validateMsg = '';
     for (let rule of this.validationRule){
