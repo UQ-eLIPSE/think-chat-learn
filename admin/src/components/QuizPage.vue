@@ -892,7 +892,7 @@ export default class QuizPage extends Vue {
     };
   }
 
-  pageValidation(page: any){
+  pageValidation(page: Page){
 
     const allFieldFilled = [page.type, page.title, page.timeoutInMins].every((field) => 
                              this.existenceRule(field) && typeof this.existenceRule(field) === 'boolean');
