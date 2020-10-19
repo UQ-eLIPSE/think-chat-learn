@@ -225,7 +225,7 @@
                       </v-flex>
 
                       <v-flex xs3 class="form-control">
-                        <Validator :validationRule="[existenceRule]" :value="page.timeoutInMins" :forceShowValidation="forceValidation">
+                        <Validator :validationRule="[existenceRule, timeoutRule]" :value="page.timeoutInMins" :forceShowValidation="forceValidation">
                           <span class="input-label required-input">Timeout (minutes)</span>
                           <div class="editable-field">
                             <input type="number" v-model="page.timeoutInMins"/>
@@ -484,7 +484,9 @@ export default class QuizPage extends Vue {
           && this.pages.every((page) => 
                         [page.type, page.title, page.timeoutInMins].every((field) => 
                             this.existenceRule(field) && typeof this.existenceRule(field) === 'boolean')
-
+                        //Check if timeout is positive
+                        && (this.timeoutRule(page.timeoutInMins)  
+                            && typeof this.timeoutRule(page.timeoutInMins) === 'boolean')
                         //If page type is question or discussion, check if associated question is chosen
                         && ((page.type !== PageType.QUESTION_ANSWER_PAGE && page.type !== PageType.DISCUSSION_PAGE) 
                             || this.existenceRule(page['questionId']) && typeof this.existenceRule(page['questionId']) === 'boolean')); 
@@ -841,6 +843,13 @@ export default class QuizPage extends Vue {
     return Utils.Rules.existenceRule;
   }
 
+  // Check if the timeout value is positive
+  get timeoutRule() {
+    return (value?: any) => {
+      return (typeof value === 'number' && value > 0) || "Timeout value must be positive.";
+    };
+  }
+
   // Check if the question page is duplicated (another question page has similar associate question)
   get duplicateQuestionPageRule() {
     return (id: string) => {
@@ -888,8 +897,16 @@ export default class QuizPage extends Vue {
                              this.existenceRule(field) && typeof this.existenceRule(field) === 'boolean');
   
     if (!allFieldFilled) return false;
+
+    //Check timeout value
+    if (!this.timeoutRule(page.timeoutInMins) || typeof this.timeoutRule(page.timeoutInMins) !== 'boolean') return false;
+
     if (page.type !== PageType.QUESTION_ANSWER_PAGE && page.type !== PageType.DISCUSSION_PAGE ) return true;
 
+    //Check question ID
+    if (!this.existenceRule(page.questionId) || typeof this.existenceRule(page.questionId) !== 'boolean') return false;
+
+    //Check associate question
     const validateQuestionObject = new Validator({
       props: ['validationRule', 'value']
     });
