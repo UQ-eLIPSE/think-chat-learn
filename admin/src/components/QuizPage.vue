@@ -846,7 +846,8 @@ export default class QuizPage extends Vue {
   // Check if the timeout value is positive
   get timeoutRule() {
     return (value?: any) => {
-      return (typeof value === 'number' && value > 0) || "Timeout value must be positive.";
+      const min = parseFloat(value);
+      return (min && min > 0 || "Timeout value must be positive.");
     };
   }
 
