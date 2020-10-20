@@ -1,9 +1,8 @@
 <template>
-  <div class="collapsible">
+  <div class="collapsible" :style="collapsibleHeaderStyles">
     <div
       class="collapsible-header flex-row justify-space-between"
       @click="toggle()"
-      :style="collapsibleHeaderStyles"
     >
       <h4>{{ title }}</h4>
       <div class="flex-row">

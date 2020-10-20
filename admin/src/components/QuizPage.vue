@@ -13,28 +13,34 @@
           </v-flex>
           
           <v-flex class="form-control" xs12>
-            <span class="input-label required-input">Set the quiz title</span>
-            <div class="editable-field">
-              <input type="text" v-model="quizTitle"/>
-            </div>
+            <Validator :validationRule="[existenceRule]" :value="quizTitle" :forceShowValidation="forceValidation">
+              <span class="input-label required-input">Set the quiz title</span>
+              <div class="editable-field">
+                <input type="text" v-model="quizTitle"/>
+              </div>
+            </Validator>
           </v-flex>
 
           <v-flex class="form-control" xs5>
-            <span class="input-label required-input">Rubric</span>
-            <div class="select-field">
-              <select v-model="rubricId">
-                <template v-for="rubric in rubricDropDown">
-                  <option :key="`rubric-${rubric.value}`" :value="rubric.value">{{rubric.text}}</option>
-                </template>
-              </select>
-            </div>
+            <Validator :validationRule="[existenceRule]" :value="rubricId" :forceShowValidation="forceValidation">
+              <span class="input-label required-input">Rubric</span>
+              <div class="select-field">
+                <select v-model="rubricId">
+                  <template v-for="rubric in rubricDropDown">
+                    <option :key="`rubric-${rubric.value}`" :value="rubric.value">{{rubric.text}}</option>
+                  </template>
+                </select>
+              </div>
+            </Validator>
           </v-flex>
 
           <v-flex class="form-control" xs2>
-            <span class="input-label required-input">Group size</span>
-            <div class="editable-field">
-              <input type="number" v-model.number="groupSize"/>
-            </div>
+            <Validator :validationRule="[existenceRule]" :value="groupSize" :forceShowValidation="forceValidation">
+              <span class="input-label required-input">Group size</span>
+              <div class="editable-field">
+                <input type="number" v-model.number="groupSize"/>
+              </div>
+            </Validator>
           </v-flex>
 
           <v-flex xs1>
@@ -72,10 +78,13 @@
             >
               <template v-slot:activator="{ on }">
                 <div class="form-control date-field">
-                  <input type="text" v-model="startDateString" v-on="on" readonly/>
+                  <Validator :validationRule="[existenceRule, validDateRule]" :value="startDateString" 
+                             :forceShowValidation="forceValidation">
+                    <input type="text" v-model="startDateString" v-on="on" readonly/>
+                  </Validator>
                 </div>
               </template>
-              <v-date-picker v-model="startDateString" no-title scrollable>
+              <v-date-picker v-model="startDateString" no-title scrollable :max="endDateString">
                 <!-- Use buttons because time pickers require a 2-step process -->
                 <v-spacer></v-spacer>
                 <v-btn flat @click="startDateShow = false">Cancel</v-btn>
@@ -96,10 +105,14 @@
             >
               <template v-slot:activator="{ on }">
                 <div class="form-control time-field">
-                  <input type="text" v-model="startTimeString" v-on="on" readonly/>
+                  <Validator :validationRule="[existenceRule, validDateRule]" :value="startTimeString"
+                             :forceShowValidation="forceValidation">
+                    <input type="text" v-model="startTimeString" v-on="on" readonly/>
+                  </Validator>
                 </div>
               </template>
-              <v-time-picker v-model="startTimeString" scrollable format="24hr">
+              <v-time-picker v-model="startTimeString" scrollable format="24hr" 
+                             :max="endDateString === startDateString? endTimeString: ''">
                 <v-btn flat @click="startTimeShow = false">Cancel</v-btn>
                 <v-btn flat @click="$refs.startTimeMenu.save(startTimeString)">OK</v-btn>
               </v-time-picker>
@@ -118,10 +131,13 @@
             >
               <template v-slot:activator="{ on }">
                 <div class="form-control date-field">
-                  <input type="text" v-model="endDateString" v-on="on" readonly/>
+                  <Validator :validationRule="[existenceRule, validDateRule]" :value="endDateString"
+                             :forceShowValidation="forceValidation">
+                    <input type="text" v-model="endDateString" v-on="on" readonly/>
+                  </Validator>
                 </div>
               </template>
-              <v-date-picker v-model="endDateString" no-title scrollable>
+              <v-date-picker v-model="endDateString" no-title scrollable :min="startDateString">
                 <v-btn flat @click="endDateShow = false">Cancel</v-btn>
                 <v-btn flat @click="$refs.endDateMenu.save(endDateString)">OK</v-btn>
               </v-date-picker>
@@ -139,10 +155,14 @@
             >
               <template v-slot:activator="{ on }">
                 <div class="form-control time-field">
-                  <input type="text" v-model="endTimeString" v-on="on" readonly/>
+                  <Validator :validationRule="[existenceRule, validDateRule]" :value="endTimeString"
+                             :forceShowValidation="forceValidation">
+                    <input type="text" v-model="endTimeString" v-on="on" readonly/>
+                  </Validator>
                 </div>
               </template>
-              <v-time-picker v-model="endTimeString" scrollable format="24hr">
+              <v-time-picker v-model="endTimeString" scrollable format="24hr"
+                             :min="endDateString === startDateString? startTimeString: ''">
                 <v-btn flat @click="endTimeShow = false">Cancel</v-btn>
                 <v-btn flat @click="$refs.endTimeMenu.save(endTimeString)">OK</v-btn>
               </v-time-picker>
@@ -183,71 +203,81 @@
               </div>
 
               <v-flex class="position-relative" xs11>
-                <Collapsible class="marking-collapsible" :title="`Page #${index + 1} - ${page.title || ''}`">
-                  <v-layout row wrap class="mt-3 pa-3">
-                    <v-flex xs5 class="form-control">
-                      <span class="input-label required-input">Page title</span>
-                      <div class="editable-field">
-                        <input type="text" v-model="page.title"/>
-                      </div>
-                    </v-flex>
+                <div :class="`${forceValidation && !pageValidation(page) ? 'collapsible-validate-warning': ''}`">
+                  <Collapsible class="marking-collapsible" :title="`Page #${index + 1} - ${page.title || ''}`">
+                    <v-layout row wrap class="mt-3 pa-3">
+                      <v-flex xs5 class="form-control">
+                        <span class="input-label required-input">Page title</span>
+                        <div class="editable-field">
+                          <input type="text" v-model="page.title"/>
+                        </div>
+                      </v-flex>
 
-                    <v-flex xs4 class="form-control">
-                      <span class="input-label required-input">Page type</span>
-                      <div class="select-field">
-                        <select v-model="page.type">
-                          <template v-for="pageType in pageTypeDropDown">
-                            <option :key="`pt-${pageType.value}`" :value="pageType.value">{{pageType.text}}</option>
-                          </template>
-                        </select>
-                      </div>
-                    </v-flex>
-
-                    <v-flex xs3 class="form-control">
-                      <span class="input-label required-input">Timeout (minutes)</span>
-                      <div class="editable-field">
-                        <input type="number" v-model="page.timeoutInMins"/>
-                      </div>
-                    </v-flex>
-                      
-                    <v-flex xs6 class="form-control">
-                      <!-- TODO make this a proper select box once Questions and Answers are implemented -->
-                      <div v-if="(page.type === PageType.QUESTION_ANSWER_PAGE) || (page.type === PageType.DISCUSSION_PAGE)">
-                        <span class="input-label required-input">Associate question for the page</span>
+                      <v-flex xs4 class="form-control">
+                        <span class="input-label required-input">Page type</span>
                         <div class="select-field">
-                          <select v-model="page.questionId">
-                            <template v-for="question in questionDropDown">
-                              <option :key="`pt-${question.value}`" :value="question.value">{{question.text}}</option>
+                          <select v-model="page.type">
+                            <template v-for="pageType in pageTypeDropDown">
+                              <option :key="`pt-${pageType.value}`" :value="pageType.value">{{pageType.text}}</option>
                             </template>
                           </select>
                         </div>
-                      </div>
-                      
-                      <div class="select-field" v-else-if="page.type === PageType.SURVEY_PAGE">
-                        <select v-model="page.surveryId">
-                          <option>Some Default survey</option>
-                        </select>
-                      </div>
-                    </v-flex>
-                  
-                    <!-- Business logic for rendering based on page type -->
-                    <v-flex xs1 v-if="(page.type === PageType.DISCUSSION_PAGE)">
-                      <div class="divider vertical-divider"></div>
-                    </v-flex>
+                      </v-flex>
 
-                    <v-flex xs5 class="form-control" v-if="(page.type === PageType.DISCUSSION_PAGE)">
-                      <v-layout row class="align-center mt-3 py-2">
-                        <input type="checkbox" v-model="page.displayResponses"/>
-                        <span class="checkbox-label ml-2">Display responses from question</span>
-                      </v-layout>
-                    </v-flex>
-                  </v-layout>
+                      <v-flex xs3 class="form-control">
+                        <Validator :validationRule="[existenceRule, timeoutRule]" :value="page.timeoutInMins" :forceShowValidation="forceValidation">
+                          <span class="input-label required-input">Timeout (minutes)</span>
+                          <div class="editable-field">
+                            <input type="number" v-model="page.timeoutInMins"/>
+                          </div>
+                        </Validator>
+                      </v-flex>
+                        
+                      <v-flex xs6 class="form-control">
+                        <!-- TODO make this a proper select box once Questions and Answers are implemented -->
+                        <div v-if="(page.type === PageType.QUESTION_ANSWER_PAGE) || (page.type === PageType.DISCUSSION_PAGE)">
+                          <Validator :validationRule="page.type === PageType.QUESTION_ANSWER_PAGE ? 
+                                                      [existenceRule, duplicateQuestionPageRule] 
+                                                      : [existenceRule, duplicateDiscussionPageRule, checkQuestionPageBeforeDiscussion]"
+                                    :value="page.questionId"
+                                    :forceShowValidation="forceValidation">
+                            <span class="input-label required-input">Associate question for the page</span>
+                            <div class="select-field">
+                              <select v-model="page.questionId">
+                                <template v-for="question in questionDropDown">
+                                  <option :key="`pt-${question.value}`" :value="question.value">{{question.text}}</option>
+                                </template>
+                              </select>
+                            </div>
+                          </Validator>
+                        </div>
+                        
+                        <div class="select-field" v-else-if="page.type === PageType.SURVEY_PAGE">
+                          <select v-model="page.surveryId">
+                            <option>Some Default survey</option>
+                          </select>
+                        </div>
+                      </v-flex>
+                    
+                      <!-- Business logic for rendering based on page type -->
+                      <v-flex xs1 v-if="(page.type === PageType.DISCUSSION_PAGE)">
+                        <div class="divider vertical-divider"></div>
+                      </v-flex>
 
-                  <v-flex xs12 class="pa-3">
-                    <span class="input-label required-input">Page content</span>
-                    <TinyMce :id="`tmce-${page.__mountedId}`" v-model="page.content" />
-                  </v-flex>
-                </Collapsible>
+                      <v-flex xs5 class="form-control" v-if="(page.type === PageType.DISCUSSION_PAGE)">
+                        <v-layout row class="align-center mt-3 py-2">
+                          <input type="checkbox" v-model="page.displayResponses"/>
+                          <span class="checkbox-label ml-2">Display responses from question</span>
+                        </v-layout>
+                      </v-flex>
+                    </v-layout>
+
+                    <v-flex xs12 class="pa-3">
+                      <span class="input-label required-input">Page content</span>
+                      <TinyMce :id="`tmce-${page.__mountedId}`" v-model="page.content" />
+                    </v-flex>
+                  </Collapsible>
+                </div>
 
                 <div class="page-multipliable-controls">
                   <button type="button" class="button-cs dark-grey-cl delete-btn compact-btn" @click="deletePage(index)">
@@ -304,6 +334,7 @@ import { Utils } from "../../../common/js/Utils";
 import API from "../../../common/js/DB_API";
 import uniqueId from "../util/uniqueId";
 import { saveTinyMceEditorContent } from "../util/TinyMceUtils";
+import Validator from "../elements/Validator.vue";
 import Collapsible from "../elements/Collapsible.vue"
 
 
@@ -317,6 +348,7 @@ const IMAGE_LOCATION = process.env.VUE_APP_IMAGE_LOCATION;
 @Component({
   components: {
     TinyMce,
+    Validator,
     Collapsible
   }
 })
@@ -374,6 +406,8 @@ export default class QuizPage extends Vue {
   private endTimeShow: boolean = false;
 
   private quizToBeCloned: null | DBSchema.IQuiz = null;
+
+  private forceValidation: boolean = false;
 
   initMarkConfig(): DBSchema.MarkConfig {
     return {
@@ -443,8 +477,57 @@ export default class QuizPage extends Vue {
     // Check for the rules note that the $refs aren't defined with Vuetify
     const valid = (this.$refs.form as any).validate();
 
-    if (!valid) {
-      showSnackbar("Failed. Check the form for any errors", true);
+    const nonEmptyFieldArray = [this.quizTitle, this.rubricId, this.groupSize, 
+                                  this.startDateString, this.startTimeString, this.endDateString, this.endTimeString];
+    const allFieldsFilled = 
+          nonEmptyFieldArray.every((field) => this.existenceRule(field) && typeof this.existenceRule(field) === 'boolean')
+          && this.pages.every((page) => 
+                        [page.type, page.title, page.timeoutInMins].every((field) => 
+                            this.existenceRule(field) && typeof this.existenceRule(field) === 'boolean')
+                        //Check if timeout is positive
+                        && (this.timeoutRule(page.timeoutInMins)  
+                            && typeof this.timeoutRule(page.timeoutInMins) === 'boolean')
+                        //If page type is question or discussion, check if associated question is chosen
+                        && ((page.type !== PageType.QUESTION_ANSWER_PAGE && page.type !== PageType.DISCUSSION_PAGE) 
+                            || this.existenceRule(page['questionId']) && typeof this.existenceRule(page['questionId']) === 'boolean')); 
+    
+    if(!allFieldsFilled){
+      this.forceValidation = true;
+      showSnackbar("Some required fields are not filled", true);
+      return;
+    }
+
+    const startDateValidate = this.validDateRule();
+    const endDateValidate = this.validDateRule();
+    const validDateTime = startDateValidate && (typeof startDateValidate === 'boolean')
+                          && endDateValidate && (typeof endDateValidate === 'boolean')
+
+    if(!validDateTime){
+      this.forceValidation = true;
+      showSnackbar("Invalid schedule time", true);
+      return;
+    }
+
+    //Validate quiz content
+    const questionSet = new Set();
+    const quizContentValid = this.pages.every((page) => {
+      switch (page.type){
+        case PageType.QUESTION_ANSWER_PAGE:
+          questionSet.add(page.questionId);
+          return this.duplicateQuestionPageRule(page.questionId) 
+                 && typeof this.duplicateQuestionPageRule(page.questionId) === 'boolean';
+        case PageType.DISCUSSION_PAGE:
+          return this.duplicateDiscussionPageRule(page.questionId)
+                 && typeof this.duplicateDiscussionPageRule(page.questionId) === 'boolean'
+                 && questionSet.has(page.questionId);
+        default:
+          return true;
+      }
+    });
+
+    if(!quizContentValid){
+      this.forceValidation = true;
+      showSnackbar("Invalid Quiz content", true);
       return;
     }
 
@@ -749,40 +832,26 @@ export default class QuizPage extends Vue {
 
   // Compares the start and end date values and existence
   get validDateRule() {
-    return () => {
-      if (this.startDate && this.startTime && this.endDate && this.endTime) {
-        // Construct the time and check for comparisons since we have valid inputs
-        const availableStart = new Date(
-          this.startDate.getFullYear(),
-          this.startDate.getMonth(),
-          this.startDate.getDate(),
-          this.startTime.getHours(),
-          this.startTime.getMinutes(),
-          this.startTime.getSeconds()
-        );
-
-        const availableEnd = new Date(
-          this.endDate.getFullYear(),
-          this.endDate.getMonth(),
-          this.endDate.getDate(),
-          this.endTime.getHours(),
-          this.endTime.getMinutes(),
-          this.endTime.getSeconds()
-        );
-        return (
-          availableEnd.getTime() > availableStart.getTime() ||
-          "Set the end time to be greater than start time"
-        );
-      } else {
-        return "Start Date and End Date needs to be filled out";
-      }
+    return (value?: any) => {
+      if (this.startDate && this.startTime && this.endDate && this.endTime) return true;
+      return "Start date/time and end date/time are required";
     };
   }
 
+  // Check if the value is undefined
   get existenceRule() {
     return Utils.Rules.existenceRule;
   }
 
+  // Check if the timeout value is positive
+  get timeoutRule() {
+    return (value?: any) => {
+      const min = parseFloat(value);
+      return (min && min > 0 || "Timeout value must be positive.");
+    };
+  }
+
+  // Check if the question page is duplicated (another question page has similar associate question)
   get duplicateQuestionPageRule() {
     return (id: string) => {
       const totalIds = this.pages.reduce((count: number, page) => {
@@ -798,6 +867,7 @@ export default class QuizPage extends Vue {
     };
   }
 
+  // Check if the discussion page is duplicated (another discussion page has similar associate question)
   get duplicateDiscussionPageRule() {
     return (id: string) => {
       const totalIds = this.pages.reduce((count: number, page) => {
@@ -808,6 +878,46 @@ export default class QuizPage extends Vue {
       }, 0);
       return totalIds == 1 || "Duplicate discussions detected";
     };
+  }
+  
+  //Check if there is question page before the discussion page with the same associate question
+  get checkQuestionPageBeforeDiscussion(){
+    return (id:string) => {
+      const totalIds = this.pages.filter((page) => 
+        (page.type === PageType.QUESTION_ANSWER_PAGE || page.type === PageType.DISCUSSION_PAGE) 
+         && page.questionId === id
+      ).every((page, idx) => page.type !== PageType.DISCUSSION_PAGE || idx !== 0);
+
+      return totalIds || "Question page must be before Discussion"
+    };
+  }
+
+  pageValidation(page: Page){
+
+    const allFieldFilled = [page.type, page.title, page.timeoutInMins].every((field) => 
+                             this.existenceRule(field) && typeof this.existenceRule(field) === 'boolean');
+  
+    if (!allFieldFilled) return false;
+
+    //Check timeout value
+    if (!this.timeoutRule(page.timeoutInMins) || typeof this.timeoutRule(page.timeoutInMins) !== 'boolean') return false;
+
+    if (page.type !== PageType.QUESTION_ANSWER_PAGE && page.type !== PageType.DISCUSSION_PAGE ) return true;
+
+    //Check question ID
+    if (!this.existenceRule(page.questionId) || typeof this.existenceRule(page.questionId) !== 'boolean') return false;
+
+    //Check associate question
+    const validateQuestionObject = new Validator({
+      props: ['validationRule', 'value']
+    });
+
+    validateQuestionObject.$props.value = page.questionId;
+    validateQuestionObject.$props.validationRule = page.type === PageType.QUESTION_ANSWER_PAGE ? 
+                        [this.duplicateQuestionPageRule] 
+                      : [this.duplicateDiscussionPageRule, this.checkQuestionPageBeforeDiscussion];
+                      
+    return validateQuestionObject.validationMsg === '';
   }
 
   /**
@@ -825,7 +935,6 @@ export default class QuizPage extends Vue {
       return new Date(Date.now()).toString();
     }
   }
-
 }
 </script>
 
@@ -931,6 +1040,11 @@ export default class QuizPage extends Vue {
   .move-btn:hover{
     @include transparent-color($primary, false);
   }
+}
+
+.collapsible-validate-warning{
+  border: 1px solid $red;
+  border-radius: 5px;
 }
 
 </style>
