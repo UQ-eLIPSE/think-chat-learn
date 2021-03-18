@@ -500,12 +500,12 @@ export class UserService extends BaseService<IUser> {
     }
 
 
-    async isQuizIdActiveForUserCourse(courseId: string, quizId: string) {
+    async isQuizIdActiveForUserCourse(courseId: string, quizId: string): Promise<boolean> {
         try {
             const quizzes = await this.quizRepo.findAvailableQuizzesInCourse(courseId)
             const requestedQuizInQuizzes = quizzes.find((quiz) => quiz._id === quizId);
 
-            return requestedQuizInQuizzes;
+            return !!requestedQuizInQuizzes;
         } catch(e) {
             console.error('Quiz active check error');
             return false;
