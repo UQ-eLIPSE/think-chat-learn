@@ -104,6 +104,10 @@ export interface QuestionRequestData {
 export interface QuestionReconnectData {
   pages: DBSchema.Page[];
   questions: TypeQuestion[];
+  remainingTimeOnLastPage: number;
+  serverNowTime: number;
+  lastDiscussionIndex?: number;
+  lastPageIndex: number;
 }
 
 export type QuizSessionDataObject = { quizSession: IQuizSession | null,

@@ -24,6 +24,7 @@ import { CourseRepository } from "../repositories/CourseRepository";
 import { CriteriaRepository } from "../repositories/CriteriaRepository";
 import { RubricRepository } from "../repositories/RubricRepository";
 import { ObjectID } from "mongodb";
+
 export class UserService extends BaseService<IUser> {
 
     protected readonly userRepo: UserRepository;
@@ -485,7 +486,6 @@ export class UserService extends BaseService<IUser> {
                 quizSchedule.pages!.forEach((element, index) => {
                     if (index !== 0) {
                         delete element.content;
-                        delete element.timeoutInMins;
                     }
                 });
             }
@@ -608,6 +608,9 @@ class UserServiceHelper {
         chatGroupRepo: ChatGroupRepository): Promise<QuestionReconnectData> {
 
         const now = Date.now();
+        
+        // Tracks time remaining on the page where user wants to reconnect
+        let remainingTimeOnLastPage = 0;
 
         const pages: Page[] = [];
 
@@ -633,11 +636,11 @@ class UserServiceHelper {
 
         let runningTime = quizSession.startTime!;
         for (let i = 0; i < firstDiscussionIndex; i++) {
-            if (runningTime >= now + Conf.pageSlack) {
+            if (runningTime >= now) {
                 break;
             } else {
                 runningTime = runningTime + Utils.DateTime.minToMs(quiz.pages![i].timeoutInMins!);
-
+                remainingTimeOnLastPage = runningTime - now;
                 // We have a good page
                 pages.push(quiz.pages![i]);
             }
@@ -654,11 +657,11 @@ class UserServiceHelper {
             // Do the same thing with discussion page index except use the group formation as the reference
             let runningTime = group.startTime!;
             for (let i = firstDiscussionIndex; i < quiz.pages!.length; i++) {
-                if (runningTime >= now + Conf.pageSlack) {
+                if (runningTime >= now) {
                     break;
                 } else {
                     runningTime = runningTime + Utils.DateTime.minToMs(quiz.pages![i].timeoutInMins!);
-
+                    remainingTimeOnLastPage = runningTime - now;
                     // We have a good page
                     pages.push(quiz.pages![i]);
                 }
@@ -676,7 +679,28 @@ class UserServiceHelper {
 
         const questions = await questionRepo.findByIdArray(Array.from(questionSet));
 
-        return { questions, pages };
+        const lastDiscussionIndex = (() => {
+            for(let p = (pages || []).length; p >= 0; p--) {
+                if(pages[p] && (pages[p].type) === PageType.DISCUSSION_PAGE) {
+                    return p;
+                }
+            }
+
+            return -1;
+        })();
+
+        // Convert pages timeouts to numbers
+        (quiz.pages || []).forEach((page) => {
+            page && typeof page.timeoutInMins === 'string' && (page.timeoutInMins = parseFloat(page.timeoutInMins))
+        });
+
+        return { questions,
+            pages,
+            remainingTimeOnLastPage,
+            serverNowTime: now,
+            lastPageIndex: pages.length - 1,
+            lastDiscussionIndex: lastDiscussionIndex >= 0 ? lastDiscussionIndex : undefined
+        };
     }
 
 
