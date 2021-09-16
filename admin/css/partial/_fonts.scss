@@ -1,0 +1,15 @@
+@import "./variables";
+
+@mixin font-style($size: 1.5, $lineHeight: 1.5, $fontWeight: 300, $color: $uq, $important: false) {
+  font-size: $size + rem ;
+  line-height: $lineHeight + rem;
+  font-weight: $fontWeight;
+  color: $color;
+
+  @if $important {
+    font-size: $size + rem !important;
+    line-height: $lineHeight + rem !important;
+    font-weight: $fontWeight !important;
+    color: $color !important;
+  }
+}

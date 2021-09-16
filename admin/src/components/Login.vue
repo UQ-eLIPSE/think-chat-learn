@@ -12,9 +12,9 @@ import { convertNetworkQuizIntoQuiz } from "../../../common/js/NetworkDataUtils"
 import { IQuiz, QuizScheduleDataAdmin } from "../../../common/interfaces/ToClientData";
 
 Component.registerHooks([
-  "beforeRouteEnter",
-  "beforeRouteUpdate"
-]);
+  'beforeRouteEnter',
+  'beforeRouteUpdate'
+])
 
 @Component
 export default class Login extends Vue {
@@ -22,15 +22,15 @@ export default class Login extends Vue {
   /**
    * Registers `JWT` / Fetches data from server and instantiates `store`
    */
-  public async login(v: Vue) {
+  async login(v: Vue) {
     try {
       const q = v.$route.query.q;
       // Essentially redirects to the main page assuming login is correct
-      if (q) {
+      if(q) {
         // If token is sent, reset token in local storage
         setIdToken(q as string);
       }
-
+      
       const response = getAdminLoginResponse();
       // If we have a response, fetch more data due to NGINX limitations
       const otherToken = await this.$store.dispatch("handleToken");
@@ -52,21 +52,21 @@ export default class Login extends Vue {
         await v.$store.dispatch("setQuestions", quizScheduleData.questions);
         v.$router.push("/");
       }
-    } catch (e) {
+    } catch(e) {
       throw new Error("Error occurred during login.");
     }
   }
 
-  public async beforeRouterUpdate(to: any, from: any, next: any) {
+  async beforeRouterUpdate(to: any, from: any, next: any) {
     await this.login(this);
     next();
   }
 
-  public beforeRouteEnter(to: any, from: any, next: any) {
-    next(async (vm: this) => {
+  beforeRouteEnter(to: any, from: any, next: any) {
+    next(async(vm: this) => {
       await vm.login(vm);
     });
-
+    
   }
 }
 </script>

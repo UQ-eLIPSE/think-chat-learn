@@ -37,7 +37,7 @@ import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
 import { SocketState, TimerSettings } from "../interfaces";
 import { EventBus } from "../EventBus";
 import { EmitterEvents } from "../emitters";
-import { Conf as CommonConf } from "../../../common/config/Conf";
+import { Conf } from "../../../common/config/Conf";
 
 @Component({
   components: {
@@ -45,12 +45,15 @@ import { Conf as CommonConf } from "../../../common/config/Conf";
   }
 })
 export default class GroupAllocation extends Vue {
+  private notifyTone: boolean | null = null;
+  private notifyAudio: HTMLAudioElement | null = null;
+  private timeElapsed: number = 100;
   get socketState(): SocketState | null {
     return this.$store.getters.socketState;
   }
 
   get percentLoadedByTime() {
-    const waitTime = CommonConf.timings.chatGroupFormationTimeoutMs;
+    const waitTime = Conf.timings.chatGroupFormationTimeoutMs;
     return Math.round((this.timeElapsed / waitTime) * 100);
   }
 
@@ -59,28 +62,25 @@ export default class GroupAllocation extends Vue {
       ? this.socketState.chatGroupFormed
       : null;
   }
-  private notifyTone: boolean | null = null;
-  private notifyAudio: HTMLAudioElement | null = null;
-  private timeElapsed: number = 100;
 
-  public initLoaderTimeout(timeElapsedInMs: number, timerReference?: any) {
+  private goToMoocChatPage() {
+    this.$router.push("/page");
+  }
+
+  initLoaderTimeout(timeElapsedInMs: number, timerReference?: any) {
     this.timeElapsed = timeElapsedInMs;
-    if (timeElapsedInMs < CommonConf.timings.chatGroupFormationTimeoutMs) {
-      const timerRef = setTimeout(() => {
-        this.initLoaderTimeout(timeElapsedInMs + 1000, timerRef);
+    if (timeElapsedInMs < Conf.timings.chatGroupFormationTimeoutMs) {
+      let timerReference = setTimeout(() => {
+        this.initLoaderTimeout(timeElapsedInMs + 1000, timerReference);
       }, 1000);
     } else {
       clearTimeout(timerReference);
     }
   }
-
-  private goToPage() {
-    this.$router.push("/page");
-  }
   // Automatically redirect page back if somehow made it to this point
   private mounted() {
     if (this.chatGroup) {
-      this.goToPage();
+      this.goToMoocChatPage();
     }
 
     // Set timeout for loader
@@ -106,7 +106,7 @@ export default class GroupAllocation extends Vue {
         this.notifyAudio.play();
       }
 
-      this.goToPage();
+      this.goToMoocChatPage();
       EventBus.$emit(
         EmitterEvents.START_TIMER,
         this.$store.getters.currentTimerSettings

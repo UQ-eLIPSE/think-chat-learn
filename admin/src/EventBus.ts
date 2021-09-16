@@ -19,7 +19,7 @@ export interface ModalEvent {
     message: string;
     title: string;
     data?: any[];
-    fn?: (...args: any) => any;
+    fn?: Function;
     selfRef?: any;
 }
 

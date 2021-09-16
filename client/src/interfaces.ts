@@ -1,8 +1,8 @@
 import * as IWSToClientData from "../../common/interfaces/IWSToClientData";
 import { WebsocketManager } from "../../common/js/WebsocketManager";
-import { MessageTypes, StateMessageTypes } from "./enums";
+import { MoocChatMessageTypes, MoocChatStateMessageTypes } from "./enums";
 
-export type Message = ChatMessage | SystemMessage | StateMessage;
+export type MoocChatMessage = ChatMessage | SystemMessage | StateMessage;
 
 // An interface which handles the chat states
 export interface SocketState {
@@ -13,23 +13,23 @@ export interface SocketState {
     socket: WebsocketManager | null;
 }
 
-export interface IMessage {
-    type: MessageTypes;
+export interface Message {
+    type: MoocChatMessageTypes;
 }
 
-export interface ChatMessage extends IMessage {
-    type: MessageTypes.CHAT_MESSAGE;
+export interface ChatMessage extends Message {
+    type: MoocChatMessageTypes.CHAT_MESSAGE;
     content: IWSToClientData.ChatGroupMessage;
 }
 
-export interface SystemMessage extends IMessage {
-    type: MessageTypes.SYSTEM_MESSAGE;
+export interface SystemMessage extends Message {
+    type: MoocChatMessageTypes.SYSTEM_MESSAGE;
     message: string;
 }
 
-export interface StateMessage extends IMessage {
-    type: MessageTypes.STATE_MESSAGE;
-    state: StateMessageTypes;
+export interface StateMessage extends Message {
+    type: MoocChatMessageTypes.STATE_MESSAGE;
+    state: MoocChatStateMessageTypes;
     message: string;
 }
 

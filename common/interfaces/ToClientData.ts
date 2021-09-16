@@ -40,9 +40,13 @@ interface GenericLogin {
 export interface LoginResponse extends GenericLogin {
   type: LoginResponseTypes.GENERIC_LOGIN;
   user: IUser;
+  // Stores course code e.g. ENGG1200_X_Y
   courseId: string;
-  quizId: string | null;
+  courseTitle?: string;
+  quizId?: string | null;
+  customQuizId?: string | null;
   available: boolean;
+  isAdmin?: boolean;
 }
 
 // Is also an admin
@@ -50,7 +54,9 @@ export interface BackupLoginResponse extends GenericLogin {
   type: LoginResponseTypes.BACKUP_LOGIN;
   user: IUser;
   courseId: string;
-  quizId: string | null;
+  courseTitle?: string;
+  quizId?: string | null;
+  customQuizId?: string | null;
   isAdmin: boolean;
 }
 
@@ -59,7 +65,9 @@ export interface IntermediateLogin extends GenericLogin {
   type: LoginResponseTypes.INTERMEDIATE_LOGIN;
   user: IUser;
   courseId: string;
-  quizId: string | null;
+  courseTitle?: string;
+  quizId?: string | null;
+  customQuizId?: string | null;
   quizSessionId: string | null;
   available: boolean;
   responseId: string;
@@ -83,6 +91,7 @@ export interface AdminLoginResponse extends GenericLogin {
   type: LoginResponseTypes.ADMIN_LOGIN;
   user: IUser;
   courseId: string;
+  courseTitle?: string;
   isAdmin: boolean;
 }
 
@@ -95,9 +104,22 @@ export interface QuestionRequestData {
 export interface QuestionReconnectData {
   pages: DBSchema.Page[];
   questions: TypeQuestion[];
+  remainingTimeOnLastPage: number;
+  serverNowTime: number;
+  lastDiscussionIndex?: number;
+  lastPageIndex: number;
 }
 
 export type QuizSessionDataObject = { quizSession: IQuizSession | null,
   userSession: IUserSession | null, user: IUser | null,
   responses: Response[]
 };
+
+export type QuizSessionMarkedMap = { [quizSessionId: string]: boolean };
+export type IChatGroupWithMarkingIndicator = (IChatGroup & { quizSessionMarkedMap: QuizSessionMarkedMap });
+
+export interface ResponseMessage<T = void> {
+  success: boolean;
+  payload?: T;
+  message?: string;
+}

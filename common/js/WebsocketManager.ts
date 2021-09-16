@@ -64,7 +64,7 @@ export class WebsocketManager {
 
     this.on("err", (data: { reason: string }) => {
       // For now make it an alert message
-      alert("Error detected:" + data.reason);
+      console.error("WebSocket Error detected:" + data.reason);
     });
   }
 

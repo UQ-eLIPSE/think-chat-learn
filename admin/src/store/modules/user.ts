@@ -11,7 +11,7 @@ const state: IState = {
 };
 
 const mutationKeys = {
-  SET_USER: "Setting User",
+  SET_USER: "Setting User"
 };
 
 const getters = {
@@ -23,9 +23,8 @@ const actions = {
     setUser({ commit }: {commit: Commit}, user: IUser) {
         return commit(mutationKeys.SET_USER, user);
     },
-
     handleToken({ commit }: { commit: Commit}, token: string) {
-        return API.request(API.POST, API.USER + "/handleToken", {});
+        return API.request(API.POST, API.USER + "handleToken", {});
     }
 };
 

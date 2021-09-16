@@ -1,7 +1,7 @@
 <template>
   <div
     class="timer"
-    v-show="[routeNames.PAGE_TEMPLATE, routeNames.DISCUSSION, routeNames.REFLECTION].includes($route.name)"
+    v-show="['MoocChatPage', 'Discussion', 'Reflection'].includes($route.name)"
   >
     <font-awesome-icon icon="clock" />
     <b>Next page will load in:</b> {{timeLeftInMinutesSeconds}}
@@ -34,7 +34,7 @@ import { TimerSettings, SocketState } from "../interfaces";
 import { EventBus } from "../EventBus";
 import { IQuiz, IQuizSession } from "../../../common/interfaces/DBSchema";
 import * as IWSToClientData from "../../../common/interfaces/IWSToClientData";
-import { Names } from "../router";
+import { Conf } from "../../../common/config/Conf";
 
 enum FETCH_STATES {
   READY = 0,
@@ -58,7 +58,7 @@ export default class Timer extends Vue {
   private MS_TO_SECONDS_FACTOR: number = 1000;
   private TIME_AMOUNT_MS: number = 100;
   // Time to fetch question
-  private FETCH_TIME: number = 5000;
+  private FETCH_TIME: number = 1;
 
   get maxIndex(): number {
     return this.$store.getters.maxIndex;
@@ -86,10 +86,6 @@ export default class Timer extends Vue {
     if (!newVal && oldVal) {
       EventBus.$emit(EmitterEvents.PAGE_TIMEOUT);
     }
-  }
-
-  get routeNames() {
-    return Names;
   }
 
   private createNewTimer(newVal: TimerSettings, oldVal?: TimerSettings) {

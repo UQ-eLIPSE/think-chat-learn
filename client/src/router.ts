@@ -1,31 +1,39 @@
 import Vue from "vue";
 import Router, { Route } from "vue-router";
-
-// Views
-import Discussion from "./views/Discussion.vue";
-import GroupAllocation from "./views/GroupAllocation.vue";
 import Landing from "./views/Landing.vue";
-import Login from "./views/Login.vue";
-import PageTemplate from "./views/PageTemplate.vue";
-import Receipt from "./views/Receipt.vue";
+import MoocChatPage from "./views/MoocChatPage.vue";
+import Discussion from "./views/Discussion.vue";
 import Reflection from "./views/Reflection.vue";
 import Survey from "./views/Survey.vue";
+import Login from "./views/Login.vue";
+import GroupAllocation from "./views/GroupAllocation.vue";
+import Receipt from "./views/Receipt.vue";
+import FeedbackLauncher from "./views/FeedbackLauncher.vue";
 
 Vue.use(Router);
 export const Names = {
   LANDING: "Landing",
-  PAGE_TEMPLATE: "Page Template",
+  MOOCCHAT_PAGE: "MoocChatPage",
   DISCUSSION: "Discussion",
   REFLECTION: "Reflection",
   SURVEY: "Survey",
   LOGIN: "Login",
   GROUP_ALLOCATION: "Group Allocation",
-  RECEIPT: "Receipt"
+  RECEIPT: "Receipt",
+  FEEDBACK_LAUNCHER: 'Sessions and Feedback'
 };
 
 // Note that the router config is done in the vue.config.js file
 export const router = new Router({
   routes: [
+    {
+      path: "/feedback-launcher",
+      name: Names.FEEDBACK_LAUNCHER,
+      component: FeedbackLauncher,
+      meta: {
+        title: "TCL Sessions and Feedback"
+      },
+    },
     {
       path: "/",
       name: Names.LANDING,
@@ -36,8 +44,8 @@ export const router = new Router({
     },
     {
       path: "/page",
-      name: Names.PAGE_TEMPLATE,
-      component: PageTemplate,
+      name: Names.MOOCCHAT_PAGE,
+      component: MoocChatPage,
       meta: {
         title: "Think.Chat.Learn"
       },
@@ -110,11 +118,15 @@ function checkValidTransition(to: Route, from: Route): boolean {
   // Note the initial login is always null
   if (
     (from.name === null && to.name === Names.LOGIN) ||
+    (from.name === null && to.name === Names.FEEDBACK_LAUNCHER) ||
     (from.name === Names.LOGIN && to.name === Names.LANDING) ||
-    (from.name === Names.LANDING && to.name === Names.PAGE_TEMPLATE) ||
-    (from.name === Names.PAGE_TEMPLATE && to.name === Names.GROUP_ALLOCATION) ||
-    (from.name === Names.GROUP_ALLOCATION && to.name === Names.PAGE_TEMPLATE) ||
-    (from.name === Names.PAGE_TEMPLATE && to.name === Names.RECEIPT)
+    (from.name === Names.LOGIN && to.name === Names.FEEDBACK_LAUNCHER) ||
+    (from.name === Names.FEEDBACK_LAUNCHER && to.name === Names.LANDING) ||
+    (from.name === Names.LANDING && to.name === Names.MOOCCHAT_PAGE) ||
+    (from.name === Names.LANDING && to.name === Names.FEEDBACK_LAUNCHER) ||
+    (from.name === Names.MOOCCHAT_PAGE && to.name === Names.GROUP_ALLOCATION) ||
+    (from.name === Names.GROUP_ALLOCATION && to.name === Names.MOOCCHAT_PAGE) ||
+    (from.name === Names.MOOCCHAT_PAGE && to.name === Names.RECEIPT)
   ) {
     return true;
   }

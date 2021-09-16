@@ -2,7 +2,7 @@
   <div class="chat-message">
     <CircularNumberLabel :numeral="numeral" />
     <div class="message"
-         :class="`base${+numeral} ${selected?'selected':''}`">
+         :class="`base-cl-${numeral} border-cl transparent-cl ${selected?'selected':''}`">
       <span>{{ content }}</span>
     </div>
   </div>
@@ -21,14 +21,14 @@ import CircularNumberLabel from "./CircularNumberLabel.vue";
 })
 export default class ChatMessage extends Vue {
   // @Prop({}) private userNumber!: string;
-  @Prop({ required: true, default: () => "" }) private content!: string;
+  @Prop({ required: true, default: () => '' }) private content!: string;
   @Prop({}) private numeral!: number;
   @Prop({ default: false }) private isTyping!: boolean;
   @Prop({ required: false, default: false }) private selected!: boolean;
 }
 </script>
 <style lang="scss" scoped>
-@import "../../../css/variables.scss";
+@import "../../../css/partial/variables";
 
 .chat-message {
   margin-bottom: 10px;
@@ -48,37 +48,7 @@ export default class ChatMessage extends Vue {
     transform: translateY(20%);
   }
   .message {
-    background-color: $white;
     padding: 0.5em;
-
-    &.base1 {
-      border: 1px solid $baseLight1;
-      &.selected {
-        border-width: 4px;
-      }
-    }
-
-    &.base2 {
-      border: 1px solid $baseLight2;
-      &.selected {
-        border-width: 4px;
-      }
-    }
-
-    &.base3 {
-      border: 1px solid $baseLight3;
-      &.selected {
-        border-width: 4px;
-      }
-    }
-
-    &.base4 {
-      border: 1px solid $baseLight4;
-      &.selected {
-        border-width: 4px;
-      }
-    }
-
     span {
       font-weight: 400;
       margin-left: 15px;

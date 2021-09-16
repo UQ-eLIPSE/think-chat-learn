@@ -117,7 +117,7 @@ export default class Landing extends Vue {
   }
 
   get clientURL() {
-    return CommonConf.client.url || "";
+    return process.env.VUE_APP_CLIENT_URL || "";
   }
 
   get MAX_STEP() {

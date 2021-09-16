@@ -10,7 +10,7 @@ export abstract class BaseRepository<T extends Document>{
         this.collection = _db.collection(_collectionName);
     }
 
-    protected convertItemToDocument(item:Partial<T>):any {
+    public convertItemToDocument(item:Partial<T>):any {
         let document: any = Object.assign({}, item);
         if (item._id) {
             document._id = this.convertStringIdToObjectId(item._id);
@@ -18,7 +18,7 @@ export abstract class BaseRepository<T extends Document>{
         return document;
     }
 
-    protected convertDocumentToItem(document:any):T {
+    public convertDocumentToItem(document:any):T {
         let item: any = Object.assign({}, document);
         if(document._id){
             item._id = this.convertObjectIdtoStringId(document._id as ObjectID);

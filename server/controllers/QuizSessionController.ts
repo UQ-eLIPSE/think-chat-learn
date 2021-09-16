@@ -5,14 +5,17 @@ import { IQuizSession, LoginResponse } from "../../common/interfaces/ToClientDat
 import { StudentAuthenticatorMiddleware } from "../js/auth/StudentPageAuth";
 import { SocketSession } from "../js/websocket/SocketSession";
 import { isAdmin } from "../js/auth/AdminPageAuth";
+import { MarksService } from "../services/MarksService";
 
 export class QuizSessionController extends BaseController {
 
     protected quizSessionService: QuizSessionService;
+    protected marksService: MarksService;
 
-    constructor(_quizSessionService: QuizSessionService) {
+    constructor(_quizSessionService: QuizSessionService, _marksService: MarksService) {
         super();
         this.quizSessionService = _quizSessionService;
+        this.marksService = _marksService;
     }
 
     private createQuizSession(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
@@ -48,10 +51,10 @@ export class QuizSessionController extends BaseController {
     // This checks whether or not a socket session still exists for a given quiz session
     private findSession(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
         const maybeSession = SocketSession.Get(req.body._id);
-        res.json({ 
-            outcome:  maybeSession ? true : false
+        res.json({
+            outcome: maybeSession ? true : false
         });
-    }    
+    }
 
     private getQuizSessionByUserIdAndQuiz(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
         const request: { userId: string, quizId: string } = req.body;
@@ -72,6 +75,63 @@ export class QuizSessionController extends BaseController {
         }
     }
 
+    private async getPastQuizSessionByUserCourse(req: express.Request, res: express.Response, next: express.NextFunction | undefined) {
+        // User has been validated in `checkUserId` middleware
+        const decodedToken = req.user as LoginResponse;
+
+        const quizSessionsData = await this.quizSessionService.getPastQuizSessionsDataForUserCourse(decodedToken.user._id!, decodedToken.courseId);
+        if (!quizSessionsData) return res.json({
+            payload: []
+        });
+
+        
+        await Promise.all(await quizSessionsData.map(async (quizSessionData) => {
+            // If marks aren't public for the quiz, return null regardless of whether marks were assigned
+            if(quizSessionData.quiz && !quizSessionData.quiz.marksPublic) return null;
+            const overallScore = await this.marksService.getOverallScoreForQuizSession(quizSessionData._id!);
+            
+            if (overallScore || overallScore === 0) {
+                quizSessionData.overallScore = overallScore;
+            }
+            return quizSessionData;
+        }));
+
+        // TODO: Get overallMaximumMarks using rubric and criteria getOverallMaximumMarksForQuiz
+        await Promise.all(await quizSessionsData.map(async (quizSessionData) => {
+            const overallMaximumMarks = await this.marksService.getOverallMaximumMarksForQuiz(quizSessionData.quiz!);
+            if (overallMaximumMarks || overallMaximumMarks === 0) {
+                quizSessionData.overallMaximumMarks = overallMaximumMarks;
+            }
+            return quizSessionData;
+        }));
+        return res.json({ payload: quizSessionsData });
+    }
+
+    /**
+     * Returns a map which can be used to search a quiz session by username, first name or last name for a particular quiz
+     * Returns in the format
+     * { [quizSessionId: string]: "<UQ username>,<firstname>,<lastname>" }
+     * @param req 
+     * @param res 
+     * @param next 
+     */
+    private async getQuizSessionUserMap(req: express.Request, res: express.Response, next: express.NextFunction | undefined) {
+        try {
+            if(!req.params.quizScheduleId) throw new Error('Missing quiz schedule id');
+            const result = await this.quizSessionService.getQuizSessionUserSearchMap(req.params.quizScheduleId);
+            if(!result || !result.success || !result.payload) {
+                throw new Error(result.message || 'Quiz session map could not be created');
+            }
+
+            return res.json(result).status(200);
+        } catch(e) {
+            console.error(e);
+            return res.json({
+                success: false
+            }).status(500);
+        }
+    }
+
     public setupRoutes() {
         this.router.post("/create", StudentAuthenticatorMiddleware.checkUserId(), StudentAuthenticatorMiddleware.checkQuizSessionId(), this.createQuizSession.bind(this));
         this.router.get("/quizsession/:quizSessionId", StudentAuthenticatorMiddleware.checkUserId(), this.getQuizSessionById.bind(this));
@@ -79,5 +139,7 @@ export class QuizSessionController extends BaseController {
             this.findSession.bind(this));
         this.router.post("/fetchByUserQuiz", StudentAuthenticatorMiddleware.checkUserId(), this.getQuizSessionByUserIdAndQuiz.bind(this));
         this.router.get("/quizsession-marking/:quizSessionId", isAdmin(), this.getQuizSessionById.bind(this));
+        this.router.get("/history", StudentAuthenticatorMiddleware.checkUserId(), this.getPastQuizSessionByUserCourse.bind(this));
+        this.router.get("/searchmap/:quizScheduleId", isAdmin(), this.getQuizSessionUserMap.bind(this));
     }
 }

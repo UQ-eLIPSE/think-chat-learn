@@ -24,9 +24,14 @@ export interface IIdentityInfo {
     };
 
     /**
-     * Course in which this identity sits (e.g. ENGG1200.)
+     * Course in which this identity sits (e.g. EAIT1033N_6760_00003)
      */
     course?: string;
+
+    /**
+     * Title of the course in which this identity sits (e.g. [EAIT1033] EAIT eLearning Development - Semester 2 2017.)
+     */
+    courseTitle?: string;
 
     /**
      * List of roles as string array.

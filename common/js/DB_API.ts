@@ -62,7 +62,7 @@ export const API: IApi = {
       })
       .then((res: any) => res.data)
       .catch((e: Error) => {
-        alert(e);
+        console.error(e);
       });
   },
 

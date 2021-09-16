@@ -2,7 +2,7 @@
     <v-container>
         <v-form ref="form">
             <v-container fluid grid-list-md>
-                <h1>Criteria Editor</h1>
+                <h1 class="moochat-name">Criteria Editor</h1>
                 <h2 v-if="currentCriteria._id">Editing mode</h2>
                 <v-layout row wrap>
                     <v-flex xs12>
@@ -15,14 +15,15 @@
                             <v-textarea label="Criteria Description" v-model="currentCriteria.description" outline :rules="[existenceRule]"/>
                         </b-field>
                     </v-flex>                    
-                    <v-btn type="button" @click="sendCriteria()">{{currentCriteria._id ? "Edit Criteria" : "Create Criteria"}}</v-btn>
+                    <button class="primary-cl button-cs" type="button" @click="sendCriteria()">{{currentCriteria._id ? "Edit Criteria" : "Create Criteria"}}</button>
                 </v-layout>
             </v-container>
         </v-form>
     </v-container>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@import "../../css/app.scss";
     .container button:hover {
         background-color: #51247a;
         transition: background-color 1s ease-out;
@@ -50,7 +51,7 @@ export default class CriteriaEditor extends Vue {
     };
 
     private failedFetch: boolean = false;
-
+    
     get criterias(): ICriteria[] {
         return this.$store.getters.criterias;
     }
@@ -68,7 +69,7 @@ export default class CriteriaEditor extends Vue {
             const message: SnackEvent = {
                 message: "Failed generate quiz. Check the form for any errors",
                 error: true
-            };
+            }
             EventBus.$emit(EventList.PUSH_SNACKBAR, message);
             return;
         } else {
@@ -77,7 +78,7 @@ export default class CriteriaEditor extends Vue {
                 title: `Creating/modifying a criteria`,
                 fn: this.$store.dispatch,
                 data: ["sendCriteria", this.currentCriteria]
-            };
+            }
             EventBus.$emit(EventList.OPEN_MODAL, message);
         }
     }
@@ -96,7 +97,7 @@ export default class CriteriaEditor extends Vue {
                 this.failedFetch = true;
             }
         } else {
-            // Otherwise, only set the course
+            // Otherwise, only set the course 
             this.currentCriteria.course = this.course;
         }
     }

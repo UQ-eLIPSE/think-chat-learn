@@ -59,6 +59,7 @@ export class LTIAuth extends Auth {
                 family: this.ltiData.lis_person_name_family || "",
             },
             course: this.ltiData.context_label || "",
+            courseTitle: this.ltiData.context_title || "",
             roles: (this.ltiData.roles || "").split(","),
         }
     }

@@ -5,32 +5,32 @@ import { IUserSession, IQuizSession, Response, IQuiz,
     TypeQuestion,
     QuestionReconnectData,
     LoginResponseTypes} from "../../../../common/interfaces/ToClientData";
-import { API } from "../../../../common/js/DB_API";
+import API from "../../../../common/js/DB_API";
 
 // Websocket interfaces
 import * as IWSToClientData from "../../../../common/interfaces/IWSToClientData";
 import { WebsocketManager } from "../../../../common/js/WebsocketManager";
 import { WebsocketEvents } from "../../../../common/js/WebsocketEvents";
 // Common typings/utils
-import { SocketState, Message, StateMessage, Dictionary } from "../../interfaces";
-import { MessageTypes, StateMessageTypes } from "../../enums";
+import { SocketState, MoocChatMessage, StateMessage, Dictionary } from "../../interfaces";
+import { MoocChatMessageTypes, MoocChatStateMessageTypes } from "../../enums";
 import { logout, getLoginResponse } from "../../../../common/js/front_end_auth";
 import store, { SystemMessageTypes } from "..";
 import { Utils } from "../../../../common/js/Utils";
 import { PageType, QuestionType } from "../../../../common/enums/DBEnums";
 import { ChatGroupResync } from "../../../../common/interfaces/HTTPToClientData";
 import { IResponseMCQ, IResponseQualitative } from "../../../../common/interfaces/DBSchema";
-import { Conf as CommonConf } from "../../../../common/config/Conf";
+import * as CommonConf from "../../../../common/config/Conf";
 export interface IState {
     quizSession: IQuizSession | null;
     // Note the key of this dictionary would be the questionid as we simply respond to one question
     responses: Dictionary<Response>;
     socketState: SocketState;
-    chatMessages: Message[];
+    chatMessages: MoocChatMessage[];
     resyncAmount: number;
     // Stops the browser
     stopBrowser: boolean;
-    // Tells a resync to a page
+    // Tells a resync to a moocchat page
     resync: boolean;
     // Tells if the quiz session is available
     quizAvailable: boolean;
@@ -76,16 +76,15 @@ const mutationKeys = {
 
 // Handles reconnect message fail messages by noting this on the store
 function reconnectFail() {
-    const errorMessage = "Error: Connection lost. Please close current window/tab and launch" +
-    "Think.Chat.Learn again from Blackboard. (Your progress will be retained)";
-
     store.commit("SET_GLOBAL_MESSAGE", {
         error: true,
         type: SystemMessageTypes.FATAL_ERROR,
         message:
-            errorMessage
+            "Error: Connection lost. Please close current window/tab and launch Think.Chat.Learn again from Blackboard. " +
+                "(Your progress will be retained)"
       });
-    alert(errorMessage);
+      alert("Error: Connection lost. Please close current window/tab and launch Think.Chat.Learn again from Blackboard. " +
+      "(Your progress will be retained)");
 }
 
 // To be displayed when socket.io cannot reconnect.
@@ -95,9 +94,9 @@ function reconnectAttempt(attemptNumber: number) {
         error: false,
         type: SystemMessageTypes.WARNING,
         message: `Connection lost.
-            Attempting to reconnect (#${attemptNumber}/${CommonConf.websockets.reconnectionAmount})`
+            Attempting to reconnect (#${attemptNumber}/${CommonConf.Conf.websockets.reconnectionAmount})`
       });
-
+    
 }
 
 // Grabs the reference from user.ts
@@ -115,8 +114,8 @@ async function handleGroupJoin(data?: IWSToClientData.ChatGroupFormed) {
 
     // Handle a join
     const joinMessage: StateMessage = {
-        state: StateMessageTypes.ON_JOIN,
-        type: MessageTypes.STATE_MESSAGE,
+        state: MoocChatStateMessageTypes.ON_JOIN,
+        type: MoocChatMessageTypes.STATE_MESSAGE,
         message: `Joined a group of ${data.groupSize} you are Student ${data.clientIndex}`
     };
 
@@ -140,8 +139,8 @@ function handleIncomingChatMessage(data?: IWSToClientData.ChatGroupMessage) {
     Vue.set(state.socketState.chatMessages, state.socketState.chatMessages.length, data);
 
     // Also handle the total chat message
-    const chatMessage: Message = {
-        type: MessageTypes.CHAT_MESSAGE,
+    const chatMessage: MoocChatMessage = {
+        type: MoocChatMessageTypes.CHAT_MESSAGE,
         content: data
     };
 
@@ -183,8 +182,8 @@ function handleChatDisconnect(data?: IWSToClientData.ChatGroupDisconnect) {
     }
 
     const stateMessage: StateMessage = {
-        state: StateMessageTypes.CHAT_GROUP_LEAVE,
-        type: MessageTypes.STATE_MESSAGE,
+        state: MoocChatStateMessageTypes.CHAT_GROUP_LEAVE,
+        type: MoocChatMessageTypes.STATE_MESSAGE,
         message: `Student ${data.clientIndex} has disconnected`
     };
 
@@ -197,8 +196,8 @@ function handleChatGroupReconnect(data?: IWSToClientData.ChatGroupReconnect) {
     }
 
     const stateMessage: StateMessage = {
-        state: StateMessageTypes.CHAT_GROUP_RECONNECT,
-        type: MessageTypes.STATE_MESSAGE,
+        state: MoocChatStateMessageTypes.CHAT_GROUP_RECONNECT,
+        type: MoocChatMessageTypes.STATE_MESSAGE,
         message: `Student ${data.clientIndex} has reconnected`
     };
 
@@ -265,7 +264,7 @@ async function handleReconnect(data: any) {
 
         if (userSession && quiz) {
             // Retreive the quiz and user id
-            quizSession = (await API.request(API.POST, API.QUIZSESSION + "/fetchByUserQuiz", {
+            quizSession = (await API.request(API.POST, API.QUIZSESSION + "fetchByUserQuiz", {
                 userId: userSession.userId,
                 quizId: quiz._id
             }, undefined, getToken())).data;
@@ -297,7 +296,7 @@ async function handleReconnect(data: any) {
     }
     // We have a quiz session (whether it is an on client disconnect or not)
     // The next step is to check for our socket session
-    const socketPresent: { outcome: boolean } = await API.request(API.POST, API.QUIZSESSION + "/findSession",
+    const socketPresent: { outcome: boolean } = await API.request(API.POST, API.QUIZSESSION + "findSession",
         state.quizSession!, undefined, getToken());
 
     if (socketPresent.outcome) {
@@ -351,10 +350,10 @@ async function handleReconnect(data: any) {
     if (!state.socketState!.chatGroupFormed) {
         const groupSession: ChatGroupResync | null =
             await API.request(API.POST, API.CHATGROUP +
-                "/recoverSession", state.quizSession!);
+                "recoverSession", state.quizSession!);
 
         const userResponses: Response[] =
-            (await API.request(API.GET, API.RESPONSE + "/quizSession/" + state.quizSession!._id, {},
+            (await API.request(API.GET, API.RESPONSE + "quizSession/" + state.quizSession!._id, {},
                 undefined, getToken())).data;
 
         const quizQuestionData: QuestionReconnectData = await API.request(API.POST, API.USER + "/reconnectData", {
@@ -368,12 +367,14 @@ async function handleReconnect(data: any) {
         await store.commit("Setting the pages", quizQuestionData.pages);
         await store.commit("Setting questions", quizQuestionData.questions);
 
+
+
         if (groupSession) {
             await handleGroupJoin(groupSession.chatGroupFormed);
-            await store.dispatch("updatePageBasedOnTime", { time: groupSession.startTime, isGroup: true });
+            await store.dispatch("updatePageBasedOnTime", quizQuestionData);
             await store.dispatch("updateSocketMessages", groupSession.messages);
         } else {
-            await store.dispatch("updatePageBasedOnTime", { time: quizSession!.startTime, isGroup: false });
+            await store.dispatch("updatePageBasedOnTime", quizQuestionData);
         }
 
         if (userResponses) {
@@ -407,7 +408,7 @@ const getters = {
         return state.socketState;
     },
 
-    chatMessages: (): Message[] => {
+    chatMessages: (): MoocChatMessage[] => {
         return state.chatMessages;
     },
 
@@ -433,7 +434,7 @@ const getters = {
 };
 const actions = {
     createQuizSession({ commit }: {commit: Commit}, quizSession: IQuizSession) {
-        return API.request(API.POST, API.QUIZSESSION + "/create", quizSession, undefined,
+        return API.request(API.POST, API.QUIZSESSION + "create", quizSession, undefined,
             getToken()).then((id: { outgoingId: string }) => {
 
             quizSession._id = id.outgoingId;
@@ -447,7 +448,7 @@ const actions = {
     },
 
     retrieveQuizSession({ commit }: { commit: Commit }, id: string) {
-        return API.request(API.GET, API.QUIZSESSION + "/quizsession/" + id, {}, undefined,
+        return API.request(API.GET, API.QUIZSESSION + "quizsession/" + id, {}, undefined,
             getToken()).then((data:
             { session: IQuizSession }) => {
 
@@ -457,7 +458,7 @@ const actions = {
     },
 
     sendResponse({ commit }: {commit: Commit}, response: Response) {
-        return API.request(API.POST, API.RESPONSE + "/create", response, undefined,
+        return API.request(API.POST, API.RESPONSE + "create", response, undefined,
             getToken()).then((id: { outgoingId: string}) => {
 
             response._id = id.outgoingId;
@@ -475,7 +476,6 @@ const actions = {
     createSocket({ commit }: {commit: Commit}) {
         return commit(mutationKeys.CREATE_SOCKET);
     },
-
     deleteSocket({ commit }: {commit: Commit}) {
         return commit(mutationKeys.DELETE_SOCKET);
     },
@@ -492,63 +492,35 @@ const actions = {
         return commit(mutationKeys.SET_SOCKET_MESSAGES, data);
     },
 
-    updatePageBasedOnTime({ commit }: {commit: Commit}, data: { time: number, isGroup: boolean } ) {
-        // Given a quiz, compute the amount of time for each page.
-        const currentTime = Date.now();
-        let trackedTime = data.time;
-        const quiz: IQuiz | null = store.getters.quiz;
-        if (!quiz || !quiz.pages) {
+    updatePageBasedOnTime({ commit }: {commit: Commit}, data: QuestionReconnectData ) {
+        const { serverNowTime, remainingTimeOnLastPage, lastDiscussionIndex, lastPageIndex } = (data || {});
+
+        
+        if(isNaN(serverNowTime) || isNaN(remainingTimeOnLastPage) || isNaN(lastPageIndex)) {
+            console.error('Reconnect data invalid');
             return;
         }
 
-
-        // Since the group formation occurs at the first discussion, we iterate from there
-        let firstDiscussionIndex = quiz.pages.findIndex((element) => {
-            return element.type === PageType.DISCUSSION_PAGE;
-        });
-
-        if (firstDiscussionIndex === -1) {
-            // Solve the case in which we have no discussion at all
-            firstDiscussionIndex = quiz.pages.length;
+        const quiz: IQuiz | null = store.getters.quiz;
+        if (!quiz || !quiz.pages) {
+            console.error('Quiz invalid. Reconnect failed.');
+            return;
         }
 
-        // Our bounds are based whether or not we are doing this for a group or not
-        const lowerIndex = data.isGroup ? firstDiscussionIndex : 0;
-        const upperIndex = data.isGroup ? quiz.pages.length : firstDiscussionIndex;
-
-        let i = 0;
-
-        for (i = lowerIndex ; i < upperIndex; i++) {
-            const lowerBound = trackedTime;
-            const upperBound = trackedTime + Utils.DateTime.minToMs(quiz.pages[i].timeoutInMins);
-            if (currentTime >= lowerBound && upperBound >= currentTime) {
-                // Set the indices
-                store.commit("Sets the current index", i);
-                store.commit("Setting the max index", i);
-
-                // Figure out the most recent discussion page
-                for (let j = i; j >= 0; j--) {
-                    if (quiz.pages[j].type === PageType.DISCUSSION_PAGE) {
-                        store.commit("Setting current discussion", (quiz.pages[j] as IDiscussionPage).questionId);
-                        break;
-                    }
-                }
-
-                // Set the amount of time remaining for the timer
-                const timeRemaining = upperBound - currentTime;
-                Vue.set(state, "resyncAmount", Utils.DateTime.msToMinutes(timeRemaining));
-                break;
-            }
-
-            trackedTime = upperBound;
+        if(!quiz.pages[lastPageIndex] || !quiz.pages[lastPageIndex]) {
+            console.error('Quiz invalid. Reconnect failed.');
+            return;
         }
+        
+        store.commit("Sets the current index", lastPageIndex);
+        store.commit("Setting the max index", lastPageIndex);
 
-        if (i === quiz.pages.length) {
-            // If we somehow reach there then the max index would be
-            // at the page lengths
-            store.commit("Sets the current index", i);
-            store.commit("Setting the max index", i);
-        }
+        
+        (!!lastDiscussionIndex || lastDiscussionIndex === 0) && store.commit("Setting current discussion", (quiz.pages[lastDiscussionIndex] as IDiscussionPage).questionId);
+
+        const latencyAdjustmentMs = Date.now() - serverNowTime; 
+        
+        Vue.set(state, "resyncAmount", Utils.DateTime.msToMinutes(remainingTimeOnLastPage + latencyAdjustmentMs));
     },
 
     setAvailability({ commit }: {commit: Commit}, isAvailable: boolean) {
@@ -580,7 +552,6 @@ const mutations = {
             registerSocketEvents();
         }
     },
-
     [mutationKeys.CLOSE_SOCKET](funcState: IState) {
         if (funcState.socketState.socket) {
             funcState.socketState.socket.close();
@@ -593,11 +564,11 @@ const mutations = {
         }
     },
 
-    [mutationKeys.APPEND_STATE_MESSAGE](funcState: IState, data: { incomingState: StateMessageTypes,
+    [mutationKeys.APPEND_STATE_MESSAGE](funcState: IState, data: { incomingState: MoocChatStateMessageTypes,
         message: string }) {
 
         const outgoingMessage: StateMessage = {
-            type: MessageTypes.STATE_MESSAGE,
+            type: MoocChatMessageTypes.STATE_MESSAGE,
             state: data.incomingState,
             message: data.message
         };
@@ -612,13 +583,13 @@ const mutations = {
     [mutationKeys.SET_SOCKET_MESSAGES](funcState: IState, data: IWSToClientData.ChatGroupMessage[]) {
         Vue.set(funcState.socketState!, "chatMessages", data);
         Vue.set(funcState, "chatMessages", data.map((element) => {
-            const output: Message = {
-                type: MessageTypes.CHAT_MESSAGE,
+            const output: MoocChatMessage = {
+                type: MoocChatMessageTypes.CHAT_MESSAGE,
                 content: element
             };
 
             return output;
-        }, [] as Message[]));
+        }, [] as MoocChatMessage[]));
     },
 
     [mutationKeys.SET_FETCH_STATE](funcState: IState, data: boolean) {

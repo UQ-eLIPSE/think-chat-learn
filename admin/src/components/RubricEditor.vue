@@ -2,8 +2,8 @@
     <v-container>
         <v-form ref="form">
             <v-container fluid grid-list-md>
-                <h1>Rubric Editor</h1>
-                <h2 v-if="id">Editing mode</h2>                
+                <h1 class="moocchat-title">Rubric Editor</h1>
+                <h2 class="moocchat-title" v-if="id">Editing mode</h2>                
                 <v-layout row wrap>
                     <v-flex xs12>
                         <b-field label="Set the title of the rubric">
@@ -11,25 +11,26 @@
                         </b-field>
                     </v-flex>
                     <v-flex v-for="(setCriteria, index) in mountedCriteriasId" :key="index" class="criteria" xs12>
-                        <v-card>
+                        <div class="card-container">
                             <v-card-title>
                                 <b-field :label="`Choose Criteria ${index + 1}`"/>
                             </v-card-title>
                             <!-- Since we can't actually set the criteria directly, we assign it key-wise instead -->
                             <!-- Also note that the name would not change, meanining re-render logic isn't affected -->
                             <v-overflow-btn :items="criteriaDropDown" v-model="mountedCriteriasId[index]" :rules="[existenceRule, duplicateRule]" outline/>
-                            <v-btn type="button" @click="deleteCriteria(index)">Remove Criteria</v-btn>
-                        </v-card>
+                            <button type="button" class="red-cl button-cs" @click="deleteCriteria(index)">Remove Criteria</button>
+                        </div>
                     </v-flex>
-                    <v-btn type="button" @click="appendRubric()">Add Criteria</v-btn>
-                    <v-btn type="button" @click="sendRubric()">{{id ? "Edit Rubric" : "Create Rubric"}}</v-btn>
+                    <button type="button" class="primary-cl button-cs" @click="appendRubric()">Add Criteria</button>
+                    <button type="button" class="purple-cl button-cs" @click="sendRubric()">{{id ? "Edit Rubric" : "Create Rubric"}}</button>
                 </v-layout>
             </v-container>
         </v-form>
     </v-container>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
+@import "../../css/app.scss";
 </style>
 
 <script lang="ts">
@@ -39,8 +40,8 @@ import { Utils } from "../../../common/js/Utils";
 import { EventBus, EventList, SnackEvent, ModalEvent } from "../EventBus";
 
 interface DropDownConfiguration {
-  text: string;
-  value: string;
+  text: string,
+  value: string,
 }
 
 @Component({})
@@ -62,7 +63,7 @@ export default class RubricEditor extends Vue {
     // It should be duly noted that the ordering of the criteria is done with maps into an array
     // this is because maps always guarantees a particular oder. Note that order doesn't really matter here
     private mountedCriteriasId: string[] = [];
-
+    
     get criterias(): ICriteria[] {
         return this.$store.getters.criterias;
     }
@@ -106,7 +107,7 @@ export default class RubricEditor extends Vue {
             const message: SnackEvent = {
                 message: "Failed generate quiz. Check the form for any errors",
                 error: true
-            };
+            }
             EventBus.$emit(EventList.PUSH_SNACKBAR, message);
             return;
         } else {
@@ -118,8 +119,8 @@ export default class RubricEditor extends Vue {
                 title: `Creating/modifying a rubric`,
                 fn: this.$store.dispatch,
                 data: ["sendRubric", this.currentRubric]
-            };
-            EventBus.$emit(EventList.OPEN_MODAL, message);
+            }
+            EventBus.$emit(EventList.OPEN_MODAL, message);            
         }
     }
 
@@ -138,7 +139,7 @@ export default class RubricEditor extends Vue {
                 this.failedFetch = true;
             }
         } else {
-            // Otherwise, only set the course
+            // Otherwise, only set the course 
             this.currentRubric.course = this.course;
         }
     }
@@ -159,7 +160,7 @@ export default class RubricEditor extends Vue {
                 }
                 return count;
             }, 0);
-            return totalIds === 1 || "Duplicate criterias detected";
+            return totalIds == 1 || "Duplicate criterias detected";            
         });
     }
 }

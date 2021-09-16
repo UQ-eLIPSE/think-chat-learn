@@ -5,9 +5,11 @@ import { ILTIData } from "../../common/interfaces/ILTIData";
 import { LTIAuth } from "../js/auth/lti/LTIAuth";
 import { IIdentityInfo } from "../js/auth/IIdentityInfo";
 import { IUser, IQuiz, IDiscussionPage } from "../../common/interfaces/DBSchema";
-import { LoginResponse, AdminLoginResponse, QuizScheduleData, QuizScheduleDataAdmin, TypeQuestion,
+import {
+    LoginResponse, AdminLoginResponse, QuizScheduleData, QuizScheduleDataAdmin, TypeQuestion,
     Page, QuestionRequestData, QuestionReconnectData, BackupLoginResponse,
-    LoginResponseTypes, IntermediateLogin, Response } from "../../common/interfaces/ToClientData";
+    LoginResponseTypes, IntermediateLogin, Response
+} from "../../common/interfaces/ToClientData";
 import { QuestionRepository } from "../repositories/QuestionRepository";
 import { convertQuizIntoNetworkQuiz } from "../../common/js/NetworkDataUtils";
 import { IQuizOverNetwork } from "../../common/interfaces/NetworkData";
@@ -22,6 +24,8 @@ import { ResponseRepository } from "../repositories/ResponseRepository";
 import { CourseRepository } from "../repositories/CourseRepository";
 import { CriteriaRepository } from "../repositories/CriteriaRepository";
 import { RubricRepository } from "../repositories/RubricRepository";
+import { ObjectID } from "mongodb";
+
 export class UserService extends BaseService<IUser> {
 
     protected readonly userRepo: UserRepository;
@@ -68,7 +72,7 @@ export class UserService extends BaseService<IUser> {
                 return element === role.toLowerCase();
             }) !== -1;
         });
-        
+
         if (isAdmin) {
             let html = `
                 <html>
@@ -100,7 +104,7 @@ export class UserService extends BaseService<IUser> {
     public async handleBackupLogin(request: ILTIData): Promise<BackupLoginResponse> {
         // Same functionality but also combine the is admin response to true
         const identity = UserServiceHelper.ProcessLtiObject(request);
-        UserServiceHelper.CheckUserId(identity);        
+        UserServiceHelper.CheckUserId(identity);
         if (!this.isLtiAdmin(identity)) {
             throw Error("Invalid user");
         }
@@ -113,41 +117,16 @@ export class UserService extends BaseService<IUser> {
             throw new Error(`No course associated with identity`);
         }
 
-        if (!request.custom_quizid) {
-            throw new Error(`No quiz provided`);
-        }
-
-        // Fetching the quiz is done regardless. Whether or not they can create a quiz session is a different story
-        const quizSchedule = await this.quizRepo.findOne(request.custom_quizid);
-
-        if (!quizSchedule) {
-            throw new Error(`No scheduled quiz available`)
-        }
-
-
-        // TODO check for previous attempts and retrieve the questions associated with the selected quiz
-        //await UserLoginFunc.CheckQuizNotPreviouslyAttempted(db, user, quizSchedule);
-        // Creating the list of ids requires a set
-        const questionIds: string[] = [];
-
-        quizSchedule.pages!.forEach((element) => {
-            if (((element.type === PageType.QUESTION_ANSWER_PAGE) || (element.type === PageType.DISCUSSION_PAGE))
-                && questionIds.findIndex((id) => { return id === element.questionId; }) === -1) {
-                questionIds.push(element.questionId);
-            }
-        });
-
-        const available = Date.now() >= quizSchedule!.availableStart!.getTime() &&
-            quizSchedule.availableEnd!.getTime() >= Date.now() ? true : false;
-
         const tempLogin: LoginResponse = {
             type: LoginResponseTypes.GENERIC_LOGIN,
             user,
             // quiz: quizSchedule ? convertQuizIntoNetworkQuiz(quizSchedule) : null,
             courseId: identity.course,
             // questions,
-            quizId: quizSchedule && quizSchedule._id ? quizSchedule._id : null,
-            available
+            // quizId: quizSchedule && quizSchedule._id ? quizSchedule._id : null,
+            quizId: null,
+            courseTitle: identity.courseTitle || "",
+            available: false
         };
 
         //const tempLogin = await this.handleLogin(request);
@@ -156,6 +135,7 @@ export class UserService extends BaseService<IUser> {
             user: tempLogin.user,
             quizId: tempLogin.quizId,
             courseId: tempLogin.courseId,
+            courseTitle: tempLogin.courseTitle || "",
             isAdmin: true
         }
 
@@ -167,47 +147,75 @@ export class UserService extends BaseService<IUser> {
         const identity = UserServiceHelper.ProcessLtiObject(request);
         UserServiceHelper.CheckUserId(identity);
 
+        
         const user = await UserServiceHelper.RetrieveUser(this.userRepo, identity);
 
         if (!identity.course) {
             throw new Error(`No course associated with identity`);
         }
 
-        if (!request.custom_quizid) {
-            throw new Error(`No quiz provided`);
-        }
+        // Check if user that launched TCL student view is an administrator
+        // This check is required to selectively display 'isPublic' quizzes
+        const isLtiAdmin = this.isLtiAdmin(identity);
+        
 
         // Fetching the quiz is done regardless. Whether or not they can create a quiz session is a different story
-        const quizSchedule = await this.quizRepo.findOne(request.custom_quizid);
 
-        if (!quizSchedule) {
-            throw new Error(`No scheduled quiz available`)
-        }
+        /**
+         * Check if a valid custom quiz id was provided and return if it is available
+         * @returns { quizId: string | null, available: boolean }
+         */
+        const { customQuizId, available } = await (async () => {
+            try {
+                if (!request.custom_quizid) throw new Error();
+
+                const quizSchedule = await this.quizRepo.findOne(request.custom_quizid);
+
+                if (!quizSchedule) throw new Error('Invalid quiz id / missing in database');
+
+                const available = Date.now() >= quizSchedule!.availableStart!.getTime() &&
+                    quizSchedule.availableEnd!.getTime() >= Date.now() ? true : false;
+
+                return {
+                    customQuizId: quizSchedule && quizSchedule._id!, available
+                };
+            } catch (e) {
+                console.error(e.message);
+                return { customQuizId: null, available: false };
+            }
+
+        })();
+
 
 
         // TODO check for previous attempts and retrieve the questions associated with the selected quiz
         //await UserLoginFunc.CheckQuizNotPreviouslyAttempted(db, user, quizSchedule);
         // Creating the list of ids requires a set
-        const questionIds: string[] = [];
 
-        quizSchedule.pages!.forEach((element) => {
-            if (((element.type === PageType.QUESTION_ANSWER_PAGE) || (element.type === PageType.DISCUSSION_PAGE))
-                && questionIds.findIndex((id) => { return id === element.questionId; }) === -1) {
-                questionIds.push(element.questionId);
-            }
-        });
 
-        const available = Date.now() >= quizSchedule!.availableStart!.getTime() &&
-            quizSchedule.availableEnd!.getTime() >= Date.now() ? true : false;
+        /**
+         * Questions are not being returned to client. Assuming this is due to limitations of token max size?
+         */
+        // const questionIds: string[] = [];
+
+        // quizSchedule.pages!.forEach((element) => {
+        //     if (((element.type === PageType.QUESTION_ANSWER_PAGE) || (element.type === PageType.DISCUSSION_PAGE))
+        //         && questionIds.findIndex((id) => { return id === element.questionId; }) === -1) {
+        //         questionIds.push(element.questionId);
+        //     }
+        // });
 
         const output: LoginResponse = {
             type: LoginResponseTypes.GENERIC_LOGIN,
             user,
             // quiz: quizSchedule ? convertQuizIntoNetworkQuiz(quizSchedule) : null,
             courseId: identity.course,
+            courseTitle: identity.courseTitle || "",
             // questions,
-            quizId: quizSchedule && quizSchedule._id ? quizSchedule._id : null,
-            available
+            quizId: undefined,
+            customQuizId,
+            available,
+            isAdmin: isLtiAdmin || false
         };
 
         return output;
@@ -263,13 +271,13 @@ export class UserService extends BaseService<IUser> {
         }
 
         // Check if a course exist
-        const maybeCourse = await this.courseRepo.findAll({name: identity.course });
+        const maybeCourse = await this.courseRepo.findAll({ name: identity.course });
 
         if (!maybeCourse.length && identity.course) {
             // Create a course then
             await this.courseRepo.create({ name: identity.course });
             const criteriaPromises: Promise<string>[] = [];
-            for (let i = 0 ; i < DefaultCriteria.length; i++) {
+            for (let i = 0; i < DefaultCriteria.length; i++) {
                 criteriaPromises.push(this.criteriaRepo.create({
                     name: DefaultCriteria[i].name!,
                     description: DefaultCriteria[i].description!,
@@ -287,6 +295,7 @@ export class UserService extends BaseService<IUser> {
             type: LoginResponseTypes.ADMIN_LOGIN,
             user,
             courseId: identity.course,
+            courseTitle: identity.courseTitle || "",
             //questions,
             isAdmin: true
         }
@@ -336,7 +345,7 @@ export class UserService extends BaseService<IUser> {
                 throw Error("No quiz id for token");
             }
             const quiz = await this.quizRepo.findOne(token.quizId);
-            
+
             if (!quiz) {
                 throw Error("Invalid quiz");
             }
@@ -398,8 +407,8 @@ export class UserService extends BaseService<IUser> {
         if (token.type === LoginResponseTypes.ADMIN_LOGIN) {
             const quizzes = await this.quizRepo.findAll({ course: token.courseId });
             const questions = await this.questionRepo.findAll({ courseId: token.courseId });
-            const criterias = await this.criteriaRepo.findAll( {course: token.courseId });
-            const rubrics = await this.rubricRepo.findAll( {course: token.courseId });
+            const criterias = await this.criteriaRepo.findAll({ course: token.courseId });
+            const rubrics = await this.rubricRepo.findAll({ course: token.courseId });
 
             const output: QuizScheduleDataAdmin = {
                 questions,
@@ -425,7 +434,7 @@ export class UserService extends BaseService<IUser> {
             });
 
             const questions = await UserServiceHelper.RetrieveQuestions(this.questionRepo, questionIds);
-            
+
             questions.forEach((element) => {
                 // Fetch the order(index) of the question w.r.t its order in the discussion pages
                 const index = questionIds.findIndex((id) => {
@@ -442,7 +451,7 @@ export class UserService extends BaseService<IUser> {
                 questions,
                 quiz: quizSchedule ? convertQuizIntoNetworkQuiz(quizSchedule) : null,
             }
-            return output;            
+            return output;
         } else if (token.type === LoginResponseTypes.GENERIC_LOGIN || token.type === LoginResponseTypes.INTERMEDIATE_LOGIN) {
 
             const quizSchedule = await this.quizRepo.findOne(token.quizId!);
@@ -468,7 +477,7 @@ export class UserService extends BaseService<IUser> {
                     const index = questionIds.findIndex((id) => {
                         return id == element._id;
                     });
-    
+
                     // Remove the content of the question if it is not the first question page in the quiz
                     if (index !== 0) {
                         delete element.content;
@@ -477,8 +486,9 @@ export class UserService extends BaseService<IUser> {
 
                 quizSchedule.pages!.forEach((element, index) => {
                     if (index !== 0) {
-                        delete element.content;
-                        delete element.timeoutInMins;
+                        
+                        element.content = '';
+                        // delete element.content;
                     }
                 });
             }
@@ -490,6 +500,19 @@ export class UserService extends BaseService<IUser> {
             return output;
         }
         throw Error("Invalid login");
+    }
+
+
+    async isQuizIdActiveForUserCourse(courseId: string, quizId: string): Promise<boolean> {
+        try {
+            const quizzes = await this.quizRepo.findAvailableQuizzesInCourse(courseId)
+            const requestedQuizInQuizzes = quizzes.find((quiz) => quiz._id === quizId);
+
+            return !!requestedQuizInQuizzes;
+        } catch(e) {
+            console.error('Quiz active check error');
+            return false;
+        }
     }
 }
 
@@ -588,6 +611,9 @@ class UserServiceHelper {
         chatGroupRepo: ChatGroupRepository): Promise<QuestionReconnectData> {
 
         const now = Date.now();
+        
+        // Tracks time remaining on the page where user wants to reconnect
+        let remainingTimeOnLastPage = 0;
 
         const pages: Page[] = [];
 
@@ -613,11 +639,11 @@ class UserServiceHelper {
 
         let runningTime = quizSession.startTime!;
         for (let i = 0; i < firstDiscussionIndex; i++) {
-            if (runningTime >= now + Config.PAGE_SLACK) {
+            if (runningTime >= now) {
                 break;
             } else {
                 runningTime = runningTime + Utils.DateTime.minToMs(quiz.pages![i].timeoutInMins!);
-
+                remainingTimeOnLastPage = runningTime - now;
                 // We have a good page
                 pages.push(quiz.pages![i]);
             }
@@ -634,11 +660,11 @@ class UserServiceHelper {
             // Do the same thing with discussion page index except use the group formation as the reference
             let runningTime = group.startTime!;
             for (let i = firstDiscussionIndex; i < quiz.pages!.length; i++) {
-                if (runningTime >= now + Config.PAGE_SLACK) {
+                if (runningTime >= now) {
                     break;
                 } else {
                     runningTime = runningTime + Utils.DateTime.minToMs(quiz.pages![i].timeoutInMins!);
-
+                    remainingTimeOnLastPage = runningTime - now;
                     // We have a good page
                     pages.push(quiz.pages![i]);
                 }
@@ -656,7 +682,28 @@ class UserServiceHelper {
 
         const questions = await questionRepo.findByIdArray(Array.from(questionSet));
 
-        return { questions, pages };
+        const lastDiscussionIndex = (() => {
+            for(let p = (pages || []).length; p >= 0; p--) {
+                if(pages[p] && (pages[p].type) === PageType.DISCUSSION_PAGE) {
+                    return p;
+                }
+            }
+
+            return -1;
+        })();
+
+        // Convert pages timeouts to numbers
+        (quiz.pages || []).forEach((page) => {
+            page && typeof page.timeoutInMins === 'string' && (page.timeoutInMins = parseFloat(page.timeoutInMins))
+        });
+
+        return { questions,
+            pages,
+            remainingTimeOnLastPage,
+            serverNowTime: now,
+            lastPageIndex: pages.length - 1,
+            lastDiscussionIndex: lastDiscussionIndex >= 0 ? lastDiscussionIndex : undefined
+        };
     }
 
 

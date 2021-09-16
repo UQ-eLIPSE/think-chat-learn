@@ -1,9 +1,15 @@
 import { BaseService } from "./BaseService";
 import { QuizSessionRepository } from "../repositories/QuizSessionRepository";
-import { IQuizSession, Response } from "../../common/interfaces/DBSchema";
+import { IQuizSession, Response, AttemptedQuizSessionData, TypeQuestion, IResponse } from "../../common/interfaces/DBSchema";
 import { UserSessionRepository } from "../repositories/UserSessionRepository";
 import { QuizRepository } from "../repositories/QuizRepository";
 import { ResponseRepository } from "../repositories/ResponseRepository";
+import { Utils } from "../../common/js/Utils";
+import { PageType } from "../../common/enums/DBEnums";
+import { QuestionRepository } from "../repositories/QuestionRepository";
+import { ObjectID } from "mongodb";
+import { IQuestionAnswerPage, ResponseMessage } from "../../common/interfaces/ToClientData";
+import { UserRepository } from "../repositories/UserRepository";
 
 export class QuizSessionService extends BaseService<IQuizSession> {
 
@@ -11,9 +17,11 @@ export class QuizSessionService extends BaseService<IQuizSession> {
     protected readonly quizRepo: QuizRepository;
     protected readonly userSessionRepo: UserSessionRepository;
     protected readonly responseRepo: ResponseRepository;
+    protected readonly questionRepo: QuestionRepository;
+    protected readonly userRepo: UserRepository;
 
     constructor(_quizSessionRepo: QuizSessionRepository, _userSessionRepo: UserSessionRepository,
-        _quizRepo: QuizRepository, _responseRepo: ResponseRepository) {
+        _quizRepo: QuizRepository, _responseRepo: ResponseRepository, _questionRepo: QuestionRepository, _userRepo: UserRepository) {
 
         super();
 
@@ -21,6 +29,8 @@ export class QuizSessionService extends BaseService<IQuizSession> {
         this.userSessionRepo = _userSessionRepo;
         this.quizRepo = _quizRepo;
         this.responseRepo = _responseRepo;
+        this.questionRepo = _questionRepo;
+        this.userRepo = _userRepo;
     }
 
     // Creates a user session assuming the body is valid
@@ -89,10 +99,10 @@ export class QuizSessionService extends BaseService<IQuizSession> {
             (checkResponses.findIndex((element) => element === null) !== -1)) {
             return false;
         }
-        
+
         return true;
     }
-    
+
     // Gets the quiz session by the combination of userId and quizId
     public async getQuizSessionbyUserQuiz(userId: string, quizId: string): Promise<IQuizSession | null> {
         // Fetch all user the user sessions
@@ -100,5 +110,143 @@ export class QuizSessionService extends BaseService<IQuizSession> {
         const quizSession = await this.quizSessionRepo.findQuizSessionByUserQuiz(
             usersessions.map((element) => { return element._id! }, []), quizId);
         return quizSession;
+    }
+
+    // Gets the quiz session by the combination of userId and course
+    async getQuizSessionsByUserCourse(userId: string, courseCode: string): Promise<IQuizSession[]> {
+        // Fetch all user the user sessions
+        try {
+            const usersessions = await this.userSessionRepo.findUserSessionsByUserCourse(userId, courseCode);
+            const quizSessions = await this.quizSessionRepo.findQuizSessionsByUserSessions(
+                (usersessions || []).map((element) => { return element._id! }, []));
+
+            return quizSessions || [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    /**
+     * Returns past quiz attempts (quiz sessions) for a specified user and course
+     * A session can be considered a 'past' session if either
+     * * Quiz session has `complete` = true OR
+     * * Current time > (Quiz end time + quiz duration)
+     * @param userId 
+     * @param courseCode 
+     */
+    async getPastQuizSessionsDataForUserCourse(userId: string, courseCode: string): Promise<AttemptedQuizSessionData[] | null> {
+        const quizSessions = await this.getQuizSessionsByUserCourse(userId, courseCode);
+        if (!quizSessions) return [];
+        const quizSessionsQuizzesOrUndefined = await Promise.all(quizSessions.map(async (quizSession) => {
+            const pastQuizSession: AttemptedQuizSessionData = Object.assign({}, quizSession);
+
+            const quiz = await this.quizRepo.findOne(quizSession.quizId!);
+
+            // If quiz could not be found for the session, return undefined
+            if(!quiz) return undefined;
+
+            pastQuizSession.quiz = quiz;
+
+            return pastQuizSession;
+        }));
+
+        // Filter in valid quiz sessions that contain a quiz object
+        const quizSessionsQuizzes = (quizSessionsQuizzesOrUndefined || []).filter((q) => q && q.quiz) as AttemptedQuizSessionData[];
+
+        if(!quizSessionsQuizzes || !quizSessionsQuizzes.length) return [];
+
+        const pastQuizSessions = quizSessionsQuizzes.filter((quizSessionQuiz) => {
+            if(quizSessionQuiz.complete) return true;
+
+            const currentTime = Date.now();
+
+            if(quizSessionQuiz && quizSessionQuiz.quiz && quizSessionQuiz.startTime &&
+                quizSessionQuiz.quiz.pages) {
+
+                const quizDuration = (quizSessionQuiz.quiz.pages || []).reduce(
+                    // For some reason, `timeoutInMins` typings, system-wide are `number` but is actually a string in the database
+                    // TODO: Investigate the actual type and usages of `timeoutInMins`
+                    (totalTimeInMinutes, page) => totalTimeInMinutes + parseFloat(`${page.timeoutInMins || 0}`)
+                , 0);
+
+                // Expected end time of the quiz session is (quiz session start time) + (total quiz duration)
+                const maxEndTime = Utils.DateTime.minToMs(quizDuration) + new Date(quizSessionQuiz.startTime!).getTime();
+
+                return currentTime > maxEndTime;
+            }
+            
+            return false;
+        });
+
+        // Populate responsesWithContent and questions
+        await Promise.all(pastQuizSessions.map(async (session) => {
+            const responseIds = session.responses || [];
+
+            if (session && session.quiz && session.quiz.pages) {
+                const validQuestionIds = (session.quiz.pages || [])
+                    .filter((p) => p.type === PageType.QUESTION_ANSWER_PAGE).map((questionPage: IQuestionAnswerPage) => questionPage.questionId).filter((x) => !!x) as string[];
+
+                const questions = await this.questionRepo.findByIdArray(validQuestionIds);
+                session.questions = questions && questions.length? questions: []; 
+            }
+
+            if(responseIds && responseIds.length) {
+                const responses = await this.responseRepo.findByIdArray(responseIds);
+                session.responsesWithContent = responses && responses.length ? responses : [];
+            }
+        }));
+
+        return pastQuizSessions;
+    }
+
+    /**
+     * Generates a search map used to search users while marking for a particular `quizScheduleId`.
+     * Map can be used to search a quiz session by username, first name or last name for a particular quiz.
+     * Returns payload of the format { [quizSessionId: key]: "(lowercase) <username>,<first name>,<last name>}
+     * @param quizScheduleId 
+     */
+    public async getQuizSessionUserSearchMap(quizScheduleId: string): Promise<ResponseMessage<{[quizSessionId: string]: string}>> {
+        try {
+            const quizSessions = await this.quizSessionRepo.findQuizSessionsByQuizId(quizScheduleId);
+
+            if(!quizSessions || !Array.isArray(quizSessions)) throw new Error("No valid quiz sessions found for quiz id");
+
+            const userSessionIds = quizSessions.map((q) => q.userSessionId).filter((x) => x) as string[];
+
+            const userSessions = await this.userSessionRepo.findByIdArray(userSessionIds);
+
+            if(!userSessions || !Array.isArray(userSessions)) throw new Error("No valid user sessions found for quiz id");
+
+            const userIds = userSessions.map((userSession) => userSession.userId).filter((session) => !!session) as string[];
+
+            const users = await this.userRepo.findByIdArray(userIds);
+
+            if(!users || !Array.isArray(users)) throw new Error("No valid users found for quiz id");
+
+            /**
+             * Map for searching
+             */
+            const quizSessionUserMap = quizSessions.reduce((userMap, quizSession) => {
+                if(userMap[quizSession._id as string]) return userMap;
+                const userSession = userSessions.find((userSession) => userSession._id === quizSession.userSessionId);
+                if(!userSession) return userMap;
+                const user = users.find((user) => user._id === userSession.userId);
+                if(!user) return userMap;
+                userMap[quizSession._id!] = `${user.username || ''},${user.firstName || ''},${user.lastName || ''}`.toLowerCase();
+
+                return userMap;
+            }, {} as {[quizSessionId: string]: string});
+
+            return {
+                success: true,
+                payload: quizSessionUserMap
+            };
+
+        } catch(e) {
+            return {
+                success: false,
+                message: e.message
+            }
+        }
     }
 }

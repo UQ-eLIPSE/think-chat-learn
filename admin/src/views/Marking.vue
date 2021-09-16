@@ -1,10 +1,11 @@
 <template>
+    <v-container>
     <div class="marking-section">
         <h1>
             Quiz Marks</h1>
         <ul class="marking container">
 
-            <div class="quiz-item"
+            <div class="card-container quiz-item"
                  v-for="q in quizzes"
                  :key="q._id">
 
@@ -14,41 +15,36 @@
                 <span><b>Available End:</b> {{ new Date(q.availableEnd).toLocaleString() }}</span>
 
                 <div class="controls">
-                    <router-link tag="button"
-                                 class="primary"
+                    <router-link tag="button" class="primary-cl button-cs"
                                  :to="{ name: 'mark-quiz', params: { id: q._id } }">Start marking</router-link>
-                    <router-link tag="button"
+                    <router-link tag="button" class="uq button-cs"
                                  id="view-marks"
-                                 class="primary"
                                  :to="{ name: 'view-mark-quiz', params: { id: q._id } }">View marks</router-link>
                 </div>
             </div>
             <!-- <router-view /> -->
         </ul>
     </div>
+    </v-container>
 </template>
 
 <style lang="scss" scoped>
-@import "../../css/variables.scss";
+@import "../../css/app.scss";
 
 .marking,
 .marking-section {
-    width: calc(90% - 18rem);
     height: 100%;
     display: flex;
     flex-direction: column;
 }
 
 .quiz-item {
-    padding: 0.5rem;
-    width: 100%;
     display: flex;
     flex-direction: column;
-    border: 0.1rem solid rgba(1, 0, 0, 0.1);
-    margin: 0.5rem 0;
 }
 
 .controls {
+    margin-top: 2rem;
     display: flex;
 }
 
@@ -61,6 +57,7 @@
 .quiz-item:focus {
     background: rgba(1, 0, 0, 0.05);
 }
+
 </style>
 
 <script lang="ts">
@@ -73,7 +70,7 @@ export default class Marking extends Vue {
         return this.$store.getters.quizzes;
     }
     get course() {
-        return this.$store.state.Quiz.course || "";
+        return this.$store.state.Quiz.course || '';
     }
 
 }

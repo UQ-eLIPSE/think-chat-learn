@@ -12,6 +12,6 @@ export default class MarkPlaceholder extends Vue {
 }
 </script>
 <style lang="scss" scoped>
-@import "../../../css/variables.scss";
+@import "../../../css/partial/variables";
 
 </style>

@@ -3,8 +3,8 @@ import { Commit } from "vuex";
 import { IQuiz, TypeQuestion, IDiscussionPage,
     QuestionRequestData, Page } from "../../../../common/interfaces/ToClientData";
 import { PageType } from "../../../../common/enums/DBEnums";
-import { API } from "../../../../common/js/DB_API";
-import { StateMessageTypes } from "@/enums";
+import API from "../../../../common/js/DB_API";
+import { MoocChatStateMessageTypes } from "@/enums";
 import { TimerSettings } from "@/interfaces";
 
 export interface IState {
@@ -99,7 +99,7 @@ const actions = {
             commit(mutationKeys.SET_CURRENT_DISCUSSION, (state.quiz.pages[index] as IDiscussionPage).questionId);
 
             return commit("Appending a state message",
-                { incomingState: StateMessageTypes.NEW_DISCUSSION_QUESTION, message:
+                { incomingState: MoocChatStateMessageTypes.NEW_DISCUSSION_QUESTION, message:
                 `New discussion point. Please discuss about ${state.quiz.pages[index]!.title}`});
         }
     },
@@ -121,7 +121,7 @@ const actions = {
   },
 
   getPage({ commit }: {commit: Commit}, data: any) {
-      return API.request(API.POST, API.USER + "/page/", data).then((output: QuestionRequestData | null) => {
+      return API.request(API.POST, API.USER + "page/", data).then((output: QuestionRequestData | null) => {
           if (!output) {
               return false;
           }

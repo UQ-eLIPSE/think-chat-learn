@@ -1,6 +1,6 @@
 import express from "express";
 import { BaseController } from "./BaseController";
-import { IRubric } from "../../common/interfaces/DBSchema";
+import { IRubric, Response } from "../../common/interfaces/DBSchema";
 import { isAdmin } from "../js/auth/AdminPageAuth";
 import { RubricService } from "../services/RubricService";
 export class RubricController extends BaseController {
@@ -59,10 +59,22 @@ export class RubricController extends BaseController {
         });
     }
 
+    private fetchCriteriaPopulatedRubricById(req: express.Request, res: express.Response, next: express.NextFunction | undefined) {
+        this.rubricService.fetchCriteriaPopulatedRubricById(req.params.rubricId).then((outcome) => {
+            return res.json({
+                payload: outcome
+            });
+        }).catch((e: Error) => {
+            console.log(e);
+            return res.sendStatus(500);
+        });        
+    }
+
     public setupRoutes() {
         this.router.put("/create", isAdmin(), this.createRubric.bind(this));
         this.router.post("/update", isAdmin(), this.updateRubric.bind(this));
         this.router.get("/:criteriaId", isAdmin(), this.readRubric.bind(this));
         this.router.delete("/delete/:criteriaId", isAdmin(), this.deleteRubric.bind(this));
+        this.router.get("/:rubricId/criteria", this.fetchCriteriaPopulatedRubricById.bind(this));
     }
 }
