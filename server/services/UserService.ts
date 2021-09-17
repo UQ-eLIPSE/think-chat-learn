@@ -3,7 +3,7 @@ import { UserRepository } from "../repositories/UserRepository";
 import { QuizRepository } from "../repositories/QuizRepository";
 import { ILTIData } from "../../common/interfaces/ILTIData";
 import { LTIAuth } from "../js/auth/lti/LTIAuth";
-import { IIdentityInfo } from "../js/auth/IIdentityInfo";
+import { IMoocchatIdentityInfo } from "../js/auth/IMoocchatIdentityInfo";
 import { IUser, IQuiz, IDiscussionPage } from "../../common/interfaces/DBSchema";
 import {
     LoginResponse, AdminLoginResponse, QuizScheduleData, QuizScheduleDataAdmin, TypeQuestion,
@@ -221,7 +221,7 @@ export class UserService extends BaseService<IUser> {
         return output;
     }
 
-    public isLtiAdmin(identity: IIdentityInfo) {
+    public isLtiAdmin(identity: IMoocchatIdentityInfo) {
         try {
             const adminRoles = [
                 "instructor",
@@ -486,7 +486,6 @@ export class UserService extends BaseService<IUser> {
 
                 quizSchedule.pages!.forEach((element, index) => {
                     if (index !== 0) {
-                        
                         element.content = '';
                         // delete element.content;
                     }
@@ -532,14 +531,14 @@ class UserServiceHelper {
     }
 
     // Checks the existence of the id
-    public static CheckUserId(identity: IIdentityInfo) {
+    public static CheckUserId(identity: IMoocchatIdentityInfo) {
         if (!identity.identityId) {
             throw new Error("[10] No user ID received.");
         }
     }
 
     // Gets the user from the DB based on id
-    public static async RetrieveUser(userRepo: UserRepository, identity: IIdentityInfo): Promise<IUser> {
+    public static async RetrieveUser(userRepo: UserRepository, identity: IMoocchatIdentityInfo): Promise<IUser> {
 
         let user = await userRepo.findOne({
             username: identity.identityId

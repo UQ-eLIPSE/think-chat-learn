@@ -5,7 +5,7 @@
 
 // import * as mongodb from "mongodb";
 
-// import { BackupClientQueue } from "../../queue/BackupClientQueue";
+// import { MoocchatBackupClientQueue } from "../../queue/MoocchatBackupClientQueue";
 
 // import { QuizAttempt } from "../../quiz/QuizAttempt";
 // import { QuestionResponse } from "../../question/QuestionResponse";
@@ -34,7 +34,7 @@
 
 //         // Add the client to the backup queue here, only *after* we
 //         // have all the information for question/answer
-//         const backupClientQueue = BackupClientQueue.GetQueueWithQuizScheduleFrom(quizAttempt);
+//         const backupClientQueue = MoocchatBackupClientQueue.GetQueueWithQuizScheduleFrom(quizAttempt);
 
 //         if (backupClientQueue) {
 //             backupClientQueue.addQuizAttempt(quizAttempt);
@@ -68,7 +68,7 @@
 //         //   admins though)
 //         await newQuizAttempt.setResponseInitial(responseInitial);
 
-//         const backupClientQueue = BackupClientQueue.GetQueueWithQuizScheduleFrom(newQuizAttempt);
+//         const backupClientQueue = MoocchatBackupClientQueue.GetQueueWithQuizScheduleFrom(newQuizAttempt);
 
 //         if (backupClientQueue) {
 //             backupClientQueue.addQuizAttempt(newQuizAttempt);
@@ -82,7 +82,7 @@
 //             return console.error("Attempted backup client status request with invalid quiz attempt ID = " + data.quizAttemptId);
 //         }
 
-//         const backupClientQueue = BackupClientQueue.GetQueueWithQuizScheduleFrom(quizAttempt);
+//         const backupClientQueue = MoocchatBackupClientQueue.GetQueueWithQuizScheduleFrom(quizAttempt);
 
 //         if (backupClientQueue) {
 //             backupClientQueue.broadcastQueueChange();

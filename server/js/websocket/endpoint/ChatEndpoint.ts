@@ -5,8 +5,8 @@ import * as IWSToClientData from "../../../../common/interfaces/IWSToClientData"
 
 import { PacSeqSocket_Server } from "../../../../common/js/PacSeqSocket_Server";
 
-import { WaitPool } from "../../queue/WaitPool";
-//import { BackupClientQueue } from "../../queue/BackupClientQueue";
+import { MoocchatWaitPool } from "../../queue/MoocchatWaitPool";
+//import { MoocchatBackupClientQueue } from "../../queue/MoocchatBackupClientQueue";
 
 import { ChatGroupFormationLoop } from "../../chat/ChatGroupFormationLoop";
 import { ResponseService } from "../../../services/ResponseService";
@@ -25,7 +25,7 @@ export class ChatEndpoint extends WSEndpoint {
         }
 
         // NOTE: implement socket authentication middleware
-        const waitPool = WaitPool.GetPool(data.quizId, data.questionId);
+        const waitPool = MoocchatWaitPool.GetPool(data.quizId, data.questionId);
 
         const output: IWSToClientData.ChatPing = {
             size: waitPool ? waitPool.getSize() : 0,
@@ -41,7 +41,7 @@ export class ChatEndpoint extends WSEndpoint {
         }
 
         // Grab waitpool and hten remove
-        const waitPool = WaitPool.GetPool(data.quizId, data.questionId);
+        const waitPool = MoocchatWaitPool.GetPool(data.quizId, data.questionId);
 
         if (!waitPool) {
             throw new Error(`Invalid wait pool of ${data.quizId} ${data.questionId}`);
@@ -81,7 +81,7 @@ export class ChatEndpoint extends WSEndpoint {
         }
 
         // Feed in the quiz and question id
-        const waitPool = await WaitPool.GetPoolWithQuestionresponse(userResponse);
+        const waitPool = await MoocchatWaitPool.GetPoolWithQuestionresponse(userResponse);
 
         // Can't join into pool if already in pool
         if (waitPool.hasQuizResponse(userResponse)) {
@@ -181,7 +181,7 @@ export class ChatEndpoint extends WSEndpoint {
         // TODO implement backupqueue
 
         // Update backup queue
-        /*const backupClientQueue = BackupClientQueue.GetQueueWithQuizScheduleFrom(quizAttempt);
+        /*const backupClientQueue = MoocchatBackupClientQueue.GetQueueWithQuizScheduleFrom(quizAttempt);
 
         if (backupClientQueue) {
             backupClientQueue.broadcastWaitPoolCount();
@@ -382,8 +382,8 @@ export class ChatEndpoint extends WSEndpoint {
             throw Error(`Invalid response of id ${data.responseId}`);
         }
 
-        delete response.confidence;
-        delete response.quizSessionId;
+        response.confidence = 0;
+        response.quizSessionId = '';
 
         const responderIndex = chatGroup.quizSessionIds!.findIndex((sessionId) => { 
             return data.quizSessionId === sessionId

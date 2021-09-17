@@ -51,27 +51,19 @@ export class MarksController extends BaseController {
     }
 
     private getMarksByQuizId(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
-
-        const quizId = (typeof req.query.q === "string")? req.query.q: null;
-        const c = (typeof req.query.c === "string")? req.query.c: null;
-        const p = (typeof req.query.p === "string")? req.query.p: null;
-        // NOTE: CHANGED TYPE AS ANY FOR BUILD
-        if(!c || !p) return res.sendStatus(400) as any;
-
-        const currentPage = parseInt(c as string);
-        const perPage = parseInt(p as string);
+        // TODO: Change type `any` and validate as type `string`
+        const quizId = req.query.q as any as string;
+        // TODO: Change type `any` and validate as type `string`
+        const currentPage = parseInt(req.query.c as any as string);
+        // TODO: Change type `any` and validate as type `string`
+        const perPage = parseInt(req.query.p as any as string);
         if (!quizId || !currentPage || !perPage) throw new Error('Pagination Parameters not supplied');
         this.marksService.getMarksForQuizPaginated(quizId, currentPage, perPage).then((result) => {
-            return res.json(result).status(200);
+            res.json(result).status(200);
         }).catch((e) => {
             console.log(e);
-            return res.sendStatus(400);
+            res.sendStatus(400);
         });
-
-
-        // Fall-through case
-        // NOTE: CHANGED TYPE AS ANY FOR BUILD
-        return res.sendStatus(500) as any;
     }
 
     private createOrUpdateMarks(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {

@@ -2,7 +2,7 @@ import Config from "../../config/Config";
 
 import { KVStore } from "../../../common/js/KVStore";
 
-import { WaitPool } from "../queue/WaitPool";
+import { MoocchatWaitPool } from "../queue/MoocchatWaitPool";
 
 import { Response } from "../../../common/interfaces/DBSchema";
 
@@ -10,7 +10,7 @@ export class ChatGroupFormationLoop {
     private static readonly CGFLInstances = new KVStore<ChatGroupFormationLoop>();
     private static TimeBetweenChecks = Config.GROUP_FORMATION_INTERVAL_MS;
 
-    public static GetChatGroupFormationLoop(waitPool: WaitPool) {
+    public static GetChatGroupFormationLoop(waitPool: MoocchatWaitPool) {
         // Remember the ids are based on quiz and question ids
         const cgfl = ChatGroupFormationLoop.CGFLInstances.get(waitPool.getQuizId() + waitPool.getQuestionId());
 
@@ -22,7 +22,7 @@ export class ChatGroupFormationLoop {
     }
 
     public static async GetChatGroupFormationLoopWithQuizScheduleFrom(userResponse: Response) {
-        const waitPool = await WaitPool.GetPoolWithQuestionresponse(userResponse);
+        const waitPool = await MoocchatWaitPool.GetPoolWithQuestionresponse(userResponse);
         return ChatGroupFormationLoop.GetChatGroupFormationLoop(waitPool);
     }
 
@@ -30,7 +30,7 @@ export class ChatGroupFormationLoop {
 
 
     private timerHandle: NodeJS.Timer;
-    private waitPool: WaitPool;
+    private waitPool: MoocchatWaitPool;
 
     private onGroupCoalesced: (quizResponse: Response[]) => void;
 
@@ -43,9 +43,9 @@ export class ChatGroupFormationLoop {
      * ***Do not*** use this constructor to build a new ChatGroupFormationLoop instance.
      * Use ChatGroupFormationLoop.GetChatGroupFormationLoop() instead.
      * 
-     * @param {WaitPool} waitPool
+     * @param {MoocchatWaitPool} waitPool
      */
-    constructor(waitPool: WaitPool) {
+    constructor(waitPool: MoocchatWaitPool) {
         this.waitPool = waitPool;
 
         // Put into singleton map
@@ -98,7 +98,7 @@ export class ChatGroupFormationLoop {
         } else {
             if (this.numberOfGoes >= this.numberOfFormations) {
                 ChatGroupFormationLoop.CGFLInstances.delete(this.waitPool.getQuizId() + this.waitPool.getQuestionId());
-                WaitPool.Destroy(this.waitPool);
+                MoocchatWaitPool.Destroy(this.waitPool);
             } else {
                 this.timerHandle = setTimeout(() => {
                     return this.run();

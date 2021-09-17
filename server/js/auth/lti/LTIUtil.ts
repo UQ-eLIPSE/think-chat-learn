@@ -4,6 +4,7 @@ import {ILTIData} from "../../../../common/interfaces/ILTIData";
 import {ILTISignatureVerifyInfo} from "../../../../common/interfaces/ILTISignatureVerifyInfo";
 
 /**
+ * MOOCchat
  * LTI utilities class
  */
 

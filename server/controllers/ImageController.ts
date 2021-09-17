@@ -9,7 +9,6 @@ import { MantaInterface } from "../manta/MantaInterface";
 export class ImageController extends BaseController {
 
     private mantaInterface: MantaInterface;
-    // TODO: Try to fix type of uploadHandler
     private uploadHandler: any;
     constructor() {
         super();
@@ -44,7 +43,7 @@ export class ImageController extends BaseController {
 
                 // NOTE: mantaFolderName should be configured with a leading slash in the config
                 location: Config.MANTA_ENABLED?
-                    `${Config.MANTA_URL}${Config.MANTA_FOLDER_PATH}/${file.filename}`
+                `${Config.MANTA_URL}${Config.MANTA_FOLDER_PATH}/${file.filename}`
                     :
                     `/images/${file.filename}`
             });

@@ -5,6 +5,7 @@ import {ILTISignatureVerifyInfo} from "../../../../common/interfaces/ILTISignatu
 import {NonceStore} from "./NonceStore";
 
 /**
+ * MOOCchat
  * LTI processing class
  */
 
