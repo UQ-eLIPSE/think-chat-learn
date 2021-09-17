@@ -45,6 +45,7 @@ services:
     depends_on:
       - server
       - mongodb
+      # For the common modules installation
       - client
 
   intermediate:
@@ -69,7 +70,8 @@ services:
     depends_on:
       - server
       - mongodb
-      - admin
+      # For the common modules installation
+      - client
 
   server:
     build:
