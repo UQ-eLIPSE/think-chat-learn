@@ -9,7 +9,6 @@ services:
       - ./client:/var/www/think-chat-learn/client
       - ./common:/var/www/think-chat-learn/common
       - ./common.env:/var/www/think-chat-learn/common.env
-      # - ./client.env:/var/www/think-chat-learn/client.env
     expose:
       - "3000"
     ports:
@@ -32,7 +31,6 @@ services:
       - ./admin:/var/www/think-chat-learn/admin
       - ./common:/var/www/think-chat-learn/common
       - ./common.env:/var/www/think-chat-learn/common.env
-      # - ./admin.env:/var/www/think-chat-learn/admin.env
     expose:
       - "4000"
     ports:
@@ -45,8 +43,6 @@ services:
     depends_on:
       - server
       - mongodb
-      # For the common modules installation
-      - client
 
   intermediate:
     build:
@@ -57,7 +53,6 @@ services:
       - ./intermediate:/var/www/think-chat-learn/intermediate
       - ./common:/var/www/think-chat-learn/common
       - ./common.env:/var/www/think-chat-learn/common.env
-      # - ./intermediate.env:/var/www/think-chat-learn/intermediate.env
     expose:
       - "5000"
     ports:
@@ -70,8 +65,6 @@ services:
     depends_on:
       - server
       - mongodb
-      # For the common modules installation
-      - client
 
   server:
     build:
@@ -92,8 +85,6 @@ services:
   mongodb:
     image: mongo:latest
     container_name: mongo-db
-    # volumes:
-    #   - ./mongodb:/data/db
     environment:
       - MONGO_DATA_DIR=/data/db
       - MONGO_LOG_DIR=/dev/null

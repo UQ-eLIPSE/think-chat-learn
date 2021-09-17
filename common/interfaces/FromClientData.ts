@@ -4,4 +4,4 @@
 // type Date = string;
 
 // // DB schema related
-// export type Mark = DBSchema.Mark;
+// export type Mark = DBSchema.Mark<OID, Date>;
