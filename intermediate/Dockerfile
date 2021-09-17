@@ -11,4 +11,4 @@ RUN yarn
 
 # Keep the container running
 CMD echo -e "\n\n======== Run \n\n\t'docker exec -it intermediate-app /bin/bash'\n\n======== to log into the container ========\n"  && \
-  cd ${BASE_DIR}/common && yarn && cd ${BASE_DIR}/intermediate && yarn &&  yarn run build_dev && yarn serve
+  cd ${BASE_DIR}/intermediate && yarn &&  yarn run build_dev && yarn serve

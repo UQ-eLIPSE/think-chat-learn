@@ -45,6 +45,7 @@ services:
     depends_on:
       - server
       - mongodb
+      - client
 
   intermediate:
     build:
@@ -68,6 +69,7 @@ services:
     depends_on:
       - server
       - mongodb
+      - admin
 
   server:
     build:
