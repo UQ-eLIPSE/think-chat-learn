@@ -1,5 +1,5 @@
 <template>
-  <textarea :id="id"></textarea>
+  <textarea :id="editorId"></textarea>
 </template>
 
 <script lang="ts">
@@ -14,7 +14,7 @@ import { EventBus, EventList, SnackEvent, showSnackbar } from "../EventBus";
 /** TinyMCE rich text editor component */
 @Component
 export default class TinyMce extends Vue {
-  @Prop() id!: string;
+  @Prop() editorId!: string;
   @Prop() options!: any;
   @Prop() value!: string;
 
@@ -77,12 +77,12 @@ export default class TinyMce extends Vue {
     let options: any = {};
     let config = (editor: any) => {
       editor.on("NodeChange Change KeyUp", (_e: any) => {
-        this.$emit("input", tinymce.get(this.id).getContent());
+        this.$emit("input", tinymce.get(this.editorId).getContent());
       });
 
       editor.on("init", (_e: any) => {
         if (this.value != undefined) {
-          tinymce.get(this.id).setContent(this.value);
+          tinymce.get(this.editorId).setContent(this.value);
         }
       });
 
@@ -104,7 +104,7 @@ export default class TinyMce extends Vue {
     if (typeof this.tinyMceOptions == "object") {
       options = { ...this.tinyMceOptions };
       if (!this.tinyMceOptions.hasOwnProperty("selector")) {
-        options.selector = "#" + this.id;
+        options.selector = "#" + this.editorId;
       }
       options["valid_elements"] = "*[*]";
       // options["content_style"] =
@@ -118,7 +118,7 @@ export default class TinyMce extends Vue {
         };
       }
     } else {
-      options.selector = "#" + this.id;
+      options.selector = "#" + this.editorId;
     }
     options.setup = (editor: any) => s1(editor);
     this.$nextTick(() => {
@@ -127,7 +127,7 @@ export default class TinyMce extends Vue {
   }
 
   beforeDestroy() {
-    tinymce.execCommand("mceRemoveEditor", false, this.id);
+    tinymce.execCommand("mceRemoveEditor", false, this.editorId);
   }
 
   private imageUploadHandler(

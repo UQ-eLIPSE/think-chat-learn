@@ -367,12 +367,14 @@ async function handleReconnect(data: any) {
         await store.commit("Setting the pages", quizQuestionData.pages);
         await store.commit("Setting questions", quizQuestionData.questions);
 
+
+
         if (groupSession) {
             await handleGroupJoin(groupSession.chatGroupFormed);
-            await store.dispatch("updatePageBasedOnTime", { time: groupSession.startTime, isGroup: true });
+            await store.dispatch("updatePageBasedOnTime", quizQuestionData);
             await store.dispatch("updateSocketMessages", groupSession.messages);
         } else {
-            await store.dispatch("updatePageBasedOnTime", { time: quizSession!.startTime, isGroup: false });
+            await store.dispatch("updatePageBasedOnTime", quizQuestionData);
         }
 
         if (userResponses) {
@@ -490,63 +492,35 @@ const actions = {
         return commit(mutationKeys.SET_SOCKET_MESSAGES, data);
     },
 
-    updatePageBasedOnTime({ commit }: {commit: Commit}, data: { time: number, isGroup: boolean } ) {
-        // Given a quiz, compute the amount of time for each page.
-        const currentTime = Date.now();
-        let trackedTime = data.time;
-        const quiz: IQuiz | null = store.getters.quiz;
-        if (!quiz || !quiz.pages) {
+    updatePageBasedOnTime({ commit }: {commit: Commit}, data: QuestionReconnectData ) {
+        const { serverNowTime, remainingTimeOnLastPage, lastDiscussionIndex, lastPageIndex } = (data || {});
+
+        
+        if(isNaN(serverNowTime) || isNaN(remainingTimeOnLastPage) || isNaN(lastPageIndex)) {
+            console.error('Reconnect data invalid');
             return;
         }
 
-
-        // Since the group formation occurs at the first discussion, we iterate from there
-        let firstDiscussionIndex = quiz.pages.findIndex((element) => {
-            return element.type === PageType.DISCUSSION_PAGE;
-        });
-
-        if (firstDiscussionIndex === -1) {
-            // Solve the case in which we have no discussion at all
-            firstDiscussionIndex = quiz.pages.length;
+        const quiz: IQuiz | null = store.getters.quiz;
+        if (!quiz || !quiz.pages) {
+            console.error('Quiz invalid. Reconnect failed.');
+            return;
         }
 
-        // Our bounds are based whether or not we are doing this for a group or not
-        const lowerIndex = data.isGroup ? firstDiscussionIndex : 0;
-        const upperIndex = data.isGroup ? quiz.pages.length : firstDiscussionIndex;
-
-        let i = 0;
-
-        for (i = lowerIndex ; i < upperIndex; i++) {
-            const lowerBound = trackedTime;
-            const upperBound = trackedTime + Utils.DateTime.minToMs(quiz.pages[i].timeoutInMins);
-            if (currentTime >= lowerBound && upperBound >= currentTime) {
-                // Set the indices
-                store.commit("Sets the current index", i);
-                store.commit("Setting the max index", i);
-
-                // Figure out the most recent discussion page
-                for (let j = i; j >= 0; j--) {
-                    if (quiz.pages[j].type === PageType.DISCUSSION_PAGE) {
-                        store.commit("Setting current discussion", (quiz.pages[j] as IDiscussionPage).questionId);
-                        break;
-                    }
-                }
-
-                // Set the amount of time remaining for the timer
-                const timeRemaining = upperBound - currentTime;
-                Vue.set(state, "resyncAmount", Utils.DateTime.msToMinutes(timeRemaining));
-                break;
-            }
-
-            trackedTime = upperBound;
+        if(!quiz.pages[lastPageIndex] || !quiz.pages[lastPageIndex]) {
+            console.error('Quiz invalid. Reconnect failed.');
+            return;
         }
+        
+        store.commit("Sets the current index", lastPageIndex);
+        store.commit("Setting the max index", lastPageIndex);
 
-        if (i === quiz.pages.length) {
-            // If we somehow reach there then the max index would be
-            // at the page lengths
-            store.commit("Sets the current index", i);
-            store.commit("Setting the max index", i);
-        }
+        
+        (!!lastDiscussionIndex || lastDiscussionIndex === 0) && store.commit("Setting current discussion", (quiz.pages[lastDiscussionIndex] as IDiscussionPage).questionId);
+
+        const latencyAdjustmentMs = Date.now() - serverNowTime; 
+        
+        Vue.set(state, "resyncAmount", Utils.DateTime.msToMinutes(remainingTimeOnLastPage + latencyAdjustmentMs));
     },
 
     setAvailability({ commit }: {commit: Commit}, isAvailable: boolean) {

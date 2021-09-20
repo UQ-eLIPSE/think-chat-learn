@@ -137,15 +137,22 @@ export class QuizSessionService extends BaseService<IQuizSession> {
     async getPastQuizSessionsDataForUserCourse(userId: string, courseCode: string): Promise<AttemptedQuizSessionData[] | null> {
         const quizSessions = await this.getQuizSessionsByUserCourse(userId, courseCode);
         if (!quizSessions) return [];
-        const quizSessionsQuizzes = await Promise.all(quizSessions.map(async (quizSession) => {
+        const quizSessionsQuizzesOrUndefined = await Promise.all(quizSessions.map(async (quizSession) => {
             const pastQuizSession: AttemptedQuizSessionData = Object.assign({}, quizSession);
 
             const quiz = await this.quizRepo.findOne(quizSession.quizId!);
 
-            pastQuizSession.quiz = quiz || undefined;
+            // If quiz could not be found for the session, return undefined
+            if(!quiz) return undefined;
+
+            pastQuizSession.quiz = quiz;
 
             return pastQuizSession;
         }));
+
+        // Filter in valid quiz sessions that contain a quiz object
+        const quizSessionsQuizzes = (quizSessionsQuizzesOrUndefined || []).filter((q) => q && q.quiz) as AttemptedQuizSessionData[];
+
         if(!quizSessionsQuizzes || !quizSessionsQuizzes.length) return [];
 
         const pastQuizSessions = quizSessionsQuizzes.filter((quizSessionQuiz) => {

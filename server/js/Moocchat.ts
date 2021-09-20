@@ -39,6 +39,7 @@ export class Moocchat {
 
 
         // Wrap socket with PacSeqSocket
+        // @ts-ignore
         const socket = new PacSeqSocket_Server(socketIoSocket);
         socket.enableInboundLogging();
         socket.enableOutboundLogging();
