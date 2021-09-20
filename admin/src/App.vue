@@ -78,7 +78,6 @@
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
 import { SnackbarProgrammatic as Snackbar } from "buefy";
-// import { Snackbar } from "buefy/src/components/snackbar/index";
 import { EventBus, EventList, SnackEvent, ModalEvent } from "./EventBus";
 
 // Temporary interface for the side nav
