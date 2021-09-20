@@ -1,4 +1,4 @@
-import * as express from "express";
+import express from "express";
 import { BaseController } from "./BaseController";
 import { UserSessionService } from "../services/UserSessionService";
 import { IUserSession } from "../../common/interfaces/DBSchema";

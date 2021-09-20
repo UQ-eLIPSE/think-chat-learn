@@ -1,0 +1,22 @@
+{
+  "name": "thinkchatlearn-common",
+  "version": "1.0.0",
+  "description": "Common modules for TCL",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "jwt-decode": "^2.2.0",
+    "socket.io-client": "^2.3.0",
+    "socket.io": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/jwt-decode": "^2.2.1",
+    "@types/socket.io": "^2.1.4",
+    "@types/socket.io-client": "^1.4.32"  
+  }
+}

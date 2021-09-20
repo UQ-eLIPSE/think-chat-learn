@@ -3,72 +3,83 @@
 ## Project components
 
 ### Client-side
-* `client` - Vue SPA
-* `admin` - Vue SPA
-* `intermediate` - Vue SPA
+* `client` - Vue + TypeScript SPA
+* `admin` - Vue + TypeScript SPA
+* `intermediate` - Vue + TypeScript SPA
 
 ### Server
-* node.js
+* `server` - Node js + Express + TypeScript application
 
-### Database
-* mongodb
+---
+## Local Development
 
-## Requirements
-Node v10.x
-MongoDB v4.x
+### Requirements (development)
+* Docker (recommended memory for Docker: 4GB)
 
-## Setting up
+### Steps to set up locally
 
-1. Clone repo
-2. Install Nodejs 10.x LTS and MongoDB
-3. Start MongoDB, usually the command to run is `mongod`
+1. Clone repo `think-chat-learn` and checkout desired branch
+2. Setup configuration files - (copy example files and rename)
+    * server.env (server.env.example)
+    * common.env (common.env.example)
 
-### Install components
-Quick command for installing everything (Steps 4-7):
-`cd <project_root> && cd client && npm i && cd ../intermediate && npm i && cd ../admin && npm i && cd .. && npm i`
+3. Run `docker-compose up` from project root
 
-OR 
-4. Install the root-level packages `npm install`
-5. Go to client `cd client` and install packages `npm install`
-6. Go to admin `cd ../admin` and install the admin packages `npm install`
-7. Go to admin `cd ../intermediate` and install the admin packages `npm install`
 
-Quick command for installing everything:
-`cd <project_root> && cd client && npm i && cd ../intermediate && npm i && cd ../admin && npm i && cd .. && npm i`
+---
 
-8. Change the config files for the common, admin, client, intermediate and server.
-
-#### Development configuration
-Set up environment and configuration files (Examples files included in repository.)
-    /server/config/Conf.ts (make a copy of /server/config/Conf.ts.example)
-    /common/config/Conf.ts
-
-    /client/config/Conf.ts
-    /client/.env.development (make a copy of /client/.env.development.example) 
-    /client/vue.config.js
-
-    /admin/.env.development
-    /admin/vue.config.js
-
-    /intermediate/.env.development
-    /intermediate/vue.config.js
-
-#### Production configuration
-Production configuration on `Confluence`.
-
-## Building and Running locally
-
-1. Go to project root
-2. Run `npm run build` for production or `npm run build_dev` for dev
-3. Run `npm run start`
-4. If watchers are needed for client. `cd /client` and then `npm run build_dev_watch`
-3. If watchers are needed for admin. `cd /admin` and then `npm run build_dev_watch`
-4. If watchers are needed for intermediate. `cd /intermediate` and then `npm run build_dev_watch`
-
-## Logging in through LTI
+## Log into TCL
+### Log in through LTI connector
 1. Go to https://ltilib.uqcloud.net/connector/ and set the URL as `http://localhost:<PORT_NUMBER>/user/login`
-2. If you need to access a specific quiz, another parameter with key `custom_quizid` and value `<quiz_id>` needs to be added to the LTI form.
+2. To access the instructor view, make sure the role is "instructor"
+3. If you need to access a specific quiz, another parameter with key `custom_quizid` and value `<quiz_id>` needs to be added to the LTI form.
 
-## Deploying on production / test zone
+---
 
-Deployment steps and configurations on `Confluence`.
+## Deployment
+
+### Deployment Server Pre-Requisites
+* Packages should be present
+    * Node v12.x
+    * yarn
+    * MongoDB v4.x
+* Nginx configuration
+* Systemd service setup
+* Manta key available in `/var/www/`
+
+### Local Requirements
+* Docker (recommended memory for Docker: 4GB)
+
+
+### Deploy using script
+
+**TCL deployment script is run locally. The script builds locally, then built files are copied to the desired server.**
+
+
+1. Clone repo `think-chat-learn` locally and checkout desired branch
+2. Setup configuration files
+    * server.env (get values from Confluence)
+    * common.env (get values from Confluence)
+
+3. Run deploy script
+    * Run `./deploy -h` for help
+        * Usage:
+            * ```USER=root ZONE=<zone_name>.zones.eait.uq.edu.au KEYFILE=~/.ssh/id_rsa ./deploy.sh```
+                * Note: If no `KEYFILE` is provided, password will have to be entered for the user interactively
+
+
+
+---
+## Appendix
+
+### Testing
+
+#### Server
+* `jest` package is used for testing the server.
+* Run command in server container (`docker-compose` should be running)
+    * `docker exec -it server-app /bin/bash -c "yarn test"`
+
+#### Client-side Vue Apps (`client`, `admin`, `intermediate`) using Cypress
+
+##### ** Running Cypress E2E testing with Docker seems problematic and will require additional investigation (it requires X11 and complicated dependencies)
+

@@ -1,12 +1,12 @@
 // Whole imports done due to commonjs vs es6
-import * as stream from "stream";
-import * as express from "express";
-import * as multer from "multer";
-import * as manta from "manta";
-import * as fs from "fs";
-import * as uniqid from "uniqid";
-import * as path from "path";
-import { Conf } from "../config/Conf";
+import stream from "stream";
+import express from "express";
+import multer from "multer";
+import manta from "manta";
+import fs from "fs";
+import uniqid from "uniqid";
+import path from "path";
+import Config from "../config/Config";
 
 export class MantaInterface implements multer.StorageEngine {
     private static manta: manta.manta.MantaClient | null = null;
@@ -27,19 +27,19 @@ export class MantaInterface implements multer.StorageEngine {
 
     public static createMantaInstance() {
         try {
-            if (Conf.storage.useManta) {
+            if (Config.MANTA_ENABLED) {
                 this.manta = manta.createClient({
                     sign: manta.privateKeySigner({
-                        key: fs.readFileSync(Conf.storage.mantaDetails.mantaKeyLocation, "utf-8"),
-                        keyId: Conf.storage.mantaDetails.mantaKeyId,
-                        user: Conf.storage.mantaDetails.mantaUser,
-                        subuser: Conf.storage.mantaDetails.mantaSubUser,
-                        role: Conf.storage.mantaDetails.mantaRoles
+                        key: fs.readFileSync(Config.MANTA_KEY_LOCATION, "utf-8"),
+                        keyId: Config.MANTA_KEY_ID,
+                        user: Config.MANTA_USER,
+                        subuser: Config.MANTA_SUBUSER,
+                        role: Config.MANTA_ROLES.split(',')
                     }),
-                    user: Conf.storage.mantaDetails.mantaUser,
-                    subuser: Conf.storage.mantaDetails.mantaSubUser,
-                    url: Conf.storage.mantaDetails.mantaLocation,
-                    role: Conf.storage.mantaDetails.mantaRoles
+                    user: Config.MANTA_USER,
+                    subuser: Config.MANTA_SUBUSER,
+                    url: Config.MANTA_URL,
+                    role: Config.MANTA_ROLES.split(',')
                 });
             } else {
                 throw new Error("Manta interface creation not allowed");

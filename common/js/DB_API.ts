@@ -1,8 +1,8 @@
 import axios, { AxiosPromise, AxiosRequestConfig } from "axios";
 import { getIdToken, setIdToken } from "./front_end_auth";
+import { Conf } from "../config/Conf";
 
-// TODO replace with an actual link
-const API_URL = process.env.VUE_APP_API_URL;
+const API_URL = Conf.server.url;
 
 export interface IApi {
   // HTTP verbs

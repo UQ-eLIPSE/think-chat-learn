@@ -1,4 +1,4 @@
-import * as express from "express";
+import express from "express";
 import { BaseController } from "./BaseController";
 import { CriteriaService } from "../services/CriteriaService";
 import { ICriteria } from "../../common/interfaces/DBSchema";

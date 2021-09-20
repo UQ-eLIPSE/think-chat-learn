@@ -215,8 +215,8 @@ export class MarksService extends BaseService<Mark> {
 
             let quizSessionMarkMap: { [quizSessionId: string]: Mark[] } = {};
             
-            const quizSessionIds: string[] = await this.getDistinctQuizSessionForQuiz(quizId);
-
+            const maybeQuizSessionIds = await this.getDistinctQuizSessionForQuiz(quizId);
+            const quizSessionIds: string[] = maybeQuizSessionIds.filter(quizSessionId => quizSessionId) as string[];
 
             const total = quizSessionIds.length;
             const start = currentPage ? (currentPage - 1) * perPage : 0;

@@ -1,4 +1,4 @@
-import { Conf } from "../../config/Conf";
+import ServerConfig from "../../config/Config";
 import { Conf as CommonConf } from "../../../common/config/Conf";
 
 import { KVStore } from "../../../common/js/KVStore";
@@ -25,7 +25,7 @@ export class MoocchatWaitPool {
     private static QuizService: QuizService | null = null;
 
     // Group size based on the quiz, defaults to desired group size if non-existent
-    private _desiredGroupSize: number = Conf.chat.groups.desiredSize;
+    private _desiredGroupSize: number =  ServerConfig.GROUP_DESIRED_SIZE;
 
     // The id of the quiz in which we are interested in
     private _quizId: string;

@@ -1,3 +1,3 @@
-import * as IWSToClientData from "./IWSToClientData";
+// import * as IWSToClientData from "./IWSToClientData";
 
-export type IMoocchatUser_LoginSuccess = IWSToClientData.LoginSuccess;
+// export type IMoocchatUser_LoginSuccess = IWSToClientData.LoginSuccess;

@@ -1,6 +1,6 @@
 import {IMoocchatIdentityInfo} from "../IMoocchatIdentityInfo";
 
-import * as crypto from "crypto";
+import crypto from "crypto";
 
 import {MoocchatAuth} from "../MoocchatAuth";
 

@@ -1,5 +1,5 @@
-import * as mongodb from "mongodb";
-import * as crypto from "crypto";
+import mongodb from "mongodb";
+import crypto from "crypto";
 
 export abstract class Database<CollectionData> {
     public static ObjectId = mongodb.ObjectID;
@@ -11,7 +11,7 @@ export abstract class Database<CollectionData> {
 
 
     public  static async Connect(url: string) {
-        const client = await mongodb.MongoClient.connect(url, { useNewUrlParser: true });
+        const client = await mongodb.MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
         
         return client.db();
 
@@ -25,11 +25,11 @@ export abstract class Database<CollectionData> {
         return db.collection(collectionName);
     }
 
-    public static InsertOne<CollectionData>(collection: mongodb.Collection, data: CollectionData, callback?: mongodb.MongoCallback<mongodb.InsertOneWriteOpResult>) {
+    public static InsertOne<CollectionData>(collection: mongodb.Collection, data: CollectionData, callback?: mongodb.MongoCallback<mongodb.InsertOneWriteOpResult<any>>) {
         collection.insertOne(data, callback!);
     }
 
-    public static InsertMany<CollectionData>(collection: mongodb.Collection, dataArray: CollectionData[], callback?: mongodb.MongoCallback<mongodb.InsertWriteOpResult>) {
+    public static InsertMany<CollectionData>(collection: mongodb.Collection, dataArray: CollectionData[], callback?: mongodb.MongoCallback<mongodb.InsertWriteOpResult<any>>) {
         collection.insertMany(dataArray, callback!);
     }
 
@@ -102,11 +102,11 @@ export abstract class Database<CollectionData> {
         this.db = db;
     }
 
-    public insertOne(data: CollectionData, callback?: mongodb.MongoCallback<mongodb.InsertOneWriteOpResult>) {
+    public insertOne(data: CollectionData, callback?: mongodb.MongoCallback<mongodb.InsertOneWriteOpResult<any>>) {
         Database.InsertOne<CollectionData>(this.getCollection(), data, callback);
     }
 
-    public insertMany(dataArray: CollectionData[], callback?: mongodb.MongoCallback<mongodb.InsertWriteOpResult>) {
+    public insertMany(dataArray: CollectionData[], callback?: mongodb.MongoCallback<mongodb.InsertWriteOpResult<any>>) {
         Database.InsertMany<CollectionData>(this.getCollection(), dataArray, callback);
     }
 
