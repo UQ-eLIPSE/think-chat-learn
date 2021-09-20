@@ -17,7 +17,7 @@ export class WebsocketManager {
   constructor(reconnectFunction?: (data?: {}) => void, reconnectFailFunction?: () => void,
               reconnectAttemptFunction?: (attemptNumber: number) => void) {
     this.socketProxy = new PacSeqSocket_Client(
-      socket.connect("//" + Conf.server.url, {
+      socket.connect(Conf.server.url, {
         path: "/socket.io",
 
         // Permit infinite reconnects
@@ -71,7 +71,7 @@ export class WebsocketManager {
 
   public open() {
     this.socketProxy = new PacSeqSocket_Client(
-      socket.connect("//" + Conf.server.url, {
+      socket.connect(Conf.server.url, {
         path: "/socket.io",
 
         // Permit infinite reconnects

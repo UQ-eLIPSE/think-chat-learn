@@ -18,7 +18,8 @@ import { QuizSessionRepository } from "../repositories/QuizSessionRepository";
 import { ChatGroupRepository } from "../repositories/ChatGroupRepository";
 import { UserSessionRepository } from "../repositories/UserSessionRepository";
 import { Utils } from "../../common/js/Utils";
-import { Conf } from "../config/Conf";
+import Config from "../config/Config";
+import DefaultCriteria from '../config/DefaultCriteria';
 import { ResponseRepository } from "../repositories/ResponseRepository";
 import { CourseRepository } from "../repositories/CourseRepository";
 import { CriteriaRepository } from "../repositories/CriteriaRepository";
@@ -88,9 +89,9 @@ export class UserService extends BaseService<IUser> {
             const inputString = Object.keys(request).reduce((str, k) => str + `<input type="hidden" name="${k}" value="${request[k]}" />`, ``);
 
             const rest = `
-                        <input type="submit" class="launch-buttons" value="Launch admin panel" formaction="${Conf.endpointUrl}/user/admin">
-                        <input type="submit" class="launch-buttons" value="Launch backup-queue panel" formaction="${Conf.endpointUrl}/user/admin-intermediate-login">
-                        <input type="submit" class="launch-buttons" value="Launch student view" formaction="${Conf.endpointUrl}/user/admin-login">
+                        <input type="submit" class="launch-buttons" value="Launch admin panel" formaction="${Config.SERVER_URL}/user/admin">
+                        <input type="submit" class="launch-buttons" value="Launch backup-queue panel" formaction="${Config.SERVER_URL}/user/admin-intermediate-login">
+                        <input type="submit" class="launch-buttons" value="Launch student view" formaction="${Config.SERVER_URL}/user/admin-login">
                     </form>
                 </html>
             `;
@@ -276,10 +277,10 @@ export class UserService extends BaseService<IUser> {
             // Create a course then
             await this.courseRepo.create({ name: identity.course });
             const criteriaPromises: Promise<string>[] = [];
-            for (let i = 0; i < Conf.defaultCriteria.length; i++) {
+            for (let i = 0; i < DefaultCriteria.length; i++) {
                 criteriaPromises.push(this.criteriaRepo.create({
-                    name: Conf.defaultCriteria[i].name!,
-                    description: Conf.defaultCriteria[i].description!,
+                    name: DefaultCriteria[i].name!,
+                    description: DefaultCriteria[i].description!,
                     course: identity.course
                 }));
             }
@@ -485,7 +486,8 @@ export class UserService extends BaseService<IUser> {
 
                 quizSchedule.pages!.forEach((element, index) => {
                     if (index !== 0) {
-                        delete element.content;
+                        element.content = '';
+                        // delete element.content;
                     }
                 });
             }
@@ -758,7 +760,7 @@ class UserServiceHelper {
                 return time;
             }, 0);
 
-            if (now + Conf.pageSlack >= group.startTime! + timeNeeded) {
+            if (now + Config.PAGE_SLACK >= group.startTime! + timeNeeded) {
                 // Return the page
                 return { page: desiredPage, question: potentialQuestion };
             }
@@ -773,7 +775,7 @@ class UserServiceHelper {
                 return time;
             }, 0);
 
-            if (now + Conf.pageSlack >= quizSession.startTime! + timeNeeded) {
+            if (now + Config.PAGE_SLACK >= quizSession.startTime! + timeNeeded) {
                 // Return the page
                 return { page: desiredPage, question: potentialQuestion };
             }

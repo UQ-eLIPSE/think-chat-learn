@@ -53,7 +53,8 @@ export abstract class BaseRepository<T extends Document>{
         const newValues = {
             $set: convertedItem
         };
-        const result = await this.collection.updateOne({_id: id}, newValues);
+        // TODO: Fix type `as any` for updateOne
+        const result = await this.collection.updateOne({_id: id} as any , newValues);
         return result.result.ok === 1;
     }
 
@@ -62,7 +63,8 @@ export abstract class BaseRepository<T extends Document>{
     async findOne(identifier: string | Partial<T>): Promise<T | null>{
         let result = null;
         if(typeof identifier === "string"){
-            result = await this.collection.findOne({_id: this.convertStringIdToObjectId(identifier) });
+            // TODO: Fix type `as any` for updateOne
+            result = await this.collection.findOne({_id: this.convertStringIdToObjectId(identifier) as any });
         }
         else{
             const convertedItem = this.convertItemToDocument(identifier);
@@ -93,7 +95,8 @@ export abstract class BaseRepository<T extends Document>{
                             return this.convertStringIdToObjectId(element) 
                         }) 
                     }
-                });
+                } as any);
+                // TODO: Try resolving the `as any`
                 return result.toArray().then((output) => {
                     output = output.map((element) => {
                         return this.convertDocumentToItem(element);
@@ -146,7 +149,8 @@ export abstract class BaseRepository<T extends Document>{
     async deleteOne(item: Partial<T>): Promise<boolean>;
     async deleteOne(identifier: string | Partial<T>): Promise<boolean>{
         if (typeof(identifier) === 'string') {
-            const result = await this.collection.deleteOne({_id: this.convertStringIdToObjectId(identifier) });
+            // TODO: Resolve `as any` issue caused due to upgrade
+            const result = await this.collection.deleteOne({_id: this.convertStringIdToObjectId(identifier) } as any);
             return result.deletedCount! > 0;
         }
 

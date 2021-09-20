@@ -1,24 +1,24 @@
-import * as express from "express";
+import express from "express";
 import { BaseController } from "./BaseController";
 import { isAdmin } from "../js/auth/AdminPageAuth";
-import * as multer from "multer";
-import * as uniqid from "uniqid";
-import * as path from "path";
-import { Conf } from "../config/Conf";
+import multer from "multer";
+import uniqid from "uniqid";
+import path from "path";
+import Config from "../config/Config";
 import { MantaInterface } from "../manta/MantaInterface";
 export class ImageController extends BaseController {
 
     private mantaInterface: MantaInterface;
-    private uploadHandler: multer.Instance;
+    private uploadHandler: any;
     constructor() {
         super();
-        this.mantaInterface = new MantaInterface(Conf.storage.mantaDetails.mantaFolderName);
+        this.mantaInterface = new MantaInterface(Config.MANTA_FOLDER_PATH);
 
         this.uploadHandler = multer({
-            storage: Conf.storage.useManta ? this.mantaInterface : 
+            storage: Config.MANTA_ENABLED ? this.mantaInterface : 
                 multer.diskStorage({
                 // TODO a better destination
-                destination: Conf.storage.internalLocation,
+                destination: Config.IMAGE_UPLOAD_LOCAL_PATH,
                 filename: (req: express.Request, file: any, cb: any) => {
                     const tempId = uniqid();
                     const extension = path.extname(file.originalname);
@@ -42,8 +42,8 @@ export class ImageController extends BaseController {
                 // Else assign relative URL of static images path on server
 
                 // NOTE: mantaFolderName should be configured with a leading slash in the config
-                location: Conf.storage.useManta?
-                    `${Conf.storage.mantaDetails.mantaLocation}${Conf.storage.mantaDetails.mantaFolderName}/${file.filename}`
+                location: Config.MANTA_ENABLED?
+                `${Config.MANTA_URL}${Config.MANTA_FOLDER_PATH}/${file.filename}`
                     :
                     `/images/${file.filename}`
             });

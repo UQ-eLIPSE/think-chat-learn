@@ -1,6 +1,6 @@
 import { BaseRepository } from "./BaseRepository";
 import { IQuiz } from "../../common/interfaces/DBSchema";
-import * as mongodb from "mongodb";
+import mongodb from 'mongodb';
 export class QuizRepository extends BaseRepository<IQuiz>{
 
     // Note that availability is defined as startDate > Now > endDate
@@ -35,7 +35,8 @@ export class QuizRepository extends BaseRepository<IQuiz>{
     public async updateQuizMarksVisibility(quizScheduleId: string, marksPublic: boolean) {
         const response = await this.collection.findOneAndUpdate(
             {
-                _id: new mongodb.ObjectID(quizScheduleId)
+                // NOTE: Type ANY for build
+                _id: new mongodb.ObjectID(quizScheduleId) as any
             },
             {
                 $set: 

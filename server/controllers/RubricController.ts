@@ -1,4 +1,4 @@
-import * as express from "express";
+import express from "express";
 import { BaseController } from "./BaseController";
 import { IRubric, Response } from "../../common/interfaces/DBSchema";
 import { isAdmin } from "../js/auth/AdminPageAuth";

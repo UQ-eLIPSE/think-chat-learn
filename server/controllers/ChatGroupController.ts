@@ -1,4 +1,4 @@
-import * as express from "express";
+import express from "express";
 import { BaseController } from "./BaseController";
 import { ChatGroupService } from "../services/ChatGroupService";
 import { SocketSession } from "../js/websocket/SocketSession";
@@ -28,9 +28,11 @@ export class ChatGroupController extends BaseController {
     private async getChatGroups(req: express.Request, res: express.Response, next: express.NextFunction | undefined): Promise<express.Response> {
         try {
             const decodedToken = req.user as AdminLoginResponse;
-            const userId = (decodedToken && decodedToken.user && decodedToken.user._id) || null;
+            // TODO: Change `any` and valid as string
+            const userId = ((decodedToken && decodedToken.user && decodedToken.user._id) || null) as any as string;
             if(!userId) throw new Error('Invalid user credentials');
-            const quizId = req.query.quizid;
+            // TODO: Change `any` and valid as string
+            const quizId = req.query.quizid as any as string;
 
             if(!quizId) throw new Error("Quiz ID not provided");
 

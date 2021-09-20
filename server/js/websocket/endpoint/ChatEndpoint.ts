@@ -382,8 +382,8 @@ export class ChatEndpoint extends WSEndpoint {
             throw Error(`Invalid response of id ${data.responseId}`);
         }
 
-        delete response.confidence;
-        delete response.quizSessionId;
+        response.confidence = 0;
+        response.quizSessionId = '';
 
         const responderIndex = chatGroup.quizSessionIds!.findIndex((sessionId) => { 
             return data.quizSessionId === sessionId

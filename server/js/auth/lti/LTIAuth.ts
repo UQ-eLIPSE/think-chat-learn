@@ -2,12 +2,20 @@ import { ILTIData } from "../../../../common/interfaces/ILTIData";
 import { IMoocchatAuthProcessReturn } from "../IMoocchatAuthProcessReturn";
 import { IMoocchatIdentityInfo } from "../IMoocchatIdentityInfo";
 
-import { Conf } from "../../../config/Conf";
+import Config from "../../../config/Config";
 import { LTIProcessor } from "./LTIProcessor";
 import { MoocchatAuth } from "../MoocchatAuth";
 
 export class LTIAuth extends MoocchatAuth {
-    private static Processor = new LTIProcessor(Conf.lti.signingInfo, true, Conf.lti.testMode);
+    private static Processor = new LTIProcessor({ 
+        method: Config.LTI_METHOD as any,
+        url: Config.LTI_CONSUME_URL,
+        consumer: {
+            key: Config.LTI_CONSUMER_KEY,
+            secret: Config.LTI_SHARED_SECRET
+        }
+    }, true, Config.LTI_TEST_MODE);
+
 
     private ltiData: ILTIData;
 

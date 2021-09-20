@@ -1,9 +1,9 @@
-import * as express from "express";
-import * as jwt from "jsonwebtoken";
+import express from "express";
+import jwt from "jsonwebtoken";
 import { BaseController } from "./BaseController";
 import { UserService } from "../services/UserService";
 import { ILTIData } from "../../common/interfaces/ILTIData";
-import { Conf } from "../config/Conf";
+import Config from "../config/Config";
 import { isAdmin } from "../js/auth/AdminPageAuth";
 import { StudentAuthenticatorMiddleware } from "../js/auth/StudentPageAuth";
 import { LoginResponse } from "../../common/interfaces/ToClientData";
@@ -19,8 +19,8 @@ export class UserController extends BaseController {
 
     private handleLTILogin(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
         this.userService.handleLogin(req.body as ILTIData).then((output) => {
-            const token = jwt.sign(output as Object, Conf.jwt.SECRET, { expiresIn: Conf.jwt.TOKEN_LIFESPAN });
-            res.redirect(Conf.clientPage + "?q=" + token);
+            const token = jwt.sign(output as Object, Config.JWT_SECRET, { expiresIn: Config.JWT_TOKEN_LIFESPAN });
+            res.redirect(Config.CLIENT_URL + "?q=" + token);
         }).catch((e: Error) => {
             res.status(500).send(e.message);
         });
@@ -30,8 +30,8 @@ export class UserController extends BaseController {
     // Essentially the same as LTI login except we write the token differently
     private handleLTIBackupLogin(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
         this.userService.handleBackupLogin(req.body as ILTIData).then((output) => {
-            const token = jwt.sign(output as Object, Conf.jwt.SECRET, { expiresIn: Conf.jwt.TOKEN_LIFESPAN });
-            res.redirect(Conf.intermediatePage + "?q=" + token);
+            const token = jwt.sign(output as Object, Config.JWT_SECRET, { expiresIn: Config.JWT_TOKEN_LIFESPAN });
+            res.redirect(Config.INTERMEDIATE_URL + "?q=" + token);
         }).catch((e: Error) => {
             res.status(500).send(e.message);
         });
@@ -41,14 +41,14 @@ export class UserController extends BaseController {
     // The reason for the second end point is if the admin wants to pretend to be a student
     private handleAdminLogin(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
         this.userService.handleAdminLogin(req.body as ILTIData).then((output) => {
-            const token = jwt.sign(output as Object, Conf.jwt.SECRET, { expiresIn: Conf.jwt.TOKEN_LIFESPAN });
-            res.redirect(Conf.adminPage + "?q=" + token);
+            const token = jwt.sign(output as Object, Config.JWT_SECRET, { expiresIn: Config.JWT_TOKEN_LIFESPAN });
+            res.redirect(Config.ADMIN_URL + "?q=" + token);
         });
     }
 
     private registerIntermediate(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
         this.userService.registerIntermediate(req.user, req.body).then((output) => {
-            const token = jwt.sign(output.token as Object, Conf.jwt.SECRET, { expiresIn: Conf.jwt.TOKEN_LIFESPAN });
+            const token = jwt.sign(output.token as Object, Config.JWT_SECRET, { expiresIn: Config.JWT_TOKEN_LIFESPAN });
             res.json({ token, responses: output.responses});
         });
     }
@@ -72,7 +72,7 @@ export class UserController extends BaseController {
 
     private getQuizByToken(req: express.Request, res: express.Response, next: express.NextFunction | undefined): void {
         this.userService.handleFetch(req.user).then((output) => {
-            res.json(jwt.sign(output as Object, Conf.jwt.SECRET, { expiresIn: Conf.jwt.TOKEN_LIFESPAN }));
+            res.json(jwt.sign(output as Object, Config.JWT_SECRET, { expiresIn: Config.JWT_TOKEN_LIFESPAN }));
         }).catch((e) => {
             console.log(e);
         });
@@ -88,7 +88,7 @@ export class UserController extends BaseController {
         const available = await this.userService.isQuizIdActiveForUserCourse(courseId, quizId);
 
         if(available) {
-            const token = jwt.sign(Object.assign({}, req.user, { quizId, available }), Conf.jwt.SECRET, { expiresIn: Conf.jwt.TOKEN_LIFESPAN });
+            const token = jwt.sign(Object.assign({}, req.user, { quizId, available }), Config.JWT_SECRET, { expiresIn: Config.JWT_TOKEN_LIFESPAN });
             return res.json({
                 payload: token
             }).status(200);
