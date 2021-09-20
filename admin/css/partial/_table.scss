@@ -1,5 +1,7 @@
 @import "./variables";
 
-th, thead td {
-    @include transparent-color($primary, false)
+.table-cs{
+    th, thead td {
+        @include transparent-color($primary, false)
+    }
 }
