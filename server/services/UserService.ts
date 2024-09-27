@@ -81,8 +81,8 @@ export class UserService extends BaseService<IUser> {
 
     // const identity = UserServiceHelper.ProcessLtiObject(request);
     const adminRoles = [
-      'urn:lti:role:ims/lis/Instructor',
-      'urn:lti:instrole:ims/lis/Staff',
+      'urn:lti:role:ims/lis/instructor',
+      'urn:lti:role:ims/lis/staff',
       'instructor',
       'teachingassistant',
       'administrator',
@@ -252,7 +252,13 @@ export class UserService extends BaseService<IUser> {
 
   public isLtiAdmin(identity: IMoocchatIdentityInfo) {
     try {
-      const adminRoles = ['instructor', 'teachingassistant', 'administrator'];
+      const adminRoles = [
+        'urn:lti:role:ims/lis/Instructor',
+        'urn:lti:role:ims/lis/Staff',
+        'instructor',
+        'teachingassistant',
+        'administrator',
+      ];
 
       const isAdmin = (identity.roles || []).some((role) => {
         return (
