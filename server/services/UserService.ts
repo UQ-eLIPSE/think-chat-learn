@@ -253,8 +253,8 @@ export class UserService extends BaseService<IUser> {
   public isLtiAdmin(identity: IMoocchatIdentityInfo) {
     try {
       const adminRoles = [
-        'urn:lti:role:ims/lis/Instructor',
-        'urn:lti:role:ims/lis/Staff',
+        'urn:lti:role:ims/lis/instructor',
+        'urn:lti:role:ims/lis/staff',
         'instructor',
         'teachingassistant',
         'administrator',
