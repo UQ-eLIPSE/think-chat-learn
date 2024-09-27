@@ -96,7 +96,7 @@ echo -e "Installing server dependencies"
 
 ssh \
   ${SSH_KEYFILE:+ -i "$SSH_KEYFILE"} \
-  $USER@$SERVER -t "cd $REMOTE_ROOT/server && yarn"
+  $USER@$SERVER -t "cd $REMOTE_ROOT/server && npm i"
 
 
 echo -e "\n\n######################\n# App is ready to be deployed.\n# To deploy, run sudo systemctl daemon-reload && sudo service tcl restart\n######################"
